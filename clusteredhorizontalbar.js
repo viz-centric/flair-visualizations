@@ -32,7 +32,7 @@ function clusteredhorizontalbar() {
         _displayColor,
         _borderColor,
         _fontSize,
-        _originalData;;
+        _originalData;
 
     var _local_svg,
         _Local_data;

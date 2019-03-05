@@ -23,7 +23,6 @@ function line() {
         _displayName,
         _measureProp,
         _legendData,
-
         _showValues,
         _displayNameForMeasure,
         _fontStyle,
@@ -34,16 +33,11 @@ function line() {
         _borderColor,
         _fontSize,
         _lineType,
-        _pointType;
+        _pointType,
+        _originalData;
 
 
-    var _local_svg,
-        _Local_data,
-        _local_total = 0,
-        _local_transition_time = 500,
-        _local_transition_map = d3.map(),
-        _local_sorted_measure_value = [],
-        _local_tooltip;
+    var _local_svg, _Local_data;
 
     var parentWidth, parentHeight, plotWidth, plotHeight;
 
@@ -134,11 +128,10 @@ function line() {
 
         return symbol;
     }
-
     var _buildTooltipData = function (datum, chart) {
         var output = "";
-
         output += "<table><tr>"
+
             + "<th>" + chart.dimension() + ": </th>"
             + "<td>" + datum.data[_dimension[0]] + "</td>"
             + "</tr><tr>"
@@ -148,7 +141,6 @@ function line() {
 
         return output;
     }
-
     var onLassoStart = function (lasso, chart) {
         return function () {
             if (filter) {
@@ -158,7 +150,6 @@ function line() {
             }
         }
     }
-
     var onLassoDraw = function (lasso, chart) {
         return function () {
             filter = true;
@@ -174,7 +165,6 @@ function line() {
                 .classed('possible', false);
         }
     }
-
     var onLassoEnd = function (lasso, chart) {
         return function () {
             var data = lasso.selectedItems().data();
@@ -210,7 +200,6 @@ function line() {
             }
         }
     }
-
     var applyFilter = function (chart) {
         return function () {
             if (filterData.length > 0) {
@@ -218,13 +207,11 @@ function line() {
             }
         }
     }
-
     var clearFilter = function () {
         return function () {
             chart.update(_originalData);
         }
     }
-
     var _handleMouseOverFn = function (tooltip, container) {
         var me = this;
 
@@ -239,7 +226,6 @@ function line() {
             }
         }
     }
-
     var _handleMouseMoveFn = function (tooltip, container) {
         var me = this;
 
@@ -250,7 +236,6 @@ function line() {
             }
         }
     }
-
     var _handleMouseOutFn = function (tooltip, container) {
         var me = this;
 
@@ -280,12 +265,11 @@ function line() {
             }
         }
     }
-
     function chart(selection) {
         _local_svg = selection;
 
         selection.each(function (data) {
-            chart._Local_data = data;
+            chart._Local_data = _originalData = data;
             var margin = {
                 top: 0,
                 right: 0,
@@ -306,7 +290,6 @@ function line() {
 
             parentWidth = width - 2 * COMMON.PADDING - margin.left;
             parentHeight = (height - 2 * COMMON.PADDING - axisLabelSpace * 2);
-
 
             svg.attr('width', width)
                 .attr('height', height)
@@ -528,21 +511,21 @@ function line() {
                         else {
                             var confirm = d3.select('.confirm')
                                 .style('visibility', 'visible');
-                            var _filter = chart._Local_data.filter(function (d1) {
+                            var _filter = _Local_data.filter(function (d1) {
                                 return d.data[_dimension[0]] === d1[_dimension[0]]
                             })
                             var rect = d3.select(this);
                             if (rect.classed('selected')) {
                                 rect.classed('selected', false);
                                 filterData.map(function (val, i) {
-                                    if (val[_dimension[0]] == d[_dimension[0]]) {
+                                    if (val[_dimension[0]] == d.data[_dimension[0]]) {
                                         filterData.splice(i, 1)
                                     }
                                 })
                             } else {
                                 rect.classed('selected', true);
                                 var isExist = filterData.filter(function (val) {
-                                    if (val[_dimension[0]] == d[_dimension[0]]) {
+                                    if (val[_dimension[0]] == d.data[_dimension[0]]) {
                                         return val
                                     }
                                 })
@@ -697,12 +680,12 @@ function line() {
 
     chart.update = function (data) {
 
-        //  chart._Local_data = data,
+        chart._Local_data = data;
         var svg = _local_svg;
         filterData = [];
 
         var plot = svg.select('.plot')
-        var chart = svg.select('.chart')
+        var chartplot = svg.select('.chart')
         labelStack = [];
         svg.selectAll('.cluster_line').remove();
         var x = d3.scaleBand()

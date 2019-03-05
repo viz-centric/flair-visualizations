@@ -13,29 +13,46 @@
     <script src="d3-lasso.min.js"></script>
     <script src="common.js"></script>
     <script src="util.js"></script>
- 
+
     <script src="scatter_legend.js"></script>
     <script src="scatterChart.js"></script>
-   
+
 </head>
 
 <body>
+    <div>
+        <div id="header" style="position: relative; border: 1px solid #999; width: 800">
+            <div class="row">
+                <div class="col-md-10">
+                    <p>Clustered Vertical Bar Charts </p>
+                </div>
+                <div class="col-md-2">
+                    <div class="onoffswitch">
+                        <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox myonoffswitch"
+                            id="myonoffswitch" checked>
+                        <label class="onoffswitch-label" for="myonoffswitch">
+                            <span class="onoffswitch-inner"></span>
+                            <span class="onoffswitch-switch"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
 
-    <div id="header" style="text-align:center; width:90%; margin: 0 auto; display:block; padding-top:5px; height:60px; margin-bottom:35px;">
-        <h2 style="color:#777; font-weight:100;">scatter plot Charts </h2>
-    </div>
-    <div style="position: relative; border: 1px solid #999;">
-        <svg id="donut" width="1200" height="500"></svg>
-        <div id="tooltip"></div>
-        <div class="confirm" style="visibility: hidden;">
-            <button class="btn btn-filters btn-primary">
-                <i class="fa fa-check"></i>
-            </button>
-            <button class="btn btn-filters btn-default">
-                <i class="fa fa-times"></i>
-            </button>
+        </div>
+        <div style="position: relative; border: 1px solid #999;width: 800">
+            <svg id="donut" width="1200" height="500"></svg>
+            <div id="tooltip"></div>
+            <div class="confirm" style="visibility: hidden;">
+                <button class="btn btn-filters btn-primary">
+                    <i class="fa fa-check"></i>
+                </button>
+                <button class="btn btn-filters btn-default">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
         </div>
     </div>
+
     <script type="text/javascript">
         /* Global variable accessible from anywhere */
         var COMMON = common(),
@@ -47,7 +64,7 @@
             showLegend: true, // true|false
             legendPosition: 'top', // top|bottom|right|left
             showValueAs: 'label', // label|value|percentage
-           
+
             "showXaxis": true,
             "showYaxis": true,
             "showXaxisLabel": true,
@@ -57,7 +74,7 @@
             "showGrid": true,
             "stacked": false,
             "displayName": "Dimension 1",
-            
+
             "showValues": [true, true, true, true, true, true, true,],
             "displayNameForMeasure": ["Measure 1", "Measure 2", "Measure 2", "Measure 2", "Measure 2", "Measure 2", "Measure 2"],
             "fontStyle": ["italic", "bold", "bold", "bold", "bold", "bold", "bold"],

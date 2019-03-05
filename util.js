@@ -46,14 +46,14 @@ function util() {
             if (tooltip) tooltip.style('visibility', 'visible');
         },
 
-        updateTooltip: function (data, container,borderColor) {
+        updateTooltip: function (data, container, borderColor) {
             var pt = d3.mouse(container.node()),
                 x = pt[0] + 15,
                 y = pt[1] + 20;
 
             this.style('top', y + 'px')
                 .style('left', x + 'px')
-                .style('border',  'solid 2px'+borderColor)
+                .style('border', 'solid 2px' + borderColor)
                 .html(data);
 
             _boundTooltip(container.node(), this.node());
@@ -355,7 +355,7 @@ function util() {
             return output;
         },
 
-        displayThreshold: function(threshold,data,keys){
+        displayThreshold: function (threshold, data, keys) {
             for (var index = 0; index < threshold.length; index++) {
                 data.filter(function (val) {
                     for (var j = 0; j < keys.length; j++) {
@@ -446,40 +446,104 @@ function util() {
             }
             return result;
         },
-        setAxisColor: function (_local_svg,_yAxisColor,_xAxisColor,_showYaxis,_showXaxis) {
+        setAxisColor: function (_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis) {
             var svg = _local_svg;
-    
+
             svg.selectAll('.y_axis text')
                 .style('fill', _yAxisColor)
-    
+
             svg.selectAll('.x_axis text')
                 .style('fill', _xAxisColor)
-    
+
             svg.selectAll('.y_axis path')
                 .style('stroke', _yAxisColor)
-    
+
             svg.selectAll('.x_axis path')
                 .style('stroke', _xAxisColor)
-    
+
             svg.selectAll('.y_axis line')
                 .style('stroke', _yAxisColor)
-    
+
             svg.selectAll('.x_axis line')
                 .style('stroke', _xAxisColor)
-    
+
             svg.selectAll('.x_axis .tick')
                 .style('visibility', UTIL.getVisibility(_showXaxis))
-    
+
             svg.selectAll('.y_axis .tick')
                 .style('visibility', UTIL.getVisibility(_showYaxis))
-    
+
         },
-        getMeasureList: function(data,_dimension){
+        getMeasureList: function (data, _dimension) {
             var keys = Object.keys(data);
             keys.splice(keys.indexOf(_dimension[0]), 1);
             return keys;
+        },
+        getExpressionConfig: function (expression, args) {
+            var config = [],
+                temp,
+                obj;
+
+            if (!expression || !args.length) {
+                return [];
+            }
+
+            try {
+                expression = expression.split('|');
+
+                expression.forEach(function (item) {
+                    obj = {};
+                    temp = item.split(',').map(function (c) { return c.trim(); });
+                    obj[temp[0].toLowerCase()] = parseInt(temp[1]) || null;
+                    args.forEach(function (arg, i) {
+                        obj[arg] = temp[i + 2];
+                    });
+                    config.push(obj);
+                });
+            } catch (e) {
+                console.error(e);
+                throw new Error('Invalid expression format');
+            }
+
+            return config;
+        },
+        roundNumber: function(num, scale) {
+            if(typeof(scale) == 'undefined') {
+                throw new Error('Scale is not specified');
+            }
+
+            var exp1 = "e+" + scale,
+                exp2 = "e-" + scale;
+
+            return +(Math.round(num + exp1) + exp2);
+        },
+        expressionEvaluator: function(expression, value, key) {
+            var result = expression.filter(function(t) {
+                    return t.hasOwnProperty('default');
+                });
+
+            if(result.length) {
+                result = result[0][key];
+            }
+
+            for(var i=0; i<expression.length; i++) {
+                var property = expression[i];
+                if(property.hasOwnProperty('upto')) {
+                    if(value <= property.upto) {
+                        result = property[key];
+                        break;
+                    }
+                } else if(property.hasOwnProperty('above')) {
+                    if(value > property.above) {
+                        result = property[key];
+                        break;
+                    }
+                }
+            }
+
+            return result;
         }
-    
+
     }
 
     var privateMethods = function (precision) {

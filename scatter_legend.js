@@ -77,9 +77,7 @@ function legend() {
             .attr('width', width)
             .attr('height', height)
             .style('fill', function (d, i) {
-                
-                    return COMMON.COLORSCALE(i);
-               
+                return COMMON.COLORSCALE(i);
             })
             .style('stroke-width', 0);
 
@@ -91,17 +89,17 @@ function legend() {
             })
             .style('font-weight', 'bold')
 
-       
+
         var legendBreak = 0,
             legendBreakCount = 0;
-        if ( me.legendPosition() == 'top') {
+        if (me.legendPosition() == 'top') {
             legendItem.attr('transform', function (d, i) {
                 var count = i,
                     widthSum = 0
                 while (count-- != 0) {
-                    widthSum +=d3.select('#' + me._getName() + '-legend-item' + count).node().getBBox().width + 16;
+                    widthSum += d3.select('#' + me._getName() + '-legend-item' + count).node().getBBox().width + 16;
                 }
-                if ((widthSum + 100) >extraParams.width) {
+                if ((widthSum + 100) > extraParams.width) {
                     widthSum = 0;
                     if (legendBreak == 0) {
                         legendBreak = i;
@@ -112,19 +110,19 @@ function legend() {
                     }
                     var newcount = i - (legendBreak * legendBreakCount);
                     while (newcount-- != 0) {
-                        widthSum +=d3.select('#' + me._getName() + '-legend-item'  + newcount).node().getBBox().width +  16;
+                        widthSum += d3.select('#' + me._getName() + '-legend-item' + newcount).node().getBBox().width + 16;
                     }
                     return 'translate(' + widthSum + ', ' + legendBreakCount * 20 + ')';
                 }
                 return 'translate(' + widthSum + ', ' + (me.legendPosition() == 'top' ? 0 : extraParams.height) + ')';
             });
-            extraParams.height= extraParams.height-(20*legendBreakCount);
+            extraParams.height = extraParams.height - (20 * legendBreakCount);
         }
 
         return {
             legendWidth: legend.node().getBBox().width,
             legendHeight: legend.node().getBBox().height,
-            legendBreakCount:legendBreakCount
+            legendBreakCount: legendBreakCount
         }
     }
 }

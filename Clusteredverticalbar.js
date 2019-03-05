@@ -344,7 +344,7 @@ function clusteredverticalbar() {
                         else {
                             var confirm = d3.select('.confirm')
                                 .style('visibility', 'visible');
-                            var _filter = chart._Local_data.filter(function (d1) {
+                            var _filter = _Local_data.filter(function (d1) {
                                 return d[_dimension[0]] === d1[_dimension[0]]
                             })
                             var rect = d3.select(this);

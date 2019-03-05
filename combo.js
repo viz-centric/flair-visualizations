@@ -23,7 +23,7 @@ function combo() {
         _displayName,
         _measureProp,
         _legendData,
-
+        _comboChartType,
         _showValues,
         _displayNameForMeasure,
         _fontStyle,
@@ -35,21 +35,18 @@ function combo() {
         _fontSize,
         _lineType,
         _pointType,
-        _comboChartType;
+        _originalData;
 
-
-    var _local_svg,
-        _Local_data,
-        measuresBar = [],
-        measuresLine = [];
-
+    var _local_svg, _Local_data;
     var x0, x1, y;
 
     var parentWidth, parentHeight, plotWidth, plotHeight;
 
     var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div;
-    var threshold = [];
+
     var filter = false, filterData = [];
+
+    var measuresBar = [], measuresLine = [];
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
@@ -79,9 +76,9 @@ function combo() {
         this.displayColor(config.displayColor);
         this.borderColor(config.borderColor);
         this.fontSize(config.fontSize);
+        this.comboChartType(config.comboChartType)
         this.lineType(config.lineType);
-        this.pointType(config.pointType);
-        this.comboChartType(config.comboChartType);
+        this.pointType(config.pointType)
         this.legendData(config.displayColor, config.measure);
     }
     var getPointType = function (index) {
@@ -202,6 +199,7 @@ function combo() {
                 .style('visibility', 'visible');
 
             var _filter = [];
+            var keys = UTIL.getMeasureList(data[0].data, _dimension);
             data.forEach(function (d) {
 
                 var obj = new Object();
@@ -209,8 +207,8 @@ function combo() {
                 var searchObj = _filter.find(o => o[_dimension[0]] === temp);
                 if (searchObj == undefined) {
                     obj[_dimension[0]] = d.data[_dimension[0]];
-                    for (var index = 0; index < _measure.length; index++) {
-                        obj[_measure[index]] = d.data[_measure[index]];
+                    for (var index = 0; index < keys.length; index++) {
+                        obj[keys[index]] = d.data[keys[index]];
                     }
                     _filter.push(obj)
                 }
@@ -228,11 +226,13 @@ function combo() {
             }
         }
     }
+
     var clearFilter = function () {
         return function () {
             chart.update(_originalData);
         }
     }
+
     var _handleMouseOverFn = function (tooltip, container) {
         var me = this;
 
@@ -240,7 +240,7 @@ function combo() {
             d3.select(this).style('cursor', 'pointer')
                 .style('cursor', 'pointer')
                 .style('fill', COMMON.HIGHLIGHTER);
-            var border = UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor)
+            var border = UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor)
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
                 UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
@@ -254,7 +254,7 @@ function combo() {
         return function (d, i) {
             if (tooltip) {
                 var border = UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor)
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -320,7 +320,7 @@ function combo() {
                         $('#Modal_' + $(div).attr('id')).modal('toggle');
                     }
                 }
-            })
+            });
 
             $(document).on('click', '#Modal_' + $(div).attr('id') + ' .ThresholdSubmit', function (e) {
                 var newValue = $('#Modal_' + $(div).attr('id') + ' .threshold').val();
@@ -329,7 +329,7 @@ function combo() {
                 obj.threshold = newValue;
                 threshold.push(obj);
                 $('#Modal_' + $(div).attr('id')).modal('toggle');
-            })
+            });
 
             var container = svg.append('g')
                 .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
@@ -398,7 +398,6 @@ function combo() {
                         if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) return 0;
                         return Math.abs(y(0) - y(d['data'][measuresBar[i]]));
                     })
-                    .style('stroke-width', 2)
                     .on('mouseover', _handleMouseOverFn.call(chart, tooltip, svg))
                     .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg))
                     .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg))
@@ -436,15 +435,14 @@ function combo() {
                             }
                         }
                     })
-
-
             }
             chart.drawPlot = function (data) {
                 var me = this;
                 _Local_data = data;
-
                 var keys = UTIL.getMeasureList(data[0], _dimension);
-                measuresLine = [];
+
+                measuresBar = [],
+                    measuresLine = [];
                 keys.forEach(function (m, i) {
                     if (_comboChartType[_measure.indexOf(m)] == "bar") {
                         measuresBar.push(m);
@@ -472,7 +470,6 @@ function combo() {
 
                 var content = plot.append('g')
                     .attr('class', 'chart')
-
 
                 var labelStack = [];
 
@@ -551,23 +548,13 @@ function combo() {
                         return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
                     })
                     .attr('visibility', function (d, i) {
-                        if (_lineType[(keys.indexOf(d[0]['tag']))] == "area") {
+                        if (_lineType[(_measure.indexOf(d[0]['tag']))] == "area") {
                             return 'visible'
                         }
                         else {
                             return 'hidden';
                         }
 
-                    })
-                    .on("mouseover", function (d) {
-                        d3.select(this)
-                            .style("fill-opacity", 1)
-                            .style("cursor", "pointer");
-                    })
-                    .on("mouseout", function (d) {
-                        d3.select(this)
-                            .style("fill-opacity", .5)
-                            .style("cursor", "none");
                     })
                     .style('fill-opacity', 0.5)
                     .attr('stroke', 'none')
@@ -724,17 +711,11 @@ function combo() {
 
                 svg.call(lasso);
             }
+
             chart.drawPlot.call(this, data)
         });
-
     }
-    /**
-     * Builds the html data for the tooltip
-     *
-     * @param {object} datum Datum forming the arc
-     * @param {function} chart Pie chart function
-     * @return {string} String encoded HTML data
-     */
+
     chart._legendInteraction = function (event, data) {
         var clustered = d3.selectAll('g.bar')
             .filter(function (d) {
@@ -776,14 +757,14 @@ function combo() {
 
     chart.update = function (data) {
 
-        // chart._Local_data = data,
-        var svg = _local_svg;
+        chart._Local_data = data,
+            svg = _local_svg;
         filterData = [];
-        var labelStack = [];
         var xLabels = getXLabels(data);
-        var keys = UTIL.getMeasureList(data[0], _dimension);
-        measuresBar = [];
-        measuresLine = [];
+        var keys = Object.keys(data[0]);
+
+        keys.splice(keys.indexOf(_dimension[0]), 1);
+        measuresBar = [],measuresLine=[];
         keys.forEach(function (m, i) {
             if (_comboChartType[_measure.indexOf(m)] == "bar") {
                 measuresBar.push(m);
@@ -792,17 +773,17 @@ function combo() {
             }
         });
 
-        var x0 = d3.scaleBand()
+        x0 = d3.scaleBand()
             .domain(xLabels)
             .rangeRound([0, plotWidth])
             .padding([0.2]);
 
-        var x1 = d3.scaleBand()
+        x1 = d3.scaleBand()
             .domain(measuresBar)
             .rangeRound([0, x0.bandwidth()])
             .padding([0.2]);
 
-        var y = d3.scaleLinear()
+        y = d3.scaleLinear()
             .range([plotHeight, 0]);
 
         y.domain([0, d3.max(data, function (d) {
@@ -812,8 +793,8 @@ function combo() {
         })]).nice();
 
         var plot = svg.select('.plot')
-        var chart = svg.select('.chart')
-        labelStack = [];
+        var chartploat = svg.select('.chart')
+        var labelStack = [];
         svg.selectAll('.cluster_line').remove();
 
         var areaGenerator = d3.area()
@@ -835,7 +816,7 @@ function combo() {
                 return y(d['data'][d['tag']]);
             });
 
-        var clusterLine = chart.selectAll('.cluster_line')
+        var clusterLine = chartploat.selectAll('.cluster_line')
             .data(measuresLine.filter(function (m) { return labelStack.indexOf(m) == -1; }))
             .enter().append('g')
             .attr('class', 'cluster_line');
@@ -849,23 +830,13 @@ function combo() {
                 return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
             })
             .attr('visibility', function (d, i) {
-                if (_lineType[(keys.indexOf(d[0]['tag']))] == "area") {
+                if (_lineType[(_measure.indexOf(d[0]['tag']))] = "area") {
                     return 'visible'
                 }
                 else {
                     return 'hidden';
                 }
 
-            })
-            .on("mouseover", function (d) {
-                d3.select(this)
-                    .style("fill-opacity", 1)
-                    .style("cursor", "pointer");
-            })
-            .on("mouseout", function (d) {
-                d3.select(this)
-                    .style("fill-opacity", .5)
-                    .style("cursor", "none");
             })
             .style('fill-opacity', 0.5)
             .attr('stroke', 'none')
@@ -918,13 +889,13 @@ function combo() {
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg))
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg));
 
-        var clusterBar = svg.selectAll('g.cluster_bar')
+        var clusterBar = chartploat.selectAll('g.cluster_bar')
             .data(data)
 
         clusterBar.enter().append('g')
             .attr('class', 'cluster_bar')
             .attr('transform', function (d) {
-                return 'translate(' + x0(d[dimension[0]]) + ', 0)';
+                return 'translate(' + x0(d[_dimension[0]]) + ', 0)';
             });
 
         clusterBar.exit().remove();
@@ -959,6 +930,11 @@ function combo() {
                 if ((d['data'][measuresBar[measuresBar.indexOf(d.tag)]] === null) || (isNaN(d['data'][measuresBar[measuresBar.indexOf(d.tag)]]))) return 0;
                 return Math.abs(y(0) - y(d['data'][measuresBar[measuresBar.indexOf(d.tag)]]));
             })
+
+        var newBars = bar.enter().append('g')
+            .attr('class', 'bar');
+
+        chart.drawViz(newBars)
 
         d3.selectAll('g.cluster_bar')
             .attr('transform', function (d) {
@@ -1236,21 +1212,6 @@ function combo() {
         return chart;
     }
 
-    chart.lineType = function (value) {
-        if (!arguments.length) {
-            return _lineType;
-        }
-        _lineType = value;
-        return chart;
-    }
-
-    chart.pointType = function (value) {
-        if (!arguments.length) {
-            return _pointType;
-        }
-        _pointType = value;
-        return chart;
-    }
     chart.comboChartType = function (value) {
         if (!arguments.length) {
             return _comboChartType;
@@ -1258,5 +1219,21 @@ function combo() {
         _comboChartType = value;
         return chart;
     }
+
+    chart.lineType = function (value) {
+        if (!arguments.length) {
+            return _lineType;
+        }
+        _lineType = value;
+        return chart;
+    }
+    chart.pointType = function (value) {
+        if (!arguments.length) {
+            return _pointType;
+        }
+        _pointType = value;
+        return chart;
+    }
+
     return chart;
 }

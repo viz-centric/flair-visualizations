@@ -35,26 +35,13 @@ function scatter() {
         _fontSize;
 
 
-    var _local_svg,
-        _local_total = 0,
-        _local_transition_time = 500,
-        _local_transition_map = d3.map(),
-        _local_sorted_measure_value = [],
-        _local_tooltip;
+    var _local_svg, _Local_data;
 
+    var parentWidth, parentHeight, plotWidth, plotHeight;
 
-    var filter = false,
-        filterData = [];
-
-    var _pie = d3.pie()
-        .sort(null);
-
-    var _arc = d3.arc()
-        .innerRadius(0);
-
-    var _arcMask = d3.arc();
-
-    var _labelArc = d3.arc();
+    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div;
+    var threshold = [];
+    var filter = false, filterData = [];
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
@@ -88,91 +75,14 @@ function scatter() {
         this.legendData(config.displayColor, config.measure);
     }
 
-
-    /**
-     * Period function that stretches the rendering process
-     *
-     * @param {number} extraDuration Additional duration value in milliseconds
-     * @return {function} Accessor function that computes the duration period
-     */
-    var _durationFn = function (extraDuration) {
-        if (extraDuration === void 0) { extraDuration = 0; }
-
-        if (isNaN(+extraDuration)) {
-            throw new TypeError('Not a number');
-        }
-
-        return function (d, i) {
-            var t = _local_transition_map.get(d.value);
-
-            if (!t) {
-                t = _local_transition_time * (d.value / _local_total)
-                _local_transition_map.set(d.value, t);
-            }
-
-            return (t + extraDuration);
-        }
-    }
-
-    /**
-     * Delay function that delays the start of rendering process
-     *
-     * @param {number} extraDelay Additional delay value in milliseconds
-     * @return {function} Accessor function that computes the delay period
-     */
-    var _delayFn = function (extraDelay) {
-        if (extraDelay === void 0) { extraDelay = 0; }
-
-        if (isNaN(+extraDelay)) {
-            throw new TypeError('TypeError: Not a number');
-        }
-
-        return function (d, i) {
-            var i = _local_sorted_measure_value.indexOf(d.value),
-                t = 0;
-
-            while (i > 0) {
-                i--;
-                t += _local_transition_map.get(_local_sorted_measure_value[i]);
-            }
-
-            return (t + extraDelay);
-        }
-    }
-
-    /**
-     * Gives the value of hypotenuse using pythagorous theorem
-     *
-     * @param {number} x Value of perpendicular
-     * @param {number} y Value of base
-     * @return {number} Value of hypotenuse
-     */
-    var _pythagorousTheorem = function (x, y) {
-        if (isNaN(+x) || isNaN(+y)) {
-            throw new Error('TypeError: Not a number');
-            return 0;
-        }
-
-        return Math.sqrt(Math.pow(+x, 2) + Math.pow(+y, 2));
-    }
-
-    /**
-     * Builds the html data for the tooltip
-     *
-     * @param {object} datum Datum forming the arc
-     * @param {function} chart Pie chart function
-     * @return {string} String encoded HTML data
-     */
     var _buildTooltipData = function (datum, chart) {
         var output = "";
-
-        output += "<table><tr>"
-            + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + datum[chart.dimension()] + "</td>"
-            + "</tr><tr>"
-            + "<th>" + datum["measure"] + ": </th>"
-            + "<td>" + datum[datum["measure"]] + "</td>"
-            + "</tr></table>";
+        output += "<table>";
+        _measure.forEach(element => {
+            output += "<tr><th>" + element + ": </th>";
+            output += "<th>" + datum[ element] + "</th></tr>";
+        });
+        output += "</table>";
 
         return output;
     }
@@ -251,13 +161,14 @@ function scatter() {
         var me = this;
 
         return function (d, i) {
-            d3.select(this).style('cursor', 'pointer')
+            d3.select(this)
                 .style('cursor', 'pointer')
-                .style('fill', COMMON.HIGHLIGHTER);
-            var border = UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor)
+                .style('fill-opacity', 1);
+
+            var border = d3.select(this).attr('fill');
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container,border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -267,8 +178,8 @@ function scatter() {
 
         return function (d, i) {
             if (tooltip) {
-                var border = UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor)
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me,border), container,border);
+                var border =  d3.select(this).attr('fill');
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border);
             }
         }
     }
@@ -277,7 +188,8 @@ function scatter() {
         var me = this;
 
         return function (d, i) {
-            d3.select(this).style('cursor', 'default');
+            d3.select(this).style('cursor', 'default')
+                .style('fill-opacity', .5)
 
             var arcGroup = container.selectAll('g.arc')
                 .filter(function (d1) {
@@ -313,23 +225,22 @@ function scatter() {
                 bottom: 0,
                 left: 45
             };
+
             var legendSpace = 20,
                 axisLabelSpace = 20,
                 offsetX = 16,
                 offsetY = 3;
 
+            var div = d3.select(this).node().parentNode;
+
             var svg = d3.select(this),
-                width = +svg.attr('width'),
-                height = +svg.attr('height'),
-                parentWidth = width - 2 * COMMON.PADDING - margin.left,
-                parentHeight = (height - 2 * COMMON.PADDING - axisLabelSpace * 2);
+                width = div.clientWidth,
+                height = div.clientHeight;
 
-            var legendWidth = 0,
-                legendHeight = 0,
-                plotWidth = parentWidth,
-                plotHeight = parentHeight,
-                legendBreakCount;
-
+            parentWidth = width - 2 * COMMON.PADDING - margin.left;
+            parentHeight = (height - 2 * COMMON.PADDING - axisLabelSpace * 2);
+            plotWidth = parentWidth;
+            plotHeight = parentHeight;
             const color = COMMON.COLORSCALE;
 
             var str = UTIL.createAlert($(div).attr('id'), _measure);
@@ -384,8 +295,12 @@ function scatter() {
             })]).nice();
 
             y.domain([0, d3.max(data, function (d) {
-                return parseInt(d[keys[0]]);
+                return parseInt(d[_measure[3]]);
             })]).nice();
+
+            if (_tooltip) {
+                tooltip = d3.select(this.parentNode).select('#tooltip');
+            }
 
             plot.append("g")
                 .attr("class", "x_axis")
@@ -415,8 +330,8 @@ function scatter() {
                 .attr("font-weight", "bold")
                 .style('text-anchor', 'middle')
                 .text(function () {
-                    return _measureProp.map(function (p) {
-                        return p.displayName;
+                    return _displayNameForMeasure.map(function (p) {
+                        return p;
                     }).join(', ');
                 });
 
@@ -428,15 +343,26 @@ function scatter() {
                     return x(d[_dimension[0]]);
                 })
                 .attr("cy", function (d) {
-                    return y(d[keys[0]]);
+                    return y(d[_measure[3]]);
                 })
                 .attr("r", function (d) {
-                    return rScale(parseInt(d[keys[1]]));
+                    return rScale(parseInt(d[_measure[0]]));
                 })
                 .attr("fill", function (d) {
                     return color(d[_measure[2]]);
                 })
 
+                .style('fill-opacity', .5)
+                .on('mouseover', _handleMouseOverFn.call(chart, tooltip, svg, _measureProp))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg, _measureProp))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg, _measureProp));
+
+            var legendWidth = 0,
+                legendHeight = 0,
+                legendBreakCount;
+
+            plotWidth = parentWidth;
+            plotHeight = parentHeight;
 
             if (_showLegend) {
                 var scatterChartLegend = LEGEND.bind(chart);
@@ -465,22 +391,11 @@ function scatter() {
                 }
             }
 
-            if (_tooltip) {
-                tooltip = d3.select(this.parentNode).select('#tooltip');
-            }
-
-
             UTIL.setAxisColor(svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis, _showYaxis, _showXaxis);
         });
 
     }
-    /**
-     * Builds the html data for the tooltip
-     *
-     * @param {object} datum Datum forming the arc
-     * @param {function} chart Pie chart function
-     * @return {string} String encoded HTML data
-     */
+
     chart._legendInteraction = function (event, data) {
         var arcGroup = d3.selectAll('g.arc')
             .filter(function (d) {
@@ -504,33 +419,6 @@ function scatter() {
 
     chart._getName = function () {
         return _NAME;
-    }
-
-    var _mergeForTransition = function (fData, sData) {
-        var secondSet = d3.set();
-
-        sData.forEach(function (d) {
-            secondSet.add(d[_dimension[0]]);
-        });
-
-        var onlyFirst = fData.filter(function (d) {
-            return !secondSet.has(d[_dimension[0]]);
-        })
-            .map(function (d) {
-                var obj = {};
-
-                obj[_dimension[0]] = d[_dimension[0]];
-                obj[_measure[0]] = 0;
-
-                return obj;
-            });
-
-        return d3.merge([sData, onlyFirst])
-            .sort(function (a, b) {
-                return a[_measure[0]] > b[_measure] ? _sort
-                    : a[_measure[0]] < b[_measure] ? -_sort
-                        : 0;
-            })
     }
 
     chart.update = function (data) {
@@ -658,7 +546,6 @@ function scatter() {
             return _measure;
         }
         _measure = value;
-        _pie.value(function (d) { return d[_measure[0]]; });
         return chart;
     }
 
