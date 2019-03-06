@@ -28,6 +28,8 @@ function table() {
         _iconExpressionForMeasure,
         _fontWeightForMeasure;
 
+    var _localData;
+
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
         this.measure(config.measure);
@@ -67,12 +69,27 @@ function table() {
     var getIconName = function (index) {
         return _iconNameForMeasure[index];
     }
+    chart.readerTableChart = function (str, _local_svg,  key) {
+        var d = _localData.filter(function (val) {
+            if (val[key] === str) {
+                return val;
+            }
+        });
+        d3.select('#donut')
+        .datum(d)
+        .call(chart);
 
+
+
+        _local_svg.html('')
+
+        chart(_local_svg)
+    }
     function chart(selection) {
         _local_svg = selection;
 
         selection.each(function (data) {
-
+            _localData = data
             var margin = {
                 top: 0,
                 right: 0,
@@ -135,6 +152,7 @@ function table() {
             data.forEach(function (d) {
                 tbody += "<tr>";
                 _dimension.forEach(function (item, index) {
+
                     var style = {
                         'text-align': _textAlignmentForDimension[index],
                         'background-color': _cellColorForDimension[index],
@@ -146,7 +164,7 @@ function table() {
 
                     style = JSON.stringify(style);
                     style = style.replace(/","/g, ';').replace(/["{}]/g, '');
-                    tbody += "<td style=\"" + style + "\">" + d[_dimension[index]] + "</td>";
+                    tbody += "<td onClick=\"chart.readerTableChart('" + d[_dimension[index]] + "',_local_svg,'" + item + "')\" style=\"" + style + "\">" + d[_dimension[index]] + "</td>";
                 });
 
                 _measure.forEach(function (item, index) {
@@ -161,7 +179,7 @@ function table() {
 
                     style = JSON.stringify(style);
                     style = style.replace(/","/g, ';').replace(/["{}]/g, '');
-                    tbody += "<td style=\"" + style + "\">" + getIcon(index) + UTIL.getFormattedValue(d[_measure[index]], UTIL.getValueNumberFormat(index, _numberFormatForMeasure)) + "</td>";
+                    tbody += "<td onClick=\"chart.readerTableChart('" + d[_dimension[index]] + "',_local_svg,'" + item + "')\" style=\"" + style + "\">" + getIcon(index) + UTIL.getFormattedValue(d[_measure[index]], UTIL.getValueNumberFormat(index, _numberFormatForMeasure)) + "</td>";
                 });
                 tbody += "</tr>";
             });
@@ -290,7 +308,7 @@ function table() {
         _fontSizeForDimension = value;
         return chart;
     }
-    
+
     chart.textColorForDimension = function (value) {
         if (!arguments.length) {
             return _textColorForDimension;
@@ -411,7 +429,7 @@ function table() {
         return chart;
     }
 
-    chart.fontWeightForMeasure=function(value){
+    chart.fontWeightForMeasure = function (value) {
         if (!arguments.length) {
             return _fontWeightForMeasure;
         }

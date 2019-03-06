@@ -764,7 +764,7 @@ function combo() {
         var keys = Object.keys(data[0]);
 
         keys.splice(keys.indexOf(_dimension[0]), 1);
-        measuresBar = [],measuresLine=[];
+        measuresBar = [], measuresLine = [];
         keys.forEach(function (m, i) {
             if (_comboChartType[_measure.indexOf(m)] == "bar") {
                 measuresBar.push(m);
@@ -795,7 +795,6 @@ function combo() {
         var plot = svg.select('.plot')
         var chartploat = svg.select('.chart')
         var labelStack = [];
-        svg.selectAll('.cluster_line').remove();
 
         var areaGenerator = d3.area()
             .curve(d3.curveLinear)
@@ -804,7 +803,7 @@ function combo() {
             })
             .y0(plotHeight)
             .y1(function (d) {
-                return y(d['data'][d['tag']]);
+                return y(d['data'][d.tag[0].tag]);
             });
 
         var lineGenerator = d3.line()
@@ -813,81 +812,23 @@ function combo() {
                 return x0(d['data'][_dimension[0]]) + x0.bandwidth() / 2;
             })
             .y(function (d, i) {
-                return y(d['data'][d['tag']]);
+                return y(d['data'][d.tag[0].tag]);
             });
 
-        var clusterLine = chartploat.selectAll('.cluster_line')
-            .data(measuresLine.filter(function (m) { return labelStack.indexOf(m) == -1; }))
-            .enter().append('g')
-            .attr('class', 'cluster_line');
-
-        var area = clusterLine.append('path')
+        var area = plot.selectAll('path.area')
             .datum(function (d, i) {
                 return data.map(function (datum) { return { "tag": d, "data": datum }; });
             })
-            .attr('class', 'area')
-            .attr('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
-            })
-            .attr('visibility', function (d, i) {
-                if (_lineType[(_measure.indexOf(d[0]['tag']))] = "area") {
-                    return 'visible'
-                }
-                else {
-                    return 'hidden';
-                }
-
-            })
-            .style('fill-opacity', 0.5)
-            .attr('stroke', 'none')
             .attr('d', areaGenerator);
 
-        var line = clusterLine.append('path')
+        plot.selectAll('path.point').remove()
+
+
+        var line = plot.selectAll('path.line')
             .datum(function (d, i) {
                 return data.map(function (datum) { return { "tag": d, "data": datum }; });
             })
-            .attr('class', 'line')
-            .attr('fill', 'none')
-            .attr('stroke', function (d, i) {
-                return UTIL.getBorderColor(_measure.indexOf(d[0]['tag']), _borderColor);
-            })
-            .attr('stroke-linejoin', 'round')
-            .attr('stroke-linecap', 'round')
-            .attr('stroke-width', 1)
-            .on("mouseover", function (d) {
-                d3.select(this)
-                    .style("stroke-width", "2.5px")
-                    .style("cursor", "pointer");
-            })
-            .on("mouseout", function (d) {
-                d3.select(this)
-                    .style("stroke-width", "1.5px")
-                    .style("cursor", "none");
-            })
             .attr('d', lineGenerator);
-
-        var point = clusterLine.selectAll('point')
-            .data(function (d, i) {
-                return data.map(function (datum) { return { "tag": d, "data": datum }; });
-            })
-            .enter().append('path')
-            .attr('class', 'point')
-            .attr('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
-            })
-            .attr('d', function (d, i) {
-                return d3.symbol()
-                    .type(getPointType(_measure.indexOf(d.tag)))
-                    .size(40)();
-            })
-            .attr('transform', function (d) {
-                return 'translate('
-                    + (x0(d['data'][_dimension[0]]) + x0.bandwidth() / 2)
-                    + ',' + y(d['data'][d['tag']]) + ')';
-            })
-            .on('mouseover', _handleMouseOverFn.call(chart, tooltip, svg))
-            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg))
-            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg));
 
         var clusterBar = chartploat.selectAll('g.cluster_bar')
             .data(data)
@@ -909,27 +850,26 @@ function combo() {
                     .map(function (m) { return { "tag": m, "data": d }; });
             })
 
-        bar.selectAll('rect')
+        bar.select('rect')
             .attr('width', x1.bandwidth())
             .style('stroke-width', 1)
-            .attr('x', function (d, i, j) {
+            .attr('x', function (d, i) {
                 return x1(measuresBar[measuresBar.indexOf(d.tag)]);
             })
             .attr('y', function (d, i) {
-                if ((d['data'][measuresBar[measuresBar.indexOf(d.tag)]] === null) || (isNaN(d['data'][measuresBar[measuresBar.indexOf(d.tag)]]))) {
+                if ((d["data"][d.tag] === null) || (isNaN(d["data"][d.tag]))) {
                     return 0;
-                } else if (d['data'][measuresBar[measuresBar.indexOf(d.tag)]] > 0) {
-                    return y(d['data'][measuresBar[measuresBar.indexOf(d.tag)]]);
+                } else if (d["data"][d.tag]> 0) {
+                    return y(d["data"][d.tag]);
                 }
-
                 return y(0);
             })
-            .classed('selected', false)
-            .classed('possible', false)
             .attr('height', function (d, i) {
-                if ((d['data'][measuresBar[measuresBar.indexOf(d.tag)]] === null) || (isNaN(d['data'][measuresBar[measuresBar.indexOf(d.tag)]]))) return 0;
-                return Math.abs(y(0) - y(d['data'][measuresBar[measuresBar.indexOf(d.tag)]]));
+                return Math.abs(y(0) - y(d["data"][d.tag]));
             })
+            .classed('selected', false)
+            .classed('possible', false);
+            
 
         var newBars = bar.enter().append('g')
             .attr('class', 'bar');

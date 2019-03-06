@@ -414,7 +414,7 @@ function table() {
                     style = JSON.stringify(style);
                     style = style.replace(/","/g, ';').replace(/["{}]/g, '');
 
-                    content += "<td style=\"" + style + "\">" + ((datum[parent.join('_')] !== undefined) ? getValueNumberFormat(parent[0])(datum[parent.join('_')]) : "-") + "</td>";
+                    content += "<td  style=\"" + style + "\">" + ((datum[parent.join('_')] !== undefined) ? getValueNumberFormat(parent[0])(datum[parent.join('_')]) : "-") + "</td>";
                 }
 
                 parent.pop();

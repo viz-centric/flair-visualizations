@@ -687,7 +687,7 @@ function line() {
         var plot = svg.select('.plot')
         var chartplot = svg.select('.chart')
         labelStack = [];
-        svg.selectAll('.cluster_line').remove();
+
         var x = d3.scaleBand()
             .rangeRound([0, plotWidth])
             .padding([1]);
@@ -697,7 +697,9 @@ function line() {
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
-        x.domain(data.map(function (d) { return d[_dimension[0]]; }));
+        x.domain(data.map(function (d) {
+            return d[_dimension[0]];
+        }));
         y.domain([0, d3.max(data, function (d) {
             return d3.max(keys, function (key) {
                 return parseInt(d[key]);
@@ -711,7 +713,7 @@ function line() {
             })
             .y0(plotHeight)
             .y1(function (d) {
-                return y(d['data'][d['tag']]);
+                return y(d['data'][d.tag[0].tag]);
             });
 
         var lineGenerator = d3.line()
@@ -720,125 +722,25 @@ function line() {
                 return x(d['data'][_dimension[0]]) + x.bandwidth() / 2;
             })
             .y(function (d, i) {
-                return y(d['data'][d['tag']]);
+                return y(d['data'][d.tag[0].tag]);
             });
 
-        var clusterLine = plot.selectAll('.cluster_line')
-            .data(keys.filter(function (m) { return labelStack.indexOf(m) == -1; }))
-            .enter().append('g')
-            .attr('class', 'cluster_line');
-
-        var area = clusterLine.append('path')
+        var area = plot.selectAll('path.area')
             .datum(function (d, i) {
                 return data.map(function (datum) { return { "tag": d, "data": datum }; });
             })
-            .attr('class', 'area')
-            .attr('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
-            })
-            .attr('visibility', function (d, i) {
-                if (_lineType[(_measure.indexOf(d[0]['tag']))] == "area") {
-                    return 'visible'
-                }
-                else {
-                    return 'hidden';
-                }
-
-            })
-            .on("mouseover", function (d) {
-                d3.select(this)
-                    .style("fill-opacity", 1)
-                    .style("cursor", "pointer");
-            })
-            .on("mouseout", function (d) {
-                d3.select(this)
-                    .style("fill-opacity", .5)
-                    .style("cursor", "none");
-            })
-            .style('fill-opacity', 0.5)
-            .attr('stroke', 'none')
             .attr('d', areaGenerator);
 
-        var line = clusterLine.append('path')
+        var line = plot.selectAll('path.line')
             .datum(function (d, i) {
                 return data.map(function (datum) { return { "tag": d, "data": datum }; });
-            })
-            .attr('class', 'line')
-            .attr('fill', 'none')
-            .attr('stroke', function (d, i) {
-                return UTIL.getBorderColor(_measure.indexOf(d[0]['tag']), _borderColor);
-            })
-            .attr('stroke-linejoin', 'round')
-            .attr('stroke-linecap', 'round')
-            .attr('stroke-width', 1)
-            .on("mouseover", function (d) {
-                d3.select(this)
-                    .style("stroke-width", "2.5px")
-                    .style("cursor", "pointer");
-            })
-            .on("mouseout", function (d) {
-                d3.select(this)
-                    .style("stroke-width", "1.5px")
-                    .style("cursor", "none");
             })
             .attr('d', lineGenerator);
 
-        var point = clusterLine.selectAll('point')
-            .data(function (d, i) {
-                return data.map(function (datum) { return { "tag": d, "data": datum }; });
-            })
-            .enter().append('path')
-            .attr('class', 'point')
-            .attr('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
-            })
-            .attr('d', function (d, i) {
-                return d3.symbol()
-                    .type(getPointType(_measure.indexOf(d.tag)))
-                    .size(40)();
-            })
-            .attr('transform', function (d) {
-                return 'translate('
-                    + (x(d['data'][_dimension[0]]) + x.bandwidth() / 2)
-                    + ',' + y(d['data'][d['tag']]) + ')';
-            })
-            .on('mouseover', _handleMouseOverFn.call(chart, tooltip, svg))
-            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg))
-            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg))
-            .on('click', function (d) {
-                if ($("#myonoffswitch").prop('checked') == false) {
-                    $('#Modal_' + $(div).attr('id') + ' .measure').val(d.measure);
-                    $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
-                    $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
-                    $('#Modal_' + $(div).attr('id')).modal('toggle');
-                }
-                else {
-                    var confirm = d3.select('.confirm')
-                        .style('visibility', 'visible');
-                    var _filter = chart._Local_data.filter(function (d1) {
-                        return d.data[_dimension[0]] === d1[_dimension[0]]
-                    })
-                    var rect = d3.select(this);
-                    if (rect.classed('selected')) {
-                        rect.classed('selected', false);
-                        filterData.map(function (val, i) {
-                            if (val[_dimension[0]] == d[_dimension[0]]) {
-                                filterData.splice(i, 1)
-                            }
-                        })
-                    } else {
-                        rect.classed('selected', true);
-                        var isExist = filterData.filter(function (val) {
-                            if (val[_dimension[0]] == d[_dimension[0]]) {
-                                return val
-                            }
-                        })
-                        if (isExist.length == 0) {
-                            filterData.push(_filter[0]);
-                        }
-                    }
-                }
-            })
+        
+        plot.selectAll('path.point').remove()
+
+
         plot.select('.x_axis')
             .transition()
             .duration(1000)
