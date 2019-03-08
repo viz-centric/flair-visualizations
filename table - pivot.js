@@ -96,10 +96,10 @@ function table() {
         return "";
     }
     var getIconPosition = function (index) {
-        return _measureProp[index]['iconPosition'];
+        return _iconPosition[index];
     }
     var getIconName = function (index) {
-        return _measureProp[index]['iconName'];
+        return _iconName[index];
     }
     var getDisplayName = function (value, isDimension) {
         if (isDimension) {
@@ -501,33 +501,6 @@ function table() {
 
     chart._getName = function () {
         return _NAME;
-    }
-
-    var _mergeForTransition = function (fData, sData) {
-        var secondSet = d3.set();
-
-        sData.forEach(function (d) {
-            secondSet.add(d[_dimension[0]]);
-        });
-
-        var onlyFirst = fData.filter(function (d) {
-            return !secondSet.has(d[_dimension[0]]);
-        })
-            .map(function (d) {
-                var obj = {};
-
-                obj[_dimension[0]] = d[_dimension[0]];
-                obj[_measure[0]] = 0;
-
-                return obj;
-            });
-
-        return d3.merge([sData, onlyFirst])
-            .sort(function (a, b) {
-                return a[_measure[0]] > b[_measure] ? _sort
-                    : a[_measure[0]] < b[_measure] ? -_sort
-                        : 0;
-            })
     }
 
     chart.config = function (value) {

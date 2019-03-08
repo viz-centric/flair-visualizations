@@ -7,9 +7,6 @@ function line() {
         _measure,
         _showLegend,
         _legendPosition,
-        _showValueAs,
-        _valueAsArc,
-        _valuePosition,
         _sort,
         _tooltip,
         _showXaxis,
@@ -21,7 +18,6 @@ function line() {
         _showGrid,
         _stacked,
         _displayName,
-        _measureProp,
         _legendData,
         _showValues,
         _displayNameForMeasure,
@@ -50,9 +46,7 @@ function line() {
         this.measure(config.measure);
         this.showLegend(config.showLegend);
         this.legendPosition(config.legendPosition);
-        this.showValueAs(config.showValueAs);
-        this.valueAsArc(config.valueAsArc);
-        this.valuePosition(config.valuePosition);
+  
         this.showXaxis(config.showXaxis);
         this.showYaxis(config.showYaxis);
         this.showXaxisLabel(config.showXaxisLabel);
@@ -61,7 +55,7 @@ function line() {
         this.xAxisColor(config.xAxisColor);
         this.yAxisColor(config.yAxisColor);
         this.displayName(config.displayName);
-        this.showYaxis(config.showYaxis);
+     
         this.showXaxisLabel(config.showXaxisLabel);
 
         this.showValues(config.showValues);
@@ -759,34 +753,6 @@ function line() {
         return _NAME;
     }
 
-    var _mergeForTransition = function (fData, sData) {
-        var secondSet = d3.set();
-
-        sData.forEach(function (d) {
-            secondSet.add(d[_dimension[0]]);
-        });
-
-        var onlyFirst = fData.filter(function (d) {
-            return !secondSet.has(d[_dimension[0]]);
-        })
-            .map(function (d) {
-                var obj = {};
-
-                obj[_dimension[0]] = d[_dimension[0]];
-                obj[_measure[0]] = 0;
-
-                return obj;
-            });
-
-        return d3.merge([sData, onlyFirst])
-            .sort(function (a, b) {
-                return a[_measure[0]] > b[_measure] ? _sort
-                    : a[_measure[0]] < b[_measure] ? -_sort
-                        : 0;
-            })
-    }
-
-
     chart.config = function (value) {
         if (!arguments.length) {
             return _config;
@@ -828,29 +794,6 @@ function line() {
         return chart;
     }
 
-    chart.showValueAs = function (value) {
-        if (!arguments.length) {
-            return _showValueAs;
-        }
-        _showValueAs = value;
-        return chart;
-    }
-
-    chart.valueAsArc = function (value) {
-        if (!arguments.length) {
-            return _valueAsArc;
-        }
-        _valueAsArc = value;
-        return chart;
-    }
-
-    chart.valuePosition = function (value) {
-        if (!arguments.length) {
-            return _valuePosition;
-        }
-        _valuePosition = value;
-        return chart;
-    }
 
     chart.sort = function (value) {
         if (!arguments.length) {
@@ -859,15 +802,6 @@ function line() {
         _sort = value;
         return chart;
     }
-
-    chart.filterData = function (value) {
-        if (!arguments.length) {
-            return filterData;
-        }
-        filterData = value;
-        return chart;
-    }
-
 
     chart.tooltip = function (value) {
         if (!arguments.length) {
@@ -949,27 +883,12 @@ function line() {
         return chart;
     }
 
-    chart.forEachMeasure = function (value) {
-        if (!arguments.length) {
-            return _measureProp;
-        }
-        _measureProp = value;
-        return chart;
-    }
-
     chart.legendData = function (measureConfig, measureName) {
         _legendData = {
             measureConfig: measureConfig,
             measureName: measureName
         }
         return _legendData;
-    }
-    chart.Local_data = function () {
-        if (!arguments.length) {
-            return _Local_data;
-        }
-        _Local_data = value;
-        return chart;
     }
 
     chart.showValues = function (value) {

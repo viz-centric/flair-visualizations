@@ -52,42 +52,24 @@ function legend() {
                 me._legendInteraction('mouseout', data.measureName[i]);
             })
             .on('click', function (d, i) {
-                d3.select(this).attr('')
-                if (labelStack.indexOf(data.measureName[i]) == -1) {
-                    labelStack.push(data.measureName[i]);
-                } else {
-                    labelStack.splice(labelStack.indexOf(data.measureName[i]), 1);
-                }
+                var k = d3.select(this.parentNode)
+                d3.select(k.node().parentNode).select('.plot').remove();
 
-                var o = parseInt(d3.select(this).select('rect').style('fill-opacity'));
+                var rect = d3.select(this).select('rect'),
+                    o = parseInt(rect.style('fill-opacity'));
+
                 if (!o) {
                     d3.select(this).select('rect')
                         .style('fill-opacity', 1)
                         .style('stroke-width', 0);
+
                 } else {
                     d3.select(this).select('rect')
                         .style('fill-opacity', .5)
                         .style('stroke-width', 2);
                 }
-                var _filter = []
-                me._Local_data.map(function (val) {
-                    var obj = new Object();
-                    var key = Object.keys(val)
-                    for (var index = 0; index < key.length; index++) {
-                        if (labelStack.indexOf(key[index]) == -1) {
-                            obj[key[index]] = val[key[index]]
-                        }
-                    }
-                    _filter.push(obj)
 
-                });
-
-                var k = d3.select(this.parentNode)
-                d3.select(k.node().parentNode).select('.plot').remove();
-
-                me.drawPlot.call(me, _filter);
-
-
+                me._legendInteraction('click', data.measureName[i]);
             });
 
         legendItem.append('rect')

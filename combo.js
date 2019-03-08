@@ -7,9 +7,6 @@ function combo() {
         _measure,
         _showLegend,
         _legendPosition,
-        _showValueAs,
-        _valueAsArc,
-        _valuePosition,
         _sort,
         _tooltip,
         _showXaxis,
@@ -21,7 +18,6 @@ function combo() {
         _showGrid,
         _stacked,
         _displayName,
-        _measureProp,
         _legendData,
         _comboChartType,
         _showValues,
@@ -53,9 +49,7 @@ function combo() {
         this.measure(config.measure);
         this.showLegend(config.showLegend);
         this.legendPosition(config.legendPosition);
-        this.showValueAs(config.showValueAs);
-        this.valueAsArc(config.valueAsArc);
-        this.valuePosition(config.valuePosition);
+     
         this.showXaxis(config.showXaxis);
         this.showYaxis(config.showYaxis);
         this.showXaxisLabel(config.showXaxisLabel);
@@ -812,7 +806,7 @@ function combo() {
                 return x0(d['data'][_dimension[0]]) + x0.bandwidth() / 2;
             })
             .y(function (d, i) {
-                return y(d['data'][d.tag[0].tag]);
+                return y(d['data'][d.tag[0].tag])!=undefined?y(d['data'][d.tag[0].tag]):y(d.tag[0].tag[0].tag);
             });
 
         var area = plot.selectAll('path.area')
@@ -936,43 +930,11 @@ function combo() {
         return chart;
     }
 
-    chart.showValueAs = function (value) {
-        if (!arguments.length) {
-            return _showValueAs;
-        }
-        _showValueAs = value;
-        return chart;
-    }
-
-    chart.valueAsArc = function (value) {
-        if (!arguments.length) {
-            return _valueAsArc;
-        }
-        _valueAsArc = value;
-        return chart;
-    }
-
-    chart.valuePosition = function (value) {
-        if (!arguments.length) {
-            return _valuePosition;
-        }
-        _valuePosition = value;
-        return chart;
-    }
-
     chart.sort = function (value) {
         if (!arguments.length) {
             return _sort;
         }
         _sort = value;
-        return chart;
-    }
-
-    chart.filterData = function (value) {
-        if (!arguments.length) {
-            return filterData;
-        }
-        filterData = value;
         return chart;
     }
 
@@ -1056,28 +1018,12 @@ function combo() {
         return chart;
     }
 
-    chart.forEachMeasure = function (value) {
-        if (!arguments.length) {
-            return _measureProp;
-        }
-        _measureProp = value;
-        return chart;
-    }
-
     chart.legendData = function (measureConfig, measureName) {
         _legendData = {
             measureConfig: measureConfig,
             measureName: measureName
         }
         return _legendData;
-    }
-
-    chart.Local_data = function () {
-        if (!arguments.length) {
-            return _Local_data;
-        }
-        _Local_data = value;
-        return chart;
     }
 
     chart.showValues = function (value) {

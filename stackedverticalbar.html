@@ -20,40 +20,39 @@
 </head>
 
 <body>
-<div>
-    <div id="header" style="position: relative; border: 1px solid #999; width: 800">
-        <div class="row">
-            <div class="col-md-10">
-                <p>Clustered Vertical Bar Charts </p>
-            </div>
-            <div class="col-md-2">
-                <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox myonoffswitch"
-                        id="myonoffswitch" checked>
-                    <label class="onoffswitch-label" for="myonoffswitch">
-                        <span class="onoffswitch-inner"></span>
-                        <span class="onoffswitch-switch"></span>
-                    </label>
+    <div>
+        <div id="header" style="position: relative; border: 1px solid #999; width: 800">
+            <div class="row">
+                <div class="col-md-10">
+                    <p>Clustered Vertical Bar Charts </p>
+                </div>
+                <div class="col-md-2">
+                    <div class="onoffswitch">
+                        <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox myonoffswitch"
+                            id="myonoffswitch" checked>
+                        <label class="onoffswitch-label" for="myonoffswitch">
+                            <span class="onoffswitch-inner"></span>
+                            <span class="onoffswitch-switch"></span>
+                        </label>
+                    </div>
                 </div>
             </div>
-        </div>
 
-    </div>
-    <div style="position: relative; border: 1px solid #999; width: 800;height: 600;" height="540">
-        <svg id="donut" />
-        <div id="tooltip"></div>
-
-        <div class="confirm" style="visibility: hidden;">
-            <button class="btn btn-filters btn-primary">
-                <i class="fa fa-check"></i>
-            </button>
-            <button class="btn btn-filters btn-default">
-                <i class="fa fa-times"></i>
-            </button>
+        </div>
+        <div style="position: relative; border: 1px solid #999; width: 800;height: 600;" height="540">
+            <svg id="donut" />
+            <div id="tooltip"></div>
+            <div class="confirm" style="visibility: hidden;">
+                <button class="btn btn-filters btn-primary">
+                    <i class="fa fa-check"></i>
+                </button>
+                <button class="btn btn-filters btn-default">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
         </div>
     </div>
-</div>
-   
+
     <script type="text/javascript">
         /* Global variable accessible from anywhere */
         var COMMON = common(),

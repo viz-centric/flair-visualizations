@@ -1,11 +1,11 @@
 function util() {
 
-    var _verifyPrecision = function (precision) {
+    var privateMethods = function (precision) {
         if (precision < 0 || precision > 20) {
-            throw new RangeError('Formatter precision must be between 0 and 20');
+            throw new RangeError("Formatter precision must be between 0 and 20");
         }
         if (precision !== Math.floor(precision)) {
-            throw new RangeError('Formatter precision must be an integer');
+            throw new RangeError("Formatter precision must be an integer");
         }
     }
 
@@ -384,45 +384,45 @@ function util() {
         },
 
         toggleSortSelection: function (scope, sortType, callback, _local_svg, _measure, _Local_data) {
+
             var _onRadioButtonClick = function (event) {
                 $(this).closest('.sort_selection').parent().find('.plot').remove();
                 callback.call(scope, UTIL.sortData(_Local_data, event.data.measure, sortType));
             }
 
-            return function (d, i) {
-                d3.event.stopPropagation();
-                var div = _local_svg.node().parentNode
-                var sortWindow = d3.select(div).select('.sort_selection')
-                    .style('visibility', 'visible');
+            d3.event.stopPropagation();
+            var div = _local_svg.node().parentNode
+            var sortWindow = d3.select(div).select('.sort_selection')
+                .style('visibility', 'visible');
 
-                sortWindow.selectAll('div').remove();
+            sortWindow.selectAll('div').remove();
 
-                var downArrow = d3.select(div).select('.arrow-down')
-                    .style('visibility', 'visible');
+            var downArrow = d3.select(div).select('.arrow-down')
+                .style('visibility', 'visible');
 
-                var options,
-                    selected;
+            var options,
+                selected;
 
-                for (var i = 0; i < _measure.length; i++) {
-                    var _divRadio = $('<div></div>').addClass('radio');
-                    options = '<label><input type="radio" '
-                        + (selected == _measure[i] ? 'checked' : '')
-                        + ' name="optradio">'
-                        + _measure[i]
-                        + '</label>';
+            for (var i = 0; i < _measure.length; i++) {
+                var _divRadio = $('<div></div>').addClass('radio');
+                options = '<label><input type="radio" '
+                    + (selected == _measure[i] ? 'checked' : '')
+                    + ' name="optradio">'
+                    + _measure[i]
+                    + '</label>';
 
-                    _divRadio.append(options);
-                    $(sortWindow.node()).append(_divRadio);
+                _divRadio.append(options);
+                $(sortWindow.node()).append(_divRadio);
 
-                    _divRadio.find('input').click({
-                        data: _Local_data,
-                        measure: _measure[i]
-                    }, _onRadioButtonClick);
-                }
-
-                UTIL.positionDownArrow(div, downArrow.node(), sortType);
-                UTIL.positionSortSelection(div, sortWindow.node());
+                _divRadio.find('input').click({
+                    data: _Local_data,
+                    measure: _measure[i]
+                }, _onRadioButtonClick);
             }
+
+            UTIL.positionDownArrow(div, downArrow.node(), sortType);
+            UTIL.positionSortSelection(div, sortWindow.node());
+
         },
 
         getValueNumberFormat: function (index, _measureProp) {
@@ -507,8 +507,8 @@ function util() {
 
             return config;
         },
-        roundNumber: function(num, scale) {
-            if(typeof(scale) == 'undefined') {
+        roundNumber: function (num, scale) {
+            if (typeof (scale) == 'undefined') {
                 throw new Error('Scale is not specified');
             }
 
@@ -517,24 +517,24 @@ function util() {
 
             return +(Math.round(num + exp1) + exp2);
         },
-        expressionEvaluator: function(expression, value, key) {
-            var result = expression.filter(function(t) {
-                    return t.hasOwnProperty('default');
-                });
+        expressionEvaluator: function (expression, value, key) {
+            var result = expression.filter(function (t) {
+                return t.hasOwnProperty('default');
+            });
 
-            if(result.length) {
+            if (result.length) {
                 result = result[0][key];
             }
 
-            for(var i=0; i<expression.length; i++) {
+            for (var i = 0; i < expression.length; i++) {
                 var property = expression[i];
-                if(property.hasOwnProperty('upto')) {
-                    if(value <= property.upto) {
+                if (property.hasOwnProperty('upto')) {
+                    if (value <= property.upto) {
                         result = property[key];
                         break;
                     }
-                } else if(property.hasOwnProperty('above')) {
-                    if(value > property.above) {
+                } else if (property.hasOwnProperty('above')) {
+                    if (value > property.above) {
                         result = property[key];
                         break;
                     }
@@ -542,20 +542,81 @@ function util() {
             }
 
             return result;
+        },
+
+        getFilterData: function (labelStack,filterParameter,data) {
+            if (labelStack.indexOf(filterParameter) == -1) {
+                labelStack.push(filterParameter);
+            } else {
+                labelStack.splice(labelStack.indexOf(filterParameter), 1);
+            }
+
+            var _filter = []
+            data.map(function (val) {
+                var obj = new Object();
+                var key = Object.keys(val)
+                for (var index = 0; index < key.length; index++) {
+                    if (labelStack.indexOf(key[index]) == -1) {
+                        obj[key[index]] = val[key[index]]
+                    }
+                }
+                _filter.push(obj);
+            });
+            return _filter;
+        },
+
+        sortingView: function (container, parentHeight, parentWidth, legendBreakCount, axisLabelSpace, offsetX) {
+
+            var sortButton = container.append('g')
+                .attr('class', 'sort')
+                .attr('transform', function () {
+                    return 'translate(0, ' + parseInt((parentHeight - 2 * COMMON.PADDING + 20 + (legendBreakCount * 20))) + ')';
+                })
+
+            var ascendingSort = sortButton.append('svg:text')
+                .attr('fill', '#afafaf')
+                .attr('class', 'ascending')
+                .attr('cursor', 'pointer')
+                .style('font-family', 'FontAwesome')
+                .style('font-size', 12)
+                .attr('transform', function () {
+                    return 'translate(' + (parentWidth - 3 * offsetX) + ', ' + 2 * axisLabelSpace + ')';
+                })
+                .style('text-anchor', 'end')
+                .text(function () {
+                    return "\uf161";
+                })
+
+            var descendingSort = sortButton.append('svg:text')
+                .attr('fill', '#afafaf')
+                .attr('class', 'descending')
+                .attr('cursor', 'pointer')
+                .style('font-family', 'FontAwesome')
+                .style('font-size', 12)
+                .attr('transform', function () {
+                    return 'translate(' + (parentWidth - 1.5 * offsetX) + ', ' + 2 * axisLabelSpace + ')';
+                })
+                .style('text-anchor', 'end')
+                .text(function () {
+                    return "\uf160";
+                })
+
+            var resetSort = sortButton.append('svg:text')
+                .attr('fill', '#afafaf')
+                .attr('class', 'reset')
+                .attr('cursor', 'pointer')
+                .style('font-family', 'FontAwesome')
+                .style('font-size', 12)
+                .attr('transform', function () {
+                    return 'translate(' + parentWidth + ', ' + 2 * axisLabelSpace + ')';
+                })
+                .style('text-anchor', 'end')
+                .text(function () {
+                    return "\uf0c9";
+                })
         }
 
     }
-
-    var privateMethods = function (precision) {
-        if (precision < 0 || precision > 20) {
-            throw new RangeError("Formatter precision must be between 0 and 20");
-        }
-        if (precision !== Math.floor(precision)) {
-            throw new RangeError("Formatter precision must be an integer");
-        }
-    }
-
-
 
     return publicMethods;
 

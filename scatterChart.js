@@ -7,9 +7,6 @@ function scatter() {
         _measure,
         _showLegend,
         _legendPosition,
-        _showValueAs,
-        _valueAsArc,
-        _valuePosition,
         _sort,
         _tooltip,
         _showXaxis,
@@ -21,7 +18,6 @@ function scatter() {
         _showGrid,
         _stacked,
         _displayName,
-        _measureProp,
         _legendData,
 
         _showValues,
@@ -48,9 +44,7 @@ function scatter() {
         this.measure(config.measure);
         this.showLegend(config.showLegend);
         this.legendPosition(config.legendPosition);
-        this.showValueAs(config.showValueAs);
-        this.valueAsArc(config.valueAsArc);
-        this.valuePosition(config.valuePosition);
+     
         this.showXaxis(config.showXaxis);
         this.showYaxis(config.showYaxis);
         this.showXaxisLabel(config.showXaxisLabel);
@@ -353,9 +347,9 @@ function scatter() {
                 })
 
                 .style('fill-opacity', .5)
-                .on('mouseover', _handleMouseOverFn.call(chart, tooltip, svg, _measureProp))
-                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg, _measureProp))
-                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg, _measureProp));
+                .on('mouseover', _handleMouseOverFn.call(chart, tooltip, svg))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg));
 
             var legendWidth = 0,
                 legendHeight = 0,
@@ -495,7 +489,7 @@ function scatter() {
                 return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat));
             })
             .attr("y", function (d, i) {
-                return y(d[d.measure]) - _measureProp[i]['fontSize'];
+                return y(d[d.measure]) - _fontSize[i];
             })
             .attr("x", function (d) {
                 return x1(d.measure);
@@ -508,19 +502,19 @@ function scatter() {
             })
             .style('text-anchor', 'middle')
             .attr('visibility', function (d, i) {
-                return UTIL.getVisibility(_measureProp[i]["showValues"]);
+                return UTIL.getVisibility(_showValues[i]);
             })
             .style('font-style', function (d, i) {
-                return _measureProp[i]["fontStyle"];
+                return _fontStyle[i];
             })
             .style('font-weight', function (d, i) {
-                return _measureProp[i]["fontWeight"];
+                return _fontWeight[i];
             })
             .style('font-size', function (d, i) {
-                return _measureProp[i]['fontSize'] + 'px';
+                return _fontSize[i]+ 'px';
             })
             .style('fill', function (d, i) {
-                return _measureProp[i]["textColor"];
+                return _textColor[i];
             });
     }
 
@@ -565,30 +559,6 @@ function scatter() {
         return chart;
     }
 
-    chart.showValueAs = function (value) {
-        if (!arguments.length) {
-            return _showValueAs;
-        }
-        _showValueAs = value;
-        return chart;
-    }
-
-    chart.valueAsArc = function (value) {
-        if (!arguments.length) {
-            return _valueAsArc;
-        }
-        _valueAsArc = value;
-        return chart;
-    }
-
-    chart.valuePosition = function (value) {
-        if (!arguments.length) {
-            return _valuePosition;
-        }
-        _valuePosition = value;
-        return chart;
-    }
-
     chart.sort = function (value) {
         if (!arguments.length) {
             return _sort;
@@ -596,15 +566,6 @@ function scatter() {
         _sort = value;
         return chart;
     }
-
-    chart.filterData = function (value) {
-        if (!arguments.length) {
-            return filterData;
-        }
-        filterData = value;
-        return chart;
-    }
-
 
     chart.tooltip = function (value) {
         if (!arguments.length) {
@@ -686,14 +647,6 @@ function scatter() {
         return chart;
     }
 
-    chart.forEachMeasure = function (value) {
-        if (!arguments.length) {
-            return _measureProp;
-        }
-        _measureProp = value;
-        return chart;
-    }
-
     chart.legendData = function (measureConfig, measureName) {
         _legendData = {
             measureConfig: measureConfig,
@@ -701,14 +654,7 @@ function scatter() {
         }
         return _legendData;
     }
-    chart.Local_data = function () {
-        if (!arguments.length) {
-            return _Local_data;
-        }
-        _Local_data = value;
-        return chart;
-    }
-
+  
     chart.showValues = function (value) {
         if (!arguments.length) {
             return _showValues;

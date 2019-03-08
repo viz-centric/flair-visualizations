@@ -760,15 +760,6 @@ function pie() {
         return chart;
     }
 
-    chart.filterData = function (value) {
-        if (!arguments.length) {
-            return filterData;
-        }
-        filterData = value;
-        return chart;
-    }
-
-
     chart.tooltip = function (value) {
         if (!arguments.length) {
             return _tooltip;
