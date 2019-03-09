@@ -2,33 +2,34 @@ function table() {
 
     var _NAME = 'table';
 
-    var _config,
-        _dimension,
-        _displayNameForDimension,
-        _cellColorForDimension,
-        _fontStyleForDimension,
-        _fontWeightForDimension,
-        _fontSizeForDimension,
-        _textColorForDimension,
-        _textColorExpressionForDimension,
-        _textAlignmentForDimension,
+    var _config = [],
+        _dimension = [],
+        _displayNameForDimension = [],
+        _cellColorForDimension = [],
+        _fontStyleForDimension = [],
+        _fontWeightForDimension = [],
+        _fontSizeForDimension = [],
+        _textColorForDimension = [],
+        _textColorExpressionForDimension = [],
+        _textAlignmentForDimension = [],
+        _measure = [],
+        _displayNameForMeasure = [],
+        _cellColorForMeasure = [],
+        _cellColorExpressionForMeasure = [],
+        _fontStyleForMeasure = [],
+        _fontSizeForMeasure = [],
+        _numberFormatForMeasure = [],
+        _textColorForMeasure = [],
+        _textAlignmentForMeasure = [],
+        _textColorExpressionForMeasure = [],
+        _iconNameForMeasure = [],
+        _iconPositionForMeasure = [],
+        _iconExpressionForMeasure = [],
+        _iconFontWeight = [],
+        _iconColor = [],
+        _fontWeightForMeasure = [];
 
-        _measure,
-        _displayNameForMeasure,
-        _cellColorForMeasure,
-        _cellColorExpressionForMeasure,
-        _fontStyleForMeasure,
-        _fontSizeForMeasure,
-        _numberFormatForMeasure,
-        _textColorForMeasure,
-        _textAlignmentForMeasure,
-        _textColorExpressionForMeasure,
-        _iconNameForMeasure,
-        _iconPositionForMeasure,
-        _iconExpressionForMeasure,
-        _fontWeightForMeasure;
-
-    var _localData;
+    var _localData, filterData = [];
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
@@ -54,13 +55,80 @@ function table() {
         this.iconPositionForMeasure(config.iconPositionForMeasure);
         this.iconExpressionForMeasure(config.iconExpressionForMeasure);
         this.fontWeightForMeasure(config.fontWeightForMeasure);
+
+        this.iconFontWeight(config.iconFontWeight);
+        this.iconColor(config.iconColor);
     }
 
-    var getIcon = function (index) {
-        if (getIconName(index) !== "") {
-            return '<span style="display:block; text-align:' + getIconPosition(index) + ';"><i class="' + getIconName(index) + '" aria-hidden="true"></i></span>';
+    var _baseAccessor = function (value, measure) {
+        var me = this;
+
+        if (!arguments.length) {
+            /**
+             * Getter method call with no arguments
+             * E.g. <chart>.<accessor_function>() ==> [<item1>, <item2>]
+             */
+            return me;
         }
 
+        if (value instanceof Array && measure == void 0) {
+            /**
+             * Setter method call with only value argument
+             * E.g. <chart>.<accessor_function>([<item1>, <item2>]) ==> <chart_function>
+             */
+            me.splice(0, me.length);
+            me.push.apply(me, value);
+            return chart;
+        }
+
+        var index = _measure.indexOf(measure);
+
+        if (index === -1) {
+            throw new Error('Invalid measure provided');
+        }
+
+        if (value == void 0) {
+            /**
+             * Getter method call with only measure argument
+             * E.g. <chart>.<accessor_function>(<measure>) ==> <item>
+             */
+            return me[index];
+        } else {
+            /**
+             * Setter method call with both value and measure arguments
+             * E.g. <chart>.<accessor_function>(<item>, <measure>) ==> <chart_function>
+             */
+            me[index] = value;
+        }
+
+        return chart;
+    }
+
+    var getIcon = function (index, endValue) {
+        var iconOutput = "";
+
+        var iconStyle = {
+            'font-weight': _iconFontWeight[index] || COMMON.DEFAULT_FONTWEIGHT,
+            'color': _iconColor[index] || COMMON.DEFAULT_COLOR,
+            'font-size': _fontSizeForMeasure[index] || COMMON.DEFAULT_FONTSIZE,
+            'text-align': getIconPosition(index)
+        };
+
+        if (_iconExpressionForMeasure[index].length) {
+            _iconNameForMeasure[index] = UTIL.expressionEvaluator(_iconExpressionForMeasure[index], endValue, 'icon');
+            iconStyle['color'] = UTIL.expressionEvaluator(_iconExpressionForMeasure[index], endValue, 'color');
+        }
+
+        iconStyle = JSON.stringify(iconStyle);
+        iconStyle = iconStyle.replace(/["{}]/g, '').replace(/,/g, ';');
+
+        iconOutput += "<i  class=\"" + _iconNameForMeasure[index] + "\" style=\"" + iconStyle + "\" aria-hidden=\"true\"></i>";
+
+
+
+        if (getIconName(index) !== "") {
+            return iconOutput;
+        }
         return "";
     }
     var getIconPosition = function (index) {
@@ -69,21 +137,48 @@ function table() {
     var getIconName = function (index) {
         return _iconNameForMeasure[index];
     }
-    chart.readerTableChart = function (str, _local_svg,  key) {
-        var d = _localData.filter(function (val) {
-            if (val[key] === str) {
-                return val;
-            }
-        });
-        d3.select('#donut')
-        .datum(d)
-        .call(chart);
+    var applyFilter = function () {
+        return function () {
+            var d = _localData.filter(function (val) {
+                for (var index = 0; index < filterData.length; index++) {
+                    if (val[filterData[index].key] == filterData[index].value) {
+                        return val;
+                    }
+                }
 
+            });
+            d3.select('#donut')
+                .datum(d)
+                .call(chart);
 
+            _local_svg.html('')
 
-        _local_svg.html('')
+            chart(_local_svg)
+        }
+    }
+    var clearFilter = function () {
+        return function () {
+            d3.select('#donut')
+                .datum(_localData)
+                .call(chart);
 
-        chart(_local_svg)
+            _local_svg.html('')
+
+            chart(_local_svg)
+        }
+    }
+    chart.readerTableChart = function (str, ctr, _local_svg, key) {
+        var confirm = d3.select('.confirm')
+            .style('visibility', 'visible');
+        var searchObj = filterData.find(o => o[key] === str);
+        if (searchObj == undefined) {
+            var obj = Object();
+            obj.key = key;
+            obj.value = str;
+            filterData.push(obj);
+        }
+        $(ctr).toggleClass('selected')
+
     }
     function chart(selection) {
         _local_svg = selection;
@@ -161,10 +256,11 @@ function table() {
                         'font-size': _fontSizeForDimension[index],
                         'color': _textColorForDimension[index]
                     };
+                    style['color'] = UTIL.expressionEvaluator(_textColorExpressionForDimension[index], d[_dimension[index]], 'color');
 
                     style = JSON.stringify(style);
                     style = style.replace(/","/g, ';').replace(/["{}]/g, '');
-                    tbody += "<td onClick=\"chart.readerTableChart('" + d[_dimension[index]] + "',_local_svg,'" + item + "')\" style=\"" + style + "\">" + d[_dimension[index]] + "</td>";
+                    tbody += "<td onClick=\"chart.readerTableChart('" + d[_dimension[index]] + "',this,_local_svg,'" + item + "')\" style=\"" + style + "\">" + d[_dimension[index]] + "</td>";
                 });
 
                 _measure.forEach(function (item, index) {
@@ -176,10 +272,11 @@ function table() {
                         'font-size': _fontSizeForMeasure[index],
                         'color': _textColorForMeasure[index]
                     };
-
+                    style['color'] = UTIL.expressionEvaluator(_textColorExpressionForMeasure[index], d[_measure[index]], 'color');
+                    style['background-color'] = UTIL.expressionEvaluator(_cellColorExpressionForMeasure[index], d[_measure[index]], 'color');
                     style = JSON.stringify(style);
                     style = style.replace(/","/g, ';').replace(/["{}]/g, '');
-                    tbody += "<td onClick=\"chart.readerTableChart('" + d[_dimension[index]] + "',_local_svg,'" + item + "')\" style=\"" + style + "\">" + getIcon(index) + UTIL.getFormattedValue(d[_measure[index]], UTIL.getValueNumberFormat(index, _numberFormatForMeasure)) + "</td>";
+                    tbody += "<td onClick=\"chart.readerTableChart('" + d[_measure[index]] + "',this,_local_svg,'" + item + "')\" style=\"" + style + "\">" + getIcon(index, d[_measure[index]]) + UTIL.getFormattedValue(d[_measure[index]], UTIL.getValueNumberFormat(index, _numberFormatForMeasure)) + "</td>";
                 });
                 tbody += "</tr>";
             });
@@ -208,6 +305,12 @@ function table() {
                     }
                 }
             });
+
+            d3.select('.btn-primary')
+                .on('click', applyFilter());
+
+            d3.select('.btn-default')
+                .on('click', clearFilter());
         }
 
         );
@@ -269,173 +372,199 @@ function table() {
         return chart;
     }
 
-    chart.displayNameForDimension = function (value) {
-        if (!arguments.length) {
-            return _displayNameForDimension;
-        }
-        _displayNameForDimension = value;
-        return chart;
+    chart.displayNameForDimension = function (value, measure) {
+        return _baseAccessor.call(_displayNameForDimension, value, measure);
     }
 
-    chart.cellColorForDimension = function (value) {
-        if (!arguments.length) {
-            return _cellColorForDimension;
-        }
-        _cellColorForDimension = value;
-        return chart;
+    chart.cellColorForDimension = function (value, measure) {
+        return _baseAccessor.call(_cellColorForDimension, value, measure);;
     }
 
-    chart.fontStyleForDimension = function (value) {
-        if (!arguments.length) {
-            return _fontStyleForDimension;
-        }
-        _fontStyleForDimension = value;
-        return chart;
+    chart.fontStyleForDimension = function (value, measure) {
+        return _baseAccessor.call(_fontStyleForDimension, value, measure);
     }
 
-    chart.fontWeightForDimension = function (value) {
-        if (!arguments.length) {
-            return _fontWeightForDimension;
-        }
-        _fontWeightForDimension = value;
-        return chart;
+    chart.fontWeightForDimension = function (value, measure) {
+        return _baseAccessor.call(_fontWeightForDimension, value, measure);
     }
 
-    chart.fontSizeForDimension = function (value) {
-        if (!arguments.length) {
-            return _fontSizeForDimension;
-        }
-        _fontSizeForDimension = value;
-        return chart;
+    chart.fontSizeForDimension = function (value, measure) {
+        return _baseAccessor.call(_fontSizeForDimension, value, measure);
     }
 
-    chart.textColorForDimension = function (value) {
-        if (!arguments.length) {
-            return _textColorForDimension;
-        }
-        _textColorForDimension = value;
-        return chart;
+    chart.textColorForDimension = function (value, measure) {
+        return _baseAccessor.call(_textColorForDimension, value, measure);
     }
 
-    chart.textColorExpressionForDimension = function (value) {
+    chart.textColorExpressionForDimension = function (value, measure) {
         if (!arguments.length) {
             return _textColorExpressionForDimension;
         }
-        _textColorExpressionForDimension = value;
-        return chart;
-    }
 
-    chart.textAlignmentForDimension = function (value) {
-        if (!arguments.length) {
-            return _textAlignmentForDimension;
+        if (value instanceof Array && measure == void 0) {
+            _textColorExpressionForDimension = value.map(function (v) {
+                return UTIL.getExpressionConfig(v, ['color']);
+            });
+            return chart;
         }
-        _textAlignmentForDimension = value;
-        return chart;
-    }
 
-    chart.displayNameForMeasure = function (value) {
-        if (!arguments.length) {
-            return _displayNameForMeasure;
+        var index = _measure.indexOf(measure);
+
+        if (index === -1) {
+            throw new Error('Invalid measure provided');
         }
-        _displayNameForMeasure = value;
-        return chart;
-    }
 
-    chart.cellColorForMeasure = function (value) {
-        if (!arguments.length) {
-            return _cellColorForMeasure;
+        if (value == void 0) {
+            return _textColorExpressionForDimension[index];
+        } else {
+            _textColorExpressionForDimension[index] = UTIL.getExpressionConfig(value, ['color']);
         }
-        _cellColorForMeasure = value;
-        return chart;
     }
 
-    chart.cellColorExpressionForMeasure = function (value) {
+    chart.textAlignmentForDimension = function (value, measure) {
+        return _baseAccessor.call(_textAlignmentForDimension, value, measure);
+    }
+
+    chart.displayNameForMeasure = function (value, measure) {
+        return _baseAccessor.call(_displayNameForMeasure, value, measure);
+    }
+
+    chart.cellColorForMeasure = function (value, measure) {
+        return _baseAccessor.call(_cellColorForMeasure, value, measure);
+    }
+
+    chart.cellColorExpressionForMeasure = function (value, measure) {
         if (!arguments.length) {
             return _cellColorExpressionForMeasure;
         }
-        _cellColorExpressionForMeasure = value;
-        return chart;
-    }
 
-    chart.fontStyleForMeasure = function (value) {
-        if (!arguments.length) {
-            return _fontStyleForMeasure;
+        if (value instanceof Array && measure == void 0) {
+            _cellColorExpressionForMeasure = value.map(function (v) {
+                return UTIL.getExpressionConfig(v, ['color']);
+            });
+            return chart;
         }
-        _fontStyleForMeasure = value;
-        return chart;
-    }
 
-    chart.fontSizeForMeasure = function (value) {
-        if (!arguments.length) {
-            return _fontSizeForMeasure;
+        var index = _measure.indexOf(measure);
+
+        if (index === -1) {
+            throw new Error('Invalid measure provided');
         }
-        _fontSizeForMeasure = value;
-        return chart;
-    }
 
-    chart.numberFormatForMeasure = function (value) {
-        if (!arguments.length) {
-            return _numberFormatForMeasure;
+        if (value == void 0) {
+            return _cellColorExpressionForMeasure[index];
+        } else {
+            _cellColorExpressionForMeasure[index] = UTIL.getExpressionConfig(value, ['color']);
         }
-        _numberFormatForMeasure = value;
-        return chart;
     }
 
-    chart.textColorForMeasure = function (value) {
-        if (!arguments.length) {
-            return _textColorForMeasure;
-        }
-        _textColorForMeasure = value;
-        return chart;
+    chart.fontStyleForMeasure = function (value, measure) {
+        return _baseAccessor.call(_fontStyleForMeasure, value, measure);
     }
 
-    chart.textAlignmentForMeasure = function (value) {
-        if (!arguments.length) {
-            return _textAlignmentForMeasure;
-        }
-        _textAlignmentForMeasure = value;
-        return chart;
+    chart.fontSizeForMeasure = function (value, measure) {
+        return _baseAccessor.call(_fontSizeForMeasure, value, measure);
     }
 
-    chart.textColorExpressionForMeasure = function (value) {
+    chart.numberFormatForMeasure = function (value, measure) {
+        return _baseAccessor.call(_numberFormatForMeasure, value, measure);
+    }
+
+    chart.textColorForMeasure = function (value, measure) {
+        return _baseAccessor.call(_textColorForMeasure, value, measure);
+    }
+
+    chart.textAlignmentForMeasure = function (value, measure) {
+        return _baseAccessor.call(_textAlignmentForMeasure, value, measure);
+    }
+
+    chart.textColorExpressionForMeasure = function (value, measure) {
         if (!arguments.length) {
             return _textColorExpressionForMeasure;
         }
-        _textColorExpressionForMeasure = value;
-        return chart;
-    }
 
-    chart.iconNameForMeasure = function (value) {
-        if (!arguments.length) {
-            return _iconNameForMeasure;
+        if (value instanceof Array && measure == void 0) {
+            _textColorExpressionForMeasure = value.map(function (v) {
+                return UTIL.getExpressionConfig(v, ['color']);
+            });
+            return chart;
         }
-        _iconNameForMeasure = value;
-        return chart;
-    }
 
-    chart.iconPositionForMeasure = function (value) {
-        if (!arguments.length) {
-            return _iconPositionForMeasure;
+        var index = _measure.indexOf(measure);
+
+        if (index === -1) {
+            throw new Error('Invalid measure provided');
         }
-        _iconPositionForMeasure = value;
-        return chart;
+
+        if (value == void 0) {
+            return _textColorExpressionForMeasure[index];
+        } else {
+            _textColorExpressionForMeasure[index] = UTIL.getExpressionConfig(value, ['color']);
+        }
     }
 
-    chart.iconExpressionForMeasure = function (value) {
+    chart.iconNameForMeasure = function (value, measure) {
+        return _baseAccessor.call(_iconNameForMeasure, value, measure);
+    }
+
+    chart.iconPositionForMeasure = function (value, measure) {
+        return _baseAccessor.call(_iconPositionForMeasure, value, measure);
+    }
+
+    chart.iconExpressionForMeasure = function (value, measure) {
         if (!arguments.length) {
+            /**
+             * Getter method call with no arguments
+             * E.g. <chart>.kpiIconExpression() ==> [<item1>, <item2>]
+             */
             return _iconExpressionForMeasure;
         }
-        _iconExpressionForMeasure = value;
-        return chart;
-    }
 
-    chart.fontWeightForMeasure = function (value) {
-        if (!arguments.length) {
-            return _fontWeightForMeasure;
+        if (value instanceof Array && measure == void 0) {
+            /**
+             * Setter method call with only value argument
+             * E.g. <chart>.kpiIconExpression([<item1>, <item2>]) ==> <chart_function>
+             */
+            _iconExpressionForMeasure = value.map(function (v) {
+                return UTIL.getExpressionConfig(v, ['icon', 'color']);
+            });
+            return chart;
         }
-        _fontWeightForMeasure = value;
+
+        var index = _measure.indexOf(measure);
+
+        if (index === -1) {
+            throw new Error('Invalid measure provided');
+        }
+
+        if (value == void 0) {
+            /**
+             * Getter method call with only measure argument
+             * E.g. <chart>.kpiIconExpression(<measure>) ==> <item>
+             */
+            return _iconExpressionForMeasure[index];
+        } else {
+            /**
+             * Setter method call with both value and measure arguments
+             * E.g. <chart>.kpiIconExpression(<item>, <measure>) ==> <chart_function>
+             */
+            _iconExpressionForMeasure[index] = UTIL.getExpressionConfig(value, ['icon', 'color']);
+        }
+
         return chart;
     }
 
+    chart.fontWeightForMeasure = function (value, measure) {
+        return _baseAccessor.call(_fontWeightForMeasure, value, measure);
+    }
+
+    chart.iconFontWeight = function (value, measure) {
+        return _baseAccessor.call(_iconFontWeight, value, measure);
+    }
+
+
+    chart.iconColor = function (value, measure) {
+        return _baseAccessor.call(_iconColor, value, measure);
+    }
     return chart;
 }
