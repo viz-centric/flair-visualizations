@@ -544,7 +544,7 @@ function util() {
             return result;
         },
 
-        getFilterData: function (labelStack,filterParameter,data) {
+        getFilterData: function (labelStack, filterParameter, data) {
             if (labelStack.indexOf(filterParameter) == -1) {
                 labelStack.push(filterParameter);
             } else {
@@ -614,8 +614,7 @@ function util() {
                 .text(function () {
                     return "\uf0c9";
                 })
-        }
-
+        },
     }
 
     return publicMethods;

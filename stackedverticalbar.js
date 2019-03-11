@@ -39,7 +39,7 @@ function stackedverticalbar() {
         bottom: 0,
         left: 45
     };
-    var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount;;
+    var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount=1;
     var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div;
     var parentWidth, parentHeight, plotWidth, plotHeight, container;
 
@@ -279,9 +279,9 @@ function stackedverticalbar() {
 
 
             if (_showLegend) {
-                var stackedverticalbarLegend = LEGEND.bind(chart);
+                var clusteredverticalbarLegend = LEGEND.bind(chart);
 
-                var result = stackedverticalbarLegend(_legendData, container, {
+                var result = clusteredverticalbarLegend(_legendData, container, {
                     width: parentWidth,
                     height: parentHeight,
                     legendBreakCount: legendBreakCount
@@ -303,7 +303,33 @@ function stackedverticalbar() {
                         plotWidth = parentWidth - legendWidth;
                         break;
                 }
+
+                if ((_legendPosition == 'top') || (_legendPosition == 'bottom')) {
+                    plotWidth = parentWidth;
+                    plotHeight = parentHeight - 3 * axisLabelSpace;
+                    legendSpace = 20;
+                } else if ((_legendPosition == 'left') || (_legendPosition == 'right')) {
+                    var legend = _local_svg.selectAll('.item');
+                    legendSpace = legend.node().parentNode.getBBox().width;
+                    plotWidth = (parentWidth - legendSpace) - margin.left + axisLabelSpace;
+                    plotHeight = parentHeight;
+
+                    legend.attr('transform', function (d, i) {
+                        if (_legendPosition == 'left') {
+                            return 'translate(0, ' + i * 20 + ')';
+
+                        }
+                        else if (_legendPosition == 'right') {
+                            return 'translate(' + (parentWidth - legendSpace + axisLabelSpace) + ', ' + i * 20 + ')';
+                        }
+                    });
+                }
             }
+            else {
+                legendSpace = 0;
+                plotWidth = parentWidth;
+                plotHeight = parentHeight;
+            } 
 
             if (_tooltip) {
                 tooltip = d3.select(this.parentNode).select('#tooltip');
@@ -518,7 +544,7 @@ function stackedverticalbar() {
         UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis, _showYaxis, _showXaxis);
 
         _local_svg.select('g.sort').remove();
-        UTIL.sortingView(container, parentHeight, parentWidth, legendBreakCount, axisLabelSpace, offsetX);
+        UTIL.sortingView(container, parentHeight, parentWidth+margin.left, legendBreakCount, axisLabelSpace, offsetX);
 
         _local_svg.select('g.sort').select('text')
             .on('click', function () {

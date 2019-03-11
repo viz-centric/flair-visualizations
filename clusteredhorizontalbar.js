@@ -29,7 +29,7 @@ function clusteredhorizontalbar() {
         _borderColor = [],
         _fontSize = [];
 
-    var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount;
+    var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount=1;
 
     var parentWidth, parentHeight, plotWidth, plotHeight;
 
@@ -278,9 +278,9 @@ function clusteredhorizontalbar() {
             plotHeight = parentHeight;
 
             if (_showLegend) {
-                var clusteredBarLegend = LEGEND.bind(chart);
+                var clusteredverticalbarLegend = LEGEND.bind(chart);
 
-                var result = clusteredBarLegend(_legendData, container, {
+                var result = clusteredverticalbarLegend(_legendData, container, {
                     width: parentWidth,
                     height: parentHeight,
                     legendBreakCount: legendBreakCount
@@ -302,7 +302,33 @@ function clusteredhorizontalbar() {
                         plotWidth = parentWidth - legendWidth;
                         break;
                 }
+
+                if ((_legendPosition == 'top') || (_legendPosition == 'bottom')) {
+                    plotWidth = parentWidth;
+                    plotHeight = parentHeight - 3 * axisLabelSpace;
+                    legendSpace = 20;
+                } else if ((_legendPosition == 'left') || (_legendPosition == 'right')) {
+                    var legend = _local_svg.selectAll('.item');
+                    legendSpace = legend.node().parentNode.getBBox().width;
+                    plotWidth = (parentWidth - legendSpace) - margin.left + axisLabelSpace;
+                    plotHeight = parentHeight;
+
+                    legend.attr('transform', function (d, i) {
+                        if (_legendPosition == 'left') {
+                            return 'translate(0, ' + i * 20 + ')';
+
+                        }
+                        else if (_legendPosition == 'right') {
+                            return 'translate(' + (parentWidth - legendSpace + axisLabelSpace) + ', ' + i * 20 + ')';
+                        }
+                    });
+                }
             }
+            else {
+                legendSpace = 0;
+                plotWidth = parentWidth;
+                plotHeight = parentHeight;
+            } 
 
             if (_tooltip) {
                 tooltip = d3.select(this.parentNode).select('#tooltip');
@@ -414,9 +440,9 @@ function clusteredhorizontalbar() {
         UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis, _showYaxis, _showXaxis);
 
         _local_svg.select('g.sort').remove();
-        UTIL.sortingView(container, parentHeight, parentWidth, legendBreakCount, axisLabelSpace, offsetX);
+        UTIL.sortingView(container, parentHeight, parentWidth+margin.left, legendBreakCount, axisLabelSpace, offsetX);
 
-        _local_svg.select('g.sort').select('text')
+        _local_svg.select('g.sort').selectAll('text')
             .on('click', function () {
                 var order = d3.select(this).attr('class')
                 switch (order) {

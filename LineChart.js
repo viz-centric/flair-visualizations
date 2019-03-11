@@ -264,17 +264,6 @@ function line() {
 
         selection.each(function (data) {
             chart._Local_data = _originalData = data;
-            var margin = {
-                top: 0,
-                right: 0,
-                bottom: 0,
-                left: 45
-            };
-
-            var legendSpace = 20,
-                axisLabelSpace = 20,
-                offsetX = 16,
-                offsetY = 3;
 
             var div = d3.select(this).node().parentNode;
 
@@ -331,9 +320,9 @@ function line() {
             plotHeight = parentHeight;
 
             if (_showLegend) {
-                var lineLegend = LEGEND.bind(chart);
+                var clusteredverticalbarLegend = LEGEND.bind(chart);
 
-                var result = lineLegend(_legendData, container, {
+                var result = clusteredverticalbarLegend(_legendData, container, {
                     width: parentWidth,
                     height: parentHeight,
                     legendBreakCount: legendBreakCount
@@ -355,7 +344,33 @@ function line() {
                         plotWidth = parentWidth - legendWidth;
                         break;
                 }
+
+                if ((_legendPosition == 'top') || (_legendPosition == 'bottom')) {
+                    plotWidth = parentWidth;
+                    plotHeight = parentHeight - 3 * axisLabelSpace;
+                    legendSpace = 20;
+                } else if ((_legendPosition == 'left') || (_legendPosition == 'right')) {
+                    var legend = _local_svg.selectAll('.item');
+                    legendSpace = legend.node().parentNode.getBBox().width;
+                    plotWidth = (parentWidth - legendSpace) - margin.left + axisLabelSpace;
+                    plotHeight = parentHeight;
+
+                    legend.attr('transform', function (d, i) {
+                        if (_legendPosition == 'left') {
+                            return 'translate(0, ' + i * 20 + ')';
+
+                        }
+                        else if (_legendPosition == 'right') {
+                            return 'translate(' + (parentWidth - legendSpace + axisLabelSpace) + ', ' + i * 20 + ')';
+                        }
+                    });
+                }
             }
+            else {
+                legendSpace = 0;
+                plotWidth = parentWidth;
+                plotHeight = parentHeight;
+            } 
 
             if (_tooltip) {
                 tooltip = d3.select(this.parentNode).select('#tooltip');

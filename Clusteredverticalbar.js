@@ -29,7 +29,7 @@ function clusteredverticalbar() {
         _borderColor = [],
         _fontSize = [];
 
-    var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount;;
+    var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
 
     var parentWidth, parentHeight, plotWidth, plotHeight;
 
@@ -295,13 +295,37 @@ function clusteredverticalbar() {
                         plotWidth = parentWidth - legendWidth;
                         break;
                 }
+
+                if ((_legendPosition == 'top') || (_legendPosition == 'bottom')) {
+                    plotWidth = parentWidth;
+                    plotHeight = parentHeight - 3 * axisLabelSpace;
+                    legendSpace = 20;
+                } else if ((_legendPosition == 'left') || (_legendPosition == 'right')) {
+                    var legend = _local_svg.selectAll('.item');
+                    legendSpace = legend.node().parentNode.getBBox().width;
+                    plotWidth = (parentWidth - legendSpace) - margin.left + axisLabelSpace;
+                    plotHeight = parentHeight;
+
+                    legend.attr('transform', function (d, i) {
+                        if (_legendPosition == 'left') {
+                            return 'translate(0, ' + i * 20 + ')';
+
+                        }
+                        else if (_legendPosition == 'right') {
+                            return 'translate(' + (parentWidth - legendSpace + axisLabelSpace) + ', ' + i * 20 + ')';
+                        }
+                    });
+                }
             }
+            else {
+                legendSpace = 0;
+                plotWidth = parentWidth;
+                plotHeight = parentHeight;
+            } 
 
             if (_tooltip) {
                 tooltip = d3.select(this.parentNode).select('#tooltip');
             }
-
-
             drawPlot.call(this, data);
         });
 
@@ -338,6 +362,13 @@ function clusteredverticalbar() {
                     return 'translate(' + margin.left + ', 0)';
                 }
             });
+
+        if (!_showLegend) {
+            _local_svg.select('.plot')
+                .attr('transform', function () {
+                    return 'translate(' + margin.left + ', ' + 0 + ')';
+                });
+        }
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
@@ -447,9 +478,9 @@ function clusteredverticalbar() {
             });
 
         _local_svg.select('g.sort').remove();
-        UTIL.sortingView(container, parentHeight, parentWidth, legendBreakCount, axisLabelSpace, offsetX);
+        UTIL.sortingView(container, parentHeight, parentWidth + margin.left, legendBreakCount, axisLabelSpace, offsetX);
 
-        _local_svg.select('g.sort').select('text')
+        _local_svg.select('g.sort').selectAll('text')
             .on('click', function () {
                 var order = d3.select(this).attr('class')
                 switch (order) {

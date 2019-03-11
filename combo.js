@@ -336,9 +336,9 @@ function combo() {
             plotHeight = parentHeight;
 
             if (_showLegend) {
-                var comboLegend = LEGEND.bind(chart);
+                var clusteredverticalbarLegend = LEGEND.bind(chart);
 
-                var result = comboLegend(_legendData, container, {
+                var result = clusteredverticalbarLegend(_legendData, container, {
                     width: parentWidth,
                     height: parentHeight,
                     legendBreakCount: legendBreakCount
@@ -347,6 +347,7 @@ function combo() {
                 legendWidth = result.legendWidth;
                 legendHeight = result.legendHeight;
                 legendBreakCount = result.legendBreakCount;
+
                 switch (_legendPosition) {
                     case 'top':
                         plotHeight = parentHeight - legendHeight - axisLabelSpace;
@@ -359,7 +360,33 @@ function combo() {
                         plotWidth = parentWidth - legendWidth;
                         break;
                 }
+
+                if ((_legendPosition == 'top') || (_legendPosition == 'bottom')) {
+                    plotWidth = parentWidth;
+                    plotHeight = parentHeight - 3 * axisLabelSpace;
+                    legendSpace = 20;
+                } else if ((_legendPosition == 'left') || (_legendPosition == 'right')) {
+                    var legend = _local_svg.selectAll('.item');
+                    legendSpace = legend.node().parentNode.getBBox().width;
+                    plotWidth = (parentWidth - legendSpace) - margin.left + axisLabelSpace;
+                    plotHeight = parentHeight;
+
+                    legend.attr('transform', function (d, i) {
+                        if (_legendPosition == 'left') {
+                            return 'translate(0, ' + i * 20 + ')';
+
+                        }
+                        else if (_legendPosition == 'right') {
+                            return 'translate(' + (parentWidth - legendSpace + axisLabelSpace) + ', ' + i * 20 + ')';
+                        }
+                    });
+                }
             }
+            else {
+                legendSpace = 0;
+                plotWidth = parentWidth;
+                plotHeight = parentHeight;
+            } 
 
             if (_tooltip) {
                 tooltip = d3.select(this.parentNode).select('#tooltip');

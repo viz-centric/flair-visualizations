@@ -3,8 +3,8 @@
 <head>
     <title>Pie</title>
     <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css"
-        integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"/>
+
     <link rel="stylesheet" href="css/d3viz.css">
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
@@ -65,11 +65,7 @@
             dimension: ['State'],
             measure: ['Under 5 Years', '5 to 13 Years', '14 to 17 Years', '18 to 24 Years', '25 to 44 Years', '45 to 64 Years', '65 Years and Over'],
             showLegend: true, // true|false
-            legendPosition: 'top', // top|bottom|right|left
-            showValueAs: 'label', // label|value|percentage
-            valueAsArc: true, // true|false
-            valuePosition: 'inside', // inside|outside,
-
+            legendPosition: 'left', // top|bottom|right|left
             "showXaxis": true,
             "showYaxis": true,
             "showXaxisLabel": true,
@@ -79,13 +75,12 @@
             "showGrid": true,
             "stacked": false,
             "displayName": "Dimension 1",
-
             "showValues": [true, true, true, true, true, true, true,],
             "displayNameForMeasure": ["Measure 1", "Measure 2", "Measure 2", "Measure 2", "Measure 2", "Measure 2", "Measure 2"],
             "fontStyle": ["italic", "bold", "bold", "bold", "bold", "bold", "bold"],
             "fontWeight": ["bold", "900", "900", "900", "900", "900", "900",],
             "numberFormat": ["M", "M", "M", "M", "M", "M", "M"],
-            "textColor": ["#e06a6a", "#639ece", "#639ece", "#639ece", "#639ece", "#639ece", "#639ece"],
+            "textColor": ["#e06a6a", "#00ff00", "#ff0000", "#639ece", "#ababab", "#e06a6a", "#639ece"],
             "displayColor": ["", "", "", "", "", "", ""],
             "borderColor": ["", "", "", "", "", "", ""],
             "fontSize": ["8", "8", "8", "8", "8", "8", "8"]
@@ -101,8 +96,6 @@
                 .datum(data)
                 .call(chart);
         });
-
-
     </script>
 </body>
 
