@@ -32,12 +32,16 @@ function line() {
         _pointType,
         _originalData;
 
+    var margin = {
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 45
+    };
 
-    var _local_svg, _Local_data;
-
-    var parentWidth, parentHeight, plotWidth, plotHeight;
-
+    var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
     var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div;
+    var parentWidth, parentHeight, plotWidth, plotHeight, container;
     var threshold = [];
     var filter = false, filterData = [];
 
@@ -46,7 +50,7 @@ function line() {
         this.measure(config.measure);
         this.showLegend(config.showLegend);
         this.legendPosition(config.legendPosition);
-  
+
         this.showXaxis(config.showXaxis);
         this.showYaxis(config.showYaxis);
         this.showXaxisLabel(config.showXaxisLabel);
@@ -55,7 +59,7 @@ function line() {
         this.xAxisColor(config.xAxisColor);
         this.yAxisColor(config.yAxisColor);
         this.displayName(config.displayName);
-     
+
         this.showXaxisLabel(config.showXaxisLabel);
 
         this.showValues(config.showValues);
@@ -263,18 +267,19 @@ function line() {
         _local_svg = selection;
 
         selection.each(function (data) {
-            chart._Local_data = _originalData = data;
+            _originalData = data;
+            div = d3.select(this).node().parentNode;
 
-            var div = d3.select(this).node().parentNode;
-
-            var svg = d3.select(this),
-                width = div.clientWidth,
+            var width = div.clientWidth,
                 height = div.clientHeight;
 
             parentWidth = width - 2 * COMMON.PADDING - margin.left;
             parentHeight = (height - 2 * COMMON.PADDING - axisLabelSpace * 2);
 
-            svg.attr('width', width)
+            container = _local_svg.append('g')
+                .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
+
+            _local_svg.attr('width', width)
                 .attr('height', height)
 
             d3.select(div).append('div')
@@ -283,15 +288,13 @@ function line() {
             d3.select(div).append('div')
                 .attr('class', 'arrow-down');
 
-            UTIL.sorter(data, _measure, _sort);
-
             var str = UTIL.createAlert($(div).attr('id'), _measure);
             $(div).append(str);
 
-            $(document).on('click', 'svg', function (e) {
+            $(document).on('click', '_local_svg', function (e) {
                 if ($("#myonoffswitch").prop('checked') == false) {
                     var element = e.target
-                    if (element.tagName == "svg") {
+                    if (element.tagName == "_local_svg") {
                         $('#Modal_' + $(div).attr('id') + ' .measure').val('')
                         $('#Modal_' + $(div).attr('id') + ' .threshold').val('')
                         $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', false)
@@ -309,7 +312,7 @@ function line() {
                 $('#Modal_' + $(div).attr('id')).modal('toggle');
             })
 
-            var container = svg.append('g')
+            container = _local_svg.append('g')
                 .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
             var legendWidth = 0,
@@ -320,9 +323,9 @@ function line() {
             plotHeight = parentHeight;
 
             if (_showLegend) {
-                var clusteredverticalbarLegend = LEGEND.bind(chart);
+                var LineLegend = LEGEND.bind(chart);
 
-                var result = clusteredverticalbarLegend(_legendData, container, {
+                var result = LineLegend(_legendData, container, {
                     width: parentWidth,
                     height: parentHeight,
                     legendBreakCount: legendBreakCount
@@ -370,299 +373,264 @@ function line() {
                 legendSpace = 0;
                 plotWidth = parentWidth;
                 plotHeight = parentHeight;
-            } 
+            }
 
             if (_tooltip) {
                 tooltip = d3.select(this.parentNode).select('#tooltip');
             }
-            chart.drawPlot = function (data) {
-                var me = this;
-                _Local_data = data;
-                var plot = container.append('g')
-                    .attr('class', 'line-plot')
-                    .classed('plot', true)
-                    .attr('transform', function () {
-                        if (_legendPosition == 'top') {
-                            return 'translate(' + margin.left + ', ' + parseInt(legendSpace * 2 + (20 * parseInt(legendBreakCount))) + ')';
-                        } else if (_legendPosition == 'bottom') {
-                            return 'translate(' + margin.left + ', 0)';
-                        } else if (_legendPosition == 'left') {
-                            return 'translate(' + (legendSpace + margin.left + axisLabelSpace) + ', 0)';
-                        } else if (_legendPosition == 'right') {
-                            return 'translate(' + margin.left + ', 0)';
-                        }
-                    });
-                var labelStack = [];
-                var x = d3.scaleBand()
-                    .rangeRound([0, plotWidth])
-                    .padding([1]);
 
-                var y = d3.scaleLinear()
-                    .rangeRound([plotHeight, 0]);
-
-                var keys = UTIL.getMeasureList(data[0], _dimension);
-
-                x.domain(data.map(function (d) { return d[_dimension[0]]; }));
-                y.domain([0, d3.max(data, function (d) {
-                    return d3.max(keys, function (key) {
-                        return parseInt(d[key]);
-                    });
-                })]).nice();
-
-                var areaGenerator = d3.area()
-                    .curve(d3.curveLinear)
-                    .x(function (d, i) {
-                        return x(d['data'][_dimension[0]]) + x.bandwidth() / 2;
-                    })
-                    .y0(plotHeight)
-                    .y1(function (d) {
-                        return y(d['data'][d['tag']]);
-                    });
-
-                var lineGenerator = d3.line()
-                    .curve(d3.curveLinear)
-                    .x(function (d, i) {
-                        return x(d['data'][_dimension[0]]) + x.bandwidth() / 2;
-                    })
-                    .y(function (d, i) {
-                        return y(d['data'][d['tag']]);
-                    });
-
-                var clusterLine = plot.selectAll('.cluster_line')
-                    .data(keys.filter(function (m) { return labelStack.indexOf(m) == -1; }))
-                    .enter().append('g')
-                    .attr('class', 'cluster_line');
-
-                var area = clusterLine.append('path')
-                    .datum(function (d, i) {
-                        return data.map(function (datum) { return { "tag": d, "data": datum }; });
-                    })
-                    .attr('class', 'area')
-                    .attr('fill', function (d, i) {
-                        return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
-                    })
-                    .attr('visibility', function (d, i) {
-                        if (_lineType[(_measure.indexOf(d[0]['tag']))] == "area") {
-                            return 'visible'
-                        }
-                        else {
-                            return 'hidden';
-                        }
-
-                    })
-                    .on("mouseover", function (d) {
-                        d3.select(this)
-                            .style("fill-opacity", 1)
-                            .style("cursor", "pointer");
-                    })
-                    .on("mouseout", function (d) {
-                        d3.select(this)
-                            .style("fill-opacity", .5)
-                            .style("cursor", "none");
-                    })
-                    .style('fill-opacity', 0.5)
-                    .attr('stroke', 'none')
-                    .attr('d', areaGenerator);
-
-                var line = clusterLine.append('path')
-                    .datum(function (d, i) {
-                        return data.map(function (datum) { return { "tag": d, "data": datum }; });
-                    })
-                    .attr('class', 'line')
-                    .attr('fill', 'none')
-                    .attr('stroke', function (d, i) {
-                        return UTIL.getBorderColor(_measure.indexOf(d[0]['tag']), _borderColor);
-                    })
-                    .attr('stroke-linejoin', 'round')
-                    .attr('stroke-linecap', 'round')
-                    .attr('stroke-width', 1)
-                    .on("mouseover", function (d) {
-                        d3.select(this)
-                            .style("stroke-width", "2.5px")
-                            .style("cursor", "pointer");
-                    })
-                    .on("mouseout", function (d) {
-                        d3.select(this)
-                            .style("stroke-width", "1.5px")
-                            .style("cursor", "none");
-                    })
-                    .attr('d', lineGenerator);
-
-                var point = clusterLine.selectAll('point')
-                    .data(function (d, i) {
-                        return data.map(function (datum) { return { "tag": d, "data": datum }; });
-                    })
-                    .enter().append('path')
-                    .attr('class', 'point')
-                    .attr('fill', function (d, i) {
-                        return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
-                    })
-                    .attr('d', function (d, i) {
-                        return d3.symbol()
-                            .type(getPointType(_measure.indexOf(d.tag)))
-                            .size(40)();
-                    })
-                    .attr('transform', function (d) {
-                        return 'translate('
-                            + (x(d['data'][_dimension[0]]) + x.bandwidth() / 2)
-                            + ',' + y(d['data'][d['tag']]) + ')';
-                    })
-                    .on('mouseover', _handleMouseOverFn.call(chart, tooltip, svg))
-                    .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg))
-                    .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg))
-                    .on('click', function (d) {
-                        if ($("#myonoffswitch").prop('checked') == false) {
-                            $('#Modal_' + $(div).attr('id') + ' .measure').val(d.measure);
-                            $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
-                            $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
-                            $('#Modal_' + $(div).attr('id')).modal('toggle');
-                        }
-                        else {
-                            var confirm = d3.select('.confirm')
-                                .style('visibility', 'visible');
-                            var _filter = _Local_data.filter(function (d1) {
-                                return d.data[_dimension[0]] === d1[_dimension[0]]
-                            })
-                            var rect = d3.select(this);
-                            if (rect.classed('selected')) {
-                                rect.classed('selected', false);
-                                filterData.map(function (val, i) {
-                                    if (val[_dimension[0]] == d.data[_dimension[0]]) {
-                                        filterData.splice(i, 1)
-                                    }
-                                })
-                            } else {
-                                rect.classed('selected', true);
-                                var isExist = filterData.filter(function (val) {
-                                    if (val[_dimension[0]] == d.data[_dimension[0]]) {
-                                        return val
-                                    }
-                                })
-                                if (isExist.length == 0) {
-                                    filterData.push(_filter[0]);
-                                }
-                            }
-                        }
-                    })
-
-                plot.append("g")
-                    .attr("class", "x_axis")
-                    .attr("transform", "translate(0," + plotHeight + ")")
-                    .call(d3.axisBottom(x))
-                    .append("text")
-                    .attr("x", plotWidth / 2)
-                    .attr("y", 2 * axisLabelSpace)
-                    .attr("dy", "0.32em")
-                    .attr("fill", "#000")
-                    .attr("font-weight", "bold")
-                    .style('text-anchor', 'middle')
-                    .style('visibility', UTIL.getVisibility(_showXaxisLabel))
-                    .text(function () {
-                        return _displayName;
-                    });
-
-                plot.append("g")
-                    .attr("class", "y_axis")
-                    .call(d3.axisLeft(y).ticks(null, "s"))
-                    .append("text")
-                    .attr("x", plotHeight / 2)
-                    .attr("y", 2 * axisLabelSpace)
-                    .attr("transform", function (d) { return "rotate(" + 90 + ")"; })
-                    .attr("dy", "0.32em")
-                    .style('visibility', UTIL.getVisibility(_showYaxisLabel))
-                    .attr("font-weight", "bold")
-                    .style('text-anchor', 'middle')
-                    .text(function () {
-                        return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
-                    });
-
-                UTIL.setAxisColor(svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis, _showYaxis, _showXaxis);
-
-                svg.select('g.line-sort').remove();
-                var sortButton = container.append('g')
-                    .attr('class', 'line-sort')
-                    .attr('transform', function () {
-                        return 'translate(0, ' + parseInt((parentHeight - 2 * COMMON.PADDING + 20 + (legendBreakCount * 20))) + ')';
-                    })
-
-                var ascendingSort = sortButton.append('svg:text')
-                    .attr('fill', '#afafaf')
-                    .attr('cursor', 'pointer')
-                    .style('font-family', 'FontAwesome')
-                    .style('font-size', 12)
-                    .attr('transform', function () {
-                        return 'translate(' + (parentWidth - 3 * offsetX) + ', ' + 2 * axisLabelSpace + ')';
-                    })
-                    .style('text-anchor', 'end')
-                    .text(function () {
-                        return "\uf161";
-                    })
-                    .on('click', UTIL.toggleSortSelection(me, 'ascending', chart.drawPlot, svg, keys, _Local_data))
-
-
-                var descendingSort = sortButton.append('svg:text')
-                    .attr('fill', '#afafaf')
-                    .attr('cursor', 'pointer')
-                    .style('font-family', 'FontAwesome')
-                    .style('font-size', 12)
-                    .attr('transform', function () {
-                        return 'translate(' + (parentWidth - 1.5 * offsetX) + ', ' + 2 * axisLabelSpace + ')';
-                    })
-                    .style('text-anchor', 'end')
-                    .text(function () {
-                        return "\uf160";
-                    })
-                    .on('click', UTIL.toggleSortSelection(me, 'descending', chart.drawPlot, svg, keys, _Local_data))
-
-                var resetSort = sortButton.append('svg:text')
-                    .attr('fill', '#afafaf')
-                    .attr('cursor', 'pointer')
-                    .style('font-family', 'FontAwesome')
-                    .style('font-size', 12)
-                    .attr('transform', function () {
-                        return 'translate(' + parentWidth + ', ' + 2 * axisLabelSpace + ')';
-                    })
-                    .style('text-anchor', 'end')
-                    .text(function () {
-                        return "\uf0c9";
-                    })
-                    .on('click', function () {
-                        d3.select(me.parentElement).select('.line-plot').remove();
-                        chart.drawPlot.call(me, _Local_data);
-                    });
-
-                d3.select(div).select('.btn-primary')
-                    .on('click', applyFilter(chart));
-
-                d3.select(div).select('.btn-default')
-                    .on('click', clearFilter());
-
-                var lasso = d3.lasso()
-                    .hoverSelect(true)
-                    .closePathSelect(true)
-                    .closePathDistance(100)
-                    .items(point)
-                    .targetArea(svg);
-
-                lasso.on('start', onLassoStart(lasso, chart))
-                    .on('draw', onLassoDraw(lasso, chart))
-                    .on('end', onLassoEnd(lasso, chart))
-
-                svg.call(lasso);
-
-            }
-
-            chart.drawPlot.call(this, data);
+            drawPlot.call(this, data);
         });
 
     }
-    /**
-     * Builds the html data for the tooltip
-     *
-     * @param {object} datum Datum forming the arc
-     * @param {function} chart Pie chart function
-     * @return {string} String encoded HTML data
-     */
+
+
+    var drawPlot = function (data) {
+        var me = this;
+        _Local_data = data;
+        var plot = container.append('g')
+            .attr('class', 'line-plot')
+            .classed('plot', true)
+            .attr('transform', function () {
+                if (_legendPosition == 'top') {
+                    return 'translate(' + margin.left + ', ' + parseInt(legendSpace * 2 + (20 * parseInt(legendBreakCount))) + ')';
+                } else if (_legendPosition == 'bottom') {
+                    return 'translate(' + margin.left + ', 0)';
+                } else if (_legendPosition == 'left') {
+                    return 'translate(' + (legendSpace + margin.left + axisLabelSpace) + ', 0)';
+                } else if (_legendPosition == 'right') {
+                    return 'translate(' + margin.left + ', 0)';
+                }
+            });
+        var labelStack = [];
+        var x = d3.scaleBand()
+            .rangeRound([0, plotWidth])
+            .padding([1]);
+
+        var y = d3.scaleLinear()
+            .rangeRound([plotHeight, 0]);
+
+        var keys = UTIL.getMeasureList(data[0], _dimension);
+
+        x.domain(data.map(function (d) { return d[_dimension[0]]; }));
+        y.domain([0, d3.max(data, function (d) {
+            return d3.max(keys, function (key) {
+                return parseInt(d[key]);
+            });
+        })]).nice();
+
+        var areaGenerator = d3.area()
+            .curve(d3.curveLinear)
+            .x(function (d, i) {
+                return x(d['data'][_dimension[0]]) + x.bandwidth() / 2;
+            })
+            .y0(plotHeight)
+            .y1(function (d) {
+                return y(d['data'][d['tag']]);
+            });
+
+        var lineGenerator = d3.line()
+            .curve(d3.curveLinear)
+            .x(function (d, i) {
+                return x(d['data'][_dimension[0]]) + x.bandwidth() / 2;
+            })
+            .y(function (d, i) {
+                return y(d['data'][d['tag']]);
+            });
+
+        var clusterLine = plot.selectAll('.cluster_line')
+            .data(keys.filter(function (m) { return labelStack.indexOf(m) == -1; }))
+            .enter().append('g')
+            .attr('class', 'cluster_line');
+
+        var area = clusterLine.append('path')
+            .datum(function (d, i) {
+                return data.map(function (datum) { return { "tag": d, "data": datum }; });
+            })
+            .attr('class', 'area')
+            .attr('fill', function (d, i) {
+                return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
+            })
+            .attr('visibility', function (d, i) {
+                if (_lineType[(_measure.indexOf(d[0]['tag']))] == "area") {
+                    return 'visible'
+                }
+                else {
+                    return 'hidden';
+                }
+
+            })
+            .on("mouseover", function (d) {
+                d3.select(this)
+                    .style("fill-opacity", 1)
+                    .style("cursor", "pointer");
+            })
+            .on("mouseout", function (d) {
+                d3.select(this)
+                    .style("fill-opacity", .5)
+                    .style("cursor", "none");
+            })
+            .style('fill-opacity', 0.5)
+            .attr('stroke', 'none')
+            .attr('d', areaGenerator);
+
+        var line = clusterLine.append('path')
+            .datum(function (d, i) {
+                return data.map(function (datum) { return { "tag": d, "data": datum }; });
+            })
+            .attr('class', 'line')
+            .attr('fill', 'none')
+            .attr('stroke', function (d, i) {
+                return UTIL.getBorderColor(_measure.indexOf(d[0]['tag']), _borderColor);
+            })
+            .attr('stroke-linejoin', 'round')
+            .attr('stroke-linecap', 'round')
+            .attr('stroke-width', 1)
+            .on("mouseover", function (d) {
+                d3.select(this)
+                    .style("stroke-width", "2.5px")
+                    .style("cursor", "pointer");
+            })
+            .on("mouseout", function (d) {
+                d3.select(this)
+                    .style("stroke-width", "1.5px")
+                    .style("cursor", "none");
+            })
+            .attr('d', lineGenerator);
+
+        var point = clusterLine.selectAll('point')
+            .data(function (d, i) {
+                return data.map(function (datum) { return { "tag": d, "data": datum }; });
+            })
+            .enter().append('path')
+            .attr('class', 'point')
+            .attr('fill', function (d, i) {
+                return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+            })
+            .attr('d', function (d, i) {
+                return d3.symbol()
+                    .type(getPointType(_measure.indexOf(d.tag)))
+                    .size(40)();
+            })
+            .attr('transform', function (d) {
+                return 'translate('
+                    + (x(d['data'][_dimension[0]]) + x.bandwidth() / 2)
+                    + ',' + y(d['data'][d['tag']]) + ')';
+            })
+            .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+            .on('click', function (d) {
+                if ($("#myonoffswitch").prop('checked') == false) {
+                    $('#Modal_' + $(div).attr('id') + ' .measure').val(d.measure);
+                    $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
+                    $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
+                    $('#Modal_' + $(div).attr('id')).modal('toggle');
+                }
+                else {
+                    var confirm = d3.select('.confirm')
+                        .style('visibility', 'visible');
+                    var _filter = _Local_data.filter(function (d1) {
+                        return d.data[_dimension[0]] === d1[_dimension[0]]
+                    })
+                    var rect = d3.select(this);
+                    if (rect.classed('selected')) {
+                        rect.classed('selected', false);
+                        filterData.map(function (val, i) {
+                            if (val[_dimension[0]] == d.data[_dimension[0]]) {
+                                filterData.splice(i, 1)
+                            }
+                        })
+                    } else {
+                        rect.classed('selected', true);
+                        var isExist = filterData.filter(function (val) {
+                            if (val[_dimension[0]] == d.data[_dimension[0]]) {
+                                return val
+                            }
+                        })
+                        if (isExist.length == 0) {
+                            filterData.push(_filter[0]);
+                        }
+                    }
+                }
+            })
+
+        plot.append("g")
+            .attr("class", "x_axis")
+            .attr("transform", "translate(0," + plotHeight + ")")
+            .call(d3.axisBottom(x))
+            .append("text")
+            .attr("x", plotWidth / 2)
+            .attr("y", 2 * axisLabelSpace)
+            .attr("dy", "0.32em")
+            .attr("fill", "#000")
+            .attr("font-weight", "bold")
+            .style('text-anchor', 'middle')
+            .style('visibility', UTIL.getVisibility(_showXaxisLabel))
+            .text(function () {
+                return _displayName;
+            });
+
+        plot.append("g")
+            .attr("class", "y_axis")
+            .call(d3.axisLeft(y).ticks(null, "s"))
+            .append("text")
+            .attr("x", plotHeight / 2)
+            .attr("y", 2 * axisLabelSpace)
+            .attr("transform", function (d) { return "rotate(" + 90 + ")"; })
+            .attr("dy", "0.32em")
+            .style('visibility', UTIL.getVisibility(_showYaxisLabel))
+            .attr("font-weight", "bold")
+            .style('text-anchor', 'middle')
+            .text(function () {
+                return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+            });
+
+        UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis, _showYaxis, _showXaxis);
+
+        _local_svg.select('g.sort').remove();
+        UTIL.sortingView(container, parentHeight, parentWidth + margin.left, legendBreakCount, axisLabelSpace, offsetX);
+
+        _local_svg.select('g.sort').selectAll('text')
+            .on('click', function () {
+                var order = d3.select(this).attr('class')
+                switch (order) {
+                    case 'ascending':
+                        UTIL.toggleSortSelection(me, 'ascending', drawPlot, _local_svg, keys, _Local_data);
+                        break;
+                    case 'descending':
+                        UTIL.toggleSortSelection(me, 'descending', drawPlot, _local_svg, keys, _Local_data);
+                        break;
+                    case 'reset': {
+                        _local_svg.select(me.parentElement).select('.plot').remove();
+                        drawPlot.call(me, _Local_data);
+                        break;
+                    }
+                }
+            });
+
+        d3.select(div).select('.btn-primary')
+            .on('click', applyFilter(chart));
+
+        d3.select(div).select('.btn-default')
+            .on('click', clearFilter());
+
+        var lasso = d3.lasso()
+            .hoverSelect(true)
+            .closePathSelect(true)
+            .closePathDistance(100)
+            .items(point)
+            .targetArea(_local_svg);
+
+        lasso.on('start', onLassoStart(lasso, chart))
+            .on('draw', onLassoDraw(lasso, chart))
+            .on('end', onLassoEnd(lasso, chart))
+
+        _local_svg.call(lasso);
+
+    }
+
+
     chart._legendInteraction = function (event, data) {
 
         var line = d3.selectAll('.line')
@@ -690,11 +658,10 @@ function line() {
     chart.update = function (data) {
 
         chart._Local_data = data;
-        var svg = _local_svg;
         filterData = [];
 
-        var plot = svg.select('.plot')
-        var chartplot = svg.select('.chart')
+        var plot = _local_svg.select('.plot')
+        var chartplot = _local_svg.select('.chart')
         labelStack = [];
 
         var x = d3.scaleBand()
@@ -746,7 +713,7 @@ function line() {
             })
             .attr('d', lineGenerator);
 
-        
+
         plot.selectAll('path.point').remove()
 
 
@@ -760,7 +727,7 @@ function line() {
             .duration(1000)
             .call(d3.axisLeft(y).ticks(null, "s"));
 
-        UTIL.setAxisColor(svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis);
+        UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis);
         UTIL.displayThreshold(threshold, data, keys);
 
     }

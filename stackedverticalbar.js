@@ -39,7 +39,7 @@ function stackedverticalbar() {
         bottom: 0,
         left: 45
     };
-    var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount=1;
+    var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
     var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div;
     var parentWidth, parentHeight, plotWidth, plotHeight, container;
 
@@ -224,17 +224,18 @@ function stackedverticalbar() {
         _local_svg = selection;
 
         selection.each(function (data) {
-            _Local_data = _originalData = data;
+            _originalData = data;
+            div = d3.select(this).node().parentNode;
 
-            var div = d3.select(this).node().parentNode;
-
-            var _local_svg = d3.select(this),
-                width = div.clientWidth,
+            _local_svg = d3.select(this);
+            var width = div.clientWidth,
                 height = div.clientHeight;
 
             parentWidth = width - 2 * COMMON.PADDING - margin.left;
             parentHeight = (height - 2 * COMMON.PADDING - axisLabelSpace * 2);
 
+            container = _local_svg.append('g')
+                .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
             _local_svg.attr('width', width)
                 .attr('height', height)
@@ -277,11 +278,10 @@ function stackedverticalbar() {
             plotWidth = parentWidth;
             plotHeight = parentHeight;
 
-
             if (_showLegend) {
-                var clusteredverticalbarLegend = LEGEND.bind(chart);
+                var stackedverticalbarLegend = LEGEND.bind(chart);
 
-                var result = clusteredverticalbarLegend(_legendData, container, {
+                var result = stackedverticalbarLegend(_legendData, container, {
                     width: parentWidth,
                     height: parentHeight,
                     legendBreakCount: legendBreakCount
@@ -329,7 +329,7 @@ function stackedverticalbar() {
                 legendSpace = 0;
                 plotWidth = parentWidth;
                 plotHeight = parentHeight;
-            } 
+            }
 
             if (_tooltip) {
                 tooltip = d3.select(this.parentNode).select('#tooltip');
@@ -460,7 +460,12 @@ function stackedverticalbar() {
                     return 'translate(' + margin.left + ', 0)';
                 }
             });
-
+        if (!_showLegend) {
+            _local_svg.select('.plot')
+                .attr('transform', function () {
+                    return 'translate(' + margin.left + ', ' + 0 + ')';
+                });
+        }
 
         x = d3.scaleBand()
             .rangeRound([0, plotWidth])
@@ -544,9 +549,9 @@ function stackedverticalbar() {
         UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis, _showYaxis, _showXaxis);
 
         _local_svg.select('g.sort').remove();
-        UTIL.sortingView(container, parentHeight, parentWidth+margin.left, legendBreakCount, axisLabelSpace, offsetX);
+        UTIL.sortingView(container, parentHeight, parentWidth + margin.left, legendBreakCount, axisLabelSpace, offsetX);
 
-        _local_svg.select('g.sort').select('text')
+        _local_svg.select('g.sort').selectAll('text')
             .on('click', function () {
                 var order = d3.select(this).attr('class')
                 switch (order) {
@@ -563,7 +568,7 @@ function stackedverticalbar() {
                     }
                 }
             });
-            
+
         d3.select(div).select('.btn-primary')
             .on('click', applyFilter(chart));
 
@@ -601,6 +606,7 @@ function stackedverticalbar() {
                 break;
         }
     }
+
     var _legendMouseOver = function (data) {
 
         d3.selectAll('g.stackedverticalbar')

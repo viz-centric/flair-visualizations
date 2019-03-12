@@ -76,7 +76,6 @@ function clusteredverticalbar() {
         this.borderColor(config.borderColor);
         this.fontSize(config.fontSize);
         this.legendData(config.displayColor, config.measure);
-
     }
 
     var _buildTooltipData = function (datum, chart) {

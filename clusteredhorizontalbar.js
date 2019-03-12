@@ -29,7 +29,7 @@ function clusteredhorizontalbar() {
         _borderColor = [],
         _fontSize = [];
 
-    var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount=1;
+    var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
 
     var parentWidth, parentHeight, plotWidth, plotHeight;
 
@@ -328,7 +328,7 @@ function clusteredhorizontalbar() {
                 legendSpace = 0;
                 plotWidth = parentWidth;
                 plotHeight = parentHeight;
-            } 
+            }
 
             if (_tooltip) {
                 tooltip = d3.select(this.parentNode).select('#tooltip');
@@ -368,6 +368,14 @@ function clusteredhorizontalbar() {
                 }
             });
 
+
+        if (!_showLegend) {
+            _local_svg.select('.plot')
+                .attr('transform', function () {
+                    return 'translate(' + margin.left + ', ' + 0 + ')';
+                });
+        }
+        
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
         x0.domain(data.map(function (d) { return d[_dimension[0]]; }));
@@ -440,7 +448,7 @@ function clusteredhorizontalbar() {
         UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis, _showYaxis, _showXaxis);
 
         _local_svg.select('g.sort').remove();
-        UTIL.sortingView(container, parentHeight, parentWidth+margin.left, legendBreakCount, axisLabelSpace, offsetX);
+        UTIL.sortingView(container, parentHeight, parentWidth + margin.left, legendBreakCount, axisLabelSpace, offsetX);
 
         _local_svg.select('g.sort').selectAll('text')
             .on('click', function () {
