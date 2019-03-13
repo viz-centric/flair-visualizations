@@ -615,6 +615,62 @@ function util() {
                     return "\uf0c9";
                 })
         },
+          /**
+         * Base accessor function
+         *
+         * @param {string|array(string)|null} value "this" value for the measure(s)
+         * @param {string|null} measure Measure for which the value is to be set or retrieved
+         * @param {array(string)} measures All the available measures
+         * @return {string|array(string)|function}
+         */
+        baseAccessor: function (value, measure, measures) {
+            var me = this;
+
+            if (!arguments.length) {
+                /**
+                 * Getter method call with no arguments
+                 * E.g. <chart>.<accessor_function>() ==> [<item1>, <item2>]
+                 */
+                return me;
+            }
+
+            if (value != void 0 && measure == void 0) {
+                /**
+                 * Setter method call with only value argument
+                 * E.g. <chart>.<accessor_function>([<item1>, <item2>]) ==> <chart_function>
+                 */
+                if (value instanceof Array) {
+                    me.splice(0, me.length);
+                } else {
+                    value = measures.map(function (i) { return value; });
+                }
+
+                me.push.apply(me, value);
+                return chart;
+            }
+
+            var index = measures.indexOf(measure);
+
+            if (index === -1) {
+                throw new Error('Invalid measure provided');
+            }
+
+            if (value == void 0) {
+                /**
+                 * Getter method call with only measure argument
+                 * E.g. <chart>.<accessor_function>(<measure>) ==> <item>
+                 */
+                return me[index];
+            } else {
+                /**
+                 * Setter method call with both value and measure arguments
+                 * E.g. <chart>.<accessor_function>(<item>, <measure>) ==> <chart_function>
+                 */
+                me[index] = value;
+            }
+
+            return chart;
+        },
     }
 
     return publicMethods;
