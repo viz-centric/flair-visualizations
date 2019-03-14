@@ -269,7 +269,6 @@ function util() {
 
         getNumberFormatter: function (si) {
             var result;
-
             var siMapper = {
                 "K": "1e3",
                 "M": "1e6",
@@ -670,6 +669,12 @@ function util() {
             }
 
             return chart;
+        },
+
+        title: function(str) {
+            var r = '';
+            r = str.charAt(0).toUpperCase() + str.substring(1);
+            return r;
         },
     }
 

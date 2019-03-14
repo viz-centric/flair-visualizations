@@ -32,14 +32,10 @@ function treemap() {
      */
     var _localSVG,
         _localTotal,
-        _localXAxis,
-        _localYAxis,
-        _localXGrid,
-        _localYGrid,
-        _localData,
-        _localXLabels = [],
-        _localLegend,
-        _localTooltip;
+        _localData = [],
+        _localTooltip,
+        textPadding = 2,
+        _originalData;
     // _localLabelStack;
 
     /* These are the common private functions that is shared across the different private/public 
@@ -47,8 +43,11 @@ function treemap() {
      */
     var BASE_COLOR = '#ffffff',
         dim1Color = d3.scaleLinear(),
-
-        dim2Color = d3.scaleLinear();
+        dim2Color = d3.scaleLinear(),
+        filterData = [],
+        root,
+        treemap,
+        nest;
     /* -------------------------------------------------------------------------------- */
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
@@ -61,8 +60,6 @@ function treemap() {
         this.fontWeightForMes(config.fontWeightForMes);
         this.fontSizeForMes(config.fontSizeForMes);
         this.numberFormat(config.numberFormat);
-
-
         this.showLabelForDimension(config.showLabelForDimension);
         this.labelColorForDimension(config.labelColorForDimension);
         this.displayColor(config.displayColor);
@@ -103,14 +100,9 @@ function treemap() {
                 }
             } else {
                 return this.displayColor[0];
-            }/*
-            var lightness = 0.70 + obj.depth / 10;
-            return d3.hsl(213, .13, lightness);*/
+            }
         } else if (colorPattern == 'unique_color') {
-            /*var r = parseInt(Math.abs(Math.sin(5*index)) * 255),
-                g = parseInt(Math.abs(Math.cos(3*index)) * 255),
-                b = parseInt(Math.abs(Math.sin(7*index)) * 255);
-            return d3.rgb(r, g, b);*/
+
             var defaultColors = ['#4897D8',
                 '#ED5752',
                 '#5BC8AC',
@@ -127,7 +119,6 @@ function treemap() {
             return defaultColors[index % (defaultColors.length)];
             // return d3.schemeCategory20c[index % (d3.schemeCategory20c.length)];
         } else if (colorPattern == 'gradient_color') {
-            debugger
             if (_dimension.length == 2) {
                 if (obj.children) {
                     return dim1Color(obj.value);
@@ -145,21 +136,21 @@ function treemap() {
 
         if (_dimension.length == 2) {
             if (obj.children) {
-                if (showLabel) {
+                if (showLabelForDimension[0]) {
                     result = result.concat({ node: obj, data: obj.data.key });
                 }
             } else {
-                if (showLabel) {
+                if (showLabelForDimension[1]) {
                     result = result.concat({ node: obj, data: obj.data.key });
                 }
             }
         } else {
-            if (showLabel) {
+            if (showLabelForDimension[0]) {
                 result = result.concat({ node: obj, data: obj.data.key });
             }
         }
 
-        if (showLabel) {
+        if (showLabelForDimension[0]) {
             var nf = UTIL.getNumberFormatter(numberFormat),
                 value;
 
@@ -183,32 +174,177 @@ function treemap() {
     }
 
     var getColorValue = function (data, index) {
-        if (index === 0) {
-            if ((data.node.children && _dimension.length == 2) || (!data.node.children && _dimension.length == 1)) {
-                if (showLabel) {
-                    return valueTextColour[0];
-                }
-            } else {
-                if (this.showLabel2) {
-                    return valueTextColour[0];
-                }
+        if ((data.node.children && _dimension.length == 2) || (!data.node.children && _dimension.length == 1)) {
+            if (showLabelForDimension[0]) {
+                return labelColorForDimension[0];
             }
-        } else if (showLabel) {
-            return valueTextColour[0];
+        } else {
+            if (showLabelForDimension[1]) {
+                return labelColorForDimension[1];
+            }
+        }
+        return null;
+    }
+
+    var getFontWeightValue = function (obj, index) {
+
+        if ((obj.node.children && _dimension.length == 2) || (!obj.node.children && _dimension.length == 1)) {
+            if (showLabelForDimension[0]) {
+                return fontWeightForDimension[0];
+            }
+        } else {
+            if (showLabelForDimension[1]) {
+                return fontWeightForDimension[1];
+            }
         }
 
         return null;
+    }
+
+    var getFontStyleValue = function (obj, index) {
+
+        if ((obj.node.children && _dimension.length == 2) || (!obj.node.children && _dimension.length == 1)) {
+            if (showLabelForDimension[0]) {
+                return fontStyleForDimension[0];
+            }
+        } else {
+            if (showLabelForDimension[1]) {
+                return fontStyleForDimension[1];
+            }
+        }
+
+
+        return null;
+    }
+
+    var getFontSizeValue = function (obj, index) {
+
+        if ((obj.node.children && _dimension.length == 2) || (!obj.node.children && _dimension.length == 1)) {
+            if (showLabelForDimension[0]) {
+                return fontSizeForDimension[0];
+            }
+        } else {
+            if (showLabelForDimension[1]) {
+                return fontSizeForDimension[1];
+            }
+        }
+
+
+        return null;
+    }
+
+    var getVisibilityValue = function (element, node) {
+        var contWidth = node.x1 - node.x0,
+            contHeight = node.y1 - node.y0,
+            textWidth = element.getComputedTextLength(),
+            textHeight = parseInt(d3.select(element).style('font-size').replace('px', ''));
+
+        if (((textWidth + 2 * textPadding) > contWidth) || ((textHeight + 2 * textPadding) > contHeight)) {
+            return 'hidden';
+        }
+        return 'visible';
+    }
+
+    var _handleMouseOverFn = function (tooltip, container) {
+        var me = this;
+
+        return function (d, i) {
+            d3.select(this).style('cursor', 'pointer')
+                .style('cursor', 'pointer')
+                .style('fill-opacity',.5);
+            var border = d3.select(this).attr('fill');
+            if (tooltip) {
+                UTIL.showTooltip(tooltip);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
+            }
+        }
+    }
+
+    var _handleMouseMoveFn = function (tooltip, container) {
+        var me = this;
+
+        return function (d, i) {
+            if (tooltip) {
+                var border = d3.select(this).attr('fill');
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border);
+            }
+        }
+    }
+
+    var _handleMouseOutFn = function (tooltip, container) {
+        var me = this;
+
+        return function (d, i) {
+            var border = d3.select(this).attr('fill');
+            d3.select(this).style('cursor', 'default')
+                .style('fill', function (d1, i) {
+                    return border
+                })
+                 .style('fill-opacity',1);
+
+            if (tooltip) {
+                UTIL.hideTooltip(tooltip);
+            }
+        }
+    }
+
+    var _buildTooltipData = function (datum, chart) {
+        var output = "";
+
+        if (datum.data.key != undefined) {
+            if (datum.children != undefined) {
+                output += "<table><tr>" +
+                    "<tr> <th>" + _dimension[0] + ": </th>"
+                    + "<td>" + datum.data.key + "</td>"
+                    + "</tr>";
+            }
+            else {
+                output += "<table><tr>" +
+                    "<tr><th>" + _dimension[0] + "</th><th>" + datum.parent.data.key + "</th></tr>" +
+                    "<tr> <th>" + _dimension[1] + ": </th>"
+                    + "<td>" + datum.data.key + "</td>"
+                    + "</tr>";
+            }
+
+            if (datum.data.values != undefined) {
+                for (var index = 0; index < datum.data.values.length; index++) {
+                    output += " <tr> <th>" + datum.data.values[index].key + ": </th>"
+                        + "<td>" + datum.data.values[index].value + "</td>"
+                        + "</tr>";
+                }
+            }
+            else {
+                output += " <tr> <th>" + _measure[0] + ": </th>"
+                    + "<td>" + datum.data.value + "</td>"
+                    + "</tr>";
+            }
+            output += "</table>";
+            return output;
+        }
+        else {
+            UTIL.hideTooltip(tooltip);
+        }
+
+    }
+
+    var applyFilter = function (chart) {
+        return function () {
+            if (filterData.length > 0) {
+                chart.update(filterData);
+            }
+        }
+    }
+
+    var clearFilter = function () {
+        return function () {
+            chart.update(_originalData);
+        }
     }
 
     function chart(selection) {
         _localSVG = selection;
 
         selection.each(function (data) {
-
-
-            var padding = 15,
-                offsetHeight = 15,
-                offsetWidth = 30;
 
             var div = d3.select(this).node().parentNode;
             _local_svg = d3.select(this);
@@ -219,7 +355,7 @@ function treemap() {
             var svg = d3.select(this);
 
             /* store the data in local variable */
-            _localData = data;
+            _localData = _originalData = data;
 
             var me = this;
 
@@ -229,11 +365,15 @@ function treemap() {
                 .attr('height', height)
                 .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
-            var treemap = this._treemap = d3.treemap()
+            if (_tooltip) {
+                tooltip = d3.select(this.parentNode).select('#tooltip');
+            }
+
+            treemap = d3.treemap()
                 .size([width, height])
                 .paddingOuter(function (node) {
                     if (node.parent) {
-                        return 3;
+                        return 5;
                     }
                     return 1;
                 })
@@ -241,23 +381,23 @@ function treemap() {
                     if (node.parent) {
                         return 20;
                     }
-                    return padding;
+                    return 0;
                 })
-                .paddingInner(3)
+                .paddingInner(10)
                 .round(true);
 
             if (_dimension.length == 2) {
-                var nest = this._nest = d3.nest()
+                nest = this._nest = d3.nest()
                     .key(function (d) { return d[_dimension[0]]; })
                     .key(function (d) { return d[_dimension[1]]; })
                     .rollup(function (d) { return d3.sum(d, function (d) { return d[_measure[0]]; }); });
             } else {
-                var nest = this._nest = d3.nest()
+                nest = this._nest = d3.nest()
                     .key(function (d) { return d[_dimension[0]]; })
                     .rollup(function (d) { return d3.sum(d, function (d) { return d[_measure[0]]; }); });
             }
 
-            var root = d3.hierarchy({ values: nest.entries(data) }, function (d) { return d.values; })
+            root = d3.hierarchy({ values: nest.entries(data) }, function (d) { return d.values; })
                 .sum(function (d) { return d.value; })
                 .sort(function (a, b) { return b.value - a.value; });
 
@@ -271,7 +411,7 @@ function treemap() {
                 setColorDomainRange(root.descendants(), dim);
                 dim -= 1;
             }
-            
+
             var cell = svg.selectAll('.node')
                 .data(root.descendants())
                 .enter().append('g')
@@ -281,45 +421,48 @@ function treemap() {
                 .attr('class', 'node')
                 .each(function (d) { d.node = this; });
 
-            cell.filter(function (d, i) { return d.parent; })
-                .append('text')
-                .selectAll('tspan')
-                .data(function (d, i) {
-                    return getFilterLabels(d);
-                })
-                .enter().append('tspan')
-                .attr('x', function (d, i) {
-                    return i ? null : 2;
-                })
-                .attr('y', '1em')
-                .text(function (d, i) {
-                    return i ? ', ' + d.data : d.data;
-                })
-                .attr('fill', function (d, i) {
-                    return getColorValue(d, i);
-                })
-            // .attr('visibility', function (d, i) {
-            //     var parentNode = d3.select(this).node().parentNode;
-            //     return me.helper.getVisibilityValue(parentNode, d.node);
-            // })
-            // .style('font-style', function (d, i) {
-            //     return me.helper.getFontStyleValue(d, i);
-            // })
-            // .style('font-weight', function (d, i) {
-            //     return me.helper.getFontWeightValue(d, i);
-            // })
-            // .style('font-size', function (d, i) {
-            //     return me.helper.getFontSizeValue(d, i);
-            // });
+            function afterTransition() {
+                cell.filter(function (d, i) { return d.parent; })
+                    .append('text')
+                    .selectAll('tspan')
+                    .data(function (d, i) {
+                        return getFilterLabels(d);
+                    })
+                    .enter().append('tspan')
+                    .attr('x', function (d, i) {
+                        return i ? null : 2;
+                    })
+                    .attr('y', '1em')
+                    .text(function (d, i) {
+                        return i ? '- ' + d.data : d.data;
+                    })
+                    .attr('fill', function (d, i) {
+                        return getColorValue(d, i);
+                    })
+                    .attr('visibility', function (d, i) {
+                        var parentNode = d3.select(this).node().parentNode;
+                        return getVisibilityValue(parentNode, d.node);
+                    })
+                    .style('font-style', function (d, i) {
+                        return getFontStyleValue(d, i);
+                    })
+                    .style('font-weight', function (d, i) {
+                        return getFontWeightValue(d, i);
+                    })
+                    .style('font-size', function (d, i) {
+                        return getFontSizeValue(d, i);
+                    });
+            }
 
             var t = d3.transition()
                 .duration(400)
                 .ease(d3.easeQuadIn)
+                .on('end', afterTransition);
 
 
             var rect = cell.append('rect')
-                .attr('rx', 2)
-                .attr('ry', 2)
+                .attr('rx', 5)
+                .attr('ry', 5)
                 .attr('width', function (d) {
                     return d.x1 - d.x0;
                 })
@@ -329,9 +472,42 @@ function treemap() {
                 .attr('fill', function (d, i) {
                     return getFillColor(d, i);
                 })
+                .attr('stroke', function (d, i) {
+                    return getFillColor(d, i);
+                })
+                .style('stroke-width', 2)
                 .attr('id', function (d, i) {
                     return 'rect-' + i;
-                });
+                })
+                .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+                .on('click', function (d) {
+                    var confirm = d3.select('.confirm')
+                        .style('visibility', 'visible');
+                    var _filter = _localData.filter(function (d1) {
+                        return d.data.key === d1[_dimension[1]]
+                    })
+                    var rect = d3.select(this);
+                    if (rect.classed('selected')) {
+                        rect.classed('selected', false);
+                        filterData.map(function (val, i) {
+                            if (val[_dimension[0]] == d[_dimension[0]]) {
+                                filterData.splice(i, 1)
+                            }
+                        })
+                    } else {
+                        rect.classed('selected', true);
+                        var isExist = filterData.filter(function (val) {
+                            if (val[_dimension[0]] == d[_dimension[0]]) {
+                                return val
+                            }
+                        })
+                        if (isExist.length == 0) {
+                            filterData.push(_filter[0]);
+                        }
+                    }
+                })
 
             rect.transition(t)
                 .attr('width', function (d) {
@@ -344,11 +520,146 @@ function treemap() {
                     return getFillColor(d, i)
                 });
 
+            d3.select(div).select('.btn-primary')
+                .on('click', applyFilter(chart));
+
+            d3.select(div).select('.btn-default')
+                .on('click', clearFilter());
+
         });
     }
 
     chart._getName = function () {
         return _NAME;
+    }
+
+    chart.update = function (data) {
+
+        root = d3.hierarchy({ values: nest.entries(data) }, function (d) { return d.values; })
+            .sum(function (d) { return d.value; })
+            .sort(function (a, b) { return b.value - a.value; });
+
+        _localTotal = root.value;
+        var svg = _localSVG
+        svg.selectAll('g').remove();
+        treemap(root);
+
+        var dim = _dimension.length;
+
+        while (dim > 0) {
+            setColorDomainRange(root.descendants(), dim);
+            dim -= 1;
+        }
+
+        var cell = svg.selectAll('.node')
+            .data(root.descendants())
+            .enter().append('g')
+            .attr('transform', function (d) {
+                return 'translate(' + d.x0 + ',' + d.y0 + ')';
+            })
+            .attr('class', 'node')
+            .each(function (d) { d.node = this; });
+
+        function afterTransition() {
+            cell.filter(function (d, i) { return d.parent; })
+                .append('text')
+                .selectAll('tspan')
+                .data(function (d, i) {
+                    return getFilterLabels(d);
+                })
+                .enter().append('tspan')
+                .attr('x', function (d, i) {
+                    return i ? null : 2;
+                })
+                .attr('y', '1em')
+                .text(function (d, i) {
+                    return i ? '- ' + d.data : d.data;
+                })
+                .attr('fill', function (d, i) {
+                    return getColorValue(d, i);
+                })
+                .attr('visibility', function (d, i) {
+                    var parentNode = d3.select(this).node().parentNode;
+                    return getVisibilityValue(parentNode, d.node);
+                })
+                .style('font-style', function (d, i) {
+                    return getFontStyleValue(d, i);
+                })
+                .style('font-weight', function (d, i) {
+                    return getFontWeightValue(d, i);
+                })
+                .style('font-size', function (d, i) {
+                    return getFontSizeValue(d, i);
+                });
+        }
+
+
+        var t = d3.transition()
+            .duration(400)
+            .ease(d3.easeQuadIn)
+            .on('end', afterTransition);
+
+
+        var rect = cell.append('rect')
+            .attr('rx', 5)
+            .attr('ry', 5)
+            .attr('width', function (d) {
+                return d.x1 - d.x0;
+            })
+            .attr('height', function (d) {
+                return d.y1 - d.y0;
+            })
+            .attr('fill', function (d, i) {
+                return getFillColor(d, i);
+            })
+            .attr('stroke', function (d, i) {
+                return getFillColor(d, i);
+            })
+            .style('stroke-width', 2)
+            .attr('id', function (d, i) {
+                return 'rect-' + i;
+            })
+            .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+            .on('click', function (d) {
+                var confirm = d3.select('.confirm')
+                    .style('visibility', 'visible');
+                var _filter = _localData.filter(function (d1) {
+                    return d.data.key === d1[_dimension[1]]
+                })
+                var rect = d3.select(this);
+                if (rect.classed('selected')) {
+                    rect.classed('selected', false);
+                    filterData.map(function (val, i) {
+                        if (val[_dimension[0]] == d[_dimension[0]]) {
+                            filterData.splice(i, 1)
+                        }
+                    })
+                } else {
+                    rect.classed('selected', true);
+                    var isExist = filterData.filter(function (val) {
+                        if (val[_dimension[0]] == d[_dimension[0]]) {
+                            return val
+                        }
+                    })
+                    if (isExist.length == 0) {
+                        filterData.push(_filter[0]);
+                    }
+                }
+            })
+
+        rect.transition(t)
+            .attr('width', function (d) {
+                return d.x1 - d.x0;
+            })
+            .attr('height', function (d) {
+                return d.y1 - d.y0;
+            })
+            .attr('fill', function (d, i) {
+                return getFillColor(d, i)
+            });
+
     }
 
     chart.config = function (value) {

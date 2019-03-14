@@ -24,7 +24,7 @@
         <div id="header" style="position: relative; border: 1px solid #999; width: 800">
             <div class="row">
                 <div class="col-md-10">
-                    <p> tree map  </p>
+                    <p> tree map </p>
                 </div>
                 <div class="col-md-2">
                     <!-- <div class="onoffswitch">
@@ -52,7 +52,7 @@
                 </button>
             </div>
         </div>
-    </div>
+    </div> 
 
     <script type="text/javascript">
         /* Global variable accessible from anywhere */
@@ -60,32 +60,30 @@
             UTIL = util()
         LEGEND = legend();
 
-        
+
         var config = {
-            "measure": ['City'],
-            "showLabel": true,
-            colorPattern:'single_color',//gradient_color|unique_color|single_color
-            showValues:true,
-            "valueTextColour": "#e06a6a",
-            "fontStyleForMes": "italic", 
-            fontWeightForMes:"bold", 
-            "fontSizeForMes": "8", 
-            "numberFormat": "",
-        
-            dimension: ['Contury','State'],
-            showLabelForDimension:[true, true],
-            labelColorForDimension:["#e06a6a", "#639ece"],
-            displayColor:["#e06a6a", "#639ece"],
+            dimension: ['Contury', 'State'],
+            showLabelForDimension: [true, true],
+            labelColorForDimension: ["#ffffff", "blue"],
+            displayColor: ["#0000FF", "#00BFFF"],
             "fontStyleForDimension": ["italic", "bold"],
-            fontWeightForDimension:["bold", "900"],
-            "fontSizeForDimension": ["8", "8"],
+            fontWeightForDimension: ["900", "900"],
+            "fontSizeForDimension": ["15", "10"],
+            "measure": ['Population'],
+            "showLabel": true,
+            colorPattern: 'single_color',//gradient_color|unique_color|single_color
+            showValues: true,
+            "valueTextColour": "#e06a6a",
+            "fontStyleForMes": "italic",
+            fontWeightForMes: "bold",
+            "fontSizeForMes": "8",
+            "numberFormat": "K",
         }
 
         var chart = treemap()
             .config(config)
-           // .sort(UTIL.DESCENDING)
             .tooltip(true);
-            
+
         d3.csv('treemap.csv', function (data) {
             d3.select('#donut')
                 .datum(data)
