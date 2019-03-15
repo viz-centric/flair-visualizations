@@ -28,13 +28,16 @@ function heatmap() {
         fontSizeForMeasure = [];
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [];
-
+    var width, height, cellWidth, cellHeight;
     var margin = {
         top: 30,
         right: 15,
         bottom: 15,
         left: 45
     };
+    var yScale = d3.scaleBand(),
+        xScale = d3.scaleBand();
+
 
     var filter = false, filterData = [];
 
@@ -76,14 +79,14 @@ function heatmap() {
 
         return output;
     }
-   
+
     var _handleMouseOverFn = function (tooltip, container) {
         var me = this;
         return function (d, i) {
             d3.select(this).select('rect').style('cursor', 'pointer')
                 .style('cursor', 'pointer')
-                .style('fill-opacity',.5);
-                var border = d3.select(this).attr('fill');
+                .style('fill-opacity', .5);
+            var border = d3.select(this).attr('fill');
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
                 UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
@@ -96,7 +99,7 @@ function heatmap() {
 
         return function (d, i) {
             if (tooltip) {
-                var border =getFillColor(d);
+                var border = getFillColor(d);
                 UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border);
             }
         }
@@ -110,7 +113,7 @@ function heatmap() {
                 .style('fill', function (d1, i) {
                     return getFillColor(d);
                 })
-                .style('fill-opacity',1);
+                .style('fill-opacity', 1);
 
             if (tooltip) {
                 UTIL.hideTooltip(tooltip);
@@ -224,6 +227,191 @@ function heatmap() {
 
         return anchor;
     }
+
+    var onLassoStart = function (lasso, chart) {
+        return function () {
+            if (filter) {
+                lasso.items().selectAll('rect')
+                    .classed('not_possible', true)
+                    .classed('selected', false);
+            }
+        }
+    }
+
+    var onLassoDraw = function (lasso, chart) {
+        return function () {
+            filter = true;
+            lasso.items().selectAll('rect')
+                .classed('selected', false);
+
+            lasso.possibleItems().selectAll('rect')
+                .classed('not_possible', false)
+                .classed('possible', true);
+
+            lasso.notPossibleItems().selectAll('rect')
+                .classed('not_possible', true)
+                .classed('possible', false);
+        }
+    }
+
+    var onLassoEnd = function (lasso, chart) {
+        return function () {
+            var data = lasso.selectedItems().data();
+            debugger
+            if (!filter) {
+                return;
+            }
+            if (data.length > 0) {
+                lasso.items().selectAll('rect')
+                    .classed('not_possible', false)
+                    .classed('possible', false);
+            }
+
+            lasso.selectedItems().selectAll('rect')
+                .classed('selected', true)
+
+            lasso.notSelectedItems().selectAll('rect');
+
+            var confirm = d3.select('.confirm')
+                .style('visibility', 'visible');
+
+            var _filter = [];
+            if (data.length > 0) {
+                data.forEach(function (d) {
+                    var temp = d.y;
+                    var searchObj = _filter.find(o => o[_dimension[0]] === temp);
+                    if (searchObj == undefined) {
+                        var tempData = _localData.filter(function (val) {
+                            return val[_dimension[0]] === d.y
+                        })
+                        _filter.push(tempData[0])
+                    }
+                })
+                if (_filter.length > 0) {
+                    filterData = _filter;
+                }
+            }
+        }
+    }
+
+    var applyFilter = function (chart) {
+        return function () {
+            if (filterData.length > 0) {
+                chart.update(filterData);
+            }
+        }
+    }
+
+    var clearFilter = function () {
+        return function () {
+            chart.update(_originalData);
+        }
+    }
+
+    var drawViz = function (element) {
+        element.append('rect')
+            .attr('rx', '3px')
+            .attr('ry', '3px')
+            .attr('class', 'bordered')
+            .style('stroke', '#ffffff')
+            .style('stroke-width', '2px')
+            .attr('width', cellWidth - 1)
+            .attr('height', cellHeight - 1)
+            .transition()
+            .ease(d3.easeQuadIn)
+            .duration(500)
+            .styleTween('fill', function (d) {
+                return d3.interpolateRgb('transparent', getFillColor(d));
+            });
+
+        element.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+            .on('click', function (d) {
+                var confirm = d3.select('.confirm')
+                    .style('visibility', 'visible');
+                var _filter = _localData.filter(function (d1) {
+                    return d.y === d1[_dimension[0]]
+                })
+                var rect = d3.select(this).select('rect');
+                if (rect.classed('selected')) {
+                    rect.classed('selected', false);
+                    filterData.map(function (val, i) {
+                        if (val[_dimension[0]] == d[_dimension[0]]) {
+                            filterData.splice(i, 1)
+                        }
+                    })
+                } else {
+                    rect.classed('selected', true);
+                    var isExist = filterData.filter(function (val) {
+                        if (val[_dimension[0]] == d[_dimension[0]]) {
+                            return val
+                        }
+                    })
+                    if (isExist.length == 0) {
+                        filterData.push(_filter[0]);
+                    }
+                }
+            });
+
+        element.append('foreignObject')
+            .attr('x', function (d) {
+                return getIconPosition(d, cellWidth);
+            })
+            .attr('y', function (d) {
+                return cellHeight - 20;
+            })
+            .attr('visibility', function (d) {
+                return UTIL.getVisibility(showIcon[_measure.indexOf(d.x)]);
+            })
+            .html(function (d) {
+                return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + '"></i>';
+            });
+
+        element.append('text')
+            .attr('x', function (d) {
+                return getValuePosition(d, cellWidth);
+            })
+            .attr('y', function (d) {
+                return cellHeight / 2;
+            })
+            .text(function (d) {
+                var si = numberFormat[_measure.indexOf(d.x)],
+                    nf = UTIL.getNumberFormatter(si),
+                    value;
+
+                if (si == "Percent") {
+                    // value = nf(d.val / me.helper.measuresTotal[d.x]);
+                } else {
+                    value = nf(d.val);
+                }
+
+                if (value.indexOf("G") != -1) {
+                    value = value.slice(0, -1) + "B";
+                }
+
+                return value;
+            })
+            .style('fill', function (d) {
+                return valueTextColour[_measure.indexOf(d.x)];
+            })
+            .attr('text-anchor', function (d) {
+                return getValueTextAnchor(d);
+            })
+            .attr('visibility', function (d) {
+                return showValues[_measure.indexOf(d.x)];
+            })
+            .style('font-style', function (d) {
+                return fontStyleForMeasure[_measure.indexOf(d.x)];
+            })
+            .style('font-weight', function (d) {
+                return fontWeightForMeasure[_measure.indexOf(d.x)];
+            })
+            .style('font-size', function (d) {
+                return fontSizeForMeasure[_measure.indexOf(d.x)];
+            });
+    }
+
     function chart(selection) {
         _local_svg = selection;
 
@@ -232,8 +420,8 @@ function heatmap() {
             var div = d3.select(this).node().parentNode;
             _local_svg = d3.select(this);
 
-            var width = div.clientWidth
-            var height = div.clientHeight
+            width = div.clientWidth
+            height = div.clientHeight
 
             var svg = d3.select(this);
 
@@ -253,6 +441,7 @@ function heatmap() {
             var plot = svg.attr('width', width)
                 .attr('height', height)
                 .append('g')
+                .attr('class', 'plot')
                 .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
 
             var yElement = d3.set(data.map(function (item) { return item[_dimension[0]]; })).values();
@@ -262,7 +451,7 @@ function heatmap() {
                 xElement.set(i, _measure[i]);
             }
 
-            var cellWidth = parseInt((width - margin.left - margin.right) / _measure.length),
+            cellWidth = parseInt((width - margin.left - margin.right) / _measure.length),
                 cellHeight = parseInt((height - margin.top - margin.bottom) / data.length);
             var offset = 6;
             var dimLabel = plot.selectAll('.dimLabel')
@@ -297,11 +486,11 @@ function heatmap() {
                 .style('text-anchor', 'middle')
                 .attr('transform', 'translate(' + cellWidth / 2 + ', -6)');
 
-            var yScale = d3.scaleBand()
+            yScale
                 .domain(yElement)
                 .range([0, yElement.length * cellHeight]);
 
-            var xScale = d3.scaleBand()
+            xScale
                 .domain(xElement.entries().map(function (element) {
                     return element.key + '_' + element.value;
                 }))
@@ -320,87 +509,243 @@ function heatmap() {
                 })
                 .attr('class', 'node')
 
-            cell.append('rect')
-                .attr('rx', '3px')
-                .attr('ry', '3px')
-                .attr('class', 'bordered')
-                .style('stroke', '#ffffff')
-                .style('stroke-width', '2px')
-                .attr('width', cellWidth - 1)
-                .attr('height', cellHeight - 1)
-                .transition()
-                .ease(d3.easeQuadIn)
-                .duration(500)
-                .styleTween('fill', function (d) {
-                    return d3.interpolateRgb('transparent', getFillColor(d));
-                });
 
-                cell  .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg));
-                
+            drawViz(cell);
 
-            cell.append('foreignObject')
-                .attr('x', function (d) {
-                    return getIconPosition(d, cellWidth);
-                })
-                .attr('y', function (d) {
-                    return cellHeight - 20;
-                })
-                .attr('visibility', function (d) {
-                    return UTIL.getVisibility(showIcon[_measure.indexOf(d.x)]);
-                })
-                .html(function (d) {
-                    return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + '"></i>';
-                });
+            d3.select(div).select('.btn-primary')
+                .on('click', applyFilter(chart));
 
-            cell.append('text')
-                .attr('x', function (d) {
-                    return getValuePosition(d, cellWidth);
-                })
-                .attr('y', function (d) {
-                    return cellHeight / 2;
-                })
-                .text(function (d) {
-                    var si = numberFormat[_measure.indexOf(d.x)],
-                        nf = UTIL.getNumberFormatter(si),
-                        value;
+            d3.select(div).select('.btn-default')
+                .on('click', clearFilter());
 
-                    if (si == "Percent") {
-                        // value = nf(d.val / me.helper.measuresTotal[d.x]);
-                    } else {
-                        value = nf(d.val);
-                    }
+            var lasso = d3.lasso()
+                .hoverSelect(true)
+                .closePathSelect(true)
+                .closePathDistance(100)
+                .items(cell)
+                .targetArea(svg);
 
-                    if (value.indexOf("G") != -1) {
-                        value = value.slice(0, -1) + "B";
-                    }
+            lasso.on('start', onLassoStart(lasso, chart))
+                .on('draw', onLassoDraw(lasso, chart))
+                .on('end', onLassoEnd(lasso, chart));
 
-                    return value;
-                })
-                .style('fill', function (d) {
-                    return valueTextColour[_measure.indexOf(d.x)];
-                })
-                .attr('text-anchor', function (d) {
-                    return getValueTextAnchor(d);
-                })
-                .attr('visibility', function (d) {
-                    return showValues[_measure.indexOf(d.x)];
-                })
-                .style('font-style', function (d) {
-                    return fontStyleForMeasure[_measure.indexOf(d.x)];
-                })
-                .style('font-weight', function (d) {
-                    return fontWeightForMeasure[_measure.indexOf(d.x)];
-                })
-                .style('font-size', function (d) {
-                    return fontSizeForMeasure[_measure.indexOf(d.x)];
-                });
+            _local_svg.call(lasso);
         })
 
     }
 
+    chart.update = function (data) {
+        _Local_data = data;
+        filterData = [];
 
+        var yElement = d3.set(data.map(function (item) { return item[_dimension[0]]; })).values();
+        var xElement = d3.map();
+
+        for (var i = 0; i < _measure.length; i++) {
+            xElement.set(i, _measure[i]);
+        }
+
+        cellWidth = parseInt((width - margin.left - margin.right) / _measure.length),
+            cellHeight = parseInt((height - margin.top - margin.bottom) / data.length);
+        var offset = 6;
+        var plot = _local_svg.select('.plot');
+
+        plot.selectAll('.dimLabel').remove()
+
+        var dimLabel = plot.selectAll('.dimLabel')
+            .data(yElement)
+            .enter().append('text')
+            .attr('class', 'dimLabel')
+            .text(function (d) { return d; })
+            .text(function (d) {
+                return d;
+            })
+            .attr('x', 0)
+            .attr('y', function (d, i) { return i * cellHeight; })
+            .attr('fill', dimLabelColor)
+            .style('font-style', fontStyleForDimension)
+            .style('font-weight', fontWeightForDimension)
+            .style('font-size', fontSizeForDimension)
+            .style('text-anchor', 'end')
+            .attr('transform', 'translate(' + -offset + ',' + cellHeight / 1.75 + ')');
+
+        yScale
+            .domain(yElement)
+            .range([0, yElement.length * cellHeight]);
+
+        xScale
+            .domain(xElement.entries().map(function (element) {
+                return element.key + '_' + element.value;
+            }))
+            .range([0, xElement.size() * cellWidth]);
+
+        data = transformData(data);
+
+        var cell = plot.selectAll(".node")
+            .data(data)
+
+        var newCell = cell.enter().append('g')
+            .attr('class', 'node')
+            .attr('transform', function (d) {
+                return 'translate(' + xScale(d.column + '_' + d.x) + ',' + yScale(d.y) + ')';
+            });
+
+        cell.exit().remove();
+
+        cell = plot.selectAll('.node');
+
+        cell.select('rect')
+            .attr('rx', '3px')
+            .attr('ry', '3px')
+            .attr('class', 'bordered')
+            .style('stroke', '#ffffff')
+            .style('stroke-width', '2px')
+            .attr('width', cellWidth - 1)
+            .attr('height', cellHeight - 1)
+            .transition()
+            .ease(d3.easeQuadIn)
+            .duration(500)
+            .styleTween('fill', function (d) {
+                return d3.interpolateRgb('transparent', getFillColor(d));
+            });
+
+
+        cell.select('text')
+            .attr('x', function (d) {
+                return getValuePosition(d, cellWidth);
+            })
+            .attr('y', function (d) {
+                return cellHeight / 2;
+            })
+            .text(function (d) {
+                var si = numberFormat[_measure.indexOf(d.x)],
+                    nf = UTIL.getNumberFormatter(si),
+                    value;
+
+                if (si == "Percent") {
+                    // value = nf(d.val / me.helper.measuresTotal[d.x]);
+                } else {
+                    value = nf(d.val);
+                }
+
+                if (value.indexOf("G") != -1) {
+                    value = value.slice(0, -1) + "B";
+                }
+
+                return value;
+            })
+            .style('fill', function (d) {
+                return valueTextColour[_measure.indexOf(d.x)];
+            })
+            .attr('text-anchor', function (d) {
+                return getValueTextAnchor(d);
+            })
+            .attr('visibility', function (d) {
+                return showValues[_measure.indexOf(d.x)];
+            })
+            .style('font-style', function (d) {
+                return fontStyleForMeasure[_measure.indexOf(d.x)];
+            })
+            .style('font-weight', function (d) {
+                return fontWeightForMeasure[_measure.indexOf(d.x)];
+            })
+            .style('font-size', function (d) {
+                return fontSizeForMeasure[_measure.indexOf(d.x)];
+            });
+
+        cell.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+            .on('click', function (d) {
+                var confirm = d3.select('.confirm')
+                    .style('visibility', 'visible');
+                var _filter = _localData.filter(function (d1) {
+                    return d.y === d1[_dimension[0]]
+                })
+                var rect = d3.select(this).select('rect');
+                if (rect.classed('selected')) {
+                    rect.classed('selected', false);
+                    filterData.map(function (val, i) {
+                        if (val[_dimension[0]] == d[_dimension[0]]) {
+                            filterData.splice(i, 1)
+                        }
+                    })
+                } else {
+                    rect.classed('selected', true);
+                    var isExist = filterData.filter(function (val) {
+                        if (val[_dimension[0]] == d[_dimension[0]]) {
+                            return val
+                        }
+                    })
+                    if (isExist.length == 0) {
+                        filterData.push(_filter[0]);
+                    }
+                }
+            });
+
+        newCell.append('rect')
+            .attr('rx', '3px')
+            .attr('ry', '3px')
+            .attr('class', 'bordered')
+            .style('stroke', '#ffffff')
+            .style('stroke-width', '2px')
+            .attr('width', cellWidth - 1)
+            .attr('height', cellHeight - 1)
+            .transition()
+            .ease(d3.easeQuadIn)
+            .duration(500)
+            .styleTween('fill', function (d) {
+                return d3.interpolateRgb('transparent', getFillColor(d));
+            });
+
+        newCell.append('text')
+            .attr('x', function (d) {
+                return getValuePosition(d, cellWidth);
+            })
+            .attr('y', function (d) {
+                return cellHeight / 2;
+            })
+            .text(function (d) {
+                var si = numberFormat[_measure.indexOf(d.x)],
+                    nf = UTIL.getNumberFormatter(si),
+                    value;
+
+                if (si == "Percent") {
+                    // value = nf(d.val / me.helper.measuresTotal[d.x]);
+                } else {
+                    value = nf(d.val);
+                }
+
+                if (value.indexOf("G") != -1) {
+                    value = value.slice(0, -1) + "B";
+                }
+
+                return value;
+            })
+            .style('fill', function (d) {
+                return valueTextColour[_measure.indexOf(d.x)];
+            })
+            .attr('text-anchor', function (d) {
+                return getValueTextAnchor(d);
+            })
+            .attr('visibility', function (d) {
+                return showValues[_measure.indexOf(d.x)];
+            })
+            .style('font-style', function (d) {
+                return fontStyleForMeasure[_measure.indexOf(d.x)];
+            })
+            .style('font-weight', function (d) {
+                return fontWeightForMeasure[_measure.indexOf(d.x)];
+            })
+            .style('font-size', function (d) {
+                return fontSizeForMeasure[_measure.indexOf(d.x)];
+            });
+
+        plot.selectAll('.node')
+            .attr('transform', function (d) {
+                return 'translate(' + xScale(d.column + '_' + d.x) + ',' + yScale(d.y) + ')';
+            });
+    }
 
     chart._getName = function () {
         return _NAME;
