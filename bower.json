@@ -1,0 +1,14 @@
+{
+  "name": "flair-visualizations",
+  "description": "flair app visualizations",
+  "main": "\"\"",
+  "authors": [
+    "vecentric"
+  ],
+  "license": "ISC",
+  "keywords": [
+    "flair-visualizations"
+  ],
+  "homepage": "https://github.com/viz-centric/flair-visualizations",
+  "private": true
+}
