@@ -1,0 +1,24 @@
+{
+  "name": "flair-visualizations-pkg",
+  "version": "1.0.1",
+  "description": "flair app visualizations",
+  "main": "\"\"",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "\"\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/viz-centric/flair-visualizations.git"
+  },
+  "author": "vcentric",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/viz-centric/flair-visualizations/issues"
+  },
+  "homepage": "https://github.com/viz-centric/flair-visualizations#readme"
+}
