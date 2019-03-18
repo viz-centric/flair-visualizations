@@ -356,7 +356,6 @@ function treemap() {
     var onLassoEnd = function (lasso, chart) {
         return function () {
             var data = lasso.selectedItems().data();
-            debugger
             if (!filter) {
                 return;
             }
