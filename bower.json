@@ -1,14 +1,34 @@
 {
   "name": "flair-visualizations",
-  "description": "flair app visualizations",
-  "main": "\"\"",
+  "description": "All the available Flair-BI charting modules are listed in this package.",
+  "main": [
+    "js/main.js",
+    "sass/main.scss"
+  ],
+  "dependencies": {
+    "d3": "4.10.0"
+  },
+  "devDependencies": {},
+  "moduleType": [],
+  "keywords": [
+    "flair-bi",
+    "flair",
+    "visualizations",
+    "flair-visualizations",
+    "pie"
+  ],
   "authors": [
-    "vecentric"
+    {
+      "name": "VizCentric",
+      "email": "admin@vizcentric.com"
+    },
+    {
+      "name": "Suvrat Ram Joshi",
+      "email": "suvrat_joshi@live.com"
+    }
   ],
   "license": "ISC",
-  "keywords": [
-    "flair-visualizations"
-  ],
+  "ignore": [],
   "homepage": "https://github.com/viz-centric/flair-visualizations",
   "private": true
 }
