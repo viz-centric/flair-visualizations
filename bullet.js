@@ -20,7 +20,7 @@ function bullet() {
         _tooltip,
         _sort;
 
-    var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
+    var _local_svg, _Local_data, _originalData;
 
     var height, width, gWidth, gHeight, bullet;
 
@@ -92,7 +92,6 @@ function bullet() {
     var onLassoEnd = function (lasso, chart) {
         return function () {
             var data = lasso.selectedItems().data();
-            debugger
             if (!filter) {
                 return;
             }
