@@ -779,4 +779,4 @@ function donut() {
     return chart;
 }
 
-module.exports = clusteredverticalbar;
+module.exports = donut;
