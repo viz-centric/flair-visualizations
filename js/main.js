@@ -25,7 +25,7 @@ module.exports = {
 	infographics: infographics,
 	kpi: kpi,
 	line: line,
-	pie: pie.
+	pie: pie,
 	pivot: pivot,
 	scatter: scatter,
 	stackedhorizontalbar: stackedhorizontalbar,
