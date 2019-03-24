@@ -29,3 +29,6 @@ hs_err_pid*
 
 # Bower dependencies
 bower_components/
+
+# Node dependencies
+node_modules/

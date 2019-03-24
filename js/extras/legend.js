@@ -1,3 +1,5 @@
+var COMMON = require('../extras/common.js')();
+
 function legend() {
     return function(data, selection, extraParams) {
         if(extraParams.labelStack == void 0) {
