@@ -269,8 +269,7 @@ function stackedverticalbar() {
                 threshold.push(obj);
                 $('#Modal_' + $(div).attr('id')).modal('toggle');
             })
-            container = _local_svg.append('g')
-                .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
+           
 
             var legendWidth = 0,
                 legendHeight = 0;
