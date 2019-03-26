@@ -1,6 +1,10 @@
-function stackedhorizontalbar() {
+var COMMON = require('../extras/common.js')(),
+    UTIL = require('../extras/util.js')(),
+    LEGEND = require('../extras/legend.js')();
 
-    var _NAME = 'stackedhorizontalbar';
+function stackedverticalbar() {
+
+    var _NAME = 'stackedverticalbar';
 
     var _config,
         _dimension,
@@ -19,7 +23,6 @@ function stackedhorizontalbar() {
         _stacked,
         _displayName,
         _legendData,
-
         _showValues = [],
         _displayNameForMeasure = [],
         _fontStyle = [],
@@ -30,21 +33,23 @@ function stackedhorizontalbar() {
         _borderColor = [],
         _fontSize = [];
 
-    var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
-    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div;
-    var parentWidth, parentHeight, plotWidth, plotHeight, container;
+    var _local_svg,
+        _Local_data;
 
     var x, y;
-
     var margin = {
         top: 0,
         right: 0,
         bottom: 0,
         left: 45
     };
+    var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
+    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div;
+    var parentWidth, parentHeight, plotWidth, plotHeight, container;
 
     var filter = false, filterData = [];
     var threshold = [];
+
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
         this.measure(config.measure);
@@ -77,10 +82,9 @@ function stackedhorizontalbar() {
 
     var _buildTooltipData = function (datum, chart) {
         var output = "";
-
         output += "<table><tr>"
             + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + datum.data[_dimension[0]] + "</td>"
+            + "<td>" + datum.data[chart.dimension()] + "</td>"
             + "</tr><tr>"
             + "<th>" + datum.key + ": </th>"
             + "<td>" + datum.data[datum.key] + "</td>"
@@ -105,6 +109,13 @@ function stackedhorizontalbar() {
             lasso.items().selectAll('rect')
                 .classed('selected', false);
 
+            lasso.possibleItems().selectAll('rect').each(function (d, i) {
+                var item = d3.select(this).node().className.baseVal.split(' ')[0];
+                d3.selectAll('rect.' + item)
+                    .classed('not_possible', false)
+                    .classed('possible', true);
+
+            });
             lasso.possibleItems().selectAll('rect')
                 .classed('not_possible', false)
                 .classed('possible', true);
@@ -162,11 +173,13 @@ function stackedhorizontalbar() {
             }
         }
     }
+
     var clearFilter = function () {
         return function () {
             chart.update(_originalData);
         }
     }
+
     var _handleMouseOverFn = function (tooltip, container) {
         var me = this;
 
@@ -218,6 +231,7 @@ function stackedhorizontalbar() {
             _originalData = data;
             div = d3.select(this).node().parentNode;
 
+            _local_svg = d3.select(this);
             var width = div.clientWidth,
                 height = div.clientHeight;
 
@@ -259,9 +273,7 @@ function stackedhorizontalbar() {
                 threshold.push(obj);
                 $('#Modal_' + $(div).attr('id')).modal('toggle');
             })
-
-            container = _local_svg.append('g')
-                .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
+           
 
             var legendWidth = 0,
                 legendHeight = 0;
@@ -270,9 +282,9 @@ function stackedhorizontalbar() {
             plotHeight = parentHeight;
 
             if (_showLegend) {
-                var stackedhorizontalbarLegend = LEGEND.bind(chart);
+                var stackedverticalbarLegend = LEGEND.bind(chart);
 
-                var result = stackedhorizontalbarLegend(_legendData, container, {
+                var result = stackedverticalbarLegend(_legendData, container, {
                     width: parentWidth,
                     height: parentHeight,
                     legendBreakCount: legendBreakCount
@@ -335,21 +347,20 @@ function stackedhorizontalbar() {
 
         element.append('rect')
             .style('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
+                return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);;
             })
             .style('stroke', function (d, i) {
                 return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
             })
-            .attr("y", function (d) {
+            .attr("x", function (d) {
                 return x(d.data[_dimension[0]]);
             })
-            .attr("x", function (d) {
-                return (d[0] < d[1]) ? (y(d[0]) + 1) : (y(d[1]) + 1);
+            .attr('class', function (d, i) {
+                return d.data[_dimension[0]];
             })
-            .attr("width", function (d) {
-                return Math.abs(y(d[1]) - y(d[0]));
-            })
-            .attr("height", x.bandwidth())
+            .attr("y", function (d) { return y(d[1]); })
+            .attr("height", function (d) { return y(d[0]) - y(d[1]); })
+            .attr("width", x.bandwidth())
             .style('stroke-width', 2)
             .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
@@ -394,10 +405,10 @@ function stackedhorizontalbar() {
                 return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat));
             })
             .attr('x', function (d, i) {
-                return y(d[1]) - 20;
+                return x(d.data[_dimension[0]]) + x.bandwidth() / 2;
             })
             .attr('y', function (d, i) {
-                return x(d.data[_dimension[0]]) + x.bandwidth() / 2;
+                return y(d[1]) + 5;
             })
             .attr('dy', function (d, i) {
                 return offsetX / 2;
@@ -412,34 +423,34 @@ function stackedhorizontalbar() {
                     rectWidth = rect.getAttribute('width'),
                     rectHeight = rect.getAttribute('height');
 
-                if (rectHeight <= parseFloat(d3.select(this).style('font-size').replace('px', ''))) {
+                if (rectHeight <= ((offsetX / 2) + parseFloat(d3.select(this).style('font-size').replace('px', '')))) {
                     return 'hidden';
                 }
 
-                if ((this.getComputedTextLength() + (offsetX / 4)) > parseFloat(rectWidth)) {
+                if (this.getComputedTextLength() > parseFloat(rectWidth)) {
                     return 'hidden';
                 }
 
                 return 'visible';
             })
             .style('font-style', function (d, i) {
-                return _fontStyle[_measure.indexOf(d.key)];
+                return _fontStyle[_measure.indexOf(d.key)]["fontStyle"];
             })
             .style('font-weight', function (d, i) {
-                return _fontWeight[_measure.indexOf(d.key)];
+                return _fontWeight[_measure.indexOf(d.key)]["fontWeight"];
             })
             .style('font-size', function (d, i) {
-                return _fontSize[_measure.indexOf(d.key)] + 'px';
+                return _fontSize[_measure.indexOf(d.key)]['fontSize'] + 'px';
             })
             .style('fill', function (d, i) {
-                return _textColor[_measure.indexOf(d.key)];
+                return _textColor[_measure.indexOf(d.key)]["textColor"];
             });
     }
     var drawPlot = function (data) {
         var me = this;
         _Local_data = data;
         var plot = container.append('g')
-            .attr('class', 'stackedhorizontalbar-plot')
+            .attr('class', 'stackedverticalbar-plot')
             .classed('plot', true)
             .attr('transform', function () {
                 if (_legendPosition == 'top') {
@@ -460,11 +471,13 @@ function stackedhorizontalbar() {
         }
 
         x = d3.scaleBand()
-            .rangeRound([0, plotHeight])
-            .padding([0.2])
+            .rangeRound([0, plotWidth])
+            .paddingInner(0.1)
+            .padding([0.1])
+            .align(0.1);
 
         y = d3.scaleLinear()
-            .rangeRound([0, plotWidth]);
+            .rangeRound([plotHeight, 0]);
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
@@ -491,9 +504,9 @@ function stackedhorizontalbar() {
             .selectAll('g')
             .data(d3.stack().keys(keys)(data))
             .enter().append('g')
-            .attr('class', 'stackedhorizontalbar-group');
+            .attr('class', 'stackedverticalbar-group');
 
-        var stackedhorizontalbar = stack.selectAll('g')
+        var stackedverticalbar = stack.selectAll('g')
             .data(function (d, i) {
                 d.forEach(function (datum) {
                     datum.key = d.key;
@@ -501,14 +514,14 @@ function stackedhorizontalbar() {
                 return d;
             })
             .enter().append('g')
-            .attr('class', 'stackedhorizontalbar');
+            .attr('class', 'stackedverticalbar');
 
-        drawViz(stackedhorizontalbar);
+        drawViz(stackedverticalbar);
 
         plot.append("g")
             .attr("class", "x_axis")
             .attr("transform", "translate(0," + plotHeight + ")")
-            .call(d3.axisBottom(y))
+            .call(d3.axisBottom(x))
             .append("text")
             .attr("x", plotWidth / 2)
             .attr("y", 2 * axisLabelSpace)
@@ -518,12 +531,12 @@ function stackedhorizontalbar() {
             .style('text-anchor', 'middle')
             .style('visibility', UTIL.getVisibility(_showXaxisLabel))
             .text(function () {
-                return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+                return _displayName;
             });
 
         plot.append("g")
             .attr("class", "y_axis")
-            .call(d3.axisLeft(x).ticks(null, "s"))
+            .call(d3.axisLeft(y).ticks(null, "s"))
             .append("text")
             .attr("x", plotHeight / 2)
             .attr("y", 2 * axisLabelSpace)
@@ -533,10 +546,11 @@ function stackedhorizontalbar() {
             .attr("font-weight", "bold")
             .style('text-anchor', 'middle')
             .text(function () {
-                return _displayName;
+                return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
             });
 
         UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis, _showYaxis, _showXaxis);
+
         _local_svg.select('g.sort').remove();
         UTIL.sortingView(container, parentHeight, parentWidth + margin.left, legendBreakCount, axisLabelSpace, offsetX);
 
@@ -564,11 +578,12 @@ function stackedhorizontalbar() {
         d3.select(div).select('.btn-default')
             .on('click', clearFilter());
 
+        _local_svg.select('g.lasso').remove()
         var lasso = d3.lasso()
             .hoverSelect(true)
             .closePathSelect(true)
             .closePathDistance(100)
-            .items(stackedhorizontalbar)
+            .items(stackedverticalbar)
             .targetArea(_local_svg);
 
         lasso.on('start', onLassoStart(lasso, chart))
@@ -594,9 +609,10 @@ function stackedhorizontalbar() {
                 break;
         }
     }
+
     var _legendMouseOver = function (data) {
 
-        d3.selectAll('g.stackedhorizontalbar')
+        d3.selectAll('g.stackedverticalbar')
             .filter(function (d) {
                 return d.measure === data;
             })
@@ -609,7 +625,7 @@ function stackedhorizontalbar() {
     }
 
     var _legendMouseOut = function (data) {
-        d3.selectAll('g.stackedhorizontalbar')
+        d3.selectAll('g.stackedverticalbar')
             .filter(function (d) {
                 return d.measure === data;
             })
@@ -623,20 +639,26 @@ function stackedhorizontalbar() {
         var _filter = UTIL.getFilterData(_localLabelStack, data, _originalData)
         drawPlot.call(this, _filter);
     }
+    chart._getName = function () {
+        return _NAME;
+    }
 
     chart.update = function (data) {
 
-        _Local_data = data;
-        filterData = [];
+        _Local_data = data,
+            filterData = [];
 
         x = d3.scaleBand()
-            .rangeRound([0, plotHeight])
-            .padding([0.2])
-
+            .rangeRound([0, plotWidth])
+            .paddingInner(0.1)
+            .padding([0.1])
+            .align(0.1);
+        var labelStack = [];
         y = d3.scaleLinear()
-            .rangeRound([0, plotWidth]);
+            .rangeRound([plotHeight, 0]);
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
+
         for (i = 0; i < data.length; i++) {
             var t = 0;
             for (j = 0; j < keys.length; j++) {
@@ -653,21 +675,19 @@ function stackedhorizontalbar() {
         data.map(function (val) {
             delete val['total'];
         })
-
-        var labelStack = [];
         var plot = _local_svg.select('.plot')
 
-        var stack = plot.select('g.stack').selectAll('g.stackedhorizontalbar-group')
+        var stack = _local_svg.select('g.stack').selectAll('g.stackedverticalbar-group')
             .data(d3.stack().keys(keys)(data))
 
         stack.enter().append('g')
-            .attr('class', 'stackedhorizontalbar-group');
+            .attr('class', 'stackedverticalbar-group');
 
         stack.exit().remove();
 
-        var stackedhorizontalbarGroup = plot.select('g.stack').selectAll('g.stackedhorizontalbar-group');
+        var stackedVerticalbarGroup = plot.select('g.stack').selectAll('g.stackedverticalbar-group');
 
-        var stackedhorizontalbar = stackedhorizontalbarGroup.selectAll('g.stackedhorizontalbar')
+        var stackedverticalbar = stackedVerticalbarGroup.selectAll('g.stackedverticalbar')
             .data(function (d, i) {
                 d.forEach(function (datum) {
                     datum.key = d.key;
@@ -676,78 +696,55 @@ function stackedhorizontalbar() {
             });
 
 
-        stackedhorizontalbar.select('rect')
-            .attr("y", function (d) {
+        stackedverticalbar.select('rect')
+            .attr("x", function (d) {
                 return x(d.data[_dimension[0]]);
             })
-            .attr("x", function (d) {
-                return (d[0] < d[1]) ? (y(d[0]) + 1) : (y(d[1]) + 1);
+            .attr('class', function (d, i) {
+                return d.data[_dimension[0]];
             })
-            .attr("width", function (d) {
-                return Math.abs(y(d[1]) - y(d[0]));
-            })
-            .classed('selected', false)
-            .classed('possible', false)
-            .attr("height", x.bandwidth())
+            .attr("y", function (d) { return y(d[1]); })
+            .attr("height", function (d) { return y(d[0]) - y(d[1]); })
+            .attr("width", x.bandwidth())
             .style('stroke-width', 2)
 
-        stackedhorizontalbar.select('text')
+        stackedverticalbar.select('text')
             .text(function (d, i) {
                 return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat));
             })
             .attr('x', function (d, i) {
-                return y(d[1]) - 20;
+                return x(d.data[_dimension[0]]) + x.bandwidth() / 2;
             })
             .attr('y', function (d, i) {
-                return x(d.data[_dimension[0]]) + x.bandwidth() / 2;
+                return y(d[1]) + 5;
             })
             .attr('dy', function (d, i) {
                 return offsetX / 2;
             })
             .style('text-anchor', 'middle')
-            .attr('visibility', function (d, i) {
-                return UTIL.getVisibility(_showValues[_measure.indexOf(d.key)]);
-            })
-            .attr('visibility', function (d, i) {
-                if (this.getAttribute('visibility') == 'hidden') return 'hidden';
-                var rect = d3.select(this.previousElementSibling).node(),
-                    rectWidth = rect.getAttribute('width'),
-                    rectHeight = rect.getAttribute('height');
 
-                if (rectHeight <= parseFloat(d3.select(this).style('font-size').replace('px', ''))) {
-                    return 'hidden';
-                }
-                if ((this.getComputedTextLength() + (offsetX / 4)) > parseFloat(rectWidth)) {
-                    return 'hidden';
-                }
-                return 'visible';
-            })
-
-        var newBars = stackedhorizontalbar.enter().append('g')
-            .attr('class', 'stackedhorizontalbar');
+        var newBars = stackedverticalbar.enter().append('g')
+            .attr('class', 'stackedverticalbar');
 
         drawViz(newBars);
 
         plot.select('.x_axis')
             .transition()
             .duration(1000)
-            .call(d3.axisBottom(y));
+            .call(d3.axisBottom(x));
 
         plot.select('.y_axis')
             .transition()
             .duration(1000)
-            .call(d3.axisLeft(x).ticks(null, "s"));
+            .call(d3.axisLeft(y).ticks(null, "s"));
 
-        stackedhorizontalbar.exit()
+        stackedverticalbar.exit()
             .transition()
             .duration(1000)
             .remove();
 
         UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis);
         UTIL.displayThreshold(threshold, data, keys);
-    }
-    chart._getName = function () {
-        return _NAME;
     }
 
     chart.config = function (value) {
@@ -924,3 +921,5 @@ function stackedhorizontalbar() {
     }
     return chart;
 }
+
+module.exports = stackedverticalbar;

@@ -1,6 +1,10 @@
-function combo() {
+var COMMON = require('../extras/common.js')(),
+    UTIL = require('../extras/util.js')(),
+    LEGEND = require('../extras/legend.js')();
 
-    var _NAME = 'combo';
+function stackedhorizontalbar() {
+
+    var _NAME = 'stackedhorizontalbar';
 
     var _config,
         _dimension,
@@ -15,38 +19,36 @@ function combo() {
         _showYaxisLabel,
         _xAxisColor,
         _yAxisColor,
+        _showGrid,
+        _stacked,
         _displayName,
         _legendData,
-        _comboChartType,
-        _showValues,
-        _displayNameForMeasure,
-        _fontStyle,
-        _fontWeight,
-        _numberFormat,
-        _textColor,
-        _displayColor,
-        _borderColor,
-        _fontSize,
-        _lineType,
-        _pointType;
 
-    var x0, x1, y;
+        _showValues = [],
+        _displayNameForMeasure = [],
+        _fontStyle = [],
+        _fontWeight = [],
+        _numberFormat = [],
+        _textColor = [],
+        _displayColor = [],
+        _borderColor = [],
+        _fontSize = [];
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
-
-    var parentWidth, parentHeight, plotWidth, plotHeight;
-
     var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div;
+    var parentWidth, parentHeight, plotWidth, plotHeight, container;
 
-    var filter = false, filterData = [];
+    var x, y;
 
-    var measuresBar = [], measuresLine = [];
     var margin = {
         top: 0,
         right: 0,
         bottom: 0,
         left: 45
     };
+
+    var filter = false, filterData = [];
+    var threshold = [];
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
         this.measure(config.measure);
@@ -73,77 +75,19 @@ function combo() {
         this.displayColor(config.displayColor);
         this.borderColor(config.borderColor);
         this.fontSize(config.fontSize);
-        this.comboChartType(config.comboChartType)
-        this.lineType(config.lineType);
-        this.pointType(config.pointType)
+
         this.legendData(config.displayColor, config.measure);
-    }
-    var getPointType = function (index) {
-        var symbol = null;
-
-        switch (_pointType[index].toLowerCase()) {
-            case "rectrounded":
-                symbol = d3.symbolDiamond;
-                break;
-
-            case "rectrot":
-                symbol = d3.symbolDiamond;
-                break;
-
-            case "star":
-                symbol = d3.symbolStar;
-                break;
-
-            case "triangle":
-                symbol = d3.symbolTriangle;
-                break;
-
-            case "circle":
-                symbol = d3.symbolCircle;
-                break;
-
-            case "cross":
-                symbol = d3.symbolCross;
-                break;
-
-            case "crossrot":
-                symbol = d3.symbolCross;
-                break;
-
-            case "dash":
-                symbol = d3.symbolWye;
-                break;
-
-            case "line":
-                symbol = d3.symbolWye;
-                break;
-
-            case "rect":
-                symbol = d3.symbolSquare;
-                break;
-
-            default:
-                symbol = d3.symbolCircle;
-        }
-
-        return symbol;
-    }
-
-    var getXLabels = function (data) {
-        return data.map(function (d) { return d[_dimension[0]]; })
     }
 
     var _buildTooltipData = function (datum, chart) {
         var output = "";
-        var dimension = datum.dimension != undefined ? datum.dimension : datum.data[_dimension[0]],
-            measure = datum.id != undefined ? datum.id : datum.tag,
-            measurevalue = datum._measure != undefined ? datum._measure : datum.data[datum.tag];
+
         output += "<table><tr>"
-            + "<th>" + _dimension[0] + ": </th>"
-            + "<td>" + dimension + "</td>"
+            + "<th>" + chart.dimension() + ": </th>"
+            + "<td>" + datum.data[_dimension[0]] + "</td>"
             + "</tr><tr>"
-            + "<th>" + measure + ": </th>"
-            + "<td>" + measurevalue + "</td>"
+            + "<th>" + datum.key + ": </th>"
+            + "<td>" + datum.data[datum.key] + "</td>"
             + "</tr></table>";
 
         return output;
@@ -198,7 +142,6 @@ function combo() {
             var _filter = [];
             var keys = UTIL.getMeasureList(data[0].data, _dimension);
             data.forEach(function (d) {
-
                 var obj = new Object();
                 var temp = d.data[_dimension[0]];
                 var searchObj = _filter.find(o => o[_dimension[0]] === temp);
@@ -223,13 +166,11 @@ function combo() {
             }
         }
     }
-
     var clearFilter = function () {
         return function () {
             chart.update(_originalData);
         }
     }
-
     var _handleMouseOverFn = function (tooltip, container) {
         var me = this;
 
@@ -237,7 +178,7 @@ function combo() {
             d3.select(this).style('cursor', 'pointer')
                 .style('cursor', 'pointer')
                 .style('fill', COMMON.HIGHLIGHTER);
-            var border = UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor)
+            var border = UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor)
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
                 UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
@@ -250,8 +191,8 @@ function combo() {
 
         return function (d, i) {
             if (tooltip) {
-                var border = UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor)
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
+                var border = UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor)
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border);
             }
         }
     }
@@ -262,10 +203,10 @@ function combo() {
         return function (d, i) {
             d3.select(this).style('cursor', 'default')
                 .style('fill', function (d1, i) {
-                    return UTIL.getDisplayColor(_measure.indexOf(d1.tag), _displayColor);
+                    return UTIL.getDisplayColor(_measure.indexOf(d1.key), _displayColor);
                 })
                 .style('stroke', function (d1, i) {
-                    return UTIL.getBorderColor(_measure.indexOf(d1.tag), _borderColor);
+                    return UTIL.getBorderColor(_measure.indexOf(d1.key), _borderColor);
                 });
 
             if (tooltip) {
@@ -278,15 +219,17 @@ function combo() {
         _local_svg = selection;
 
         selection.each(function (data) {
-            _Local_data = _originalData = data;
+            _originalData = data;
             div = d3.select(this).node().parentNode;
 
-            var _local_svg = d3.select(this),
-                width = div.clientWidth,
+            var width = div.clientWidth,
                 height = div.clientHeight;
 
             parentWidth = width - 2 * COMMON.PADDING - margin.left;
             parentHeight = (height - 2 * COMMON.PADDING - axisLabelSpace * 2);
+
+            container = _local_svg.append('g')
+                .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
             _local_svg.attr('width', width)
                 .attr('height', height)
@@ -310,7 +253,7 @@ function combo() {
                         $('#Modal_' + $(div).attr('id')).modal('toggle');
                     }
                 }
-            });
+            })
 
             $(document).on('click', '#Modal_' + $(div).attr('id') + ' .ThresholdSubmit', function (e) {
                 var newValue = $('#Modal_' + $(div).attr('id') + ' .threshold').val();
@@ -319,22 +262,21 @@ function combo() {
                 obj.threshold = newValue;
                 threshold.push(obj);
                 $('#Modal_' + $(div).attr('id')).modal('toggle');
-            });
+            })
 
             container = _local_svg.append('g')
                 .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
             var legendWidth = 0,
-                legendHeight = 0,
-                legendBreakCount;
+                legendHeight = 0;
 
             plotWidth = parentWidth;
             plotHeight = parentHeight;
 
             if (_showLegend) {
-                var clusteredverticalbarLegend = LEGEND.bind(chart);
+                var stackedhorizontalbarLegend = LEGEND.bind(chart);
 
-                var result = clusteredverticalbarLegend(_legendData, container, {
+                var result = stackedhorizontalbarLegend(_legendData, container, {
                     width: parentWidth,
                     height: parentHeight,
                     legendBreakCount: legendBreakCount
@@ -388,43 +330,37 @@ function combo() {
                 tooltip = d3.select(this.parentNode).select('#tooltip');
             }
 
-            drawPlot.call(this, data)
+            drawPlot.call(this, data);
         });
     }
+
     var drawViz = function (element) {
         var me = this;
 
         element.append('rect')
-            .attr('width', x1.bandwidth())
             .style('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
             })
             .style('stroke', function (d, i) {
-                return UTIL.getBorderColor(_measure.indexOf(d['tag']), _borderColor);
+                return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
             })
-            .style('stroke-width', 1)
-            .attr('x', function (d, i) {
-                return x1(measuresBar[i]);
+            .attr("y", function (d) {
+                return x(d.data[_dimension[0]]);
             })
-            .attr('y', function (d, i) {
-                if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
-                    return 0;
-                } else if (d['data'][measuresBar[i]] > 0) {
-                    return y(d['data'][measuresBar[i]]);
-                }
-
-                return y(0);
+            .attr("x", function (d) {
+                return (d[0] < d[1]) ? (y(d[0]) + 1) : (y(d[1]) + 1);
             })
-            .attr('height', function (d, i) {
-                if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) return 0;
-                return Math.abs(y(0) - y(d['data'][measuresBar[i]]));
+            .attr("width", function (d) {
+                return Math.abs(y(d[1]) - y(d[0]));
             })
+            .attr("height", x.bandwidth())
+            .style('stroke-width', 2)
             .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
             .on('click', function (d) {
                 if ($("#myonoffswitch").prop('checked') == false) {
-                    $('#Modal_' + $(div).attr('id') + ' .measure').val(d.measure);
+                    $('#Modal_' + $(div).attr('id') + ' .measure').val(d.key);
                     $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
                     $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
                     $('#Modal_' + $(div).attr('id')).modal('toggle');
@@ -432,7 +368,7 @@ function combo() {
                 else {
                     var confirm = d3.select('.confirm')
                         .style('visibility', 'visible');
-                    var _filter = chart._Local_data.filter(function (d1) {
+                    var _filter = _Local_data.filter(function (d1) {
                         return d.data[_dimension[0]] === d1[_dimension[0]]
                     })
                     var rect = d3.select(this);
@@ -456,26 +392,58 @@ function combo() {
                     }
                 }
             })
+
+        element.append('text')
+            .text(function (d, i) {
+                return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat));
+            })
+            .attr('x', function (d, i) {
+                return y(d[1]) - 20;
+            })
+            .attr('y', function (d, i) {
+                return x(d.data[_dimension[0]]) + x.bandwidth() / 2;
+            })
+            .attr('dy', function (d, i) {
+                return offsetX / 2;
+            })
+            .style('text-anchor', 'middle')
+            .attr('visibility', function (d, i) {
+                return UTIL.getVisibility(_showValues[_measure.indexOf(d.key)]);
+            })
+            .attr('visibility', function (d, i) {
+                if (this.getAttribute('visibility') == 'hidden') return 'hidden';
+                var rect = d3.select(this.previousElementSibling).node(),
+                    rectWidth = rect.getAttribute('width'),
+                    rectHeight = rect.getAttribute('height');
+
+                if (rectHeight <= parseFloat(d3.select(this).style('font-size').replace('px', ''))) {
+                    return 'hidden';
+                }
+
+                if ((this.getComputedTextLength() + (offsetX / 4)) > parseFloat(rectWidth)) {
+                    return 'hidden';
+                }
+
+                return 'visible';
+            })
+            .style('font-style', function (d, i) {
+                return _fontStyle[_measure.indexOf(d.key)];
+            })
+            .style('font-weight', function (d, i) {
+                return _fontWeight[_measure.indexOf(d.key)];
+            })
+            .style('font-size', function (d, i) {
+                return _fontSize[_measure.indexOf(d.key)] + 'px';
+            })
+            .style('fill', function (d, i) {
+                return _textColor[_measure.indexOf(d.key)];
+            });
     }
     var drawPlot = function (data) {
         var me = this;
         _Local_data = data;
-        var keys = UTIL.getMeasureList(data[0], _dimension);
-
-        measuresBar = [],
-            measuresLine = [];
-        keys.forEach(function (m, i) {
-            if (_comboChartType[_measure.indexOf(m)] == "bar") {
-                measuresBar.push(m);
-            } else {
-                measuresLine.push(m);
-            }
-        });
-
-        var xLabels = getXLabels(data);
-
         var plot = container.append('g')
-            .attr('class', 'combo-plot')
+            .attr('class', 'stackedhorizontalbar-plot')
             .classed('plot', true)
             .attr('transform', function () {
                 if (_legendPosition == 'top') {
@@ -488,150 +456,63 @@ function combo() {
                     return 'translate(' + margin.left + ', 0)';
                 }
             });
+        if (!_showLegend) {
+            _local_svg.select('.plot')
+                .attr('transform', function () {
+                    return 'translate(' + margin.left + ', ' + 0 + ')';
+                });
+        }
 
-        var content = plot.append('g')
-            .attr('class', 'chart')
-
-        var labelStack = [];
-
-        x0 = d3.scaleBand()
-            .domain(xLabels)
-            .rangeRound([0, plotWidth])
-            .padding([0.2]);
-
-        x1 = d3.scaleBand()
-            .domain(measuresBar)
-            .rangeRound([0, x0.bandwidth()])
-            .padding([0.2]);
+        x = d3.scaleBand()
+            .rangeRound([0, plotHeight])
+            .padding([0.2])
 
         y = d3.scaleLinear()
-            .range([plotHeight, 0]);
+            .rangeRound([0, plotWidth]);
 
+        var keys = UTIL.getMeasureList(data[0], _dimension);
+
+        for (i = 0; i < data.length; i++) {
+            var t = 0;
+            for (j = 0; j < keys.length; j++) {
+                t = parseInt(t) + parseInt(data[i][keys[j]]);
+            }
+            data[i].total = t;
+        }
+
+        x.domain(data.map(function (d) { return d[_dimension[0]]; }));
         y.domain([0, d3.max(data, function (d) {
-            return d3.max(keys, function (key) {
-                return parseInt(d[key]);
-            });
+            return d.total;
         })]).nice();
 
-        var tickLength = d3.scaleLinear()
-            .domain([22, 34])
-            .range([4, 6]);
+        data.map(function (val) {
+            delete val['total'];
+        })
 
-        var areaGenerator = d3.area()
-            .curve(d3.curveLinear)
-            .x(function (d, i) {
-                return x0(d['data'][_dimension[0]]) + x0.bandwidth() / 2;
-            })
-            .y0(plotHeight)
-            .y1(function (d) {
-                return y(d['data'][d['tag']]);
-            });
-
-        var lineGenerator = d3.line()
-            .curve(d3.curveLinear)
-            .x(function (d, i) {
-                return x0(d['data'][_dimension[0]]) + x0.bandwidth() / 2;
-            })
-            .y(function (d, i) {
-                return y(d['data'][d['tag']]);
-            });
-
-        var clusterBar = content.selectAll('.cluster_bar')
-            .data(data)
+        var labelStack = [];
+        var stack = plot.append('g')
+            .attr('class', 'stack')
+            .selectAll('g')
+            .data(d3.stack().keys(keys)(data))
             .enter().append('g')
-            .attr('class', 'cluster_bar')
-            .attr('transform', function (d) {
-                return 'translate(' + x0(d[_dimension[0]]) + ', 0)';
-            });
+            .attr('class', 'stackedhorizontalbar-group');
 
-        var bar = clusterBar.selectAll('g.bar')
-            .data(function (d) {
-                return measuresBar
-                    .filter(function (m) { return labelStack.indexOf(m) == -1; })
-                    .map(function (m) { return { "tag": m, "data": d }; });
-            })
-            .enter().append('g')
-            .attr('class', 'bar');
-
-        drawViz(bar)
-
-        var clusterLine = content.selectAll('.cluster_line')
-            .data(measuresLine.filter(function (m) { return labelStack.indexOf(m) == -1; }))
-            .enter().append('g')
-            .attr('class', 'cluster_line');
-
-        var area = clusterLine.append('path')
-            .datum(function (d, i) {
-                return data.map(function (datum) { return { "tag": d, "data": datum }; });
-            })
-            .attr('class', 'area')
-            .attr('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
-            })
-            .attr('visibility', function (d, i) {
-                if (_lineType[(_measure.indexOf(d[0]['tag']))] == "area") {
-                    return 'visible'
-                }
-                else {
-                    return 'hidden';
-                }
-
-            })
-            .style('fill-opacity', 0.5)
-            .attr('stroke', 'none')
-            .attr('d', areaGenerator);
-
-        var line = clusterLine.append('path')
-            .datum(function (d, i) {
-                return data.map(function (datum) { return { "tag": d, "data": datum }; });
-            })
-            .attr('class', 'line')
-            .attr('fill', 'none')
-            .attr('stroke', function (d, i) {
-                return UTIL.getBorderColor(_measure.indexOf(d[0]['tag']), _borderColor);
-            })
-            .attr('stroke-linejoin', 'round')
-            .attr('stroke-linecap', 'round')
-            .attr('stroke-width', 1)
-            .on("mouseover", function (d) {
-                d3.select(this)
-                    .style("stroke-width", "2.5px")
-                    .style("cursor", "pointer");
-            })
-            .on("mouseout", function (d) {
-                d3.select(this)
-                    .style("stroke-width", "1.5px")
-                    .style("cursor", "none");
-            })
-            .attr('d', lineGenerator);
-
-        var point = clusterLine.selectAll('point')
+        var stackedhorizontalbar = stack.selectAll('g')
             .data(function (d, i) {
-                return data.map(function (datum) { return { "tag": d, "data": datum }; });
+                d.forEach(function (datum) {
+                    datum.key = d.key;
+                })
+                return d;
             })
-            .enter().append('path')
-            .attr('class', 'point')
-            .attr('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
-            })
-            .attr('d', function (d, i) {
-                return d3.symbol()
-                    .type(getPointType(_measure.indexOf(d.tag)))
-                    .size(40)();
-            })
-            .attr('transform', function (d) {
-                return 'translate('
-                    + (x0(d['data'][_dimension[0]]) + x0.bandwidth() / 2)
-                    + ',' + y(d['data'][d['tag']]) + ')';
-            })
-            .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg));
+            .enter().append('g')
+            .attr('class', 'stackedhorizontalbar');
+
+        drawViz(stackedhorizontalbar);
 
         plot.append("g")
             .attr("class", "x_axis")
             .attr("transform", "translate(0," + plotHeight + ")")
-            .call(d3.axisBottom(x0))
+            .call(d3.axisBottom(y))
             .append("text")
             .attr("x", plotWidth / 2)
             .attr("y", 2 * axisLabelSpace)
@@ -641,12 +522,12 @@ function combo() {
             .style('text-anchor', 'middle')
             .style('visibility', UTIL.getVisibility(_showXaxisLabel))
             .text(function () {
-                return _displayName;
+                return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
             });
 
         plot.append("g")
             .attr("class", "y_axis")
-            .call(d3.axisLeft(y).ticks(null, "s"))
+            .call(d3.axisLeft(x).ticks(null, "s"))
             .append("text")
             .attr("x", plotHeight / 2)
             .attr("y", 2 * axisLabelSpace)
@@ -656,7 +537,7 @@ function combo() {
             .attr("font-weight", "bold")
             .style('text-anchor', 'middle')
             .text(function () {
-                return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+                return _displayName;
             });
 
         UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis, _showYaxis, _showXaxis);
@@ -679,8 +560,7 @@ function combo() {
                         break;
                     }
                 }
-            }
-            );
+            });
 
         d3.select(div).select('.btn-primary')
             .on('click', applyFilter(chart));
@@ -692,7 +572,7 @@ function combo() {
             .hoverSelect(true)
             .closePathSelect(true)
             .closePathDistance(100)
-            .items(bar)
+            .items(stackedhorizontalbar)
             .targetArea(_local_svg);
 
         lasso.on('start', onLassoStart(lasso, chart))
@@ -701,6 +581,7 @@ function combo() {
 
         _local_svg.call(lasso);
     }
+
     chart._legendInteraction = function (event, data) {
         switch (event) {
             case 'mouseover':
@@ -719,21 +600,12 @@ function combo() {
     }
     var _legendMouseOver = function (data) {
 
-        var clustered = d3.selectAll('g.bar')
+        d3.selectAll('g.stackedhorizontalbar')
             .filter(function (d) {
-                return d.tag === data;
-            });
-
-        var line = d3.selectAll('.line')
-            .filter(function (d, i) {
-                return d[i].tag === data;
-            });
-
-        clustered.select('rect')
+                return d.measure === data;
+            })
+            .select('rect')
             .style('fill', COMMON.HIGHLIGHTER);
-        line
-            .style("stroke-width", "2.5px")
-            .style('stroke', COMMON.HIGHLIGHTER);
     }
 
     var _legendMouseMove = function (data) {
@@ -741,23 +613,13 @@ function combo() {
     }
 
     var _legendMouseOut = function (data) {
-        var clustered = d3.selectAll('g.bar')
+        d3.selectAll('g.stackedhorizontalbar')
             .filter(function (d) {
-                return d.tag === data;
-            });
-
-        var line = d3.selectAll('.line')
-            .filter(function (d, i) {
-                return d[i].tag === data;
-            });
-        clustered.select('rect')
+                return d.measure === data;
+            })
+            .select('rect')
             .style('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
-            });
-        line
-            .style("stroke-width", "1.5px")
-            .style('stroke', function (d, i) {
-                return UTIL.getBorderColor(_measure.indexOf(d[0]['tag']), _borderColor);
+                return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
             });
     }
 
@@ -765,148 +627,131 @@ function combo() {
         var _filter = UTIL.getFilterData(_localLabelStack, data, _originalData)
         drawPlot.call(this, _filter);
     }
-    chart._getName = function () {
-        return _NAME;
-    }
 
     chart.update = function (data) {
 
-        chart._Local_data = data,
-            _local_svg = _local_svg;
+        _Local_data = data;
         filterData = [];
-        var xLabels = getXLabels(data);
-        var keys = Object.keys(data[0]);
 
-        keys.splice(keys.indexOf(_dimension[0]), 1);
-        measuresBar = [], measuresLine = [];
-        keys.forEach(function (m, i) {
-            if (_comboChartType[_measure.indexOf(m)] == "bar") {
-                measuresBar.push(m);
-            } else {
-                measuresLine.push(m);
-            }
-        });
-
-        x0 = d3.scaleBand()
-            .domain(xLabels)
-            .rangeRound([0, plotWidth])
-            .padding([0.2]);
-
-        x1 = d3.scaleBand()
-            .domain(measuresBar)
-            .rangeRound([0, x0.bandwidth()])
-            .padding([0.2]);
+        x = d3.scaleBand()
+            .rangeRound([0, plotHeight])
+            .padding([0.2])
 
         y = d3.scaleLinear()
-            .range([plotHeight, 0]);
+            .rangeRound([0, plotWidth]);
 
+        var keys = UTIL.getMeasureList(data[0], _dimension);
+        for (i = 0; i < data.length; i++) {
+            var t = 0;
+            for (j = 0; j < keys.length; j++) {
+                t = parseInt(t) + parseInt(data[i][keys[j]]);
+            }
+            data[i].total = t;
+        }
+
+        x.domain(data.map(function (d) { return d[_dimension[0]]; }));
         y.domain([0, d3.max(data, function (d) {
-            return d3.max(keys, function (key) {
-                return parseInt(d[key]);
-            });
+            return d.total;
         })]).nice();
 
-        var plot = _local_svg.select('.plot')
-        var chartploat = _local_svg.select('.chart')
+        data.map(function (val) {
+            delete val['total'];
+        })
+
         var labelStack = [];
+        var plot = _local_svg.select('.plot')
 
-        var areaGenerator = d3.area()
-            .curve(d3.curveLinear)
-            .x(function (d, i) {
-                return x0(d['data'][_dimension[0]]) + x0.bandwidth() / 2;
-            })
-            .y0(plotHeight)
-            .y1(function (d) {
-                return y(d['data'][d.tag[0].tag]);
+        var stack = plot.select('g.stack').selectAll('g.stackedhorizontalbar-group')
+            .data(d3.stack().keys(keys)(data))
+
+        stack.enter().append('g')
+            .attr('class', 'stackedhorizontalbar-group');
+
+        stack.exit().remove();
+
+        var stackedhorizontalbarGroup = plot.select('g.stack').selectAll('g.stackedhorizontalbar-group');
+
+        var stackedhorizontalbar = stackedhorizontalbarGroup.selectAll('g.stackedhorizontalbar')
+            .data(function (d, i) {
+                d.forEach(function (datum) {
+                    datum.key = d.key;
+                })
+                return d;
             });
 
-        var lineGenerator = d3.line()
-            .curve(d3.curveLinear)
-            .x(function (d, i) {
-                return x0(d['data'][_dimension[0]]) + x0.bandwidth() / 2;
+
+        stackedhorizontalbar.select('rect')
+            .attr("y", function (d) {
+                return x(d.data[_dimension[0]]);
             })
-            .y(function (d, i) {
-                return y(d['data'][d.tag[0].tag]) != undefined ? y(d['data'][d.tag[0].tag]) : y(d.tag[0].tag[0].tag);
-            });
-
-        var area = plot.selectAll('path.area')
-            .datum(function (d, i) {
-                return data.map(function (datum) { return { "tag": d, "data": datum }; });
+            .attr("x", function (d) {
+                return (d[0] < d[1]) ? (y(d[0]) + 1) : (y(d[1]) + 1);
             })
-            .attr('d', areaGenerator);
-
-        plot.selectAll('path.point').remove()
-
-
-        var line = plot.selectAll('path.line')
-            .datum(function (d, i) {
-                return data.map(function (datum) { return { "tag": d, "data": datum }; });
-            })
-            .attr('d', lineGenerator);
-
-        var clusterBar = chartploat.selectAll('g.cluster_bar')
-            .data(data)
-
-        clusterBar.enter().append('g')
-            .attr('class', 'cluster_bar')
-            .attr('transform', function (d) {
-                return 'translate(' + x0(d[_dimension[0]]) + ', 0)';
-            });
-
-        clusterBar.exit().remove();
-
-        clusterBar = plot.selectAll('g.cluster_bar');
-
-        var bar = clusterBar.selectAll('g.bar')
-            .data(function (d) {
-                return measuresBar
-                    .filter(function (m) { return labelStack.indexOf(m) == -1; })
-                    .map(function (m) { return { "tag": m, "data": d }; });
-            })
-
-        bar.select('rect')
-            .attr('width', x1.bandwidth())
-            .style('stroke-width', 1)
-            .attr('x', function (d, i) {
-                return x1(measuresBar[measuresBar.indexOf(d.tag)]);
-            })
-            .attr('y', function (d, i) {
-                if ((d["data"][d.tag] === null) || (isNaN(d["data"][d.tag]))) {
-                    return 0;
-                } else if (d["data"][d.tag] > 0) {
-                    return y(d["data"][d.tag]);
-                }
-                return y(0);
-            })
-            .attr('height', function (d, i) {
-                return Math.abs(y(0) - y(d["data"][d.tag]));
+            .attr("width", function (d) {
+                return Math.abs(y(d[1]) - y(d[0]));
             })
             .classed('selected', false)
-            .classed('possible', false);
+            .classed('possible', false)
+            .attr("height", x.bandwidth())
+            .style('stroke-width', 2)
 
+        stackedhorizontalbar.select('text')
+            .text(function (d, i) {
+                return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat));
+            })
+            .attr('x', function (d, i) {
+                return y(d[1]) - 20;
+            })
+            .attr('y', function (d, i) {
+                return x(d.data[_dimension[0]]) + x.bandwidth() / 2;
+            })
+            .attr('dy', function (d, i) {
+                return offsetX / 2;
+            })
+            .style('text-anchor', 'middle')
+            .attr('visibility', function (d, i) {
+                return UTIL.getVisibility(_showValues[_measure.indexOf(d.key)]);
+            })
+            .attr('visibility', function (d, i) {
+                if (this.getAttribute('visibility') == 'hidden') return 'hidden';
+                var rect = d3.select(this.previousElementSibling).node(),
+                    rectWidth = rect.getAttribute('width'),
+                    rectHeight = rect.getAttribute('height');
 
-        var newBars = bar.enter().append('g')
-            .attr('class', 'bar');
+                if (rectHeight <= parseFloat(d3.select(this).style('font-size').replace('px', ''))) {
+                    return 'hidden';
+                }
+                if ((this.getComputedTextLength() + (offsetX / 4)) > parseFloat(rectWidth)) {
+                    return 'hidden';
+                }
+                return 'visible';
+            })
 
-        drawViz(newBars)
+        var newBars = stackedhorizontalbar.enter().append('g')
+            .attr('class', 'stackedhorizontalbar');
 
-        d3.selectAll('g.cluster_bar')
-            .attr('transform', function (d) {
-                return 'translate(' + x0(d[_dimension[0]]) + ', 0)';
-            });
+        drawViz(newBars);
 
         plot.select('.x_axis')
             .transition()
             .duration(1000)
-            .call(d3.axisBottom(x0));
+            .call(d3.axisBottom(y));
 
         plot.select('.y_axis')
             .transition()
             .duration(1000)
-            .call(d3.axisLeft(y).ticks(null, "s"));
+            .call(d3.axisLeft(x).ticks(null, "s"));
+
+        stackedhorizontalbar.exit()
+            .transition()
+            .duration(1000)
+            .remove();
 
         UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis);
         UTIL.displayThreshold(threshold, data, keys);
+    }
+    chart._getName = function () {
+        return _NAME;
     }
 
     chart.config = function (value) {
@@ -1046,100 +891,42 @@ function combo() {
         return _legendData;
     }
 
-    chart.showValues = function (value) {
-        if (!arguments.length) {
-            return _showValues;
-        }
-        _showValues = value;
-        return chart;
+    chart.showValues = function (value, measure) {
+        return UTIL.baseAccessor.call(_showValues, value, measure, _measure);
     }
 
-    chart.displayNameForMeasure = function (value) {
-        if (!arguments.length) {
-            return _displayNameForMeasure;
-        }
-        _displayNameForMeasure = value;
-        return chart;
+    chart.displayNameForMeasure = function (value, measure) {
+        return UTIL.baseAccessor.call(_displayNameForMeasure, value, measure, _measure);
     }
 
-    chart.fontStyle = function (value) {
-        if (!arguments.length) {
-            return _fontStyle;
-        }
-        _fontStyle = value;
-        return chart;
+    chart.fontStyle = function (value, measure) {
+        return UTIL.baseAccessor.call(_fontStyle, value, measure, _measure);
     }
 
-    chart.fontWeight = function (value) {
-        if (!arguments.length) {
-            return _fontWeight;
-        }
-        _fontWeight = value;
-        return chart;
+    chart.fontWeight = function (value, measure) {
+        return UTIL.baseAccessor.call(_fontWeight, value, measure, _measure);
     }
 
-    chart.numberFormat = function (value) {
-        if (!arguments.length) {
-            return _numberFormat;
-        }
-        _numberFormat = value;
-        return chart;
+    chart.numberFormat = function (value, measure) {
+        return UTIL.baseAccessor.call(_numberFormat, value, measure, _measure);
     }
 
-    chart.textColor = function (value) {
-        if (!arguments.length) {
-            return _textColor;
-        }
-        _textColor = value;
-        return chart;
+    chart.textColor = function (value, measure) {
+        return UTIL.baseAccessor.call(_textColor, value, measure, _measure);
     }
 
-    chart.displayColor = function (value) {
-        if (!arguments.length) {
-            return _displayColor;
-        }
-        _displayColor = value;
-        return chart;
+    chart.displayColor = function (value, measure) {
+        return UTIL.baseAccessor.call(_displayColor, value, measure, _measure);
     }
 
-    chart.borderColor = function (value) {
-        if (!arguments.length) {
-            return _borderColor;
-        }
-        _borderColor = value;
-        return chart;
+    chart.borderColor = function (value, measure) {
+        return UTIL.baseAccessor.call(_borderColor, value, measure, _measure);
     }
 
-    chart.fontSize = function (value) {
-        if (!arguments.length) {
-            return _fontSize;
-        }
-        _fontSize = value;
-        return chart;
+    chart.fontSize = function (value, measure) {
+        return UTIL.baseAccessor.call(_fontSize, value, measure, _measure);
     }
-
-    chart.comboChartType = function (value) {
-        if (!arguments.length) {
-            return _comboChartType;
-        }
-        _comboChartType = value;
-        return chart;
-    }
-
-    chart.lineType = function (value) {
-        if (!arguments.length) {
-            return _lineType;
-        }
-        _lineType = value;
-        return chart;
-    }
-    chart.pointType = function (value) {
-        if (!arguments.length) {
-            return _pointType;
-        }
-        _pointType = value;
-        return chart;
-    }
-
     return chart;
 }
+
+module.exports = stackedhorizontalbar;
