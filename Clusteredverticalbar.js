@@ -320,7 +320,7 @@ function clusteredverticalbar() {
                 legendSpace = 0;
                 plotWidth = parentWidth;
                 plotHeight = parentHeight;
-            }
+            } 
 
             if (_tooltip) {
                 tooltip = d3.select(this.parentNode).select('#tooltip');
@@ -850,6 +850,22 @@ function clusteredverticalbar() {
         return chart;
     }
 
+    chart.showGrid = function (value) {
+        if (!arguments.length) {
+            return _tooltip;
+        }
+        _showGrid = value;
+        return chart;
+    }
+
+    chart.stacked = function (value) {
+        if (!arguments.length) {
+            return _tooltip;
+        }
+        _stacked = value;
+        return chart;
+    }
+
     chart.displayName = function (value) {
         if (!arguments.length) {
             return _tooltip;
@@ -867,39 +883,66 @@ function clusteredverticalbar() {
     }
 
     chart.showValues = function (value, measure) {
-        return UTIL.baseAccessor.call(_showValues, value, measure, _measure);
+        _baseAccessor.call(_showValues, value, measure)
     }
 
     chart.displayNameForMeasure = function (value, measure) {
-        return UTIL.baseAccessor.call(_displayNameForMeasure, value, measure, _measure);
+        _baseAccessor.call(_displayNameForMeasure, value, measure)
     }
 
     chart.fontStyle = function (value, measure) {
-        return UTIL.baseAccessor.call(_fontStyle, value, measure, _measure);
+        _baseAccessor.call(_fontStyle, value, measure)
     }
 
     chart.fontWeight = function (value, measure) {
-        return UTIL.baseAccessor.call(_fontWeight, value, measure, _measure);
+        _baseAccessor.call(_fontWeight, value, measure)
     }
 
     chart.numberFormat = function (value, measure) {
-        return UTIL.baseAccessor.call(_numberFormat, value, measure, _measure);
+        _baseAccessor.call(_numberFormat, value, measure)
     }
 
     chart.textColor = function (value, measure) {
-        return UTIL.baseAccessor.call(_textColor, value, measure, _measure);
+        _baseAccessor.call(_textColor, value, measure)
     }
 
     chart.displayColor = function (value, measure) {
-        return UTIL.baseAccessor.call(_displayColor, value, measure, _measure);
+        _baseAccessor.call(_displayColor, value, measure)
     }
 
     chart.borderColor = function (value, measure) {
-        return UTIL.baseAccessor.call(_borderColor, value, measure, _measure);
+        _baseAccessor.call(_borderColor, value, measure)
     }
 
     chart.fontSize = function (value, measure) {
-        return UTIL.baseAccessor.call(_fontSize, value, measure, _measure);
+        _baseAccessor.call(_fontSize, value, measure)
+    }
+
+    var _baseAccessor = function (value, measure) {
+        var me = this;
+
+        if (!arguments.length) {
+            return me;
+        }
+
+        if (value instanceof Array && measure == void 0) {
+            me.splice(0, me.length);
+            me.push.apply(me, value);
+            return chart;
+        }
+
+        var index = _measure.indexOf(measure);
+
+        if (index === -1) {
+            throw new Error('Invalid measure provided');
+        }
+
+        if (value == void 0) {
+            return me[index];
+        } else {
+            me[index] = value;
+        }
+        return chart;
     }
 
     return chart;

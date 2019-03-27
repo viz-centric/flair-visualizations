@@ -676,9 +676,6 @@ function util() {
             r = str.charAt(0).toUpperCase() + str.substring(1);
             return r;
         },
-        convertToNumber: function(str) {
-            return parseFloat(str.replace(/,/g, ''));
-        },
     }
 
     return publicMethods;
