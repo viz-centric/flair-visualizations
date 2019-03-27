@@ -1,3 +1,7 @@
+var COMMON = require('../extras/common.js')(),
+    UTIL = require('../extras/util.js')(),
+    LEGEND = require('../extras/legend.js')();
+
 function heatmap() {
 
     var _NAME = 'heatmap';
@@ -257,7 +261,6 @@ function heatmap() {
     var onLassoEnd = function (lasso, chart) {
         return function () {
             var data = lasso.selectedItems().data();
-            
             if (!filter) {
                 return;
             }
@@ -893,3 +896,5 @@ function heatmap() {
     }
     return chart;
 }
+
+module.exports = heatmap;
