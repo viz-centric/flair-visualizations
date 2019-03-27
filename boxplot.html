@@ -73,9 +73,9 @@
             "numberFormat": [true, true, true, true, true],
             "displayColor": ["#efefef", "#909090", "#ababab", "#eeaaee", "#121545"]
         };
+
         var chart = boxplot()
             .config(config)
-            .tooltip(true);
            
         d3.csv('dataForBoxplot.csv', function (data) {
             d3.select('#donut')

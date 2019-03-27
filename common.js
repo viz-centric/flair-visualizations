@@ -2,7 +2,6 @@ function common() {
     return {
         PADDING: 15,
         HIGHLIGHTER: '#DCDCDC',
-        DEFAULT_COLOR : "#dedede",
         COLORSCALE: d3.scaleOrdinal()
             .range(['#4897D8',
                 '#ED5752',
