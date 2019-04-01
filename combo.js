@@ -389,7 +389,7 @@ function combo() {
             } 
 
             if (_tooltip) {
-                tooltip = d3.select(this.parentNode).select('#tooltip');
+                tooltip = d3.select(this.parentNode).select('.tooltip');
             }
             chart.drawViz = function (element) {
                 var me = this;
@@ -904,12 +904,12 @@ function combo() {
 
         plot.select('.x_axis')
             .transition()
-            .duration(1000)
+             .duration(COMMON.DURATION)
             .call(d3.axisBottom(x0));
 
         plot.select('.y_axis')
             .transition()
-            .duration(1000)
+             .duration(COMMON.DURATION)
             .call(d3.axisLeft(y).ticks(null, "s"));
 
         UTIL.setAxisColor(svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis);

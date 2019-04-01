@@ -734,17 +734,17 @@ function stackedhorizontalbar() {
 
         plot.select('.x_axis')
             .transition()
-            .duration(1000)
+             .duration(COMMON.DURATION)
             .call(d3.axisBottom(y));
 
         plot.select('.y_axis')
             .transition()
-            .duration(1000)
+             .duration(COMMON.DURATION)
             .call(d3.axisLeft(x).ticks(null, "s"));
 
         stackedhorizontalbar.exit()
             .transition()
-            .duration(1000)
+             .duration(COMMON.DURATION)
             .remove();
 
         UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis);

@@ -21,7 +21,7 @@ function map() {
     };
 
     var _local_svg, _Local_data, _originalData, valueMapper = [];
-   
+
 
     var filter = false, filterData = [], gradientColor = d3.scaleLinear();
 
@@ -93,7 +93,71 @@ function map() {
             }
         }
     }
+    var onLassoStart = function (lasso, chart) {
+        return function () {
+            if (filter) {
+                lasso.items()
+                    .classed('not_possible', true)
+                    .classed('selected', false);
+            }
+        }
+    }
 
+    var onLassoDraw = function (lasso, chart) {
+        return function () {
+            filter = true;
+            lasso.items()
+                .classed('selected', false);
+
+            lasso.possibleItems()
+                .classed('not_possible', false)
+                .classed('possible', true);
+
+            lasso.notPossibleItems()
+                .classed('not_possible', true)
+                .classed('possible', false);
+        }
+    }
+
+    var onLassoEnd = function (lasso, chart) {
+        return function () {
+            var data = lasso.selectedItems().data();
+            if (!filter) {
+                return;
+            }
+            if (data.length > 0) {
+                lasso.items().selectAll('rect')
+                    .classed('not_possible', false)
+                    .classed('possible', false);
+            }
+
+            lasso.selectedItems()
+                .classed('selected', true)
+
+            lasso.notSelectedItems()
+
+            var confirm = d3.select('.confirm')
+                .style('visibility', 'visible');
+
+            var _filter = [];
+            var keys = UTIL.getMeasureList(data[0].data, _dimension);
+            data.forEach(function (d) {
+                var obj = new Object();
+                var temp = d.data[_dimension[0]];
+                var searchObj = _filter.find(o => o[_dimension[0]] === temp);
+                if (searchObj == undefined) {
+                    obj[_dimension[0]] = d.data[_dimension[0]];
+                    for (var index = 0; index < keys.length; index++) {
+                        obj[keys[index]] = d.data[keys[index]];
+                    }
+                    _filter.push(obj)
+                }
+            });
+            if (_filter.length > 0) {
+                filterData = _filter;
+            }
+        }
+    }
     function chart(selection) {
         _local_svg = selection;
 
@@ -173,7 +237,20 @@ function map() {
                     .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
                     .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
                     .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+                var lasso = d3.lasso()
+                    .hoverSelect(true)
+                    .closePathSelect(true)
+                    .closePathDistance(100)
+                    .items(country)
+                    .targetArea(svg);
+
+                lasso.on('start', onLassoStart(lasso, chart))
+                    .on('draw', onLassoDraw(lasso, chart))
+                    .on('end', onLassoEnd(lasso, chart));
+
+                svg.call(lasso);
             }
+
         });
     }
 
