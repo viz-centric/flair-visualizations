@@ -1,3 +1,7 @@
+var COMMON = require('../extras/common.js')(),
+    UTIL = require('../extras/util.js')(),
+    LEGEND = require('../extras/legend_barcharts.js')();
+
 function clusteredhorizontalbar() {
 
     var _NAME = 'clusteredhorizontalbar';
@@ -372,7 +376,7 @@ function clusteredhorizontalbar() {
                     return 'translate(' + margin.left + ', ' + 0 + ')';
                 });
         }
-        
+
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
         x0.domain(data.map(function (d) { return d[_dimension[0]]; }));
@@ -497,7 +501,7 @@ function clusteredhorizontalbar() {
             .attr("x", 1)
             .attr("height", x1.bandwidth())
             .attr("width", function (d) {
-                return y(d[d.measure]);
+                return 0;
             })
             .style('fill', function (d, i) {
                 return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
@@ -542,6 +546,16 @@ function clusteredhorizontalbar() {
                         }
                     }
                 }
+            })
+            .transition()
+            .duration(COMMON.DURATION)
+            .attr("y", function (d) {
+                return x1(d.measure);
+            })
+            .attr("x", 1)
+            .attr("height", x1.bandwidth())
+            .attr("width", function (d) {
+                return y(d[d.measure]);
             })
 
         element.append('text')
@@ -689,7 +703,7 @@ function clusteredhorizontalbar() {
 
         cluster.exit()
             .transition()
-            .duration(1000)
+            .duration(COMMON.DURATION)
             .attr('height', 0)
             .attr('y', plotHeight)
             .remove();
@@ -767,12 +781,12 @@ function clusteredhorizontalbar() {
 
         plot.select('.x_axis')
             .transition()
-            .duration(1000)
+            .duration(COMMON.DURATION)
             .call(d3.axisBottom(y));
 
         plot.select('.y_axis')
             .transition()
-            .duration(1000)
+            .duration(COMMON.DURATION)
             .call(d3.axisLeft(x0).ticks(null, "s"));
 
         UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis);
@@ -955,3 +969,5 @@ function clusteredhorizontalbar() {
 
     return chart;
 }
+
+module.exports = clusteredverticalbar;

@@ -525,16 +525,11 @@ function clusteredverticalbar() {
         var me = this;
 
         element.append('rect')
-            .attr("x", function (d) {
-                return x1(d.measure);
-            })
-            .attr("y", function (d) {
-                return y(d[d.measure]);
-            })
+          
             .attr('class', 'bar')
             .attr("width", x1.bandwidth())
             .attr("height", function (d) {
-                return plotHeight - y(d[d.measure]);
+                return 0;
             })
             .style('fill', function (d, i) {
                 return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
@@ -580,6 +575,19 @@ function clusteredverticalbar() {
                     }
                 }
             })
+            .transition()
+            .duration(COMMON.DURATION)
+            .attr("height", function (d, i) {
+                return plotHeight - y(d[d.measure]);
+            })
+            .attr("y", function (d, i) {
+                return y(d[d.measure]);
+            })
+            .attr("width", x1.bandwidth())
+            .attr("x", function (d, i) {
+                return x1(d.measure);;
+            })
+
     }
     chart._legendInteraction = function (event, data) {
         switch (event) {
@@ -667,7 +675,13 @@ function clusteredverticalbar() {
                 return 'translate(' + x0(d[_dimension[0]]) + ', 0)';
             });
 
-        cluster.exit().remove();
+        cluster
+            .exit()
+            .transition()
+            .duration(COMMON.DURATION)
+            .attr('height', 0)
+            .attr('y', plotHeight)
+            .remove();
 
         cluster = plot.selectAll('g.cluster');
         var labelStack = [];
@@ -687,16 +701,22 @@ function clusteredverticalbar() {
             });
 
         clusteredverticalbar.select('rect')
-            .attr("x", function (d) {
-                return x1(d.measure);
-            })
-            .attr("y", function (d) {
-                return y(d[d.measure]);
-            })
             .attr('class', 'bar')
             .attr("width", x1.bandwidth())
             .attr("height", function (d) {
+                return 0;
+            })
+            .transition()
+            .duration(COMMON.DURATION)
+            .attr("height", function (d, i) {
                 return plotHeight - y(d[d.measure]);
+            })
+            .attr("y", function (d, i) {
+                return y(d[d.measure]);
+            })
+            .attr("width", x1.bandwidth())
+            .attr("x", function (d, i) {
+                return x1(d.measure);;
             })
 
         var newBars = clusteredverticalbar.enter().append('g')
@@ -733,12 +753,12 @@ function clusteredverticalbar() {
 
         plot.select('.x_axis')
             .transition()
-            .duration(1000)
+            .duration(COMMON.DURATION)
             .call(d3.axisBottom(x0));
 
         plot.select('.y_axis')
             .transition()
-            .duration(1000)
+            .duration(COMMON.DURATION)
             .call(d3.axisLeft(y).ticks(null, "s"));
 
         UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis);

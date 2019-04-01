@@ -166,7 +166,7 @@ function gauge() {
             .text(targetDisplayName + " " + value[0][measures[1]])
 
         fillArc.transition()
-            .duration(1000)
+             .duration(COMMON.DURATION)
             .styleTween("fill", function () {
                 return d3.interpolate(displayColor);
             })
@@ -174,7 +174,7 @@ function gauge() {
 
 
         targetArc.transition()
-            .duration(1000)
+             .duration(COMMON.DURATION)
             .styleTween("fill", function () {
                 return d3.interpolate(targetDisplayColor);
             })

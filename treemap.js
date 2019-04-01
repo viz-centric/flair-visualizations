@@ -356,7 +356,7 @@ function treemap() {
     var onLassoEnd = function (lasso, chart) {
         return function () {
             var data = lasso.selectedItems().data();
-            
+
             if (!filter) {
                 return;
             }
@@ -554,7 +554,7 @@ function treemap() {
         }
 
         var t = d3.transition()
-            .duration(400)
+            .duration(COMMON.DURATION)
             .ease(d3.easeQuadIn)
             .on('end', afterTransition);
     }

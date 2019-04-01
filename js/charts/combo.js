@@ -901,12 +901,12 @@ function combo() {
 
         plot.select('.x_axis')
             .transition()
-            .duration(1000)
+             .duration(COMMON.DURATION)
             .call(d3.axisBottom(x0));
 
         plot.select('.y_axis')
             .transition()
-            .duration(1000)
+             .duration(COMMON.DURATION)
             .call(d3.axisLeft(y).ticks(null, "s"));
 
         UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis);
