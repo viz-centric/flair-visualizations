@@ -15,8 +15,6 @@ function clusteredhorizontalbar() {
         _showYaxisLabel,
         _xAxisColor,
         _yAxisColor,
-        _showGrid,
-        _stacked,
         _displayName,
         _legendData,
         _showValues = [],
@@ -53,10 +51,8 @@ function clusteredhorizontalbar() {
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
         this.measure(config.measure);
-
         this.showLegend(config.showLegend);
         this.legendPosition(config.legendPosition);
-
         this.showXaxis(config.showXaxis);
         this.showYaxis(config.showYaxis);
         this.showXaxisLabel(config.showXaxisLabel);
@@ -76,7 +72,6 @@ function clusteredhorizontalbar() {
         this.borderColor(config.borderColor);
         this.fontSize(config.fontSize);
         this.legendData(config.displayColor, config.measure);
-
     }
 
     var _buildTooltipData = function (datum, chart) {
@@ -164,11 +159,13 @@ function clusteredhorizontalbar() {
             }
         }
     }
+
     var clearFilter = function () {
         return function () {
             chart.update(_originalData);
         }
     }
+
     var _handleMouseOverFn = function (tooltip, container) {
         var me = this;
 
@@ -624,7 +621,6 @@ function clusteredhorizontalbar() {
         return _NAME;
     }
 
-
     var _legendMouseOver = function (data) {
 
         d3.selectAll('g.clusteredhorizontalbar')
@@ -922,66 +918,40 @@ function clusteredhorizontalbar() {
     }
 
     chart.showValues = function (value, measure) {
-        _baseAccessor.call(_showValues, value, measure)
+        return UTIL.baseAccessor.call(_showValues, value, measure, _measure);
     }
 
     chart.displayNameForMeasure = function (value, measure) {
-        _baseAccessor.call(_displayNameForMeasure, value, measure)
+        return UTIL.baseAccessor.call(_displayNameForMeasure, value, measure, _measure);
     }
 
     chart.fontStyle = function (value, measure) {
-        _baseAccessor.call(_fontStyle, value, measure)
+        return UTIL.baseAccessor.call(_fontStyle, value, measure, _measure);
     }
 
     chart.fontWeight = function (value, measure) {
-        _baseAccessor.call(_fontWeight, value, measure)
+        return UTIL.baseAccessor.call(_fontWeight, value, measure, _measure);
     }
 
     chart.numberFormat = function (value, measure) {
-        _baseAccessor.call(_numberFormat, value, measure)
+        return UTIL.baseAccessor.call(_numberFormat, value, measure, _measure);
     }
 
     chart.textColor = function (value, measure) {
-        _baseAccessor.call(_textColor, value, measure)
+        return UTIL.baseAccessor.call(_textColor, value, measure, _measure);
     }
 
     chart.displayColor = function (value, measure) {
-        _baseAccessor.call(_displayColor, value, measure)
+        return UTIL.baseAccessor.call(_displayColor, value, measure, _measure);
     }
 
     chart.borderColor = function (value, measure) {
-        _baseAccessor.call(_borderColor, value, measure)
+        return UTIL.baseAccessor.call(_borderColor, value, measure, _measure);
     }
 
     chart.fontSize = function (value, measure) {
-        _baseAccessor.call(_fontSize, value, measure)
+        return UTIL.baseAccessor.call(_fontSize, value, measure, _measure);
     }
 
-    var _baseAccessor = function (value, measure) {
-        var me = this;
-
-        if (!arguments.length) {
-            return me;
-        }
-
-        if (value instanceof Array && measure == void 0) {
-            me.splice(0, me.length);
-            me.push.apply(me, value);
-            return chart;
-        }
-
-        var index = _measure.indexOf(measure);
-
-        if (index === -1) {
-            throw new Error('Invalid measure provided');
-        }
-
-        if (value == void 0) {
-            return me[index];
-        } else {
-            me[index] = value;
-        }
-        return chart;
-    }
     return chart;
 }
