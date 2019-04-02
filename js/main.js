@@ -1,7 +1,7 @@
 // Load the required JS files
 var clusteredverticalbar = require('./charts/clusteredverticalbar.js');
 var combo = require('./charts/combo.js');
-var donut = require('./charts/donut.js');
+var doughnut = require('./charts/doughnut.js');
 var heatmap = require('./charts/heatmap.js');
 var infographics = require('./charts/infographics.js');
 var kpi = require('./charts/kpi.js');
@@ -20,7 +20,7 @@ require('../styles/stylesheets/screen.css');
 module.exports = {
 	clusteredverticalbar: clusteredverticalbar,
 	combo: combo,
-	donut: donut,
+	doughnut: doughnut,
 	heatmap: heatmap,
 	infographics: infographics,
 	kpi: kpi,
