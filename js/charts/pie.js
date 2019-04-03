@@ -22,7 +22,7 @@ function pie() {
         _sort,
         _tooltip;
 
-    /* These are the common variables that is shared across the different private/public 
+    /* These are the common variables that is shared across the different private/public
      * methods but is initialized/updated within the methods itself.
      */
     var _localSVG,
@@ -36,14 +36,14 @@ function pie() {
         _localLabelStack = [],
         _localData;
 
-    /* These are the common private functions that is shared across the different private/public 
+    /* These are the common private functions that is shared across the different private/public
      * methods but is initialized beforehand.
      */
     var _pie = d3.pie()
         .sort(null);
 
     var _arc = d3.arc()
-        .innerRadius(190);
+        .innerRadius(0);
 
     var _arcMask = d3.arc();
 
@@ -76,12 +76,12 @@ function pie() {
 
         return function(d, i) {
             var t = _localTransitionMap.get(d.value);
-            
+
             if(!t) {
                 t = _localTransitionTime * (d.value / _localTotal)
                 _localTransitionMap.set(d.value, t);
             }
-            
+
             return (t + extraDuration);
         }
     }
@@ -102,12 +102,12 @@ function pie() {
         return function(d, i) {
             var i = _localSortedMeasureValue.indexOf(d.value),
                 t = 0;
-            
+
             while(i > 0) {
                 i--;
                 t += _localTransitionMap.get(_localSortedMeasureValue[i]);
             }
-            
+
             return (t + extraDelay);
         }
     }
@@ -238,7 +238,7 @@ function pie() {
 
             arcMaskGroup.select('path')
                 .style('visibility', 'hidden');
-            
+
             if(tooltip) {
                 UTIL.hideTooltip(tooltip);
             }
@@ -382,7 +382,7 @@ function pie() {
             }
 
             outerRadius = Math.min(plotWidth, plotHeight) / 2.25;
-            
+
             /* setting the outerradius of the arc */
             _arc.outerRadius(outerRadius);
 
@@ -464,7 +464,7 @@ function pie() {
                 .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, svg))
                 .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, svg))
                 .on('click', function(d, i) {
-                    
+
                 });
 
             pieArcPath.transition()
@@ -473,7 +473,7 @@ function pie() {
                 .attrTween('d', function(d) {
                     var i = d3.interpolate(d.startAngle + 0.1, d.endAngle);
                     return function(t) {
-                        d.endAngle = i(t); 
+                        d.endAngle = i(t);
                         return _arc(d)
                     }
                 });
@@ -489,7 +489,7 @@ function pie() {
                             return -5;
                         }
                     })
-                
+
                 pieLabel.append('textPath')
                     .attr('xlink:href', function(d, i) {
                         return '#arc-path-' + i;
@@ -605,7 +605,7 @@ function pie() {
 
         /* store the data in local variable */
         _localData = data;
-            
+
         data.sort(function(a, b) {
             return d3.ascending(a[_dimension[0]], b[_dimension[0]]);
         });
@@ -626,7 +626,7 @@ function pie() {
 
         if(_legend) {
             svg.select('.legend').remove();
-            
+
             _localLegend(data, svg.select('g'), {
                 width: parentWidth,
                 height: parentHeight,
@@ -702,7 +702,7 @@ function pie() {
             .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, svg))
             .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, svg))
             .on('click', function(d, i) {
-                
+
             });
 
         pieArcGroup = svg.selectAll('g.arc')
@@ -737,7 +737,7 @@ function pie() {
                         return -5;
                     }
                 })
-            
+
             pieLabel.append('textPath')
                 .attr('xlink:href', function(d, i) {
                     return '#arc-path-' + i;

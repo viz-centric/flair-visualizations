@@ -1,3 +1,7 @@
+var COMMON = require('../extras/common.js')(),
+    UTIL = require('../extras/util.js')(),
+    LEGEND = require('../extras/legend.js')();
+
 function doughnut() {
 
     /* These are the constant global variable for the function doughnut.
@@ -38,8 +42,7 @@ function doughnut() {
     var _doughnut = d3.pie()
         .sort(null);
 
-    var _arc = d3.arc()
-        .innerRadius(190);
+    var _arc = d3.arc();
 
     var _arcMask = d3.arc();
 
@@ -380,7 +383,8 @@ function doughnut() {
             outerRadius = Math.min(plotWidth, plotHeight) / 2.25;
 
             /* setting the outerradius of the arc */
-            _arc.outerRadius(outerRadius);
+            _arc.outerRadius(outerRadius)
+                .innerRadius(outerRadius * 0.8);
 
             /* setting the innerradius and outerradius of the masking arc */
             _arcMask.outerRadius(outerRadius * 1.02)
@@ -843,3 +847,5 @@ function doughnut() {
 
     return chart;
 }
+
+module.exports = doughnut;
