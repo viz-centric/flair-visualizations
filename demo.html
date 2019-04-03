@@ -18,14 +18,49 @@
     </div>
 
     <script src="./bower_components/bootstrap/dist/js/bootstrap.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="./bower_components/jquery/dist/jquery.min.js"></script>
     <script src="./bower_components/d3/d3.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="./dist/main.bundle.js"></script>
     <script type="text/javascript" charset="utf-8">
         /* Global variable accessible from anywhere */
         var cities = ['Kathmandu', 'Delhi', 'Detroit', 'London', 'Washington', 'Berlin', 'Perth', 'Ottawa'];
 
-        function randomData() {
-            return cities.map(function(city) {
+        function shuffleFn(a) {
+            var j, x, i;
+            for(i = a.length - 1; i > 0; i--) {
+                j = Math.floor(Math.random() * (i + 1));
+                x = a[i];
+                a[i] = a[j];
+                a[j] = x;
+            }
+            return a;
+        }
+
+        function fixedFn(a) {
+            var val;
+
+            for(var i = 0; i < a.length; i++) {
+                val = Math.floor(Math.random() * (i + 1) * 100) % 7;
+                if(!val) {
+                    a.splice(i, 1);
+                }
+            }
+
+            return a;
+        }
+
+        function randomData(shuffle, fixed) {
+            var clone = jQuery.extend(true, [], cities); // deep copy
+
+            if(shuffle) {
+                shuffleFn(clone);
+            }
+
+            if(!fixed) {
+                fixedFn(clone);
+            }
+
+            return clone.map(function(city) {
                 return {
                     city: city,
                     cost: Math.floor(Math.random() * (1000 - 10 + 1) + 10)
@@ -49,10 +84,10 @@
             .tooltip(true);
 
         d3.select('#pie')
-            .datum(randomData())
+            .datum(randomData(false, true))
             .call(chart);
 
-        setInterval(function() { chart.update(randomData()) }, 1000);
+        // setInterval(function() { chart.update(randomData(false, false)) }, 1000);
     </script>
   </body>
 </html>

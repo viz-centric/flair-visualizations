@@ -29,9 +29,13 @@
   "devDependencies": {
     "@fortawesome/fontawesome-free": "^5.8.1",
     "css-loader": "^2.1.1",
+    "eslint": "^5.16.0",
     "file-loader": "^3.0.1",
     "style-loader": "^0.23.1",
     "ttf-loader": "^1.0.2",
     "webpack": "^4.29.6"
+  },
+  "dependencies": {
+    "jquery": "^2.1.4"
   }
 }

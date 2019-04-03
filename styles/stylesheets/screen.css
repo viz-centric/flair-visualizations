@@ -67,11 +67,6 @@ article, aside, details, figcaption, figure, footer, header, hgroup, main, menu,
   display: block;
 }
 
-/* line 1, ../sass/partials/_common.scss */
-text {
-  font-size: 0.6rem;
-}
-
 @font-face {
   font-family: 'Fira Sans Extra Condensed', sans-serif;
   font-style: normal;
@@ -96,6 +91,16 @@ text {
   font-weight: 700;
   src: local("Fira Sans Extra Condensed"), local("FiraSans-Bold"), url(../../fonts/FiraSansExtraCondensed-Bold.ttf);
 }
+/* line 1, ../sass/partials/_common.scss */
+body {
+  font-family: 'Fira Sans Extra Condensed', sans-serif;
+}
+
+/* line 5, ../sass/partials/_common.scss */
+text {
+  font-size: 0.6rem;
+}
+
 /* line 2, ../sass/partials/_grid.scss */
 .grid path {
   stroke: #ededed;
