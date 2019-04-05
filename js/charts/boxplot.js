@@ -296,7 +296,7 @@ function boxplot() {
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
-                    var confirm = d3.select('.confirm')
+                    var confirm = d3.select(div).select('.confirm')
                         .style('visibility', 'visible');
                     var _filter = _Local_data.filter(function (d1) {
                         return d[_dimension[0]] === d1[_dimension[0]]

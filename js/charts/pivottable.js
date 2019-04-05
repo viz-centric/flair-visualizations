@@ -303,7 +303,7 @@ function pivottable() {
         }
     }
     chart.readerTableChart = function (str, ctr, _local_svg, key) {
-        var confirm = d3.select('.confirm')
+        var confirm =d3.select(div).select('.confirm')
             .style('visibility', 'visible');
         var searchObj = filterData.find(o => o[key] === str);
         if (searchObj == undefined) {

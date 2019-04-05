@@ -376,7 +376,7 @@ function stackedverticalbar() {
                     $('#Modal_' + $(div).attr('id')).modal('toggle');
                 }
                 else {
-                    var confirm = d3.select('.confirm')
+                    var confirm = d3.select(div).select('.confirm')
                         .style('visibility', 'visible');
                     var _filter = _Local_data.filter(function (d1) {
                         return d.data[_dimension[0]] === d1[_dimension[0]]

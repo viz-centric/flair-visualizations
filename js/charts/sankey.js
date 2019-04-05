@@ -23,7 +23,7 @@ function sankey() {
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [];
 
-    var parentWidth, parentHeight, parentWidth, parentHeight;
+    var parentWidth, parentHeight, parentWidth, parentHeight,div;
     var sankey, path, gradientColor, link
     var margin = {
         top: 10,
@@ -361,7 +361,7 @@ function sankey() {
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'link'))
                 .on('click', function (d) {
 
-                    var confirm = d3.select('.confirm')
+                    var confirm = d3.select(div).select('.confirm')
                         .style('visibility', 'visible');
 
                     if (d.nodeType == dimension[0]) {
@@ -410,7 +410,7 @@ function sankey() {
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, 'node'))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'node'))
                 .on('click', function (d) {
-                    var confirm = d3.select('.confirm')
+                    var confirm = d3.select(div).select('.confirm')
                         .style('visibility', 'visible');
                     var rect = d3.select(this)
                     if (rect.classed('selected')) {
@@ -551,7 +551,7 @@ function sankey() {
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'link'))
             .on('click', function (d) {
 
-                var confirm = d3.select('.confirm')
+                var confirm = d3.select(div).select('.confirm')
                     .style('visibility', 'visible');
 
                 if (d.nodeType == dimension[0]) {
@@ -612,7 +612,7 @@ function sankey() {
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, 'node'))
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'node'))
             .on('click', function (d) {
-                var confirm = d3.select('.confirm')
+                var confirm = d3.select(div).select('.confirm')
                     .style('visibility', 'visible');
                 var rect = d3.select(this)
                 if (rect.classed('selected')) {

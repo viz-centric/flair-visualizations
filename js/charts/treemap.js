@@ -40,7 +40,7 @@ function treemap() {
         textPadding = 2,
         _originalData,
         width,
-        height
+        height,div;
     // _localLabelStack;
 
     /* These are the common private functions that is shared across the different private/public 
@@ -459,7 +459,7 @@ function treemap() {
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
             .on('click', function (d) {
 
-                var confirm = d3.select('.confirm')
+                var confirm = d3.select(div).select('.confirm')
                     .style('visibility', 'visible');
                 var _filter = _localData.filter(function (d1) {
                     return d.data.key === d1[_dimension[1]]

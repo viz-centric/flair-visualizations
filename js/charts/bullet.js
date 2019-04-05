@@ -359,7 +359,7 @@ function bullet() {
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
 
-                    var confirm = d3.select('.confirm')
+                    var confirm = d3.select(div).select('.confirm')
                         .style('visibility', 'visible');
 
                     var rect = d3.select(this).select('rect.measure');
@@ -510,7 +510,7 @@ function bullet() {
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
             .on('click', function (d) {
 
-                var confirm = d3.select('.confirm')
+                var confirm = d3.select(div).select('.confirm')
                     .style('visibility', 'visible');
 
                 var rect = d3.select(this).select('rect.measure');

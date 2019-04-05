@@ -331,7 +331,7 @@ function heatmap() {
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
             .on('click', function (d) {
-                var confirm = d3.select('.confirm')
+                var confirm = d3.select(div).select('.confirm')
                     .style('visibility', 'visible');
                 var _filter = _localData.filter(function (d1) {
                     return d.y === d1[_dimension[0]]
@@ -662,7 +662,7 @@ function heatmap() {
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
             .on('click', function (d) {
-                var confirm = d3.select('.confirm')
+                var confirm = d3.select(div).select('.confirm')
                     .style('visibility', 'visible');
                 var _filter = _localData.filter(function (d1) {
                     return d.y === d1[_dimension[0]]
