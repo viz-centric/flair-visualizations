@@ -1,6 +1,7 @@
 {
   "name": "flair-visualizations",
   "description": "All the available Flair-BI charting modules are listed in this package.",
+  "version": "1.2.0",
   "main": [
     "js/main.js",
     "sass/main.scss"
@@ -32,5 +33,5 @@
   "license": "ISC",
   "ignore": [],
   "homepage": "https://github.com/viz-centric/flair-visualizations",
-  "private": true
+  "private": false
 }
