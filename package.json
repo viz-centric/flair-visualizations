@@ -1,6 +1,6 @@
 {
   "name": "flair-visualizations",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "All the available Flair-BI charting modules are listed in this package.",
   "main": "./js/main.js",
   "scripts": {
