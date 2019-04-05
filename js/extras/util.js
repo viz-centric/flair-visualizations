@@ -52,8 +52,8 @@ function util() {
                 x = pt[0] + 15,
                 y = pt[1] + 20;
 
-            this.style('top', y + 'px')
-                .style('left', x + 'px')
+            this.style('Top', y + 'px')
+                .style('Left', x + 'px')
                 .style('border', 'solid 2px' + borderColor)
                 .html(data);
 
@@ -144,7 +144,6 @@ function util() {
                     offsetLeft = 78;
                     break;
 
-<<<<<<< Updated upstream
                 case "descending":
                     offsetLeft = 54;
                     break;
@@ -192,10 +191,6 @@ function util() {
         },
         getTruncatedLabel: function (element, label, containerLength, offset) {
             if (typeof (label) === 'undefined') {
-=======
-        getTruncatedTick: function (label, containerLength, scale) {
-            if (typeof (label) === 'undefined') {
->>>>>>> Stashed changes
                 return "";
             }
 
@@ -205,31 +200,6 @@ function util() {
 
             label = label.toString();
 
-<<<<<<< Updated upstream
-=======
-            var truncLabel = label,
-                arr = label.split('');
-
-            if (scale != undefined && scale.invert(label.length) >= containerLength) {
-                var charLength = Math.floor(scale(containerLength)) - 3;
-                charLength = (charLength < 0) ? 0 : charLength;
-                truncLabel = arr.splice(0, charLength).join('') + '...';
-            }
-
-            return truncLabel;
-        },
-        getTruncatedLabel: function (element, label, containerLength, offset) {
-            if (typeof (label) === 'undefined') {
-                return "";
-            }
-
-            if (label === null) {
-                label = "null";
-            }
-
-            label = label.toString();
-
->>>>>>> Stashed changes
             if (offset === void 0) {
                 offset = 0;
             }
@@ -421,16 +391,6 @@ function util() {
             return value;
         },
 
-<<<<<<< Updated upstream
-=======
-        getVisibility: function (isVisible) {
-            if (isVisible) {
-                return 'visible';
-            }
-            return 'hidden';
-        },
-
->>>>>>> Stashed changes
         createAlert: function (id, _measure) {
             var output = "";
 
@@ -472,7 +432,6 @@ function util() {
             return output;
         },
 
-<<<<<<< Updated upstream
         createFilterElement: function () {
             var _filter = '<div class="confirm" style="visibility: hidden;">' +
                 '<button class="btn btn-filters filterData btn-primary">' +
@@ -485,8 +444,6 @@ function util() {
             return _filter
         },
 
-=======
->>>>>>> Stashed changes
         displayThreshold: function (threshold, data, keys) {
             for (var index = 0; index < threshold.length; index++) {
                 data.filter(function (val) {
@@ -514,7 +471,6 @@ function util() {
             }
             return _measureProp[index];
         },
-<<<<<<< Updated upstream
         sortData: function (data, keys, sortOrder) {
             if (typeof (keys) == 'string') {
                 // If keys is string then convert it to array
@@ -559,14 +515,6 @@ function util() {
             var _onRadioButtonClick = function (event) {
                 $(this).closest('.sort_selection').parent().find('.plot').remove();
                 callback.call(scope, me.sortData(_Local_data, event.data.measure, sortType));
-=======
-
-        toggleSortSelection: function (scope, sortType, callback, _local_svg, _measure, _Local_data) {
-
-            var _onRadioButtonClick = function (event) {
-                $(this).closest('.sort_selection').parent().find('.plot').remove();
-                callback.call(scope, UTIL.sortData(_Local_data, event.data.measure, sortType));
->>>>>>> Stashed changes
             }
 
             d3.event.stopPropagation();
@@ -599,13 +547,8 @@ function util() {
                 }, _onRadioButtonClick);
             }
 
-<<<<<<< Updated upstream
             this.positionDownArrow(div, downArrow.node(), sortType);
             this.positionSortSelection(div, sortWindow.node());
-=======
-            UTIL.positionDownArrow(div, downArrow.node(), sortType);
-            UTIL.positionSortSelection(div, sortWindow.node());
->>>>>>> Stashed changes
 
         },
 
@@ -652,17 +595,10 @@ function util() {
                 .style('stroke', _xAxisColor)
 
             svg.selectAll('.x_axis .tick')
-<<<<<<< Updated upstream
                 .style('visibility', _showXaxis == true ? 'visible' : 'hidden');
 
             svg.selectAll('.y_axis .tick')
                 .style('visibility', _showYaxis == true ? 'visible' : 'hidden');
-=======
-                .style('visibility', UTIL.getVisibility(_showXaxis))
-
-            svg.selectAll('.y_axis .tick')
-                .style('visibility', UTIL.getVisibility(_showYaxis))
->>>>>>> Stashed changes
 
         },
         getMeasureList: function (data, _dimension) {
@@ -705,7 +641,6 @@ function util() {
 
             var exp1 = "e+" + scale,
                 exp2 = "e-" + scale;
-<<<<<<< Updated upstream
 
             return +(Math.round(num + exp1) + exp2);
         },
@@ -714,16 +649,6 @@ function util() {
                 return t.hasOwnProperty('default');
             });
 
-=======
-
-            return +(Math.round(num + exp1) + exp2);
-        },
-        expressionEvaluator: function (expression, value, key) {
-            var result = expression.filter(function (t) {
-                return t.hasOwnProperty('default');
-            });
-
->>>>>>> Stashed changes
             if (result.length) {
                 result = result[0][key];
             }
@@ -817,7 +742,6 @@ function util() {
                     return "\uf0c9";
                 })
         },
-<<<<<<< Updated upstream
         /**
        * Base accessor function
        *
@@ -827,17 +751,6 @@ function util() {
        * @return {string|array(string)|function}
        */
         baseAccessor: function (value, measure, measures, chart) {
-=======
-          /**
-         * Base accessor function
-         *
-         * @param {string|array(string)|null} value "this" value for the measure(s)
-         * @param {string|null} measure Measure for which the value is to be set or retrieved
-         * @param {array(string)} measures All the available measures
-         * @return {string|array(string)|function}
-         */
-        baseAccessor: function (value, measure, measures,chart) {
->>>>>>> Stashed changes
             var me = this;
 
             if (!arguments.length) {
@@ -886,20 +799,12 @@ function util() {
             return chart;
         },
 
-<<<<<<< Updated upstream
         title: function (str) {
-=======
-        title: function(str) {
->>>>>>> Stashed changes
             var r = '';
             r = str.charAt(0).toUpperCase() + str.substring(1);
             return r;
         },
-<<<<<<< Updated upstream
         convertToNumber: function (str) {
-=======
-        convertToNumber: function(str) {
->>>>>>> Stashed changes
             return parseFloat(str.replace(/,/g, ''));
         },
     }

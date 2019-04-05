@@ -35,7 +35,7 @@ function clusteredverticalbar() {
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
 
-    var parentWidth, parentHeight, plotWidth, plotHeight;
+    var parentWidth, parentHeight, plotWidth, plotHeight, container;
 
     var x0, x1, y;
     var margin = {
@@ -96,7 +96,7 @@ function clusteredverticalbar() {
         return output;
     }
 
-    var onLassoStart = function (lasso, chart) {
+    var onLassoStart = function (lasso, scope) {
         return function () {
             if (filter) {
                 lasso.items().selectAll('rect')
@@ -106,7 +106,7 @@ function clusteredverticalbar() {
         }
     }
 
-    var onLassoDraw = function (lasso, chart) {
+    var onLassoDraw = function (lasso, scope) {
         return function () {
             filter = true;
             lasso.items().selectAll('rect')
@@ -122,7 +122,7 @@ function clusteredverticalbar() {
         }
     }
 
-    var onLassoEnd = function (lasso, chart) {
+    var onLassoEnd = function (lasso, scope) {
         return function () {
             var data = lasso.selectedItems().data();
             if (!filter) {
@@ -139,8 +139,8 @@ function clusteredverticalbar() {
 
             lasso.notSelectedItems().selectAll('rect');
 
-            var confirm = d3.select('.confirm')
-                .style('visibility', 'visible');
+            var confirm = $(scope).parent().find('div.confirm')
+                .css('visibility', 'visible');
 
             var _filter = [];
             if (data.length > 0) {
@@ -246,7 +246,6 @@ function clusteredverticalbar() {
             var str = UTIL.createAlert($(div).attr('id'), _measure);
             $(div).append(str);
 
-<<<<<<< Updated upstream
             var _filter = UTIL.createFilterElement()
             $(div).append(_filter);
 
@@ -262,20 +261,6 @@ function clusteredverticalbar() {
                 }
             })
 
-=======
-            $(document).on('click', '_local_svg', function (e) {
-                if ($("#myonoffswitch").prop('checked') == false) {
-                    var element = e.target
-                    if (element.tagName == "_local_svg") {
-                        $('#Modal_' + $(div).attr('id') + ' .measure').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', false)
-                        $('#Modal_' + $(div).attr('id')).modal('toggle');
-                    }
-                }
-            })
-
->>>>>>> Stashed changes
             $(document).on('click', '#Modal_' + $(div).attr('id') + ' .ThresholdSubmit', function (e) {
                 var newValue = $('#Modal_' + $(div).attr('id') + ' .threshold').val();
                 var obj = new Object()
@@ -317,22 +302,22 @@ function clusteredverticalbar() {
                         break;
                 }
 
-                if ((_legendPosition == 'top') || (_legendPosition == 'bottom')) {
+                if ((_legendPosition == 'Top') || (_legendPosition == 'Bottom')) {
                     plotWidth = parentWidth;
                     plotHeight = parentHeight - 3 * axisLabelSpace;
                     legendSpace = 20;
-                } else if ((_legendPosition == 'left') || (_legendPosition == 'right')) {
+                } else if ((_legendPosition == 'Left') || (_legendPosition == 'Right')) {
                     var legend = _local_svg.selectAll('.item');
                     legendSpace = legend.node().parentNode.getBBox().width;
                     plotWidth = (parentWidth - legendSpace) - margin.left + axisLabelSpace;
                     plotHeight = parentHeight;
 
                     legend.attr('transform', function (d, i) {
-                        if (_legendPosition == 'left') {
+                        if (_legendPosition == 'Left') {
                             return 'translate(0, ' + i * 20 + ')';
 
                         }
-                        else if (_legendPosition == 'right') {
+                        else if (_legendPosition == 'Right') {
                             return 'translate(' + (parentWidth - legendSpace + axisLabelSpace) + ', ' + i * 20 + ')';
                         }
                     });
@@ -356,7 +341,7 @@ function clusteredverticalbar() {
         var me = this;
         _Local_data = data;
         filterData = [];
-        var confirm = d3.select('.confirm')
+        var confirm = d3.select(div).select('.confirm')
             .style('visibility', 'hidden');
         x0 = d3.scaleBand()
             .rangeRound([0, plotWidth])
@@ -373,13 +358,13 @@ function clusteredverticalbar() {
             .attr('class', 'clusteredverticalbar-plot')
             .classed('plot', true)
             .attr('transform', function () {
-                if (_legendPosition == 'top') {
+                if (_legendPosition == 'Top') {
                     return 'translate(' + margin.left + ', ' + parseInt(legendSpace * 2 + (20 * parseInt(legendBreakCount))) + ')';
-                } else if (_legendPosition == 'bottom') {
+                } else if (_legendPosition == 'Bottom') {
                     return 'translate(' + margin.left + ', 0)';
-                } else if (_legendPosition == 'left') {
+                } else if (_legendPosition == 'Left') {
                     return 'translate(' + (legendSpace + margin.left + axisLabelSpace) + ', 0)';
-                } else if (_legendPosition == 'right') {
+                } else if (_legendPosition == 'Right') {
                     return 'translate(' + margin.left + ', 0)';
                 }
             });
@@ -519,17 +504,10 @@ function clusteredverticalbar() {
                 }
             });
 
-<<<<<<< Updated upstream
         d3.select(div).select('.filterData')
             .on('click', applyFilter(chart));
 
         d3.select(div).select('.removeFilter')
-=======
-        d3.select(div).select('.btn-primary')
-            .on('click', applyFilter(chart));
-
-        d3.select(div).select('.btn-default')
->>>>>>> Stashed changes
             .on('click', clearFilter());
 
         _local_svg.select('g.lasso').remove();
@@ -541,9 +519,10 @@ function clusteredverticalbar() {
             .items(cluster)
             .targetArea(_local_svg);
 
-        lasso.on('start', onLassoStart(lasso, chart))
-            .on('draw', onLassoDraw(lasso, chart))
-            .on('end', onLassoEnd(lasso, chart));
+        lasso.on('start', onLassoStart(lasso, me))
+            .on('draw', onLassoDraw(lasso, me))
+            .on('end', onLassoEnd(lasso, me));
+
 
         _local_svg.call(lasso);
 
@@ -555,7 +534,7 @@ function clusteredverticalbar() {
 
         element.append('rect')
             .attr("x", function (d) {
-                return x1(d.measure);
+                return 0;
             })
             .attr("y", function (d) {
                 return y(d[d.measure]);
@@ -563,11 +542,7 @@ function clusteredverticalbar() {
             .attr('class', 'bar')
             .attr("width", x1.bandwidth())
             .attr("height", function (d) {
-<<<<<<< Updated upstream
                 return 0;
-=======
-                return plotHeight - y(d[d.measure]);
->>>>>>> Stashed changes
             })
             .style('fill', function (d, i) {
                 return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
@@ -587,7 +562,7 @@ function clusteredverticalbar() {
                     $('#Modal_' + $(div).attr('id')).modal('toggle');
                 }
                 else {
-                    var confirm = d3.select('.confirm')
+                    var confirm = d3.select(div).select('.confirm')
                         .style('visibility', 'visible');
                     var _filter = _Local_data.filter(function (d1) {
                         return d[_dimension[0]] === d1[_dimension[0]]
@@ -613,7 +588,6 @@ function clusteredverticalbar() {
                     }
                 }
             })
-<<<<<<< Updated upstream
             .transition()
             .duration(COMMON.DURATION)
             .attr("height", function (d, i) {
@@ -626,8 +600,6 @@ function clusteredverticalbar() {
             .attr("x", function (d, i) {
                 return x1(d.measure);;
             })
-=======
->>>>>>> Stashed changes
     }
     chart._legendInteraction = function (event, data) {
         switch (event) {
@@ -715,7 +687,6 @@ function clusteredverticalbar() {
                 return 'translate(' + x0(d[_dimension[0]]) + ', 0)';
             });
 
-<<<<<<< Updated upstream
         cluster
             .exit()
             .transition()
@@ -723,9 +694,6 @@ function clusteredverticalbar() {
             .attr('height', 0)
             .attr('y', plotHeight)
             .remove();
-=======
-        cluster.exit().remove();
->>>>>>> Stashed changes
 
         cluster = plot.selectAll('g.cluster');
         var labelStack = [];
@@ -745,7 +713,6 @@ function clusteredverticalbar() {
             });
 
         clusteredverticalbar.select('rect')
-<<<<<<< Updated upstream
             .attr('class', 'bar')
             .attr("width", x1.bandwidth())
             .attr("height", function (d) {
@@ -763,19 +730,6 @@ function clusteredverticalbar() {
             .attr("x", function (d, i) {
                 return x1(d.measure);;
             })
-=======
-            .attr("x", function (d) {
-                return x1(d.measure);
-            })
-            .attr("y", function (d) {
-                return y(d[d.measure]);
-            })
-            .attr('class', 'bar')
-            .attr("width", x1.bandwidth())
-            .attr("height", function (d) {
-                return plotHeight - y(d[d.measure]);
-            })
->>>>>>> Stashed changes
 
         var newBars = clusteredverticalbar.enter().append('g')
             .attr('class', 'clusteredverticalbar');
@@ -802,10 +756,9 @@ function clusteredverticalbar() {
                 var barWidth = (1 - x0.padding()) * plotWidth / (data.length - 1);
                 barWidth = (1 - x1.padding()) * barWidth / keys.length;
                 return UTIL.getTruncatedTick(d3.select(this).text(), barWidth, tickLength);
-<<<<<<< Updated upstream
             });
 
-        d3.selectAll('g.cluster')
+        plot.selectAll('g.cluster')
             .attr('transform', function (d) {
                 return 'translate(' + x0(d[_dimension[0]]) + ', 0)';
             });
@@ -818,23 +771,6 @@ function clusteredverticalbar() {
         plot.select('.y_axis')
             .transition()
             .duration(COMMON.DURATION)
-=======
-            });
-
-        d3.selectAll('g.cluster')
-            .attr('transform', function (d) {
-                return 'translate(' + x0(d[_dimension[0]]) + ', 0)';
-            });
-
-        plot.select('.x_axis')
-            .transition()
-            .duration(1000)
-            .call(d3.axisBottom(x0));
-
-        plot.select('.y_axis')
-            .transition()
-            .duration(1000)
->>>>>>> Stashed changes
             .call(d3.axisLeft(y).ticks(null, "s"));
 
         UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis);
@@ -963,7 +899,6 @@ function clusteredverticalbar() {
     }
 
     chart.showValues = function (value, measure) {
-<<<<<<< Updated upstream
         return UTIL.baseAccessor.call(_showValues, value, measure, _measure, chart);
     }
 
@@ -997,41 +932,6 @@ function clusteredverticalbar() {
 
     chart.fontSize = function (value, measure) {
         return UTIL.baseAccessor.call(_fontSize, value, measure, _measure, chart);
-=======
-        return UTIL.baseAccessor.call(_showValues, value, measure, _measure,chart);
-    }
-
-    chart.displayNameForMeasure = function (value, measure) {
-        return UTIL.baseAccessor.call(_displayNameForMeasure, value, measure, _measure,chart);
-    }
-
-    chart.fontStyle = function (value, measure) {
-        return UTIL.baseAccessor.call(_fontStyle, value, measure, _measure,chart);
-    }
-
-    chart.fontWeight = function (value, measure) {
-        return UTIL.baseAccessor.call(_fontWeight, value, measure, _measure,chart);
-    }
-
-    chart.numberFormat = function (value, measure) {
-        return UTIL.baseAccessor.call(_numberFormat, value, measure, _measure,chart);
-    }
-
-    chart.textColor = function (value, measure) {
-        return UTIL.baseAccessor.call(_textColor, value, measure, _measure,chart);
-    }
-
-    chart.displayColor = function (value, measure) {
-        return UTIL.baseAccessor.call(_displayColor, value, measure, _measure,chart);
-    }
-
-    chart.borderColor = function (value, measure) {
-        return UTIL.baseAccessor.call(_borderColor, value, measure, _measure,chart);
-    }
-
-    chart.fontSize = function (value, measure) {
-        return UTIL.baseAccessor.call(_fontSize, value, measure, _measure,chart);
->>>>>>> Stashed changes
     }
 
     return chart;
