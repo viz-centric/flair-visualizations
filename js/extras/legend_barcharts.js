@@ -39,20 +39,25 @@ function legend() {
                     case 'Left':
                         translate = [0, i * 20];
                 }
-
                 return 'translate(' + translate.toString() + ')';
             })
             .on('mouseover', function (d, i) {
+                var k = d3.select(this.parentNode),
+                    plot = d3.select(k.node().parentNode).select('.plot')
                 d3.select(this).attr('cursor', 'pointer');
-                me._legendInteraction('mouseover', data.measureName[i]);
+                me._legendInteraction('mouseover', data.measureName[i], plot);
             })
             .on('mousemove', function (d, i) {
+                var k = d3.select(this.parentNode),
+                    plot = d3.select(k.node().parentNode).select('.plot')
                 d3.select(this).attr('cursor', 'pointer');
-                me._legendInteraction('mousemove', data.measureName[i]);
+                me._legendInteraction('mousemove', data.measureName[i], plot);
             })
             .on('mouseout', function (d, i) {
+                var k = d3.select(this.parentNode),
+                    plot = d3.select(k.node().parentNode).select('.plot')
                 d3.select(this).attr('cursor', 'default');
-                me._legendInteraction('mouseout', data.measureName[i]);
+                me._legendInteraction('mouseout', data.measureName[i], plot);
             })
             .on('click', function (d, i) {
                 var k = d3.select(this.parentNode)

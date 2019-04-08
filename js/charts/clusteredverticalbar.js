@@ -19,7 +19,7 @@ function clusteredverticalbar() {
         _showYaxisLabel,
         _xAxisColor,
         _yAxisColor,
-        _showGrid,
+        _showGrid ,
         _stacked,
         _displayName,
         _legendData,
@@ -34,10 +34,13 @@ function clusteredverticalbar() {
         _fontSize = [];
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
-
+    var _localXAxis,
+        _localYAxis,
+        _localXGrid,
+        _localYGrid;
     var parentWidth, parentHeight, plotWidth, plotHeight, container;
 
-    var x0, x1, y;
+    var x0, x1, _xDimensionGrid = d3.scaleLinear(), y;
     var margin = {
         top: 0,
         right: 0,
@@ -216,7 +219,18 @@ function clusteredverticalbar() {
             }
         }
     }
+    var _setAxisColor = function (axis, color) {
+        var path = axis.select('path'),
+            ticks = axis.selectAll('.tick');
 
+        path.style('stroke', color);
+
+        ticks.select('line')
+            .style('stroke', color);
+
+        ticks.select('text')
+            .style('fill', color);
+    }
     function chart(selection) {
         _local_svg = selection;
 
@@ -354,6 +368,7 @@ function clusteredverticalbar() {
         y = d3.scaleLinear()
             .rangeRound([plotHeight, 0]);
 
+
         var plot = container.append('g')
             .attr('class', 'clusteredverticalbar-plot')
             .classed('plot', true)
@@ -385,6 +400,41 @@ function clusteredverticalbar() {
                 return parseInt(d[key]);
             });
         })]).nice();
+
+        var _localXLabels = data.map(function (d) {
+            return d[_dimension[0]];
+        });
+
+        _xDimensionGrid.domain([0, _localXLabels.length])
+            .range([0, plotWidth]);
+
+        _localXGrid = d3.axisBottom()
+            .ticks(_localXLabels.length)
+            .tickFormat('')
+            .tickSize(-plotHeight);
+
+        _localYGrid = d3.axisLeft()
+            .tickFormat('')
+            .tickSize(-plotWidth);
+
+        _localXGrid.scale(_xDimensionGrid);
+        _localYGrid.scale(y);
+
+        plot.append('g')
+            .attr('class', 'x grid')
+            .attr('visibility', function () {
+                return _showGrid ? 'visible' : 'hidden';
+            })
+            .attr('transform', 'translate(0, ' + plotHeight + ')')
+            .call(_localXGrid);
+
+        plot.append('g')
+            .attr('class', 'y grid')
+            .attr('visibility', function () {
+                return _showGrid ? 'visible' : 'hidden';
+            })
+            .call(_localYGrid);
+
 
         var cluster = plot.selectAll('.cluster')
             .data(data)
@@ -452,36 +502,68 @@ function clusteredverticalbar() {
                 return UTIL.getTruncatedTick(d3.select(this).text(), barWidth, tickLength);
             });
 
-        plot.append("g")
-            .attr("class", "x_axis")
-            .attr("transform", "translate(0," + plotHeight + ")")
-            .call(d3.axisBottom(x0))
-            .append("text")
-            .attr("x", plotWidth / 2)
-            .attr("y", 2 * axisLabelSpace)
-            .attr("dy", "0.32em")
-            .attr("fill", "#000")
-            .attr("font-weight", "bold")
-            .style('text-anchor', 'middle')
-            .style('visibility', UTIL.getVisibility(_showXaxisLabel))
-            .text(function () {
-                return _displayName;
+        /* Axes */
+        var xAxisGroup,
+            yAxisGroup;
+
+
+        _localXAxis = d3.axisBottom(x0)
+            .tickSize(0)
+            .tickPadding(10);
+
+        xAxisGroup = plot.append('g')
+            .attr('class', 'x axis')
+            .attr('visibility', function () {
+                return _showXaxis;
+            })
+            .attr('transform', 'translate(0, ' + plotHeight + ')')
+            .call(_localXAxis);
+
+        xAxisGroup.append('g')
+            .attr('class', 'label')
+            .attr('transform', function () {
+                return 'translate(' + (plotWidth) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
+            })
+            .append('text')
+            .style('text-anchor', 'end')
+            .style('font-weight', 'bold')
+            .style('fill', _xAxisColor)
+            .attr('visibility', function () {
+                return _showXaxisLabel;
+            })
+            .text(_displayName);
+
+        _setAxisColor(xAxisGroup, _xAxisColor);
+
+        _localYAxis = d3.axisLeft(y)
+            .tickSize(0)
+            .tickPadding(8)
+            .tickFormat(function (d) {
+                return UTIL.shortScale(2)(d);
             });
 
-        plot.append("g")
-            .attr("class", "y_axis")
-            .call(d3.axisLeft(y).ticks(null, "s"))
-            .append("text")
-            .attr("x", plotHeight / 2)
-            .attr("y", 2 * axisLabelSpace)
-            .attr("transform", function (d) { return "rotate(" + 90 + ")"; })
-            .attr("dy", "0.32em")
-            .style('visibility', UTIL.getVisibility(_showYaxisLabel))
-            .attr("font-weight", "bold")
-            .style('text-anchor', 'middle')
+        yAxisGroup = plot.append('g')
+            .attr('class', 'y axis')
+            .attr('visibility', _showYaxis)
+            .call(_localYAxis);
+
+        yAxisGroup.append('g')
+            .attr('class', 'label')
+            .attr('transform', function () {
+                return 'translate(' + (-COMMON.AXIS_THICKNESS / 1.15) + ', ' + '0)';
+            })
+            .append('text')
+            .attr('transform', 'rotate(-90)')
+            .style('text-anchor', 'end')
+            .style('font-weight', 'bold')
+            .style('fill', _yAxisColor)
+            .attr('visibility', _showYaxisLabel)
             .text(function () {
                 return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
             });
+
+        _setAxisColor(yAxisGroup, _yAxisColor);
+
 
         _local_svg.select('g.sort').remove();
         UTIL.sortingView(container, parentHeight, parentWidth + margin.left, legendBreakCount, axisLabelSpace, offsetX);
@@ -497,9 +579,10 @@ function clusteredverticalbar() {
                         UTIL.toggleSortSelection(me, 'descending', drawPlot, _local_svg, keys, _Local_data);
                         break;
                     case 'reset': {
-                        _local_svg.select(me.parentElement).select('.plot').remove();
+                        $(me).parent().find('.sort_selection,.arrow-down').css('visibility', 'hidden');
+                        _local_svg.select('.plot').remove()
                         drawPlot.call(me, _Local_data);
-                        break;
+                        break; arrow - down
                     }
                 }
             });
@@ -523,10 +606,8 @@ function clusteredverticalbar() {
             .on('draw', onLassoDraw(lasso, me))
             .on('end', onLassoEnd(lasso, me));
 
-
         _local_svg.call(lasso);
 
-        UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis, _showYaxis, _showXaxis);
     }
 
     var drawViz = function (element) {
@@ -601,26 +682,26 @@ function clusteredverticalbar() {
                 return x1(d.measure);;
             })
     }
-    chart._legendInteraction = function (event, data) {
+    chart._legendInteraction = function (event, data, plot) {
         switch (event) {
             case 'mouseover':
-                _legendMouseOver(data);
+                _legendMouseOver(data, plot);
                 break;
             case 'mousemove':
-                _legendMouseMove(data);
+                _legendMouseMove(data, plot);
                 break;
             case 'mouseout':
-                _legendMouseOut(data);
+                _legendMouseOut(data, plot);
                 break;
             case 'click':
-                _legendClick(data);
+                _legendClick(data, plot);
                 break;
         }
     }
 
-    var _legendMouseOver = function (data) {
+    var _legendMouseOver = function (data, plot) {
 
-        d3.selectAll('g.clusteredverticalbar')
+        plot.selectAll('g.clusteredverticalbar')
             .filter(function (d) {
                 return d.measure === data;
             })
@@ -628,12 +709,12 @@ function clusteredverticalbar() {
             .style('fill', COMMON.HIGHLIGHTER);
     }
 
-    var _legendMouseMove = function (data) {
+    var _legendMouseMove = function (data, plot) {
 
     }
 
-    var _legendMouseOut = function (data) {
-        d3.selectAll('g.clusteredverticalbar')
+    var _legendMouseOut = function (data, plot) {
+        plot.selectAll('g.clusteredverticalbar')
             .filter(function (d) {
                 return d.measure === data;
             })
@@ -643,7 +724,7 @@ function clusteredverticalbar() {
             });
     }
 
-    var _legendClick = function (data) {
+    var _legendClick = function (data, plot) {
         var _filter = UTIL.getFilterData(_localLabelStack, data, _originalData)
         drawPlot.call(this, _filter);
     }
@@ -669,6 +750,12 @@ function clusteredverticalbar() {
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
+        var _localXLabels = data.map(function (d) {
+            return d[_dimension[0]];
+        });
+
+        _xDimensionGrid.domain([0, _localXLabels.length]);
+
         x0.domain(data.map(function (d) { return d[_dimension[0]]; }));
         x1.domain(keys).rangeRound([0, x0.bandwidth()]);
         y.domain([0, d3.max(data, function (d) {
@@ -689,10 +776,6 @@ function clusteredverticalbar() {
 
         cluster
             .exit()
-            .transition()
-            .duration(COMMON.DURATION)
-            .attr('height', 0)
-            .attr('y', plotHeight)
             .remove();
 
         cluster = plot.selectAll('g.cluster');
@@ -763,17 +846,42 @@ function clusteredverticalbar() {
                 return 'translate(' + x0(d[_dimension[0]]) + ', 0)';
             });
 
-        plot.select('.x_axis')
+        var xAxisGroup,
+            yAxisGroup;
+
+        xAxisGroup = plot.select('.x.axis')
             .transition()
             .duration(COMMON.DURATION)
             .call(d3.axisBottom(x0));
 
-        plot.select('.y_axis')
+        _setAxisColor(xAxisGroup, _xAxisColor);
+
+        yAxisGroup = plot.select('.y.axis')
             .transition()
             .duration(COMMON.DURATION)
             .call(d3.axisLeft(y).ticks(null, "s"));
 
-        UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis);
+        _setAxisColor(yAxisGroup, _yAxisColor);
+
+        /* Update Axes Grid */
+        _localXGrid.ticks(_localXLabels.length);
+
+        plot.select('.x.grid')
+            .transition()
+            .duration(COMMON.DURATION)
+            .attr('visibility', function () {
+                return _showGrid ? 'visible' : 'hidden';
+            })
+            .call(_localXGrid);
+
+        plot.select('.y.grid')
+            .transition()
+            .duration(COMMON.DURATION)
+            .attr('visibility', function () {
+                return _showGrid ? 'visible' : 'hidden';
+            })
+            .call(_localYGrid);
+
         UTIL.displayThreshold(threshold, data, keys);
     }
 

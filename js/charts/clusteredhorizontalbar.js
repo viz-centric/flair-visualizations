@@ -469,7 +469,8 @@ function clusteredhorizontalbar() {
                         UTIL.toggleSortSelection(me, 'descending', drawPlot, _local_svg, keys, _Local_data);
                         break;
                     case 'reset': {
-                        _local_svg.select(me.parentElement).select('.plot').remove();
+                            $(me).parent().find('.sort_selection,.arrow-down').css('visibility', 'hidden');
+                        _local_svg.select('.plot').remove()
                         drawPlot.call(me, _Local_data);
                         break;
                     }

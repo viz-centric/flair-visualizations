@@ -308,3 +308,13 @@ text {
     right: 0px;
     margin: 5px;
 }
+
+.grid path {
+    stroke: #ededed;
+}
+
+.grid line {
+    stroke: #ededed;
+    shape-rendering: crispEdges;
+    stroke-opacity: 1;
+}
