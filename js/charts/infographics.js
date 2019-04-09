@@ -1,6 +1,7 @@
-var COMMON = require('../extras/common.js')(),
-    UTIL = require('../extras/util.js')(),
-    LEGEND = require('../extras/legend.js')();
+var d3 = require('d3');
+var COMMON = require('../extras/common.js')();
+var UTIL = require('../extras/util.js')();
+var LEGEND = require('../extras/legend.js')();
 
 function infographics() {
 
@@ -33,7 +34,7 @@ function infographics() {
         _kpiIconExpression,
         _tooltip;
 
-    /* These are the common variables that is shared across the different private/public 
+    /* These are the common variables that is shared across the different private/public
      * methods but is initialized/updated within the methods itself.
      */
     var _localDiv,
@@ -45,7 +46,7 @@ function infographics() {
         _localMax,
         _localTooltip;
 
-    /* These are the common private functions that is shared across the different private/public 
+    /* These are the common private functions that is shared across the different private/public
      * methods but is initialized beforehand.
      */
     var _x = d3.scalePoint(),
@@ -157,7 +158,7 @@ function infographics() {
                 });
 
             point.style('stroke-width', 2);
-            
+
             if(tooltip) {
                 UTIL.showTooltip(tooltip);
                 UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container);
@@ -187,7 +188,7 @@ function infographics() {
                 });
 
             point.style('stroke-width', 0);
-            
+
             if(tooltip) {
                 UTIL.hideTooltip(tooltip);
             }
@@ -237,7 +238,7 @@ function infographics() {
             /* Minimum and Maximum value of the measures */
             _localMin = d3.min(data, function(d) { return d[_measure[0]]; });
             _localMax = d3.max(data, function(d) { return d[_measure[0]]; });
-            
+
             _x.domain(_localXLabels)
                 .range([0, parentWidth]);
 
@@ -317,16 +318,16 @@ function infographics() {
                     .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, infographics))
                     .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, infographics))
                     .on('click', function(d, i) {
-                        
+
                     });
-                
+
             var measure = info.append('div')
                 .classed('measure', true)
                 .style('justify-content', _kpiAlignment);
 
             var parent = measure.append('div')
                 .classed('parent', true);
-                
+
             parent.append('div')
                 .attr('id', 'kpi-label')
                 .classed('child', true)
@@ -387,7 +388,7 @@ function infographics() {
         /* Minimum and Maximum value of the measures */
         _localMin = d3.min(data, function(d) { return d[_measure[0]]; });
         _localMax = d3.max(data, function(d) { return d[_measure[0]]; });
-        
+
         /* Update the axes scales */
         _x.domain(_localXLabels);
         _y.domain([_localMin, _localMax]);
@@ -482,7 +483,7 @@ function infographics() {
         _chartDisplayColor = value;
         return chart;
     }
-    
+
     chart.kpiDisplayName = function(value) {
         if(!arguments.length) {
             return _kpiDisplayName;

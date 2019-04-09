@@ -1,3 +1,5 @@
+var d3 = require('d3');
+
 function util() {
 
     var _verifyPrecision = function(precision) {
@@ -126,7 +128,7 @@ function util() {
             if(containerLength < element.getComputedTextLength()) {
                 var charLength = parseInt(containerLength * element.getNumberOfChars()/element.getComputedTextLength()) - offset;
                 charLength = (charLength < 0) ? 0 : charLength;
-                truncLabel = arr.splice(0, charLength).join('') + '...';    
+                truncLabel = arr.splice(0, charLength).join('') + '...';
             }
 
             return truncLabel;
@@ -187,7 +189,7 @@ function util() {
         },
 
         /**
-         * Provides config format of a string expression 
+         * Provides config format of a string expression
          *
          * @param {string} expression The expression which is to be transformed to the config
          * @param {array} args Array of string for which will be the properties for the config
@@ -226,7 +228,7 @@ function util() {
          * Retrives property value inside the expression based upon the given criteria
          *
          * @param {array(object)} expression The expression which is to be evaluated
-         * @param {number} value The value whose placement is to be identified 
+         * @param {number} value The value whose placement is to be identified
          * @param {string} key The property that is being evaluated
          * @return {string|number}
          */
@@ -317,11 +319,11 @@ function util() {
         shortScale: function(precision) {
             if (precision === void 0) { precision = 3; }
             _verifyPrecision(precision);
-            
+
             var suffixes = "KMBTQ";
             var fixedFormatter = d3.format("." + precision + "f");
             var exponentFormatter = d3.format("." + precision + "e");
-            
+
             var max = Math.pow(10, (3 * (suffixes.length + 1)));
             var min = Math.pow(10, -precision);
             return function (num) {

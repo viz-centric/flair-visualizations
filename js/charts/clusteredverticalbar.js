@@ -1,6 +1,7 @@
-var COMMON = require('../extras/common.js')(),
-    UTIL = require('../extras/util.js')(),
-    LEGEND = require('../extras/legend.js')();
+var d3 = require('d3');
+var COMMON = require('../extras/common.js')();
+var UTIL = require('../extras/util.js')();
+var LEGEND = require('../extras/legend.js')();
 
 function clusteredverticalbar() {
 
@@ -36,7 +37,7 @@ function clusteredverticalbar() {
         _measureBorderColor = [],
         _tooltip;
 
-    /* These are the common variables that is shared across the different private/public 
+    /* These are the common variables that is shared across the different private/public
      * methods but is initialized/updated within the methods itself.
      */
     var _localSVG,
@@ -53,7 +54,7 @@ function clusteredverticalbar() {
         _localTooltip;
         // _localLabelStack;
 
-    /* These are the common private functions that is shared across the different private/public 
+    /* These are the common private functions that is shared across the different private/public
      * methods but is initialized beforehand.
      */
     var _xDimension = d3.scaleBand(),
@@ -182,7 +183,7 @@ function clusteredverticalbar() {
 
             barGroup.select('rect.bar-rect-mask')
                 .attr('visibility', 'hidden');
-            
+
             if(tooltip) {
                 UTIL.hideTooltip(tooltip);
             }
@@ -313,7 +314,7 @@ function clusteredverticalbar() {
                 temp = d3.max(data, function(d) { return d[m]; });
                 _localMax = _localMax < temp ? temp : _localMax;
             });
-            
+
             _xDimension.domain(_localXLabels)
                 .rangeRound([0, plotWidth])
                 .padding([0]);
@@ -358,7 +359,7 @@ function clusteredverticalbar() {
             _localYGrid = d3.axisLeft()
                 .tickFormat('')
                 .tickSize(-plotWidth);
-        
+
             _localXGrid.scale(_xDimensionGrid);
             _localYGrid.scale(_y);
 
@@ -432,7 +433,7 @@ function clusteredverticalbar() {
                 .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, svg))
                 .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, svg))
                 .on('click', function(d, i) {
-                    
+
                 });
 
             rect.transition()
@@ -645,7 +646,7 @@ function clusteredverticalbar() {
             temp = d3.max(data, function(d) { return d[m]; });
             _localMax = _localMax < temp ? temp : _localMax;
         });
-        
+
         /* Update the axes scales */
         _xDimension.domain(_localXLabels);
         _xDimensionGrid.domain([0, _localXLabels.length]);
@@ -655,7 +656,7 @@ function clusteredverticalbar() {
 
         if(_legend) {
             svg.select('.legend').remove();
-            
+
             _localLegend(_measure, svg.select('g'), {
                 width: parentWidth,
                 height: parentHeight
@@ -665,7 +666,7 @@ function clusteredverticalbar() {
 
         var clusterGroup = svg.selectAll('.cluster')
             .data(data);
-            
+
         clusterGroup.enter().append('g')
             .attr('id', function(d, i) {
                 return 'cluster-group-' + i;
@@ -711,7 +712,7 @@ function clusteredverticalbar() {
             .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, svg))
             .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, svg))
             .on('click', function(d, i) {
-                
+
             });
 
         var text = barGroup.append('text')
@@ -844,7 +845,7 @@ function clusteredverticalbar() {
 
             _setAxisColor(xAxisGroup, _xAxisColor);
         }
-           
+
         if(_yAxis) {
             yAxisGroup = svg.select('.y.axis')
                 .transition()
@@ -930,7 +931,7 @@ function clusteredverticalbar() {
         _yAxisColor = value;
         return chart;
     }
-    
+
     chart.xAxisLabel = function(value) {
         if(!arguments.length) {
             return _xAxisLabel;

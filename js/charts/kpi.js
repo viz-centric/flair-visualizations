@@ -1,6 +1,7 @@
-var COMMON = require('../extras/common.js')(),
-    UTIL = require('../extras/util.js')(),
-    LEGEND = require('../extras/legend.js')();
+var d3 = require('d3');
+var COMMON = require('../extras/common.js')();
+var UTIL = require('../extras/util.js')();
+var LEGEND = require('../extras/legend.js')();
 
 function kpi() {
 
@@ -32,7 +33,7 @@ function kpi() {
         _kpiIconColor = [],
         _kpiIconExpression = [];
 
-    /* These are the common variables that is shared across the different private/public 
+    /* These are the common variables that is shared across the different private/public
      * methods but is initialized/updated within the methods itself.
      */
     var _localDiv,
@@ -41,7 +42,7 @@ function kpi() {
         _localData,
         _localLabelFontSize = [1.2, 0.9];
 
-    /* These are the common private functions that is shared across the different private/public 
+    /* These are the common private functions that is shared across the different private/public
      * methods but is initialized beforehand.
      */
 
@@ -203,7 +204,7 @@ function kpi() {
                             interpolator = d3.interpolateNumber(_localPrevKpiValue[i], _localTotal[i]);
 
                         _localPrevKpiValue[i] = _localTotal[i];
-                        
+
                         return function(t) {
                             me.html(_getKpi(interpolator(t), _localTotal[i], i));
                         }
@@ -270,7 +271,7 @@ function kpi() {
         _measure = value;
         return chart;
     }
-    
+
     /**
      * KPI Displayname accessor function
      *

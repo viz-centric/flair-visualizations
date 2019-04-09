@@ -1,6 +1,7 @@
-var COMMON = require('../extras/common.js')(),
-    UTIL = require('../extras/util.js')(),
-    LEGEND = require('../extras/legend.js')();
+var d3 = require('d3');
+var COMMON = require('../extras/common.js')();
+var UTIL = require('../extras/util.js')();
+var LEGEND = require('../extras/legend.js')();
 
 function pie() {
 
@@ -20,7 +21,8 @@ function pie() {
         _valueAsArc,
         _valuePosition,
         _sort,
-        _tooltip;
+        _tooltip,
+        _print;
 
     /* These are the common variables that is shared across the different private/public
      * methods but is initialized/updated within the methods itself.
@@ -460,12 +462,16 @@ function pie() {
                 .each(function(d) {
                     this._current = d;
                 })
-                .on('mouseover', _handleMouseOverFn.call(chart, _localTooltip, svg))
-                .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, svg))
-                .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, svg))
-                .on('click', function(d, i) {
 
-                });
+            if(!_print) {
+                // Interaction only when print disabled
+                pieArcPath.on('mouseover', _handleMouseOverFn.call(chart, _localTooltip, svg))
+                    .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, svg))
+                    .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, svg))
+                    .on('click', function(d, i) {
+
+                    });
+            }
 
             pieArcPath.transition()
                 .duration(_durationFn())
@@ -575,6 +581,11 @@ function pie() {
      * @return {undefined}
      */
     chart._legendInteraction = function(event, datum) {
+        if(_print) {
+            // No interaction during print enabled
+            return;
+        }
+
         switch(event) {
             case 'mouseover':
                 _legendMouseOver(datum);
@@ -593,6 +604,10 @@ function pie() {
 
     chart._getName = function() {
         return _NAME;
+    }
+
+    chart._getHTML = function() {
+        return _localSVG.node().outerHTML;
     }
 
     chart.update = function(data) {
@@ -698,12 +713,15 @@ function pie() {
             .each(function(d) {
                 this._current = d;
             })
-            .on('mouseover', _handleMouseOverFn.call(chart, _localTooltip, svg))
-            .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, svg))
-            .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, svg))
-            .on('click', function(d, i) {
 
-            });
+        if(!_print) {
+            pieArcPath.on('mouseover', _handleMouseOverFn.call(chart, _localTooltip, svg))
+                .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, svg))
+                .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, svg))
+                .on('click', function(d, i) {
+
+                });
+        }
 
         pieArcGroup = svg.selectAll('g.arc')
             .data(_pie(newFilteredData), _localKey);
@@ -729,7 +747,7 @@ function pie() {
             .remove();
 
         if(_valueAsArc) {
-            pieLabel = pieArcGroup.append('text')
+            var pieLabel = pieArcGroup.append('text')
                 .attr('dy', function(d, i) {
                     if(_valuePosition == 'inside') {
                         return 10;
@@ -842,6 +860,14 @@ function pie() {
             return _tooltip;
         }
         _tooltip = value;
+        return chart;
+    }
+
+    chart.print = function(value) {
+        if(!arguments.length) {
+            return _print;
+        }
+        _print = value;
         return chart;
     }
 
