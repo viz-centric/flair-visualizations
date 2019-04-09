@@ -19,6 +19,8 @@ function clusteredhorizontalbar() {
         _showYaxisLabel,
         _xAxisColor,
         _yAxisColor,
+        _showGrid,
+        _stacked,
         _displayName,
         _legendData,
         _showValues = [],
@@ -34,8 +36,11 @@ function clusteredhorizontalbar() {
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
 
     var parentWidth, parentHeight, plotWidth, plotHeight, container;
-
-    var x0, x1, y;
+    var _localXAxis,
+        _localYAxis,
+        _localXGrid,
+        _localYGrid;
+    var x0, x1, _xDimensionGrid = d3.scaleLinear(), y;
     var margin = {
         top: 0,
         right: 0,
@@ -63,6 +68,7 @@ function clusteredhorizontalbar() {
         this.showYaxisLabel(config.showYaxisLabel);
         this.xAxisColor(config.xAxisColor);
         this.yAxisColor(config.yAxisColor);
+        this.showGrid(config.showGrid);
         this.displayName(config.displayName);
         this.showYaxis(config.showYaxis);
         this.showXaxisLabel(config.showXaxisLabel);
@@ -213,7 +219,18 @@ function clusteredhorizontalbar() {
             }
         }
     }
+    var _setAxisColor = function (axis, color) {
+        var path = axis.select('path'),
+            ticks = axis.selectAll('.tick');
 
+        path.style('stroke', color);
+
+        ticks.select('line')
+            .style('stroke', color);
+
+        ticks.select('text')
+            .style('fill', color);
+    }
     function chart(selection) {
         _local_svg = selection;
 
@@ -394,6 +411,33 @@ function clusteredhorizontalbar() {
             });
         })]).nice();
 
+        _localYGrid = d3.axisBottom()
+            .tickFormat('')
+            .tickSize(-plotHeight);
+
+        _localXGrid = d3.axisLeft()
+            .tickFormat('')
+            .tickSize(-plotWidth);
+
+        _localXGrid.scale(x0);
+        _localYGrid.scale(y);
+
+        plot.append('g')
+            .attr('class', 'x grid')
+            .attr('visibility', function () {
+                return _showGrid ? 'visible' : 'hidden';
+            })
+
+            .call(_localXGrid);
+
+        plot.append('g')
+            .attr('class', 'y grid')
+            .attr('visibility', function () {
+                return _showGrid ? 'visible' : 'hidden';
+            })
+            .attr('transform', 'translate(0, ' + plotHeight + ')')
+            .call(_localYGrid);
+
         var cluster = plot.selectAll('.cluster')
             .data(data)
             .enter().append('g')
@@ -422,38 +466,64 @@ function clusteredhorizontalbar() {
 
         drawViz(clusteredhorizontalbar);
 
-        plot.append("g")
-            .attr("class", "x_axis")
-            .attr("transform", "translate(0," + plotHeight + ")")
-            .call(d3.axisBottom(y))
-            .append("text")
-            .attr("x", plotWidth / 2)
-            .attr("y", 2 * axisLabelSpace)
-            .attr("dy", "0.32em")
-            .attr("fill", "#000")
-            .attr("font-weight", "bold")
-            .style('text-anchor', 'middle')
-            .style('visibility', UTIL.getVisibility(_showXaxisLabel))
+        /* Axes */
+        var xAxisGroup,
+            yAxisGroup;
+
+        _localXAxis = d3.axisBottom(y)
+        // .tickSize(0)
+        // .tickPadding(10);
+
+        xAxisGroup = plot.append('g')
+            .attr('class', 'x axis')
+            .attr('visibility', function () {
+                return _showXaxis;
+            })
+            .attr('transform', 'translate(0, ' + plotHeight + ')')
+            .call(_localXAxis);
+
+        xAxisGroup.append('g')
+            .attr('class', 'label')
+            .attr('transform', function () {
+                return 'translate(' + (plotWidth) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
+            })
+            .append('text')
+            .style('text-anchor', 'end')
+            .style('font-weight', 'bold')
+            .style('fill', _xAxisColor)
+            .attr('visibility', function () {
+                return _showXaxisLabel;
+            })
+            .text(_displayName);
+
+        _setAxisColor(xAxisGroup, _xAxisColor);
+
+        _localYAxis = d3.axisLeft(x0)
+            .tickSize(0)
+            .tickPadding(8)
+
+
+        yAxisGroup = plot.append('g')
+            .attr('class', 'y axis')
+            .attr('visibility', _showYaxis)
+            .call(_localYAxis);
+
+        yAxisGroup.append('g')
+            .attr('class', 'label')
+            .attr('transform', function () {
+                return 'translate(' + (-COMMON.AXIS_THICKNESS / 1.15) + ', ' + '0)';
+            })
+            .append('text')
+            .attr('transform', 'rotate(-90)')
+            .style('text-anchor', 'end')
+            .style('font-weight', 'bold')
+            .style('fill', _yAxisColor)
+            .attr('visibility', _showYaxisLabel)
             .text(function () {
                 return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
             });
 
-        plot.append("g")
-            .attr("class", "y_axis")
-            .call(d3.axisLeft(x0).ticks(null, "s"))
-            .append("text")
-            .attr("x", plotHeight / 2)
-            .attr("y", 2 * axisLabelSpace)
-            .attr("transform", function (d) { return "rotate(" + 90 + ")"; })
-            .attr("dy", "0.32em")
-            .style('visibility', UTIL.getVisibility(_showYaxisLabel))
-            .attr("font-weight", "bold")
-            .style('text-anchor', 'middle')
-            .text(function () {
-                return _displayName;
-            });
-
-        UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis, _showYaxis, _showXaxis);
+        _setAxisColor(yAxisGroup, _yAxisColor);
 
         _local_svg.select('g.sort').remove();
         UTIL.sortingView(container, parentHeight, parentWidth + margin.left, legendBreakCount, axisLabelSpace, offsetX);
@@ -469,7 +539,7 @@ function clusteredhorizontalbar() {
                         UTIL.toggleSortSelection(me, 'descending', drawPlot, _local_svg, keys, _Local_data);
                         break;
                     case 'reset': {
-                            $(me).parent().find('.sort_selection,.arrow-down').css('visibility', 'hidden');
+                        $(me).parent().find('.sort_selection,.arrow-down').css('visibility', 'hidden');
                         _local_svg.select('.plot').remove()
                         drawPlot.call(me, _Local_data);
                         break;
@@ -529,7 +599,7 @@ function clusteredhorizontalbar() {
                     $('#Modal_' + $(div).attr('id')).modal('toggle');
                 }
                 else {
-                    var confirm =d3.select(div).select('.confirm')
+                    var confirm = d3.select(div).select('.confirm')
                         .style('visibility', 'visible');
                     var _filter = _Local_data.filter(function (d1) {
                         return d[_dimension[0]] === d1[_dimension[0]]
@@ -922,7 +992,14 @@ function clusteredhorizontalbar() {
         _stacked = value;
         return chart;
     }
+    chart.showGrid = function (value) {
+        if (!arguments.length) {
+            return _showGrid;
+        }
 
+        _showGrid = value;
+        return chart;
+    }
     chart.displayName = function (value) {
         if (!arguments.length) {
             return _tooltip;

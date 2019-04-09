@@ -567,7 +567,7 @@
                         "M": "1e6",
                         "B": "1e9",
                     };
-
+                var result;
                 switch (si) {
                     case "Actual":
                         result = d3.format('');

@@ -1,7 +1,7 @@
 // Load the required JS files
 var bullet = require('./charts/bullet.js');
 var boxplot = require('./charts/boxplot.js');
-var clusteredverticalbar = require('./charts/clusteredverticalbar.js');
+//var clusteredverticalbar = require('./charts/clusteredverticalbar.js');
 var clusteredhorizontalbar = require('./charts/clusteredhorizontalbar.js');
 var combo = require('./charts/combo.js');
 var donut = require('./charts/donut.js');
@@ -25,7 +25,7 @@ require('../styles/stylesheets/screen.css');
 module.exports = {
 	bullet: bullet,
 	boxplot: boxplot,
-	clusteredverticalbar: clusteredverticalbar,
+//	clusteredverticalbar: clusteredverticalbar,
 	clusteredhorizontalbar: clusteredhorizontalbar,
 	combo: combo,
 	donut: donut,
