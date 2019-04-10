@@ -169,6 +169,8 @@ function table() {
             _local_svg.html('')
 
             chart(_local_svg)
+            var confirm = div.select('div.confirm')
+            .style('visibility', 'visible');
         }
     }
     var readerTableChart = function (str, ctr, element) {

@@ -857,7 +857,7 @@ function combo() {
                         UTIL.toggleSortSelection(me, 'descending', drawPlot, _local_svg, keys, _Local_data);
                         break;
                     case 'reset': {
-                        _local_svg.select(me.parentElement).select('.plot').remove();
+                          _local_svg.select('.plot').remove()
                         drawPlot.call(me, _Local_data);
                         break;
                     }
