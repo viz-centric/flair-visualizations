@@ -40,6 +40,7 @@ function clusteredhorizontalbar() {
         _localYAxis,
         _localXGrid,
         _localYGrid;
+        
     var x0, x1, _xDimensionGrid = d3.scaleLinear(), y;
     var margin = {
         top: 0,
@@ -692,19 +693,19 @@ function clusteredhorizontalbar() {
      * @param {function} chart Pie chart function
      * @return {string} String encoded HTML data
      */
-    chart._legendInteraction = function (event, data) {
+    chart._legendInteraction = function (event, data, plot) {
         switch (event) {
             case 'mouseover':
-                _legendMouseOver(data);
+                _legendMouseOver(data, plot);
                 break;
             case 'mousemove':
-                _legendMouseMove(data);
+                _legendMouseMove(data, plot);
                 break;
             case 'mouseout':
-                _legendMouseOut(data);
+                _legendMouseOut(data, plot);
                 break;
             case 'click':
-                _legendClick(data);
+                _legendClick(data, plot);
                 break;
         }
     }
@@ -713,7 +714,7 @@ function clusteredhorizontalbar() {
         return _NAME;
     }
 
-    var _legendMouseOver = function (data) {
+    var _legendMouseOver = function (data, plot) {
 
         d3.selectAll('g.clusteredhorizontalbar')
             .filter(function (d) {
@@ -723,11 +724,11 @@ function clusteredhorizontalbar() {
             .style('fill', COMMON.HIGHLIGHTER);
     }
 
-    var _legendMouseMove = function (data) {
+    var _legendMouseMove = function (data, plot) {
 
     }
 
-    var _legendMouseOut = function (data) {
+    var _legendMouseOut = function (data, plot) {
         d3.selectAll('g.clusteredhorizontalbar')
             .filter(function (d) {
                 return d.measure === data;

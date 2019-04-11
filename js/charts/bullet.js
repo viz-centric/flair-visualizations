@@ -441,10 +441,7 @@ function bullet() {
 
             _local_svg.call(lasso);
         });
-
     }
-
-
     chart._getName = function () {
         return _NAME;
     }

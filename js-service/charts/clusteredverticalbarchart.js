@@ -44,7 +44,7 @@
                     _localYAxis,
                     _localXGrid,
                     _localYGrid;
-                var parentWidth, parentHeight, plotWidth, plotHeight, container,tooltip;
+                var parentWidth, parentHeight, plotWidth, plotHeight, container, tooltip;
 
                 var x0, x1, _xDimensionGrid = d3.scaleLinear(), y;
                 var margin = {
@@ -94,7 +94,7 @@
                 var _buildTooltipData = function (datum, chart) {
                     var output = "";
 
-                    output += "<table><tr>"
+                    output += "<table data-toggle='tooltip'><tr>"
                         + "<th>" + chart.dimension() + ": </th>"
                         + "<td>" + datum[chart.dimension()] + "</td>"
                         + "</tr><tr>"
@@ -187,7 +187,6 @@
                     var me = this;
                     return function (d, i) {
                         d3.select(this).style('cursor', 'pointer')
-                            .style('cursor', 'pointer')
                             .style('fill', COMMON.HIGHLIGHTER);
                         var border = UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor)
                         if (tooltip) {
@@ -297,9 +296,9 @@
                         plotHeight = parentHeight;
 
                         if (_showLegend) {
-                         //   var clusteredverticalbarLegend = LEGEND.bind(chart);
+                            //   var clusteredverticalbarLegend = LEGEND.bind(chart);
 
-                            var result = LEGEND.bind(_legendData, container,chart, {
+                            var result = LEGEND.bind(_legendData, container, chart, {
                                 width: parentWidth,
                                 height: parentHeight,
                                 legendBreakCount: legendBreakCount
@@ -468,7 +467,6 @@
                         .attr('class', 'clusteredverticalbar');
 
                     var rect = drawViz(clusteredverticalbar);
-
 
                     var text = clusteredverticalbar.append('text')
                         .text(function (d, i) {

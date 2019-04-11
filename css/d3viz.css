@@ -301,7 +301,7 @@ text {
 
 .confirm {
     visibility: hidden;
-    position: absolute;
+    position: fixed;
     z-index: 10;
     padding: 1px;
     top: 0px;

@@ -601,24 +601,23 @@ function stackedverticalbar() {
         _local_svg.call(lasso);
     }
 
-    chart._legendInteraction = function (event, data) {
-        switch (event) {
+ chart._legendInteraction = function (event, data, plot) {        switch (event) {
             case 'mouseover':
-                _legendMouseOver(data);
+                _legendMouseOver(data, plot);
                 break;
             case 'mousemove':
-                _legendMouseMove(data);
+                _legendMouseMove(data, plot);
                 break;
             case 'mouseout':
-                _legendMouseOut(data);
+                _legendMouseOut(data, plot);
                 break;
             case 'click':
-                _legendClick(data);
+                _legendClick(data, plot);
                 break;
         }
     }
 
-    var _legendMouseOver = function (data) {
+     var _legendMouseOver = function (data, plot) {
 
         d3.selectAll('g.stackedverticalbar')
             .filter(function (d) {
@@ -628,11 +627,11 @@ function stackedverticalbar() {
             .style('fill', COMMON.HIGHLIGHTER);
     }
 
-    var _legendMouseMove = function (data) {
+     var _legendMouseMove = function (data, plot) {
 
     }
 
-    var _legendMouseOut = function (data) {
+     var _legendMouseOut = function (data, plot) {
         d3.selectAll('g.stackedverticalbar')
             .filter(function (d) {
                 return d.key === data;

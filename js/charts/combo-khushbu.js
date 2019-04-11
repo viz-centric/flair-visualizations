@@ -741,8 +741,7 @@ function combo() {
         });
     }
 
-    chart._legendInteraction = function (event, data) {
-        var clustered = d3.selectAll('g.bar')
+ chart._legendInteraction = function (event, data, plot) {        var clustered = d3.selectAll('g.bar')
             .filter(function (d) {
                 return d.tag === data;
             });
