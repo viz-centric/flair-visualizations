@@ -217,7 +217,6 @@ function line() {
 
         return function (d, i) {
             d3.select(this).style('cursor', 'pointer')
-                .style('cursor', 'pointer')
                 .style('fill', COMMON.HIGHLIGHTER);
             var border = UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor)
             if (tooltip) {
@@ -240,25 +239,10 @@ function line() {
         var me = this;
 
         return function (d, i) {
-            d3.select(this).style('cursor', 'default');
-
-            var arcGroup = container.selectAll('g.arc')
-                .filter(function (d1) {
-                    return d1.data[_dimension[0]] === d.data[_dimension[0]];
-                });
-
-            arcGroup.select('path')
+            d3.select(this).style('cursor', 'pointer')
                 .style('fill', function (d1, i) {
-                    return COMMON.COLORSCALE(d1.data[_dimension[0]]);
-                });
-
-            var arcMaskGroup = container.selectAll('g.arc-mask')
-                .filter(function (d1) {
-                    return d1.data[_dimension[0]] === d.data[_dimension[0]];
-                });
-
-            arcMaskGroup.select('path')
-                .style('visibility', 'hidden');
+                    return UTIL.getBorderColor(_measure.indexOf(d.tag), _borderColor);
+                })
 
             if (tooltip) {
                 UTIL.hideTooltip(tooltip);
@@ -394,7 +378,7 @@ function line() {
         _Local_data = _originalData = data;
 
         var confirm = $(me).parent().find('div.confirm')
-        .css('visibility', 'hidden');
+            .css('visibility', 'hidden');
 
         var plot = container.append('g')
             .attr('class', 'line-plot')
@@ -489,7 +473,7 @@ function line() {
             .attr('class', 'line')
             .attr('fill', 'none')
             .attr('stroke', function (d, i) {
-                return UTIL.getBorderColor(_measure.indexOf(d[0]['tag']), _borderColor);
+                return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
             })
             .attr('stroke-linejoin', 'round')
             .attr('stroke-linecap', 'round')
@@ -512,8 +496,11 @@ function line() {
             })
             .enter().append('path')
             .attr('class', 'point')
-            .attr('fill', function (d, i) {
+            .attr('stroke', function (d, i) {
                 return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+            })
+            .attr('fill', function (d, i) {
+                return  UTIL.getBorderColor(_measure.indexOf(d.tag), _borderColor);
             })
             .attr('d', function (d, i) {
                 return d3.symbol()
@@ -610,7 +597,8 @@ function line() {
                         UTIL.toggleSortSelection(me, 'descending', drawPlot, _local_svg, keys, _Local_data);
                         break;
                     case 'reset': {
-                        _local_svg.select(me.parentElement).select('.plot').remove();
+                        $(me).parent().find('.sort_selection,.arrow-down').css('visibility', 'hidden');
+                        _local_svg.select('.plot').remove()
                         drawPlot.call(me, _Local_data);
                         break;
                     }
@@ -637,26 +625,25 @@ function line() {
         _local_svg.call(lasso);
     }
 
-    chart._legendInteraction = function (event, data) {
-
+ chart._legendInteraction = function (event, data, plot) {
         switch (event) {
             case 'mouseover':
-                _legendMouseOver(data);
+                _legendMouseOver(data, plot);
                 break;
             case 'mousemove':
-                _legendMouseMove(data);
+                _legendMouseMove(data, plot);
                 break;
             case 'mouseout':
-                _legendMouseOut(data);
+                _legendMouseOut(data, plot);
                 break;
             case 'click':
-                _legendClick(data);
+                _legendClick(data, plot);
                 break;
         }
     }
-    var _legendMouseOver = function (data) {
+     var _legendMouseOver = function (data, plot) {
 
-        var line = d3.selectAll('.line')
+        var line = plot.selectAll('.line')
             .filter(function (d, i) {
                 return d[i].tag === data;
             })
@@ -664,12 +651,12 @@ function line() {
             .style('stroke', COMMON.HIGHLIGHTER);
     }
 
-    var _legendMouseMove = function (data) {
+     var _legendMouseMove = function (data, plot) {
 
     }
 
-    var _legendMouseOut = function (data) {
-        var line = d3.selectAll('.line')
+     var _legendMouseOut = function (data, plot) {
+        var line = plot.selectAll('.line')
             .filter(function (d, i) {
                 return d[i].tag === data;
             })

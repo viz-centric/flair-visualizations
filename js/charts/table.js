@@ -169,6 +169,8 @@ function table() {
             _local_svg.html('')
 
             chart(_local_svg)
+            var confirm = div.select('div.confirm')
+            .style('visibility', 'visible');
         }
     }
     var readerTableChart = function (str, ctr, element) {
@@ -337,8 +339,7 @@ function table() {
      * @param {function} chart Pie chart function
      * @return {string} String encoded HTML data
      */
-    chart._legendInteraction = function (event, data) {
-        var arcGroup = d3.selectAll('g.arc')
+ chart._legendInteraction = function (event, data, plot) {        var arcGroup = d3.selectAll('g.arc')
             .filter(function (d) {
                 return d.data[_dimension[0]] === data[_dimension[0]];
             });

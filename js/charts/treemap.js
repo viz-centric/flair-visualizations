@@ -340,7 +340,7 @@ function treemap() {
         }
     }
 
-    var onLassoStart = function (lasso, scope) {
+    var onLassoDraw = function (lasso, scope) {
         return function () {
             filter = true;
             lasso.items().selectAll('rect')
@@ -356,7 +356,7 @@ function treemap() {
         }
     }
 
-    var onLassoStart = function (lasso, scope) {
+    var onLassoEnd = function (lasso, scope) {
         return function () {
             var data = lasso.selectedItems().data();
 
