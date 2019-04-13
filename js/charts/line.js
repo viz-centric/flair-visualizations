@@ -38,7 +38,8 @@ function line() {
         _measureBorderColor = [],
         _measureLineType = [],
         _measurePointType = [],
-        _tooltip;
+        _tooltip,
+        _print;
 
     /* These are the common variables that is shared across the different private/public
      * methods but is initialized/updated within the methods itself.
@@ -550,13 +551,17 @@ function line() {
                     })
                     .attr('transform', function(d) {
                         return 'translate(' + _x(d[_dimension[0]]) + ',' + _y(d[d['measure']]) + ')';
-                    })
-                    .on('mouseover', _handleMouseOverFn.call(chart, _localTooltip, svg))
+                    });
+
+            if(!_print) {
+                // Interaction only when print disabled
+                lineGroup.on('mouseover', _handleMouseOverFn.call(chart, _localTooltip, svg))
                     .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, svg))
                     .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, svg))
                     .on('click', function(d, i) {
 
                     });
+            }
 
             var text = lineGroup.selectAll('.line-text')
                 .data(function(m, i) {
@@ -704,6 +709,11 @@ function line() {
      * @return {undefined}
      */
     chart._legendInteraction = function(event, data) {
+        if(_print) {
+            // No interaction during print enabled
+            return;
+        }
+
         switch(event) {
             case 'mouseover':
                 _legendMouseOver(data);
@@ -722,6 +732,10 @@ function line() {
 
     chart._getName = function() {
         return _NAME;
+    }
+
+    chart._getHTML = function() {
+        return _localSVG.node().outerHTML;
     }
 
     chart.update = function(data) {
@@ -810,13 +824,16 @@ function line() {
                 }
                 return _measureBorderColor[i];
             })
-            .style('stroke-width', 1)
-            .on('mouseover', _handleMouseOverFn.call(chart, _localTooltip, svg))
-            .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, svg))
-            .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, svg))
-            .on('click', function(d, i) {
+            .style('stroke-width', 1);
 
-            });
+        if(!_print) {
+            rect.on('mouseover', _handleMouseOverFn.call(chart, _localTooltip, svg))
+                .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, svg))
+                .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, svg))
+                .on('click', function(d, i) {
+
+                });
+        }
 
         var text = barGroup.append('text')
             .attr('y', function(d, i) {
@@ -1203,6 +1220,14 @@ function line() {
             return _tooltip;
         }
         _tooltip = value;
+        return chart;
+    }
+
+    chart.print = function(value) {
+        if(!arguments.length) {
+            return _print;
+        }
+        _print = value;
         return chart;
     }
 
