@@ -230,7 +230,7 @@ function pie() {
         }
     }
 
-    var applyFilter = function (chart) {
+    var applyFilter = function (div) {
         return function () {
             if (filterData.length > 0) {
                 chart.update(filterData);
@@ -238,7 +238,7 @@ function pie() {
         }
     }
 
-    var clearFilter = function () {
+   var clearFilter = function (div) {
         return function () {
             drawPlot(_originalData);
         }
@@ -575,10 +575,10 @@ function pie() {
         _local_svg.select('g.lasso').remove()
 
         d3.select(div).select('.filterData')
-            .on('click', applyFilter(chart));
+            .on('click', applyFilter(div));
 
         d3.select(div).select('.removeFilter')
-            .on('click', clearFilter());
+            .on('click', clearFilter(div));
 
         var lasso = d3.lasso()
             .hoverSelect(true)

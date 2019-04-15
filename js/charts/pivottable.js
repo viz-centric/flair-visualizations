@@ -291,7 +291,7 @@ function pivottable() {
             chart(_local_svg)
         }
     }
-    var clearFilter = function () {
+   var clearFilter = function (div) {
         return function () {
             d3.select('#donut')
                 .datum(_localData)
@@ -592,7 +592,7 @@ function pivottable() {
                 .on('click', applyFilter());
 
             d3.select('.btn-default')
-                .on('click', clearFilter());
+                .on('click', clearFilter(div));
 
         }
 

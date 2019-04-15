@@ -217,7 +217,7 @@ function combo() {
         }
     }
 
-    var applyFilter = function (chart) {
+    var applyFilter = function (div) {
         return function () {
             if (filterData.length > 0) {
                 chart.update(filterData);
@@ -225,9 +225,11 @@ function combo() {
         }
     }
 
-    var clearFilter = function () {
+   var clearFilter = function (div) {
         return function () {
             chart.update(_originalData);
+            d3.select(div).select('.confirm')
+                .style('visibility', 'hidden');
         }
     }
 
@@ -718,10 +720,10 @@ function combo() {
                     });
 
                 d3.select(div).select('.btn-primary')
-                    .on('click', applyFilter(chart));
+                    .on('click', applyFilter(div));
 
                 d3.select(div).select('.btn-default')
-                    .on('click', clearFilter());
+                    .on('click', clearFilter(div));
 
                 var lasso = d3.lasso()
                     .hoverSelect(true)

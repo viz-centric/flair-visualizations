@@ -1,6 +1,8 @@
-var COMMON = require('../extras/common.js')(),
-    UTIL = require('../extras/util.js')(),
-    LEGEND = require('../extras/legend_barcharts.js')();
+//var d3 = require('d3');
+var COMMON = require('../extras/common.js')();
+var UTIL = require('../extras/util.js')();
+var LEGEND = require('../extras/legend_barcharts.js')();
+//var LASSO = require('d3-lasso'); // creates a new lasso
 
 function stackedverticalbar() {
 
@@ -31,7 +33,8 @@ function stackedverticalbar() {
         _textColor = [],
         _displayColor = [],
         _borderColor = [],
-        _fontSize = [];
+        _fontSize = [],
+        _print;
 
     var _local_svg,
         _Local_data;
@@ -43,7 +46,17 @@ function stackedverticalbar() {
         bottom: 0,
         left: 45
     };
+
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
+    var _localXAxis,
+        _localYAxis,
+        _localXGrid,
+        _localYGrid;
+
+    var tickLength = d3.scaleLinear()
+        .domain([22, 34])
+        .range([4, 6]);
+
     var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div;
     var parentWidth, parentHeight, plotWidth, plotHeight, container;
 
@@ -59,8 +72,8 @@ function stackedverticalbar() {
         this.showXaxis(config.showXaxis);
         this.showYaxis(config.showYaxis);
         this.showXaxisLabel(config.showXaxisLabel);
-
         this.showYaxisLabel(config.showYaxisLabel);
+        this.showGrid(config.showGrid);
         this.xAxisColor(config.xAxisColor);
         this.yAxisColor(config.yAxisColor);
         this.displayName(config.displayName);
@@ -166,7 +179,7 @@ function stackedverticalbar() {
         }
     }
 
-    var applyFilter = function (chart) {
+    var applyFilter = function (div) {
         return function () {
             if (filterData.length > 0) {
                 chart.update(filterData);
@@ -174,9 +187,11 @@ function stackedverticalbar() {
         }
     }
 
-    var clearFilter = function () {
+   var clearFilter = function (div) {
         return function () {
             chart.update(_originalData);
+            d3.select(div).select('.confirm')
+                .style('visibility', 'hidden');
         }
     }
 
@@ -223,7 +238,18 @@ function stackedverticalbar() {
             }
         }
     }
+    var _setAxisColor = function (axis, color) {
+        var path = axis.select('path'),
+            ticks = axis.selectAll('.tick');
 
+        path.style('stroke', color);
+
+        ticks.select('line')
+            .style('stroke', color);
+
+        ticks.select('text')
+            .style('fill', color);
+    }
     function chart(selection) {
         _local_svg = selection;
 
@@ -276,7 +302,6 @@ function stackedverticalbar() {
                 threshold.push(obj);
                 $('#Modal_' + $(div).attr('id')).modal('toggle');
             })
-
 
             var legendWidth = 0,
                 legendHeight = 0;
@@ -347,62 +372,89 @@ function stackedverticalbar() {
 
     var drawViz = function (element) {
         var me = this;
-
-        element.append('rect')
-            .style('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);;
-            })
-            .style('stroke', function (d, i) {
-                return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
-            })
-            .attr("x", function (d) {
-                return x(d.data[_dimension[0]]);
-            })
-            .attr('class', function (d, i) {
-                return d.data[_dimension[0]];
-            })
-            .attr("y", function (d) { return y(d[1]); })
-            .attr("height", function (d) { return y(d[0]) - y(d[1]); })
-            .attr("width", x.bandwidth())
-            .style('stroke-width', 2)
-            .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
-            .on('click', function (d) {
-                if ($("#myonoffswitch").prop('checked') == false) {
-                    $('#Modal_' + $(div).attr('id') + ' .measure').val(d.key);
-                    $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
-                    $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
-                    $('#Modal_' + $(div).attr('id')).modal('toggle');
-                }
-                else {
-                    var confirm = d3.select(div).select('.confirm')
-                        .style('visibility', 'visible');
-                    var _filter = _Local_data.filter(function (d1) {
-                        return d.data[_dimension[0]] === d1[_dimension[0]]
-                    })
-                    var rect = d3.select(this);
-                    if (rect.classed('selected')) {
-                        rect.classed('selected', false);
-                        filterData.map(function (val, i) {
-                            if (val[_dimension[0]] == d[_dimension[0]]) {
-                                filterData.splice(i, 1)
-                            }
+        if (!_print) {
+            element.append('rect')
+                .style('fill', function (d, i) {
+                    return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);;
+                })
+                .style('stroke', function (d, i) {
+                    return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
+                })
+                .attr("x", function (d) {
+                    return x(d.data[_dimension[0]]);
+                })
+                .attr('class', function (d, i) {
+                    return d.data[_dimension[0]];
+                })
+                .attr("y", function (d) { return y(d[1]); })
+                .attr("height", 0)
+                .attr("width", x.bandwidth())
+                .style('stroke-width', 2)
+                .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+                .on('click', function (d) {
+                    if ($("#myonoffswitch").prop('checked') == false) {
+                        $('#Modal_' + $(div).attr('id') + ' .measure').val(d.key);
+                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
+                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
+                        $('#Modal_' + $(div).attr('id')).modal('toggle');
+                    }
+                    else {
+                        var confirm = d3.select(div).select('.confirm')
+                            .style('visibility', 'visible');
+                        var _filter = _Local_data.filter(function (d1) {
+                            return d.data[_dimension[0]] === d1[_dimension[0]]
                         })
-                    } else {
-                        rect.classed('selected', true);
-                        var isExist = filterData.filter(function (val) {
-                            if (val[_dimension[0]] == d[_dimension[0]]) {
-                                return val
+                        var rect = d3.select(this);
+                        if (rect.classed('selected')) {
+                            rect.classed('selected', false);
+                            filterData.map(function (val, i) {
+                                if (val[_dimension[0]] == d[_dimension[0]]) {
+                                    filterData.splice(i, 1)
+                                }
+                            })
+                        } else {
+                            rect.classed('selected', true);
+                            var isExist = filterData.filter(function (val) {
+                                if (val[_dimension[0]] == d[_dimension[0]]) {
+                                    return val
+                                }
+                            })
+                            if (isExist.length == 0) {
+                                filterData.push(_filter[0]);
                             }
-                        })
-                        if (isExist.length == 0) {
-                            filterData.push(_filter[0]);
                         }
                     }
-                }
-            })
-
+                })
+                .transition()
+                .duration(COMMON.DURATION)
+                .attr("height", function (d) { return y(d[0]) - y(d[1]); })
+                .attr("y", function (d) { return y(d[1]); })
+                .attr("width", x.bandwidth())
+                .attr("x", function (d, i) {
+                    return x(d.data[_dimension[0]]);
+                })
+        }
+        else {
+            element.append('rect')
+                .style('fill', function (d, i) {
+                    return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);;
+                })
+                .style('stroke', function (d, i) {
+                    return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
+                })
+                .attr('class', function (d, i) {
+                    return d.data[_dimension[0]];
+                })
+                .style('stroke-width', 2)
+                .attr("height", function (d) { return y(d[0]) - y(d[1]); })
+                .attr("y", function (d) { return y(d[1]); })
+                .attr("width", x.bandwidth())
+                .attr("x", function (d, i) {
+                    return x(d.data[_dimension[0]]);
+                })
+        }
         element.append('text')
             .text(function (d, i) {
                 return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat));
@@ -505,6 +557,37 @@ function stackedverticalbar() {
             delete val['total'];
         })
 
+        var _localXLabels = data.map(function (d) {
+            return d[_dimension[0]];
+        });
+
+        _localXGrid = d3.axisBottom()
+            .ticks(_localXLabels.length)
+            .tickFormat('')
+            .tickSize(-plotHeight);
+
+        _localYGrid = d3.axisLeft()
+            .tickFormat('')
+            .tickSize(-plotWidth);
+
+        _localXGrid.scale(x);
+        _localYGrid.scale(y);
+
+        plot.append('g')
+            .attr('class', 'x grid')
+            .attr('visibility', function () {
+                return _showGrid ? 'visible' : 'hidden';
+            })
+            .attr('transform', 'translate(0, ' + plotHeight + ')')
+            .call(_localXGrid);
+
+        plot.append('g')
+            .attr('class', 'y grid')
+            .attr('visibility', function () {
+                return _showGrid ? 'visible' : 'hidden';
+            })
+            .call(_localYGrid);
+
         var labelStack = [];
         var stack = plot.append('g')
             .attr('class', 'stack')
@@ -525,38 +608,82 @@ function stackedverticalbar() {
 
         drawViz(stackedverticalbar);
 
-        plot.append("g")
-            .attr("class", "x_axis")
-            .attr("transform", "translate(0," + plotHeight + ")")
-            .call(d3.axisBottom(x))
-            .append("text")
-            .attr("x", plotWidth / 2)
-            .attr("y", 2 * axisLabelSpace)
-            .attr("dy", "0.32em")
-            .attr("fill", "#000")
-            .attr("font-weight", "bold")
-            .style('text-anchor', 'middle')
-            .style('visibility', UTIL.getVisibility(_showXaxisLabel))
-            .text(function () {
-                return _displayName;
-            });
+        /* Axes */
+        var xAxisGroup,
+            yAxisGroup;
 
-        plot.append("g")
-            .attr("class", "y_axis")
-            .call(d3.axisLeft(y).ticks(null, "s"))
-            .append("text")
-            .attr("x", plotHeight / 2)
-            .attr("y", 2 * axisLabelSpace)
-            .attr("transform", function (d) { return "rotate(" + 90 + ")"; })
-            .attr("dy", "0.32em")
-            .style('visibility', UTIL.getVisibility(_showYaxisLabel))
-            .attr("font-weight", "bold")
-            .style('text-anchor', 'middle')
-            .text(function () {
-                return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
-            });
+        var isRotate = false;
 
-        UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis, _showYaxis, _showXaxis);
+        if (_showXaxis) {
+            _localXAxis = d3.axisBottom(x)
+                .tickSize(0)
+                .tickFormat(function (d) {
+                    if (isRotate == false) {
+                        isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                    }
+                    return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                })
+                .tickPadding(10);
+
+            xAxisGroup = plot.append('g')
+                .attr('class', 'x axis')
+                .attr('visibility', function () {
+                    return 'visible';
+                })
+                .attr('transform', 'translate(0, ' + plotHeight + ')')
+                .call(_localXAxis);
+
+            xAxisGroup.append('g')
+                .attr('class', 'label')
+                .attr('transform', function () {
+                    return 'translate(' + (plotWidth) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
+                })
+                .append('text')
+                .style('text-anchor', 'end')
+                .style('font-weight', 'bold')
+                .style('fill', _xAxisColor)
+                .text(_displayName);
+
+            if (isRotate) {
+                _local_svg.selectAll('.x .tick text')
+                    .attr("transform", "rotate(-15)");
+            }
+
+            _setAxisColor(xAxisGroup, _xAxisColor);
+
+        }
+
+        if (_showYaxis) {
+            _localYAxis = d3.axisLeft(y)
+                .tickSize(0)
+                .tickPadding(8)
+                .tickFormat(function (d) {
+                    return UTIL.shortScale(2)(d);
+                });
+
+            yAxisGroup = plot.append('g')
+                .attr('class', 'y axis')
+                .attr('visibility', function () {
+                    return 'visible';
+                })
+                .call(_localYAxis);
+
+            yAxisGroup.append('g')
+                .attr('class', 'label')
+                .attr('transform', function () {
+                    return 'translate(' + (-COMMON.AXIS_THICKNESS / 1.15) + ', ' + '0)';
+                })
+                .append('text')
+                .attr('transform', 'rotate(-90)')
+                .style('text-anchor', 'end')
+                .style('font-weight', 'bold')
+                .style('fill', _yAxisColor)
+                .text(function () {
+                    return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+                });
+
+            _setAxisColor(yAxisGroup, _yAxisColor);
+        }
 
         _local_svg.select('g.sort').remove();
         UTIL.sortingView(container, parentHeight, parentWidth + margin.left, legendBreakCount, axisLabelSpace, offsetX);
@@ -572,7 +699,7 @@ function stackedverticalbar() {
                         UTIL.toggleSortSelection(me, 'descending', drawPlot, _local_svg, keys, _Local_data);
                         break;
                     case 'reset': {
-                            $(me).parent().find('.sort_selection,.arrow-down').css('visibility', 'hidden');
+                        $(me).parent().find('.sort_selection,.arrow-down').css('visibility', 'hidden');
                         _local_svg.select('.plot').remove()
                         drawPlot.call(me, _Local_data);
                         break;
@@ -581,10 +708,10 @@ function stackedverticalbar() {
             });
 
         d3.select(div).select('.filterData')
-            .on('click', applyFilter(chart));
+            .on('click', applyFilter(div));
 
         d3.select(div).select('.removeFilter')
-            .on('click', clearFilter());
+            .on('click', clearFilter(div));
 
         _local_svg.select('g.lasso').remove()
         var lasso = d3.lasso()
@@ -601,7 +728,12 @@ function stackedverticalbar() {
         _local_svg.call(lasso);
     }
 
- chart._legendInteraction = function (event, data, plot) {        switch (event) {
+    chart._legendInteraction = function (event, data, plot) {
+        if (_print) {
+            // No interaction during print enabled
+            return;
+        }
+        switch (event) {
             case 'mouseover':
                 _legendMouseOver(data, plot);
                 break;
@@ -617,7 +749,7 @@ function stackedverticalbar() {
         }
     }
 
-     var _legendMouseOver = function (data, plot) {
+    var _legendMouseOver = function (data, plot) {
 
         d3.selectAll('g.stackedverticalbar')
             .filter(function (d) {
@@ -627,11 +759,11 @@ function stackedverticalbar() {
             .style('fill', COMMON.HIGHLIGHTER);
     }
 
-     var _legendMouseMove = function (data, plot) {
+    var _legendMouseMove = function (data, plot) {
 
     }
 
-     var _legendMouseOut = function (data, plot) {
+    var _legendMouseOut = function (data, plot) {
         d3.selectAll('g.stackedverticalbar')
             .filter(function (d) {
                 return d.key === data;
@@ -646,8 +778,13 @@ function stackedverticalbar() {
         var _filter = UTIL.getFilterData(_localLabelStack, data, _originalData)
         drawPlot.call(this, _filter);
     }
+
     chart._getName = function () {
         return _NAME;
+    }
+
+    chart._getHTML = function () {
+        return _local_svg.node().outerHTML;
     }
 
     chart.update = function (data) {
@@ -682,6 +819,11 @@ function stackedverticalbar() {
         data.map(function (val) {
             delete val['total'];
         })
+
+        var _localXLabels = data.map(function (d) {
+            return d[_dimension[0]];
+        });
+
         var plot = _local_svg.select('.plot')
 
         var stack = _local_svg.select('g.stack').selectAll('g.stackedverticalbar-group')
@@ -711,6 +853,14 @@ function stackedverticalbar() {
                 return d.data[_dimension[0]];
             })
             .attr("y", function (d) { return y(d[1]); })
+            .attr("height", 0)
+            .attr("width", x.bandwidth())
+            .transition()
+            .duration(COMMON.DURATION)
+            .attr("x", function (d) {
+                return x(d.data[_dimension[0]]);
+            })
+            .attr("y", function (d) { return y(d[1]); })
             .attr("height", function (d) { return y(d[0]) - y(d[1]); })
             .attr("width", x.bandwidth())
             .style('stroke-width', 2)
@@ -735,22 +885,70 @@ function stackedverticalbar() {
 
         drawViz(newBars);
 
-        plot.select('.x_axis')
-            .transition()
-            .duration(COMMON.DURATION)
-            .call(d3.axisBottom(x));
+        var xAxisGroup,
+            yAxisGroup;
 
-        plot.select('.y_axis')
+        var isRotate = false;
+
+        if (_showXaxis) {
+            xAxisGroup = plot.select('.x.axis')
+                .transition()
+                .duration(COMMON.DURATION)
+                .call(d3.axisBottom(x)
+                    .tickFormat(function (d) {
+                        if (isRotate == false) {
+                            isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                        }
+                        return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                    }));
+
+            _setAxisColor(xAxisGroup, _xAxisColor);
+
+            if (isRotate) {
+                _local_svg.selectAll('.x .tick text')
+                    .attr("transform", "rotate(-15)");
+            }
+            else {
+                _local_svg.selectAll('.x .tick text')
+                    .attr("transform", "rotate(0)");
+            }
+        }
+
+        if (_showYaxis) {
+            yAxisGroup = plot.select('.y.axis')
+                .transition()
+                .duration(COMMON.DURATION)
+                .call(d3.axisLeft(y).ticks(null, "s"));
+
+            _setAxisColor(yAxisGroup, _yAxisColor);
+        }
+
+        /* Update Axes Grid */
+        _localXGrid.scale(x);
+        _localYGrid.scale(y);
+
+        plot.select('.x.grid')
             .transition()
             .duration(COMMON.DURATION)
-            .call(d3.axisLeft(y).ticks(null, "s"));
+            .attr('visibility', function () {
+                return _showGrid ? 'visible' : 'hidden';
+            })
+            .call(_localXGrid);
+
+        plot.select('.y.grid')
+            .transition()
+            .duration(COMMON.DURATION)
+            .attr('visibility', function () {
+                return _showGrid ? 'visible' : 'hidden';
+            })
+            .call(_localYGrid);
 
         stackedverticalbar.exit()
             .transition()
             .duration(COMMON.DURATION)
             .remove();
 
-        UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis);
+
         UTIL.displayThreshold(threshold, data, keys);
     }
 
@@ -861,7 +1059,7 @@ function stackedverticalbar() {
 
     chart.showGrid = function (value) {
         if (!arguments.length) {
-            return _tooltip;
+            return _showGrid;
         }
         _showGrid = value;
         return chart;
@@ -869,7 +1067,7 @@ function stackedverticalbar() {
 
     chart.stacked = function (value) {
         if (!arguments.length) {
-            return _tooltip;
+            return _stacked;
         }
         _stacked = value;
         return chart;
@@ -877,7 +1075,7 @@ function stackedverticalbar() {
 
     chart.displayName = function (value) {
         if (!arguments.length) {
-            return _tooltip;
+            return _displayName;
         }
         _displayName = value;
         return chart;
@@ -889,6 +1087,14 @@ function stackedverticalbar() {
             measureName: measureName
         }
         return _legendData;
+    }
+
+    chart.print = function (value) {
+        if (!arguments.length) {
+            return _print;
+        }
+        _print = value;
+        return chart;
     }
 
     chart.showValues = function (value, measure) {

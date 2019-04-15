@@ -866,10 +866,10 @@ function combo() {
             );
 
         d3.select(div).select('.btn-primary')
-            .on('click', applyFilter(chart));
+            .on('click', applyFilter(div));
 
         d3.select(div).select('.btn-default')
-            .on('click', clearFilter());
+            .on('click', clearFilter(div));
 
         var lasso = d3.lasso()
             .hoverSelect(true)

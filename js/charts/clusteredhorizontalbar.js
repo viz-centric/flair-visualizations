@@ -1,6 +1,8 @@
-var COMMON = require('../extras/common.js')(),
-    UTIL = require('../extras/util.js')(),
-    LEGEND = require('../extras/legend_barcharts.js')();
+//var d3 = require('d3');
+var COMMON = require('../extras/common.js')();
+var UTIL = require('../extras/util.js')();
+var LEGEND = require('../extras/legend_barcharts.js')();
+//var LASSO = require('d3-lasso'); // creates a new lasso
 
 function clusteredhorizontalbar() {
 
@@ -31,7 +33,8 @@ function clusteredhorizontalbar() {
         _textColor = [],
         _displayColor = [],
         _borderColor = [],
-        _fontSize = [];
+        _fontSize = [],
+        _print;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
 
@@ -40,7 +43,7 @@ function clusteredhorizontalbar() {
         _localYAxis,
         _localXGrid,
         _localYGrid;
-        
+
     var x0, x1, _xDimensionGrid = d3.scaleLinear(), y;
     var margin = {
         top: 0,
@@ -163,7 +166,7 @@ function clusteredhorizontalbar() {
         }
     }
 
-    var applyFilter = function (chart) {
+    var applyFilter = function (div) {
         return function () {
             if (filterData.length > 0) {
                 chart.update(filterData);
@@ -171,9 +174,11 @@ function clusteredhorizontalbar() {
         }
     }
 
-    var clearFilter = function () {
+   var clearFilter = function (div) {
         return function () {
             chart.update(_originalData);
+            d3.select(div).select('.confirm')
+                .style('visibility', 'hidden');
         }
     }
 
@@ -394,7 +399,6 @@ function clusteredhorizontalbar() {
                 }
             });
 
-
         if (!_showLegend) {
             _local_svg.select('.plot')
                 .attr('transform', function () {
@@ -428,7 +432,6 @@ function clusteredhorizontalbar() {
             .attr('visibility', function () {
                 return _showGrid ? 'visible' : 'hidden';
             })
-
             .call(_localXGrid);
 
         plot.append('g')
@@ -501,8 +504,13 @@ function clusteredhorizontalbar() {
 
         _localYAxis = d3.axisLeft(x0)
             .tickSize(0)
+            .tickFormat(function (d) {
+                if (d.length > 3) {
+                    return d.substring(0, 3) + '...';
+                }
+                return d;
+            })
             .tickPadding(8)
-
 
         yAxisGroup = plot.append('g')
             .attr('class', 'y axis')
@@ -512,7 +520,7 @@ function clusteredhorizontalbar() {
         yAxisGroup.append('g')
             .attr('class', 'label')
             .attr('transform', function () {
-                return 'translate(' + (-COMMON.AXIS_THICKNESS / 1.15) + ', ' + '0)';
+                return 'translate(' + (-margin.left) + ', ' + (0) + ')';
             })
             .append('text')
             .attr('transform', 'rotate(-90)')
@@ -550,12 +558,13 @@ function clusteredhorizontalbar() {
             );
 
         d3.select(div).select('.filterData')
-            .on('click', applyFilter(chart));
+            .on('click', applyFilter(div));
 
         d3.select(div).select('.removeFilter')
-            .on('click', clearFilter());
+            .on('click', clearFilter(div));
 
         _local_svg.select('g.lasso').remove()
+
         var lasso = d3.lasso()
             .hoverSelect(true)
             .closePathSelect(true)
@@ -572,70 +581,91 @@ function clusteredhorizontalbar() {
 
     var drawViz = function (element) {
         var me = this;
+        if (!_print) {
 
-        element.append('rect')
-            .attr("y", function (d) {
-                return x1(d.measure);
-            })
-            .attr("x", 1)
-            .attr("height", x1.bandwidth())
-            .attr("width", function (d) {
-                return 0;
-            })
-            .style('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
-            })
-            .style('stroke', function (d, i) {
-                return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
-            })
-            .style('stroke-width', 2)
-            .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
-            .on('click', function (d) {
-                if ($("#myonoffswitch").prop('checked') == false) {
-                    $('#Modal_' + $(div).attr('id') + ' .measure').val(d.measure);
-                    $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
-                    $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
-                    $('#Modal_' + $(div).attr('id')).modal('toggle');
-                }
-                else {
-                    var confirm = d3.select(div).select('.confirm')
-                        .style('visibility', 'visible');
-                    var _filter = _Local_data.filter(function (d1) {
-                        return d[_dimension[0]] === d1[_dimension[0]]
-                    })
-                    var rect = d3.select(this);
-                    if (rect.classed('selected')) {
-                        rect.classed('selected', false);
-                        filterData.map(function (val, i) {
-                            if (val[_dimension[0]] == d[_dimension[0]]) {
-                                filterData.splice(i, 1)
-                            }
+            element.append('rect')
+                .attr("y", function (d) {
+                    return x1(d.measure);
+                })
+                .attr("x", 1)
+                .attr("height", x1.bandwidth())
+                .attr("width", function (d) {
+                    return 0;
+                })
+                .style('fill', function (d, i) {
+                    return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                })
+                .style('stroke', function (d, i) {
+                    return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
+                })
+                .style('stroke-width', 2)
+                .transition()
+                .duration(COMMON.DURATION)
+                .attr("y", function (d) {
+                    return x1(d.measure);
+                })
+                .attr("x", 1)
+                .attr("height", x1.bandwidth())
+                .attr("width", function (d) {
+                    return y(d[d.measure]);
+                })
+
+            element.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+                .on('click', function (d) {
+                    if ($("#myonoffswitch").prop('checked') == false) {
+                        $('#Modal_' + $(div).attr('id') + ' .measure').val(d.measure);
+                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
+                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
+                        $('#Modal_' + $(div).attr('id')).modal('toggle');
+                    }
+                    else {
+                        var confirm = d3.select(div).select('.confirm')
+                            .style('visibility', 'visible');
+                        var _filter = _Local_data.filter(function (d1) {
+                            return d[_dimension[0]] === d1[_dimension[0]]
                         })
-                    } else {
-                        rect.classed('selected', true);
-                        var isExist = filterData.filter(function (val) {
-                            if (val[_dimension[0]] == d[_dimension[0]]) {
-                                return val
+                        var rect = d3.select(this);
+                        if (rect.classed('selected')) {
+                            rect.classed('selected', false);
+                            filterData.map(function (val, i) {
+                                if (val[_dimension[0]] == d[_dimension[0]]) {
+                                    filterData.splice(i, 1)
+                                }
+                            })
+                        } else {
+                            rect.classed('selected', true);
+                            var isExist = filterData.filter(function (val) {
+                                if (val[_dimension[0]] == d[_dimension[0]]) {
+                                    return val
+                                }
+                            })
+                            if (isExist.length == 0) {
+                                filterData.push(_filter[0]);
                             }
-                        })
-                        if (isExist.length == 0) {
-                            filterData.push(_filter[0]);
                         }
                     }
-                }
-            })
-            .transition()
-            .duration(COMMON.DURATION)
-            .attr("y", function (d) {
-                return x1(d.measure);
-            })
-            .attr("x", 1)
-            .attr("height", x1.bandwidth())
-            .attr("width", function (d) {
-                return y(d[d.measure]);
-            })
+                })
+        }
+        else {
+            element.append('rect')
+                .style('fill', function (d, i) {
+                    return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                })
+                .style('stroke', function (d, i) {
+                    return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
+                })
+                .style('stroke-width', 2)
+                .attr("y", function (d) {
+                    return x1(d.measure);
+                })
+                .attr("x", 1)
+                .attr("height", x1.bandwidth())
+                .attr("width", function (d) {
+                    return y(d[d.measure]);
+                })
+        }
 
         element.append('text')
             .text(function (d, i) {
@@ -694,6 +724,10 @@ function clusteredhorizontalbar() {
      * @return {string} String encoded HTML data
      */
     chart._legendInteraction = function (event, data, plot) {
+        if (_print) {
+            // No interaction during print enabled
+            return;
+        }
         switch (event) {
             case 'mouseover':
                 _legendMouseOver(data, plot);
@@ -712,6 +746,10 @@ function clusteredhorizontalbar() {
 
     chart._getName = function () {
         return _NAME;
+    }
+
+    chart._getHTML = function () {
+        return _local_svg.node().outerHTML;
     }
 
     var _legendMouseOver = function (data, plot) {
@@ -780,12 +818,7 @@ function clusteredhorizontalbar() {
                 return 'translate(0, ' + x0(d[_dimension[0]]) + ')';
             });
 
-        cluster.exit()
-            .transition()
-            .duration(COMMON.DURATION)
-            .attr('height', 0)
-            .attr('y', plotHeight)
-            .remove();
+        cluster.exit().remove();
 
         cluster = plot.selectAll('g.cluster');
         var labelStack = [];
@@ -858,15 +891,47 @@ function clusteredhorizontalbar() {
                 return 'translate(0, ' + x0(d[_dimension[0]]) + ')';
             });
 
-        plot.select('.x_axis')
+        _localXGrid.scale(x0);
+        _localYGrid.scale(y);
+
+        plot.select('.x.grid')
+            .transition()
+            .duration(COMMON.DURATION)
+            .attr('visibility', function () {
+                return _showGrid ? 'visible' : 'hidden';
+            })
+            .call(_localXGrid);
+
+        plot.select('.y.grid')
+            .transition()
+            .duration(COMMON.DURATION)
+            .attr('visibility', function () {
+                return _showGrid ? 'visible' : 'hidden';
+            })
+            .call(_localYGrid);
+
+        var xAxisGroup,
+            yAxisGroup;
+
+        xAxisGroup = plot.select('.x.axis')
             .transition()
             .duration(COMMON.DURATION)
             .call(d3.axisBottom(y));
 
-        plot.select('.y_axis')
+        _setAxisColor(xAxisGroup, _xAxisColor);
+
+        yAxisGroup = plot.select('.y.axis')
             .transition()
             .duration(COMMON.DURATION)
-            .call(d3.axisLeft(x0).ticks(null, "s"));
+            .call(d3.axisLeft(x0).ticks(null, "s")
+                .tickFormat(function (d) {
+                    if (d.length > 3) {
+                        return d.substring(0, 3) + '...';
+                    }
+                    return d;
+                }));
+
+        _setAxisColor(yAxisGroup, _yAxisColor);
 
         UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis);
         UTIL.displayThreshold(threshold, data, keys);
@@ -978,17 +1043,9 @@ function clusteredhorizontalbar() {
         return chart;
     }
 
-    chart.showGrid = function (value) {
-        if (!arguments.length) {
-            return _tooltip;
-        }
-        _showGrid = value;
-        return chart;
-    }
-
     chart.stacked = function (value) {
         if (!arguments.length) {
-            return _tooltip;
+            return _stacked;
         }
         _stacked = value;
         return chart;
@@ -1003,7 +1060,7 @@ function clusteredhorizontalbar() {
     }
     chart.displayName = function (value) {
         if (!arguments.length) {
-            return _tooltip;
+            return _displayName;
         }
         _displayName = value;
         return chart;
@@ -1015,6 +1072,14 @@ function clusteredhorizontalbar() {
             measureName: measureName
         }
         return _legendData;
+    }
+
+    chart.print = function (value) {
+        if (!arguments.length) {
+            return _print;
+        }
+        _print = value;
+        return chart;
     }
 
     chart.showValues = function (value, measure) {

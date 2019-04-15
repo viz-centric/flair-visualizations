@@ -217,6 +217,19 @@ function util() {
 
             return truncLabel;
         },
+
+        getTickRotate: function(label, containerLength, scale) {
+            var isRotate=false;
+            if(typeof(label) === 'undefined') {
+                return isRotate;
+            }
+            
+            if(scale!=undefined && scale.invert(label.length) >= containerLength) {
+                isRotate=true;
+            }
+            return isRotate;
+        },
+        
         /**
          * Provides D3's number formatting function
          *
@@ -444,6 +457,14 @@ function util() {
             return _filter
         },
 
+        createAlertElement: function () {
+            var _filter = ' <label class="switch">'+
+            '<input type="checkbox" checked class="alert">'+
+            '<span class="slider round"></span>'+
+            '</label>';
+            return _filter
+        },
+
         displayThreshold: function (threshold, data, keys) {
             for (var index = 0; index < threshold.length; index++) {
                 data.filter(function (val) {
@@ -559,7 +580,7 @@ function util() {
                     "M": "1e6",
                     "B": "1e9",
                 };
-
+            var result;
             switch (si) {
                 case "Actual":
                     result = d3.format('');

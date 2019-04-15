@@ -147,7 +147,7 @@ function scatter() {
         }
     }
 
-    var applyFilter = function (chart) {
+    var applyFilter = function (div) {
         return function () {
             if (filterData.length > 0) {
                 chart(filterData);
@@ -654,7 +654,7 @@ function scatter() {
 
     chart.showGrid = function (value) {
         if (!arguments.length) {
-            return _tooltip;
+            return _showGrid;
         }
         _showGrid = value;
         return chart;
@@ -662,7 +662,7 @@ function scatter() {
 
     chart.stacked = function (value) {
         if (!arguments.length) {
-            return _tooltip;
+            return _stacked;
         }
         _stacked = value;
         return chart;
@@ -670,7 +670,7 @@ function scatter() {
 
     chart.displayName = function (value) {
         if (!arguments.length) {
-            return _tooltip;
+            return _displayName;
         }
         _displayName = value;
         return chart;
