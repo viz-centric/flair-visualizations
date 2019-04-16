@@ -3,8 +3,7 @@ var COMMON = require('../extras/common.js')();
 var UTIL = require('../extras/util.js')();
 var LEGEND = require('../extras/legend_barcharts.js')();
 var $ = require("jquery");
-
-//var LASSO = require('d3-lasso'); // creates a new lasso
+var d3Lasso = require("d3-lasso");
 
 function stackedverticalbar() {
 
@@ -181,7 +180,7 @@ function stackedverticalbar() {
         }
     }
 
-    var applyFilter = function (div) {
+    var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
                 chart.update(filterData);
@@ -710,13 +709,13 @@ function stackedverticalbar() {
             });
 
         d3.select(div).select('.filterData')
-            .on('click', applyFilter(div));
+            .on('click', applyFilter());
 
         d3.select(div).select('.removeFilter')
             .on('click', clearFilter(div));
 
         _local_svg.select('g.lasso').remove()
-        var lasso = d3.lasso()
+        var lasso = d3Lasso.lasso()
             .hoverSelect(true)
             .closePathSelect(true)
             .closePathDistance(100)

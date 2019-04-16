@@ -1,6 +1,5 @@
-
+var d3 = require('d3');
 var COMMON = require('../extras/common.js')();
-
 function legend() {
     return function (data, selection, extraParams) {
         var me = this;

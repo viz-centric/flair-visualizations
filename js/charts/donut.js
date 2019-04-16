@@ -222,7 +222,7 @@ function donut() {
         }
     }
 
-    var applyFilter = function (div) {
+    var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
                 chart.update(filterData);
@@ -563,7 +563,7 @@ function donut() {
                     .on('end', onLassoEnd(lasso, me));
 
                 d3.select('.confirm')
-                    .on('click', applyFilter(div));
+                    .on('click', applyFilter());
 
                 plot.call(lasso);
             }

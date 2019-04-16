@@ -1,6 +1,6 @@
-var COMMON = require('../extras/common.js')(),
-    UTIL = require('../extras/util.js')(),
-    LEGEND = require('../extras/legend.js')();
+var COMMON = require('../extras/common.js')();
+var UTIL = require('../extras/util.js')();
+var $ = require("jquery");
 
 function table() {
 
@@ -300,7 +300,7 @@ function table() {
             $('#' + div.attr('id')).append(table);
 
             $('#' + div.attr('id')).find('#viz_table').dataTable({
-                scrollY: height - 150,
+                scrollY: height - 100,
                 scrollX: true,
                 scrollCollapse: true,
                 ordering: true,
@@ -361,6 +361,10 @@ function table() {
 
     chart._getName = function () {
         return _NAME;
+    }
+
+    chart._getHTML = function () {
+        return _local_svg.node().outerHTML;
     }
 
     chart.config = function (value) {

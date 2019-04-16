@@ -100,7 +100,7 @@ text {
     fill: #787878;
 }
 
-#tooltip {
+.tooltip {
     visibility: hidden;
     position: absolute;
     background-color: white;
@@ -119,20 +119,20 @@ text {
     -webkit-transition-timing-function: ease;
 }
 
-#tooltip table {
+.tooltip table {
     font-size: 0.6rem;
     font-weight: bold;
     border-collapse: separate;
     border-spacing: 5px;
 }
 
-#tooltip table tr th {
+.tooltip table tr th {
     text-align: left;
     color: #6F6F6F;
     padding: 2px 5px;
 }
 
-#tooltip table tr td {
+.tooltip table tr td {
     color: #28689C;
     padding: 2px 5px;
 }

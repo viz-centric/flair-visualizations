@@ -21,24 +21,24 @@ function combo() {
         _yAxisColor,
         _displayName,
         _legendData,
-        _comboChartType,
-        _showValues,
-        _displayNameForMeasure,
-        _fontStyle,
-        _fontWeight,
-        _numberFormat,
-        _textColor,
-        _displayColor,
-        _borderColor,
-        _fontSize,
-        _lineType,
-        _pointType;
+        _measureChartType = [],
+        _measureShowValue = [],
+        _measureDisplayName = [],
+        _measureFontStyle = [],
+        _measureFontWeight = [],
+        _measureNumberFormat = [],
+        _measureTextColor = [],
+        _measureDisplayColor = [],
+        _measureBorderColor = [],
+        _measureFontSize = [],
+        _lineType = [],
+        _measurePointType = [];
 
     var x0, x1, y;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
 
-    var parentWidth, parentHeight, plotWidth, plotHeight;
+    var parentWidth, parentHeight, plotWidth, plotHeight, container;
 
     var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div;
 
@@ -97,6 +97,56 @@ function combo() {
      * @param {function} chart Clustered Vertical Bar chart function
      * @return {string} String encoded HTML data
      */
+    var getPointType = function (index) {
+        var symbol = null;
+
+        switch (_measurePointType[index].toLowerCase()) {
+            case "rectrounded":
+                symbol = d3.symbolDiamond;
+                break;
+
+            case "rectrot":
+                symbol = d3.symbolDiamond;
+                break;
+
+            case "star":
+                symbol = d3.symbolStar;
+                break;
+
+            case "triangle":
+                symbol = d3.symbolTriangle;
+                break;
+
+            case "circle":
+                symbol = d3.symbolCircle;
+                break;
+
+            case "cross":
+                symbol = d3.symbolCross;
+                break;
+
+            case "crossrot":
+                symbol = d3.symbolCross;
+                break;
+
+            case "dash":
+                symbol = d3.symbolWye;
+                break;
+
+            case "line":
+                symbol = d3.symbolWye;
+                break;
+
+            case "rect":
+                symbol = d3.symbolSquare;
+                break;
+
+            default:
+                symbol = d3.symbolCircle;
+        }
+
+        return symbol;
+    }
     var _buildTooltipData = function (datum, chart) {
         var output = "";
 
@@ -340,9 +390,9 @@ function combo() {
             .attr('transform', function (d) {
                 return 'translate(' + _x(d[_dimension[0]]) + ',' + _y(d[d['measure']]) + ')';
             })
-            .on('mouseover', _handleMouseOverFn.call(chart, _localTooltip, _localSVG))
-            .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, _localSVG))
-            .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, _localSVG))
+            .on('mouseover', _handleMouseOverFn.call(chart, _localTooltip, _local_svg))
+            .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, _local_svg))
+            .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, _local_svg))
             .on('click', function (d, i) {
 
             });
@@ -517,7 +567,7 @@ function combo() {
     }
 
     function chart(selection) {
-        _localSVG = selection;
+        _local_svg = selection;
 
         selection.each(function (data) {
             var svg = d3.select(this),
@@ -551,11 +601,13 @@ function combo() {
 
                 var result = _localLegend(_measure, container, {
                     width: parentWidth,
-                    height: parentHeight
+                    height: parentHeight,
+                    legendBreakCount: legendBreakCount
                 });
 
                 legendWidth = result.legendWidth;
                 legendHeight = result.legendHeight;
+                legendBreakCount = result.legendBreakCount;
 
                 switch (_legendPosition) {
                     case 'top':
@@ -580,10 +632,10 @@ function combo() {
         element.append('rect')
             .attr('width', x1.bandwidth())
             .style('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _measureDisplayColor);
             })
             .style('stroke', function (d, i) {
-                return UTIL.getBorderColor(_measure.indexOf(d['tag']), _borderColor);
+                return UTIL.getBorderColor(_measure.indexOf(d['tag']), _measureBorderColor);
             })
             .style('stroke-width', 1)
             .attr('x', function (d, i) {
@@ -648,14 +700,16 @@ function combo() {
         measuresBar = [],
             measuresLine = [];
         keys.forEach(function (m, i) {
-            if (_comboChartType[_measure.indexOf(m)] == "bar") {
+            if (_measureChartType[_measure.indexOf(m)] == "bar") {
                 measuresBar.push(m);
             } else {
                 measuresLine.push(m);
             }
         });
 
-        var xLabels = getXLabels(data);
+        var xLabels = data.map(function (d) {
+            return d[_dimension[0]];
+        });
 
         var plot = container.append('g')
             .attr('class', 'combo-plot')
@@ -749,7 +803,7 @@ function combo() {
             })
             .attr('class', 'area')
             .attr('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
+                return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _measureDisplayColor);
             })
             .attr('visibility', function (d, i) {
                 if (_lineType[(_measure.indexOf(d[0]['tag']))] == "area") {
@@ -771,7 +825,7 @@ function combo() {
             .attr('class', 'line')
             .attr('fill', 'none')
             .attr('stroke', function (d, i) {
-                return UTIL.getBorderColor(_measure.indexOf(d[0]['tag']), _borderColor);
+                return UTIL.getBorderColor(_measure.indexOf(d[0]['tag']), _measureBorderColor);
             })
             .attr('stroke-linejoin', 'round')
             .attr('stroke-linecap', 'round')
@@ -795,7 +849,7 @@ function combo() {
             .enter().append('path')
             .attr('class', 'point')
             .attr('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+                return UTIL.getDisplayColor(_measure.indexOf(d.tag), _measureDisplayColor);
             })
             .attr('d', function (d, i) {
                 return d3.symbol()
@@ -822,7 +876,7 @@ function combo() {
             .attr("fill", "#000")
             .attr("font-weight", "bold")
             .style('text-anchor', 'middle')
-            .style('visibility', UTIL.getVisibility(_showXaxisLabel))
+            .style('visibility', UTIL.getVisibility(_xAxisLabel))
             .text(function () {
                 return _displayName;
             });
@@ -835,14 +889,14 @@ function combo() {
             .attr("y", 2 * axisLabelSpace)
             .attr("transform", function (d) { return "rotate(" + 90 + ")"; })
             .attr("dy", "0.32em")
-            .style('visibility', UTIL.getVisibility(_showYaxisLabel))
+            .style('visibility', UTIL.getVisibility(_yAxisLabel))
             .attr("font-weight", "bold")
             .style('text-anchor', 'middle')
             .text(function () {
-                return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+                return _measureDisplayName.map(function (p) { return p; }).join(', ');
             });
 
-        UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis, _showYaxis, _showXaxis);
+     //   UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis, _showYaxis, _showXaxis);
         _local_svg.select('g.sort').remove();
         UTIL.sortingView(container, parentHeight, parentWidth + margin.left, legendBreakCount, axisLabelSpace, offsetX);
 
@@ -935,12 +989,12 @@ function combo() {
             });
         clustered.select('rect')
             .style('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+                return UTIL.getDisplayColor(_measure.indexOf(d.tag), _measureDisplayColor);
             });
         line
             .style("stroke-width", "1.5px")
             .style('stroke', function (d, i) {
-                return UTIL.getBorderColor(_measure.indexOf(d[0]['tag']), _borderColor);
+                return UTIL.getBorderColor(_measure.indexOf(d[0]['tag']), _measureBorderColor);
             });
     }
 
@@ -963,7 +1017,7 @@ function combo() {
         keys.splice(keys.indexOf(_dimension[0]), 1);
         measuresBar = [], measuresLine = [];
         keys.forEach(function (m, i) {
-            if (_comboChartType[_measure.indexOf(m)] == "bar") {
+            if (_measureChartType[_measure.indexOf(m)] == "bar") {
                 measuresBar.push(m);
             } else {
                 measuresLine.push(m);
@@ -1201,9 +1255,9 @@ function combo() {
                 }
                 return _measureDisplayColor[index];
             })
-            .on('mouseover', _handleMouseOverFn.call(chart, _localTooltip, _localSVG))
-            .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, _localSVG))
-            .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, _localSVG))
+            .on('mouseover', _handleMouseOverFn.call(chart, _localTooltip, _local_svg))
+            .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, _local_svg))
+            .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, _local_svg))
             .on('click', function (d, i) {
 
             });

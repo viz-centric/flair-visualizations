@@ -1,6 +1,6 @@
-var COMMON = require('../extras/common.js')(),
-    UTIL = require('../extras/util.js')(),
-    LEGEND = require('../extras/legend.js')();
+var COMMON = require('../extras/common.js')();
+var UTIL = require('../extras/util.js')();
+var $ = require("jquery");
 
 function pivottable() {
 
@@ -334,7 +334,7 @@ function pivottable() {
             var disv = d3.select('#'+div.attr('id'));
 
             $('#'+div.attr('id')).css('width', width)
-                .css('height', height).css('overflow-y', 'hidden').css('overflow-x', 'auto');
+                .css('height', height).css('overflow-y', 'auto').css('overflow-x', 'auto');
 
             var nester = d3.nest(),
                 pivotedDimension = getPivotedDimension();
@@ -416,7 +416,7 @@ function pivottable() {
                 mapper.set(pd, getUniqueData(data, pd));
             });
 
-            var table = $('<table id="viz_pivot-table" class="display nowrap" style="width:100%"></table>').addClass('table table-condensed table-hover');
+            var table = $('<table id="viz_pivot-table" class="display nowrap" style="width:100%;font-size: 0.7rem"></table>').addClass('table table-condensed table-hover');
 
             var thead = "<thead><tr>",
                 tbody = "<tbody>";
@@ -580,7 +580,7 @@ function pivottable() {
             $('#'+div.attr('id')).append(table);
 
             $('#'+div.attr('id')).find('#viz_pivot-table').dataTable({
-                scrollY: height - 50,
+                scrollY: height - 100,
                 scrollX: true,
                 scrollCollapse: true,
                 ordering: true,
@@ -627,6 +627,10 @@ function pivottable() {
 
     chart._getName = function () {
         return _NAME;
+    }
+
+    chart._getHTML = function () {
+        return _local_svg.node().outerHTML;
     }
 
     chart.config = function (value) {

@@ -136,7 +136,7 @@ function boxplot() {
         }
     }
 
-    var applyFilter = function (div) {
+    var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
                 chart.update(filterData);
@@ -500,7 +500,7 @@ function boxplot() {
             UTIL.setAxisColor(_local_svg, "", "", true, true, true, true);
 
             d3.select(div).select('.filterData')
-                .on('click', applyFilter(div));
+                .on('click', applyFilter());
 
             d3.select(div).select('.removeFilter')
                 .on('click', clearFilter(div));

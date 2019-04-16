@@ -1,5 +1,8 @@
-var COMMON = require('../extras/common.js')(),
-    UTIL = require('../extras/util.js')()
+var d3 = require('d3');
+var COMMON = require('../extras/common.js')();
+var UTIL = require('../extras/util.js')();
+var $ = require("jquery");
+var d3Lasso = require("d3-lasso");
 
 function heatmap() {
 
@@ -28,7 +31,8 @@ function heatmap() {
         fontStyleForMeasure = [],
         fontWeightForMeasure = [],
         numberFormat = [],
-        fontSizeForMeasure = [];
+        fontSizeForMeasure = [],
+        _print;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [];
     var width, height, cellWidth, cellHeight;
@@ -297,7 +301,7 @@ function heatmap() {
         }
     }
 
-    var applyFilter = function (div) {
+    var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
                 chart.update(filterData);
@@ -305,7 +309,7 @@ function heatmap() {
         }
     }
 
-   var clearFilter = function (div) {
+    var clearFilter = function (div) {
         return function () {
             chart.update(_originalData);
             d3.select(div).select('.confirm')
@@ -313,51 +317,190 @@ function heatmap() {
         }
     }
 
-    var drawViz = function (element) {
-        element.append('rect')
-            .attr('rx', '3px')
-            .attr('ry', '3px')
-            .attr('class', 'bordered')
-            .style('stroke', '#ffffff')
-            .style('stroke-width', '2px')
-            .attr('width', cellWidth - 1)
-            .attr('height', cellHeight - 1)
-            .transition()
-            .ease(d3.easeQuadIn)
-            .duration(COMMON.DURATION)
-            .styleTween('fill', function (d) {
-                return d3.interpolateRgb('transparent', getFillColor(d));
-            });
+    function chart(selection) {
+        _local_svg = selection;
 
-        element.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
-            .on('click', function (d) {
-                var confirm = d3.select(div).select('.confirm')
-                    .style('visibility', 'visible');
-                var _filter = _localData.filter(function (d1) {
-                    return d.y === d1[_dimension[0]]
+        selection.each(function (data) {
+
+            var div = d3.select(this).node().parentNode;
+            width = div.clientWidth
+            height = div.clientHeight
+
+            var svg = d3.select(this);
+
+            svg.selectAll('g').remove();
+
+            var _filter = UTIL.createFilterElement()
+            $(div).append(_filter);
+
+            var plot = svg.attr('width', width)
+                .attr('height', height)
+                .append('g')
+                .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
+
+            /* store the data in local variable */
+            _localData = _originalData = data;
+            var me = this;
+            svg.selectAll('g').remove();
+
+            var plot = svg.attr('width', width)
+                .attr('height', height)
+                .append('g')
+                .attr('class', 'plot')
+                .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
+
+            var yElement = d3.set(data.map(function (item) { return item[_dimension[0]]; })).values();
+            var xElement = d3.map();
+
+            for (var i = 0; i < _measure.length; i++) {
+                xElement.set(i, _measure[i]);
+            }
+
+            cellWidth = parseInt((width - margin.left - margin.right) / _measure.length),
+                cellHeight = parseInt((height - margin.top - margin.bottom) / data.length);
+            var offset = 6;
+            var dimLabel = plot.selectAll('.dimLabel')
+                .data(yElement)
+                .enter().append('text')
+                .attr('class', 'dimLabel')
+                .text(function (d) { return d; })
+                .text(function (d) {
+                    return UTIL.getTruncatedLabel(this, d, (margin.left));
                 })
-                var rect = d3.select(this).select('rect');
-                if (rect.classed('selected')) {
-                    rect.classed('selected', false);
-                    filterData.map(function (val, i) {
-                        if (val[_dimension[0]] == d[_dimension[0]]) {
-                            filterData.splice(i, 1)
-                        }
+                .attr('x', 0)
+                .attr('y', function (d, i) { return i * cellHeight; })
+                .attr('fill', dimLabelColor)
+                .style('font-style', fontStyleForDimension)
+                .style('font-weight', fontWeightForDimension)
+                .style('font-size', fontSizeForDimension)
+                .style('text-anchor', 'end')
+                .attr('transform', 'translate(' + -offset + ',' + cellHeight / 1.75 + ')');
+
+            var mesLabel = plot.selectAll('.mesLabel')
+                .data(xElement.values().map(function (mes) {
+                    return displayNameForMeasure[_measure.indexOf(mes)];
+                }))
+                .enter().append('text')
+                .attr('class', 'mesLabel')
+                .text(function (d) { return d; })
+                .text(function (d) {
+                    return UTIL.title(d);
+                })
+                .attr('x', function (d, i) { return i * cellWidth; })
+                .attr('y', 0)
+                .style('text-anchor', 'middle')
+                .attr('transform', 'translate(' + cellWidth / 2 + ', -6)');
+
+            yScale
+                .domain(yElement)
+                .range([0, yElement.length * cellHeight]);
+
+            xScale
+                .domain(xElement.entries().map(function (element) {
+                    return element.key + '_' + element.value;
+                }))
+                .range([0, xElement.size() * cellWidth]);
+
+            data = transformData(data);
+            if (_tooltip) {
+                tooltip = d3.select(this.parentNode).select('#tooltip');
+            }
+
+            var cell = plot.selectAll(".node")
+                .data(data)
+                .enter().append('g')
+                .attr('transform', function (d) {
+                    return 'translate(' + xScale(d.column + '_' + d.x) + ',' + yScale(d.y) + ')';
+                })
+                .attr('class', 'node')
+
+
+            drawViz(cell);
+
+            d3.select(div).select('.filterData')
+                .on('click', applyFilter());
+
+            d3.select(div).select('.removeFilter')
+                .on('click', clearFilter(div));
+
+            var lasso = d3Lasso.lasso()
+                .hoverSelect(true)
+                .closePathSelect(true)
+                .closePathDistance(100)
+                .items(cell)
+                .targetArea(_local_svg);
+
+            lasso.on('start', onLassoStart(lasso, me))
+                .on('draw', onLassoDraw(lasso, me))
+                .on('end', onLassoEnd(lasso, me));
+
+            _local_svg.call(lasso);
+        })
+
+    }
+
+    var drawViz = function (element) {
+
+
+        if (!_print) {
+            element.append('rect')
+                .attr('rx', '3px')
+                .attr('ry', '3px')
+                .attr('class', 'bordered')
+                .style('stroke', '#ffffff')
+                .style('stroke-width', '2px')
+                .attr('width', cellWidth - 1)
+                .attr('height', cellHeight - 1)
+                .transition()
+                .ease(d3.easeQuadIn)
+                .duration(COMMON.DURATION)
+                .styleTween('fill', function (d) {
+                    return d3.interpolateRgb('transparent', getFillColor(d));
+                });
+
+            element.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+                .on('click', function (d) {
+                    var confirm = d3.select(div).select('.confirm')
+                        .style('visibility', 'visible');
+                    var _filter = _localData.filter(function (d1) {
+                        return d.y === d1[_dimension[0]]
                     })
-                } else {
-                    rect.classed('selected', true);
-                    var isExist = filterData.filter(function (val) {
-                        if (val[_dimension[0]] == d[_dimension[0]]) {
-                            return val
+                    var rect = d3.select(this).select('rect');
+                    if (rect.classed('selected')) {
+                        rect.classed('selected', false);
+                        filterData.map(function (val, i) {
+                            if (val[_dimension[0]] == d[_dimension[0]]) {
+                                filterData.splice(i, 1)
+                            }
+                        })
+                    } else {
+                        rect.classed('selected', true);
+                        var isExist = filterData.filter(function (val) {
+                            if (val[_dimension[0]] == d[_dimension[0]]) {
+                                return val
+                            }
+                        })
+                        if (isExist.length == 0) {
+                            filterData.push(_filter[0]);
                         }
-                    })
-                    if (isExist.length == 0) {
-                        filterData.push(_filter[0]);
                     }
-                }
-            });
+                });
+        }
+        else {
+            element.append('rect')
+                .attr('rx', '3px')
+                .attr('ry', '3px')
+                .attr('class', 'bordered')
+                .style('stroke', '#ffffff')
+                .style('stroke-width', '2px')
+                .attr('width', cellWidth - 1)
+                .attr('height', cellHeight - 1)
+                .style('fill', function (d) {
+                    return getFillColor(d);
+                });
+        }
 
         element.append('foreignObject')
             .attr('x', function (d) {
@@ -415,130 +558,6 @@ function heatmap() {
             .style('font-size', function (d) {
                 return fontSizeForMeasure[_measure.indexOf(d.x)];
             });
-    }
-
-    function chart(selection) {
-        _local_svg = selection;
-
-        selection.each(function (data) {
-
-            var div = d3.select(this).node().parentNode;
-            _local_svg = d3.select(this);
-
-            width = div.clientWidth
-            height = div.clientHeight
-
-            var svg = d3.select(this);
-
-            svg.selectAll('g').remove();
-
-            var _filter = UTIL.createFilterElement()
-            $(div).append(_filter);
-
-            var plot = svg.attr('width', width)
-                .attr('height', height)
-                .append('g')
-                .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
-
-            /* store the data in local variable */
-            _localData = _originalData = data;
-            var me = this;
-            svg.selectAll('g').remove();
-
-            var plot = svg.attr('width', width)
-                .attr('height', height)
-                .append('g')
-                .attr('class', 'plot')
-                .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
-
-            var yElement = d3.set(data.map(function (item) { return item[_dimension[0]]; })).values();
-            var xElement = d3.map();
-
-            for (var i = 0; i < _measure.length; i++) {
-                xElement.set(i, _measure[i]);
-            }
-
-            cellWidth = parseInt((width - margin.left - margin.right) / _measure.length),
-                cellHeight = parseInt((height - margin.top - margin.bottom) / data.length);
-            var offset = 6;
-            var dimLabel = plot.selectAll('.dimLabel')
-                .data(yElement)
-                .enter().append('text')
-                .attr('class', 'dimLabel')
-                .text(function (d) { return d; })
-                .text(function (d) {
-                    return d;
-                })
-                .attr('x', 0)
-                .attr('y', function (d, i) { return i * cellHeight; })
-                .attr('fill', dimLabelColor)
-                .style('font-style', fontStyleForDimension)
-                .style('font-weight', fontWeightForDimension)
-                .style('font-size', fontSizeForDimension)
-                .style('text-anchor', 'end')
-                .attr('transform', 'translate(' + -offset + ',' + cellHeight / 1.75 + ')');
-
-            var mesLabel = plot.selectAll('.mesLabel')
-                .data(xElement.values().map(function (mes) {
-                    return displayNameForMeasure[_measure.indexOf(mes)];
-                }))
-                .enter().append('text')
-                .attr('class', 'mesLabel')
-                .text(function (d) { return d; })
-                .text(function (d) {
-                    return UTIL.title(d);
-                })
-                .attr('x', function (d, i) { return i * cellWidth; })
-                .attr('y', 0)
-                .style('text-anchor', 'middle')
-                .attr('transform', 'translate(' + cellWidth / 2 + ', -6)');
-
-            yScale
-                .domain(yElement)
-                .range([0, yElement.length * cellHeight]);
-
-            xScale
-                .domain(xElement.entries().map(function (element) {
-                    return element.key + '_' + element.value;
-                }))
-                .range([0, xElement.size() * cellWidth]);
-
-            data = transformData(data);
-            if (_tooltip) {
-                tooltip = d3.select(this.parentNode).select('#tooltip');
-            }
-
-            var cell = plot.selectAll(".node")
-                .data(data)
-                .enter().append('g')
-                .attr('transform', function (d) {
-                    return 'translate(' + xScale(d.column + '_' + d.x) + ',' + yScale(d.y) + ')';
-                })
-                .attr('class', 'node')
-
-
-            drawViz(cell);
-
-            d3.select(div).select('.filterData')
-                .on('click', applyFilter(div));
-
-            d3.select(div).select('.removeFilter')
-                .on('click', clearFilter(div));
-
-            var lasso = d3.lasso()
-                .hoverSelect(true)
-                .closePathSelect(true)
-                .closePathDistance(100)
-                .items(cell)
-                .targetArea(svg);
-
-            lasso.on('start', onLassoStart(lasso, me))
-                .on('draw', onLassoDraw(lasso, me))
-                .on('end', onLassoEnd(lasso, me));
-
-            _local_svg.call(lasso);
-        })
-
     }
 
     chart.update = function (data) {
@@ -601,21 +620,36 @@ function heatmap() {
 
         cell = plot.selectAll('.node');
 
-        cell.select('rect')
-            .attr('rx', '3px')
-            .attr('ry', '3px')
-            .attr('class', 'bordered')
-            .style('stroke', '#ffffff')
-            .style('stroke-width', '2px')
-            .attr('width', cellWidth - 1)
-            .attr('height', cellHeight - 1)
-            .transition()
-            .ease(d3.easeQuadIn)
-            .duration(COMMON.DURATION)
-            .styleTween('fill', function (d) {
-                return d3.interpolateRgb('transparent', getFillColor(d));
-            });
+        if (!_print) {
+            cell.select('rect')
+                .attr('rx', '3px')
+                .attr('ry', '3px')
+                .attr('class', 'bordered')
+                .style('stroke', '#ffffff')
+                .style('stroke-width', '2px')
+                .attr('width', cellWidth - 1)
+                .attr('height', cellHeight - 1)
+                .transition()
+                .ease(d3.easeQuadIn)
+                .duration(COMMON.DURATION)
+                .styleTween('fill', function (d) {
+                    return d3.interpolateRgb('transparent', getFillColor(d));
+                });
 
+        }
+        else {
+            cell.select('rect')
+                .attr('rx', '3px')
+                .attr('ry', '3px')
+                .attr('class', 'bordered')
+                .style('stroke', '#ffffff')
+                .style('stroke-width', '2px')
+                .attr('width', cellWidth - 1)
+                .attr('height', cellHeight - 1)
+                .style('fill', function (d) {
+                    return d3.interpolateRgb('transparent', getFillColor(d));
+                })
+        }
 
         cell.select('text')
             .attr('x', function (d) {
@@ -758,6 +792,10 @@ function heatmap() {
         return _NAME;
     }
 
+    chart._getHTML = function () {
+        return _local_svg.node().outerHTML;
+    }
+
     chart.config = function (value) {
         if (!arguments.length) {
             return _config;
@@ -828,6 +866,14 @@ function heatmap() {
             return fontStyleForDimension;
         }
         fontStyleForDimension = value;
+        return chart;
+    }
+
+    chart.print = function (value) {
+        if (!arguments.length) {
+            return _print;
+        }
+        _print = value;
         return chart;
     }
 

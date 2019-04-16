@@ -135,7 +135,7 @@ function bullet() {
         }
     }
 
-    var applyFilter = function (div) {
+    var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
                 chart.update(filterData);
@@ -425,7 +425,7 @@ function bullet() {
             formatUsingCss(this);
 
             d3.select(div).select('.filterData')
-                .on('click', applyFilter(div));
+                .on('click', applyFilter());
 
             d3.select(div).select('.removeFilter')
                 .on('click', clearFilter(div));

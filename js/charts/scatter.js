@@ -147,7 +147,7 @@ function scatter() {
         }
     }
 
-    var applyFilter = function (div) {
+    var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
                 chart(filterData);

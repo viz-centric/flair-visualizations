@@ -1,3 +1,4 @@
+var d3 = require('d3');
 var COMMON = require('../extras/common.js')();
 function util() {
 
@@ -538,7 +539,7 @@ function util() {
                 callback.call(scope, me.sortData(_Local_data, event.data.measure, sortType));
             }
 
-            d3.event.stopPropagation();
+          //  d3.event.stopPropagation();
             var div = _local_svg.node().parentNode
             var sortWindow = d3.select(div).select('.sort_selection')
                 .style('visibility', 'visible');
