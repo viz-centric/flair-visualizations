@@ -2,6 +2,7 @@ var d3 = require('d3');
 var COMMON = require('../extras/common.js')();
 var UTIL = require('../extras/util.js')();
 var LEGEND = require('../extras/legend_barcharts.js')();
+var $ = require("jquery");
 //var LASSO = require('d3-lasso'); // creates a new lasso
 
 function clusteredverticalbar() {
