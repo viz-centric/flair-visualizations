@@ -1,8 +1,10 @@
 var d3 = require('d3');
 var COMMON = require('../extras/common.js')();
 var UTIL = require('../extras/util.js')();
-var $ = require("jquery");
-var d3Lasso = require("d3-lasso");
+try {
+    var d3Lasso = require("d3-lasso");
+
+} catch (ex) { }
 
 function treemap() {
 
@@ -243,13 +245,16 @@ function treemap() {
     }
 
     var getVisibilityValue = function (element, node) {
-        var contWidth = node.x1 - node.x0,
-            contHeight = node.y1 - node.y0,
-            textWidth = element.getComputedTextLength(),
-            textHeight = parseInt(d3.select(element).style('font-size').replace('px', ''));
+        if (!_print) {
+            var contWidth = node.x1 - node.x0,
+                contHeight = node.y1 - node.y0,
+                textWidth = element.getComputedTextLength(),
+                textHeight = parseInt(d3.select(element).style('font-size').replace('px', ''));
 
-        if (((textWidth + 2 * textPadding) > contWidth) || ((textHeight + 2 * textPadding) > contHeight)) {
-            return 'hidden';
+            if (((textWidth + 2 * textPadding) > contWidth) || ((textHeight + 2 * textPadding) > contHeight)) {
+                return 'hidden';
+            }
+            return 'visible';
         }
         return 'visible';
     }
@@ -582,11 +587,10 @@ function treemap() {
         selection.each(function (data) {
 
             var div = d3.select(this).node().parentNode;
-            width = div.clientWidth - 2 * COMMON.PADDING,
-                height = div.clientHeight - 2 * COMMON.PADDING;
 
-            var svg = d3.select(this);
-
+            var svg = d3.select(this),
+                width = +svg.attr('width') - 2 * COMMON.PADDING,
+                height = +svg.attr('height') - 2 * COMMON.PADDING;
             /* store the data in local variable */
             _localData = _originalData = data;
 
@@ -599,11 +603,8 @@ function treemap() {
                 .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
             if (_tooltip) {
-                tooltip = d3.select(this.parentNode).select('.tooltip');
+                tooltip = d3.select(this.parentNode).select('#tooltip');
             }
-
-            var _filter = UTIL.createFilterElement()
-            $(div).append(_filter);
 
             treemap = d3.treemap()
                 .size([width, height])
@@ -661,25 +662,29 @@ function treemap() {
 
             drawViz(cell)
 
-            d3.select(div).select('.filterData')
-                .on('click', applyFilter());
+            if (!_print) {
+                var _filter = UTIL.createFilterElement()
+                $(div).append(_filter);
 
-            d3.select(div).select('.removeFilter')
-                .on('click', clearFilter(div));
+                d3.select(div).select('.filterData')
+                    .on('click', applyFilter());
 
-            var lasso = d3Lasso.lasso()
-                .hoverSelect(true)
-                .closePathSelect(true)
-                .closePathDistance(100)
-                .items(cell)
-                .targetArea(_local_svg);
+                d3.select(div).select('.removeFilter')
+                    .on('click', clearFilter(div));
 
-            lasso.on('start', onLassoStart(lasso, me))
-                .on('draw', onLassoDraw(lasso, me))
-                .on('end', onLassoEnd(lasso, me));
+                var lasso = d3Lasso.lasso()
+                    .hoverSelect(true)
+                    .closePathSelect(true)
+                    .closePathDistance(100)
+                    .items(cell)
+                    .targetArea(_local_svg);
 
-            _local_svg.call(lasso);
+                lasso.on('start', onLassoStart(lasso, me))
+                    .on('draw', onLassoDraw(lasso, me))
+                    .on('end', onLassoEnd(lasso, me));
 
+                _local_svg.call(lasso);
+            }
         });
     }
 

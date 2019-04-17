@@ -1,6 +1,5 @@
 var COMMON = require('../extras/common.js')();
 var UTIL = require('../extras/util.js')();
-var $ = require("jquery");
 
 function pivottable() {
 
@@ -291,7 +290,7 @@ function pivottable() {
             chart(_local_svg)
         }
     }
-   var clearFilter = function (div) {
+    var clearFilter = function (div) {
         return function () {
             d3.select('#donut')
                 .datum(_localData)
@@ -303,7 +302,7 @@ function pivottable() {
         }
     }
     chart.readerTableChart = function (str, ctr, _local_svg, key) {
-        var confirm =d3.select(div).select('.confirm')
+        var confirm = d3.select(div).select('.confirm')
             .style('visibility', 'visible');
         var searchObj = filterData.find(o => o[key] === str);
         if (searchObj == undefined) {
@@ -328,12 +327,12 @@ function pivottable() {
             };
 
             var div = d3.select(this);
+            var svg = d3.select(this),
+                width = +svg.attr('width'),
+                height = +svg.attr('height');
+            var disv = d3.select('#' + div.attr('id'));
 
-            var width = +div.attr('width');
-            var height = +div.attr('height');
-            var disv = d3.select('#'+div.attr('id'));
-
-            $('#'+div.attr('id')).css('width', width)
+            $('#' + div.attr('id')).css('width', width)
                 .css('height', height).css('overflow-y', 'auto').css('overflow-x', 'auto');
 
             var nester = d3.nest(),
@@ -577,9 +576,9 @@ function pivottable() {
 
             table.append((thead + tbody));
 
-            $('#'+div.attr('id')).append(table);
+            $('#' + div.attr('id')).append(table);
 
-            $('#'+div.attr('id')).find('#viz_pivot-table').dataTable({
+            $('#' + div.attr('id')).find('#viz_pivot-table').dataTable({
                 scrollY: height - 100,
                 scrollX: true,
                 scrollCollapse: true,
@@ -605,7 +604,8 @@ function pivottable() {
      * @param {function} chart Pie chart function
      * @return {string} String encoded HTML data
      */
- chart._legendInteraction = function (event, data, plot) {        var arcGroup = d3.selectAll('g.arc')
+    chart._legendInteraction = function (event, data, plot) {
+        var arcGroup = d3.selectAll('g.arc')
             .filter(function (d) {
                 return d.data[_dimension[0]] === data[_dimension[0]];
             });

@@ -1,6 +1,5 @@
 var COMMON = require('../extras/common.js')();
 var UTIL = require('../extras/util.js')();
-var $ = require("jquery");
 
 function table() {
 
@@ -170,7 +169,7 @@ function table() {
 
             chart(_local_svg)
             var confirm = div.select('div.confirm')
-            .style('visibility', 'visible');
+                .style('visibility', 'visible');
         }
     }
     var readerTableChart = function (str, ctr, element) {
@@ -200,8 +199,9 @@ function table() {
 
             var div = d3.select(this);
 
-            var width = +div.attr('width');
-            var height = +div.attr('height');
+            var svg = d3.select(this),
+                width = +svg.attr('width'),
+                height = +svg.attr('height');
             var disv = d3.select('#' + div.attr('id'));
 
             var _filter = UTIL.createFilterElement()
@@ -339,7 +339,8 @@ function table() {
      * @param {function} chart Pie chart function
      * @return {string} String encoded HTML data
      */
- chart._legendInteraction = function (event, data, plot) {        var arcGroup = d3.selectAll('g.arc')
+    chart._legendInteraction = function (event, data, plot) {
+        var arcGroup = d3.selectAll('g.arc')
             .filter(function (d) {
                 return d.data[_dimension[0]] === data[_dimension[0]];
             });

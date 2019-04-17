@@ -1,9 +1,10 @@
 var d3 = require('d3');
 var COMMON = require('../extras/common.js')();
 var UTIL = require('../extras/util.js')();
-var $ = require("jquery");
-var d3Lasso = require("d3-lasso");
+try {
+    var d3Lasso = require("d3-lasso");
 
+} catch (ex) { }
 function heatmap() {
 
     var _NAME = 'heatmap';
@@ -323,15 +324,13 @@ function heatmap() {
         selection.each(function (data) {
 
             var div = d3.select(this).node().parentNode;
-            width = div.clientWidth
-            height = div.clientHeight
+            var svg = d3.select(this),
+                width = +svg.attr('width'),
+                height = +svg.attr('height');
 
             var svg = d3.select(this);
 
             svg.selectAll('g').remove();
-
-            var _filter = UTIL.createFilterElement()
-            $(div).append(_filter);
 
             var plot = svg.attr('width', width)
                 .attr('height', height)
@@ -365,7 +364,15 @@ function heatmap() {
                 .attr('class', 'dimLabel')
                 .text(function (d) { return d; })
                 .text(function (d) {
-                    return UTIL.getTruncatedLabel(this, d, (margin.left));
+                    if(!_print){
+                        return UTIL.getTruncatedLabel(this, d, (margin.left));
+                    }
+                    else{
+                        if (d.length > 3) {
+                            return d.substring(0, 3) + '...';
+                        }
+                        return d;
+                    }
                 })
                 .attr('x', 0)
                 .attr('y', function (d, i) { return i * cellHeight; })
@@ -414,27 +421,30 @@ function heatmap() {
                 })
                 .attr('class', 'node')
 
-
             drawViz(cell);
+            if (!_print) {
+                var _filter = UTIL.createFilterElement()
+                $(div).append(_filter);
 
-            d3.select(div).select('.filterData')
-                .on('click', applyFilter());
+                d3.select(div).select('.filterData')
+                    .on('click', applyFilter());
 
-            d3.select(div).select('.removeFilter')
-                .on('click', clearFilter(div));
+                d3.select(div).select('.removeFilter')
+                    .on('click', clearFilter(div));
 
-            var lasso = d3Lasso.lasso()
-                .hoverSelect(true)
-                .closePathSelect(true)
-                .closePathDistance(100)
-                .items(cell)
-                .targetArea(_local_svg);
+                var lasso = d3Lasso.lasso()
+                    .hoverSelect(true)
+                    .closePathSelect(true)
+                    .closePathDistance(100)
+                    .items(cell)
+                    .targetArea(_local_svg);
 
-            lasso.on('start', onLassoStart(lasso, me))
-                .on('draw', onLassoDraw(lasso, me))
-                .on('end', onLassoEnd(lasso, me));
+                lasso.on('start', onLassoStart(lasso, me))
+                    .on('draw', onLassoDraw(lasso, me))
+                    .on('end', onLassoEnd(lasso, me));
 
-            _local_svg.call(lasso);
+                _local_svg.call(lasso);
+            }
         })
 
     }

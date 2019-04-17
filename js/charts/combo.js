@@ -715,13 +715,13 @@ function combo() {
             .attr('class', 'combo-plot')
             .classed('plot', true)
             .attr('transform', function () {
-                if (_legendPosition == 'Top') {
+                if (_legendPosition == 'top') {
                     return 'translate(' + margin.left + ', ' + parseInt(legendSpace * 2 + (20 * parseInt(legendBreakCount))) + ')';
-                } else if (_legendPosition == 'Bottom') {
+                } else if (_legendPosition == 'bottom') {
                     return 'translate(' + margin.left + ', 0)';
-                } else if (_legendPosition == 'Left') {
+                } else if (_legendPosition == 'left') {
                     return 'translate(' + (legendSpace + margin.left + axisLabelSpace) + ', 0)';
-                } else if (_legendPosition == 'Right') {
+                } else if (_legendPosition == 'right') {
                     return 'translate(' + margin.left + ', 0)';
                 }
             });

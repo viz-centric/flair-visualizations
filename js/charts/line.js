@@ -2,8 +2,11 @@ var d3 = require('d3');
 var COMMON = require('../extras/common.js')();
 var UTIL = require('../extras/util.js')();
 var LEGEND = require('../extras/legend_barcharts.js')();
-var $ = require("jquery");
-var d3Lasso = require("d3-lasso");
+
+try {
+    var d3Lasso = require("d3-lasso");
+
+} catch (ex) { }
 
 function line() {
 
@@ -283,8 +286,9 @@ function line() {
             _originalData = data;
             div = d3.select(this).node().parentNode;
 
-            var width = div.clientWidth,
-                height = div.clientHeight;
+            var svg = d3.select(this),
+                width = +svg.attr('width'),
+                height = +svg.attr('height');
 
             parentWidth = width - 2 * COMMON.PADDING - margin.left;
             parentHeight = (height - 2 * COMMON.PADDING - axisLabelSpace * 2);
@@ -300,33 +304,6 @@ function line() {
 
             d3.select(div).append('div')
                 .attr('class', 'arrow-down');
-
-            var str = UTIL.createAlert($(div).attr('id'), _measure);
-            $(div).append(str);
-
-            var _filter = UTIL.createFilterElement()
-            $(div).append(_filter);
-
-            $(document).on('click', '_local_svg', function (e) {
-                if ($("#myonoffswitch").prop('checked') == false) {
-                    var element = e.target
-                    if (element.tagName == "_local_svg") {
-                        $('#Modal_' + $(div).attr('id') + ' .measure').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', false)
-                        $('#Modal_' + $(div).attr('id')).modal('toggle');
-                    }
-                }
-            })
-
-            $(document).on('click', '#Modal_' + $(div).attr('id') + ' .ThresholdSubmit', function (e) {
-                var newValue = $('#Modal_' + $(div).attr('id') + ' .threshold').val();
-                var obj = new Object()
-                obj.measure = $('#Modal_' + $(div).attr('id') + ' .measure').val()
-                obj.threshold = newValue;
-                threshold.push(obj);
-                $('#Modal_' + $(div).attr('id')).modal('toggle');
-            })
 
             container = _local_svg.append('g')
                 .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
@@ -352,34 +329,34 @@ function line() {
                 legendBreakCount = result.legendBreakCount;
 
                 switch (_legendPosition) {
-                    case 'Top':
+                    case 'top':
                         plotHeight = parentHeight - legendHeight - axisLabelSpace;
                         break;
-                    case 'Bottom':
+                    case 'bottom':
                         plotHeight = parentHeight - legendHeight - axisLabelSpace * 2;
                         break;
-                    case 'Right':
-                    case 'Left':
+                    case 'right':
+                    case 'left':
                         plotWidth = parentWidth - legendWidth;
                         break;
                 }
 
-                if ((_legendPosition == 'Top') || (_legendPosition == 'Bottom')) {
+                if ((_legendPosition == 'top') || (_legendPosition == 'bottom')) {
                     plotWidth = parentWidth;
                     plotHeight = parentHeight - 3 * axisLabelSpace;
                     legendSpace = 20;
-                } else if ((_legendPosition == 'Left') || (_legendPosition == 'Right')) {
+                } else if ((_legendPosition == 'left') || (_legendPosition == 'right')) {
                     var legend = _local_svg.selectAll('.item');
                     legendSpace = legend.node().parentNode.getBBox().width;
                     plotWidth = (parentWidth - legendSpace) - margin.left + axisLabelSpace;
                     plotHeight = parentHeight;
 
                     legend.attr('transform', function (d, i) {
-                        if (_legendPosition == 'Left') {
+                        if (_legendPosition == 'left') {
                             return 'translate(0, ' + i * 20 + ')';
 
                         }
-                        else if (_legendPosition == 'Right') {
+                        else if (_legendPosition == 'right') {
                             return 'translate(' + (parentWidth - legendSpace + axisLabelSpace) + ', ' + i * 20 + ')';
                         }
                     });
@@ -411,13 +388,13 @@ function line() {
             .attr('class', 'line-plot')
             .classed('plot', true)
             .attr('transform', function () {
-                if (_legendPosition == 'Top') {
+                if (_legendPosition == 'top') {
                     return 'translate(' + margin.left + ', ' + parseInt(legendSpace * 2 + (20 * parseInt(legendBreakCount))) + ')';
-                } else if (_legendPosition == 'Bottom') {
+                } else if (_legendPosition == 'bottom') {
                     return 'translate(' + margin.left + ', 0)';
-                } else if (_legendPosition == 'Left') {
+                } else if (_legendPosition == 'left') {
                     return 'translate(' + (legendSpace + margin.left + axisLabelSpace) + ', 0)';
-                } else if (_legendPosition == 'Right') {
+                } else if (_legendPosition == 'right') {
                     return 'translate(' + margin.left + ', 0)';
                 }
             });
@@ -692,47 +669,76 @@ function line() {
             _setAxisColor(yAxisGroup, _yAxisColor);
         }
 
+        if (_print) {
+            var str = UTIL.createAlert($(div).attr('id'), _measure);
+            $(div).append(str);
 
-        _local_svg.select('g.sort').remove();
-        UTIL.sortingView(container, parentHeight, parentWidth + margin.left, legendBreakCount, axisLabelSpace, offsetX);
+            var _filter = UTIL.createFilterElement()
+            $(div).append(_filter);
 
-        _local_svg.select('g.sort').selectAll('text')
-            .on('click', function () {
-                var order = d3.select(this).attr('class')
-                switch (order) {
-                    case 'ascending':
-                        UTIL.toggleSortSelection(me, 'ascending', drawPlot, _local_svg, keys, _Local_data);
-                        break;
-                    case 'descending':
-                        UTIL.toggleSortSelection(me, 'descending', drawPlot, _local_svg, keys, _Local_data);
-                        break;
-                    case 'reset': {
-                        $(me).parent().find('.sort_selection,.arrow-down').css('visibility', 'hidden');
-                        _local_svg.select('.plot').remove()
-                        drawPlot.call(me, _Local_data);
-                        break;
+            $(document).on('click', '_local_svg', function (e) {
+                if ($("#myonoffswitch").prop('checked') == false) {
+                    var element = e.target
+                    if (element.tagName == "_local_svg") {
+                        $('#Modal_' + $(div).attr('id') + ' .measure').val('')
+                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('')
+                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', false)
+                        $('#Modal_' + $(div).attr('id')).modal('toggle');
                     }
                 }
-            });
+            })
 
-        d3.select(div).select('.filterData')
-            .on('click', applyFilter());
+            $(document).on('click', '#Modal_' + $(div).attr('id') + ' .ThresholdSubmit', function (e) {
+                var newValue = $('#Modal_' + $(div).attr('id') + ' .threshold').val();
+                var obj = new Object()
+                obj.measure = $('#Modal_' + $(div).attr('id') + ' .measure').val()
+                obj.threshold = newValue;
+                threshold.push(obj);
+                $('#Modal_' + $(div).attr('id')).modal('toggle');
+            })
 
-        d3.select(div).select('.removeFilter')
-            .on('click', clearFilter(div));
+            _local_svg.select('g.sort').remove();
+            UTIL.sortingView(container, parentHeight, parentWidth + margin.left, legendBreakCount, axisLabelSpace, offsetX);
 
-        var lasso = d3Lasso.lasso()
-            .hoverSelect(true)
-            .closePathSelect(true)
-            .closePathDistance(100)
-            .items(point)
-            .targetArea(_local_svg);
+            _local_svg.select('g.sort').selectAll('text')
+                .on('click', function () {
+                    var order = d3.select(this).attr('class')
+                    switch (order) {
+                        case 'ascending':
+                            UTIL.toggleSortSelection(me, 'ascending', drawPlot, _local_svg, keys, _Local_data);
+                            break;
+                        case 'descending':
+                            UTIL.toggleSortSelection(me, 'descending', drawPlot, _local_svg, keys, _Local_data);
+                            break;
+                        case 'reset': {
+                            $(me).parent().find('.sort_selection,.arrow-down').css('visibility', 'hidden');
+                            _local_svg.select('.plot').remove()
+                            drawPlot.call(me, _Local_data);
+                            break;
+                        }
+                    }
+                });
 
-        lasso.on('start', onLassoStart(lasso, me))
-            .on('draw', onLassoDraw(lasso, me))
-            .on('end', onLassoEnd(lasso, me))
+            d3.select(div).select('.filterData')
+                .on('click', applyFilter());
 
-        _local_svg.call(lasso);
+            d3.select(div).select('.removeFilter')
+                .on('click', clearFilter(div));
+
+            var lasso = d3Lasso.lasso()
+                .hoverSelect(true)
+                .closePathSelect(true)
+                .closePathDistance(100)
+                .items(point)
+                .targetArea(_local_svg);
+
+            lasso.on('start', onLassoStart(lasso, me))
+                .on('draw', onLassoDraw(lasso, me))
+                .on('end', onLassoEnd(lasso, me))
+
+            _local_svg.call(lasso);
+        }
+
     }
 
     chart._legendInteraction = function (event, data, plot) {

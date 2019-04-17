@@ -1,5 +1,6 @@
-var COMMON = require('../extras/common.js')(),
-    UTIL = require('../extras/util.js')();
+var d3 = require('d3');
+var COMMON = require('../extras/common.js')();
+var UTIL = require('../extras/util.js')();
 
 function gauge() {
 
@@ -27,7 +28,6 @@ function gauge() {
 
     var emptyArc, fillArc, targetArc, arc, svg, _measure, target;
     var ringInset, ringWidth;
-
 
     var _setConfigParams = function (config) {
         this.measures(config.measures);
@@ -76,8 +76,9 @@ function gauge() {
             var div = d3.select(this).node().parentNode;
             _local_svg = d3.select(this);
 
-            width = div.clientWidth,
-                height = div.clientHeight;
+            var svg = d3.select(this),
+                width = +svg.attr('width'),
+                height = +svg.attr('height');
 
             _local_svg.selectAll('g').remove();
 
@@ -169,7 +170,7 @@ function gauge() {
             .text(targetDisplayName + " " + value[0][measures[1]])
 
         fillArc.transition()
-             .duration(COMMON.DURATION)
+            .duration(COMMON.DURATION)
             .styleTween("fill", function () {
                 return d3.interpolate(displayColor);
             })
@@ -177,7 +178,7 @@ function gauge() {
 
 
         targetArc.transition()
-             .duration(COMMON.DURATION)
+            .duration(COMMON.DURATION)
             .styleTween("fill", function () {
                 return d3.interpolate(targetDisplayColor);
             })

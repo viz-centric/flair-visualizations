@@ -2,8 +2,11 @@ var d3 = require('d3');
 var COMMON = require('../extras/common.js')();
 var UTIL = require('../extras/util.js')();
 var LEGEND = require('../extras/legend_barcharts.js')();
-var $ = require("jquery");
-var d3Lasso = require("d3-lasso");
+
+try {
+    var d3Lasso = require("d3-lasso");
+
+} catch (ex) { }
 
 function clusteredverticalbar() {
     var _NAME = 'clusteredverticalbar';
@@ -244,8 +247,9 @@ function clusteredverticalbar() {
             _originalData = data;
             div = d3.select(this).node().parentNode;
 
-            var width = div.clientWidth,
-                height = div.clientHeight;
+            var svg = d3.select(this),
+                width = +svg.attr('width'),
+                height = +svg.attr('height');
 
             parentWidth = width - 2 * COMMON.PADDING - margin.left;
             parentHeight = (height - 2 * COMMON.PADDING - axisLabelSpace * 2);
@@ -261,49 +265,6 @@ function clusteredverticalbar() {
 
             d3.select(div).append('div')
                 .attr('class', 'arrow-down');
-
-            var str = UTIL.createAlert($(div).attr('id'), _measure);
-            $(div).append(str);
-
-            var _filter = UTIL.createFilterElement()
-            $(div).append(_filter);
-
-            // var _alert = UTIL.createAlertElement()
-            // $(div).append(_alert);
-
-            $(document).on('click', _local_svg, function (e) {
-                if ($("#myonoffswitch").prop('checked') == false) {
-                    var element = e.target
-                    if (element.tagName == "_local_svg") {
-                        $('#Modal_' + $(div).attr('id') + ' .measure').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', false)
-                        $('#Modal_' + $(div).attr('id')).modal('toggle');
-                    }
-                }
-            })
-
-            _local_svg.on('click', function (e, i) {
-                if ($(this).parent().find('.alert').prop('checked') == false) {
-                    var element = e.target
-                    if (element.tagName == "_local_svg") {
-                        $('#Modal_' + $(div).attr('id') + ' .measure').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', false)
-                        $('#Modal_' + $(div).attr('id')).modal('toggle');
-                    }
-                }
-
-            })
-
-            $(document).on('click', '#Modal_' + $(div).attr('id') + ' .ThresholdSubmit', function (e) {
-                var newValue = $('#Modal_' + $(div).attr('id') + ' .threshold').val();
-                var obj = new Object()
-                obj.measure = $('#Modal_' + $(div).attr('id') + ' .measure').val()
-                obj.threshold = newValue;
-                threshold.push(obj);
-                $('#Modal_' + $(div).attr('id')).modal('toggle');
-            })
 
             var legendWidth = 0,
                 legendHeight = 0;
@@ -325,34 +286,34 @@ function clusteredverticalbar() {
                 legendBreakCount = result.legendBreakCount;
 
                 switch (_legendPosition) {
-                    case 'Top':
+                    case 'top':
                         plotHeight = parentHeight - legendHeight - axisLabelSpace;
                         break;
-                    case 'Bottom':
+                    case 'bottom':
                         plotHeight = parentHeight - legendHeight - axisLabelSpace * 2;
                         break;
-                    case 'Right':
-                    case 'Left':
+                    case 'right':
+                    case 'left':
                         plotWidth = parentWidth - legendWidth;
                         break;
                 }
 
-                if ((_legendPosition == 'Top') || (_legendPosition == 'Bottom')) {
+                if ((_legendPosition == 'top') || (_legendPosition == 'bottom')) {
                     plotWidth = parentWidth;
                     plotHeight = parentHeight - 3 * axisLabelSpace;
                     legendSpace = 20;
-                } else if ((_legendPosition == 'Left') || (_legendPosition == 'Right')) {
+                } else if ((_legendPosition == 'left') || (_legendPosition == 'right')) {
                     var legend = _local_svg.selectAll('.item');
                     legendSpace = legend.node().parentNode.getBBox().width;
                     plotWidth = (parentWidth - legendSpace) - margin.left + axisLabelSpace;
                     plotHeight = parentHeight;
 
                     legend.attr('transform', function (d, i) {
-                        if (_legendPosition == 'Left') {
+                        if (_legendPosition == 'left') {
                             return 'translate(0, ' + i * 20 + ')';
 
                         }
-                        else if (_legendPosition == 'Right') {
+                        else if (_legendPosition == 'right') {
                             return 'translate(' + (parentWidth - legendSpace + axisLabelSpace) + ', ' + i * 20 + ')';
                         }
                     });
@@ -376,8 +337,7 @@ function clusteredverticalbar() {
         var me = this;
         _Local_data = data;
         filterData = [];
-        var confirm = d3.select(div).select('.confirm')
-            .style('visibility', 'hidden');
+
         x0 = d3.scaleBand()
             .rangeRound([0, plotWidth])
             .paddingInner(0.1)
@@ -393,13 +353,13 @@ function clusteredverticalbar() {
             .attr('class', 'clusteredverticalbar-plot')
             .classed('plot', true)
             .attr('transform', function () {
-                if (_legendPosition == 'Top') {
+                if (_legendPosition == 'top') {
                     return 'translate(' + margin.left + ', ' + parseInt(legendSpace * 2 + (20 * parseInt(legendBreakCount))) + ')';
-                } else if (_legendPosition == 'Bottom') {
+                } else if (_legendPosition == 'bottom') {
                     return 'translate(' + margin.left + ', 0)';
-                } else if (_legendPosition == 'Left') {
+                } else if (_legendPosition == 'left') {
                     return 'translate(' + (legendSpace + margin.left + axisLabelSpace) + ', 0)';
-                } else if (_legendPosition == 'Right') {
+                } else if (_legendPosition == 'right') {
                     return 'translate(' + margin.left + ', 0)';
                 }
             });
@@ -598,50 +558,97 @@ function clusteredverticalbar() {
             _setAxisColor(yAxisGroup, _yAxisColor);
         }
 
-        _local_svg.select('g.sort').remove();
-        UTIL.sortingView(container, parentHeight, parentWidth + margin.left, legendBreakCount, axisLabelSpace, offsetX);
+        if (!_print) {
 
-        _local_svg.select('g.sort').selectAll('text')
-            .on('click', function () {
-                var order = d3.select(this).attr('class')
-                switch (order) {
-                    case 'ascending':
-                        UTIL.toggleSortSelection(me, 'ascending', drawPlot, _local_svg, keys, _Local_data);
-                        break;
-                    case 'descending':
-                        UTIL.toggleSortSelection(me, 'descending', drawPlot, _local_svg, keys, _Local_data);
-                        break;
-                    case 'reset': {
-                        $(me).parent().find('.sort_selection,.arrow-down').css('visibility', 'hidden');
-                        _local_svg.select('.plot').remove()
-                        drawPlot.call(me, _Local_data);
+            var confirm = $(me).parent().find('div.confirm')
+                .css('visibility', 'hidden');
 
-                        break;
+            var str = UTIL.createAlert($(div).attr('id'), _measure);
+            $(div).append(str);
+
+            var _filter = UTIL.createFilterElement()
+            $(div).append(_filter);
+
+            // var _alert = UTIL.createAlertElement()
+            // $(div).append(_alert);
+
+            $(document).on('click', _local_svg, function (e) {
+                if ($("#myonoffswitch").prop('checked') == false) {
+                    var element = e.target
+                    if (element.tagName == "_local_svg") {
+                        $('#Modal_' + $(div).attr('id') + ' .measure').val('')
+                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('')
+                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', false)
+                        $('#Modal_' + $(div).attr('id')).modal('toggle');
                     }
                 }
-            });
+            })
 
-        d3.select(div).select('.filterData')
-            .on('click', applyFilter());
+            _local_svg.on('click', function (e, i) {
+                if ($(this).parent().find('.alert').prop('checked') == false) {
+                    var element = e.target
+                    if (element.tagName == "_local_svg") {
+                        $('#Modal_' + $(div).attr('id') + ' .measure').val('')
+                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('')
+                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', false)
+                        $('#Modal_' + $(div).attr('id')).modal('toggle');
+                    }
+                }
+            })
 
-        d3.select(div).select('.removeFilter')
-            .on('click', clearFilter(div));
+            $(document).on('click', '#Modal_' + $(div).attr('id') + ' .ThresholdSubmit', function (e) {
+                var newValue = $('#Modal_' + $(div).attr('id') + ' .threshold').val();
+                var obj = new Object()
+                obj.measure = $('#Modal_' + $(div).attr('id') + ' .measure').val()
+                obj.threshold = newValue;
+                threshold.push(obj);
+                $('#Modal_' + $(div).attr('id')).modal('toggle');
+            })
 
-        _local_svg.select('g.lasso').remove();
+            _local_svg.select('g.sort').remove();
+            UTIL.sortingView(container, parentHeight, parentWidth + margin.left, legendBreakCount, axisLabelSpace, offsetX);
 
-        var lasso = d3Lasso.lasso()
-            .hoverSelect(true)
-            .closePathSelect(true)
-            .closePathDistance(100)
-            .items(cluster)
-            .targetArea(_local_svg);
+            _local_svg.select('g.sort').selectAll('text')
+                .on('click', function () {
+                    var order = d3.select(this).attr('class')
+                    switch (order) {
+                        case 'ascending':
+                            UTIL.toggleSortSelection(me, 'ascending', drawPlot, _local_svg, keys, _Local_data);
+                            break;
+                        case 'descending':
+                            UTIL.toggleSortSelection(me, 'descending', drawPlot, _local_svg, keys, _Local_data);
+                            break;
+                        case 'reset': {
+                            $(me).parent().find('.sort_selection,.arrow-down').css('visibility', 'hidden');
+                            _local_svg.select('.plot').remove()
+                            drawPlot.call(me, _Local_data);
 
-        lasso.on('start', onLassoStart(lasso, me))
-            .on('draw', onLassoDraw(lasso, me))
-            .on('end', onLassoEnd(lasso, me));
+                            break;
+                        }
+                    }
+                });
 
-        _local_svg.call(lasso);
+            d3.select(div).select('.filterData')
+                .on('click', applyFilter());
 
+            d3.select(div).select('.removeFilter')
+                .on('click', clearFilter(div));
+
+            _local_svg.select('g.lasso').remove();
+
+            var lasso = d3Lasso.lasso()
+                .hoverSelect(true)
+                .closePathSelect(true)
+                .closePathDistance(100)
+                .items(cluster)
+                .targetArea(_local_svg);
+
+            lasso.on('start', onLassoStart(lasso, me))
+                .on('draw', onLassoDraw(lasso, me))
+                .on('end', onLassoEnd(lasso, me));
+
+            _local_svg.call(lasso);
+        }
     }
 
     var drawViz = function (element) {
