@@ -22,7 +22,8 @@ function gauge() {
         targetShowValues,
         targetDisplayColor,
         targetTextColor,
-        targetNumberFormat;
+        targetNumberFormat,
+        _print;
 
     var _local_svg;
 
@@ -74,8 +75,6 @@ function gauge() {
 
         selection.each(function (data) {
             var div = d3.select(this).node().parentNode;
-            _local_svg = d3.select(this);
-
             var svg = d3.select(this),
                 width = +svg.attr('width'),
                 height = +svg.attr('height');
@@ -156,6 +155,14 @@ function gauge() {
         });
 
     }
+
+    chart._getName = function () {
+        return _NAME;
+    }
+    chart._getHTML = function () {
+        return _local_svg.node().outerHTML;
+    }
+
     chart.update = function (value) {
 
         var maxVal = Math.max(value[0][measures[0]], value[0][measures[1]]);
@@ -163,26 +170,49 @@ function gauge() {
         var _measurePi = degToRad(Math.floor(value[0][measures[0]] * 180 / maxVal - 90));
         var targetPi = degToRad(Math.floor(value[0][measures[1]] * 180 / maxVal - 90));
 
-        _measure.transition()
-            .text(displayName + " " + value[0][measures[0]])
+        if (!_print) {
+            _measure.transition()
+                .text(displayName + " " + value[0][measures[0]])
 
-        target.transition()
-            .text(targetDisplayName + " " + value[0][measures[1]])
+            target.transition()
+                .text(targetDisplayName + " " + value[0][measures[1]])
 
-        fillArc.transition()
-            .duration(COMMON.DURATION)
-            .styleTween("fill", function () {
-                return d3.interpolate(displayColor);
-            })
-            .call(arcTween, _measurePi)
+            fillArc.transition()
+                .duration(COMMON.DURATION)
+                .styleTween("fill", function () {
+                    return d3.interpolate(displayColor);
+                })
+                .call(arcTween, _measurePi)
 
+            targetArc.transition()
+                .duration(COMMON.DURATION)
+                .styleTween("fill", function () {
+                    return d3.interpolate(targetDisplayColor);
+                })
+                .call(arcTween, targetPi);
+        }
+        else {
+            _measure
+                .text(displayName + " " + value[0][measures[0]])
 
-        targetArc.transition()
-            .duration(COMMON.DURATION)
-            .styleTween("fill", function () {
-                return d3.interpolate(targetDisplayColor);
-            })
-            .call(arcTween, targetPi);
+            target
+                .text(targetDisplayName + " " + value[0][measures[1]])
+
+            fillArc
+                .style("fill", function () {
+                    return displayColor;
+                })
+                .attr("d", arc(_measurePi))
+
+            targetArc
+                .style("fill", function () {
+                    return targetDisplayColor;
+                })
+                .attr("d", function () {
+                    return arc(targetPi)
+                });
+        }
+
     }
 
     var arcTween = function (transition, newAngle) {
@@ -335,6 +365,15 @@ function gauge() {
         targetNumberFormat = value;
         return chart;
     }
+
+    chart.print = function (value) {
+        if (!arguments.length) {
+            return _print;
+        }
+        _print = value;
+        return chart;
+    }
+
     return chart;
 }
 module.exports = gauge;

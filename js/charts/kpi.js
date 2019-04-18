@@ -47,7 +47,7 @@ function kpi() {
 
 
     /* -------------------------------------------------------------------------------- */
-    var _setConfigParams = function(config) {
+    var _setConfigParams = function (config) {
         this.dimension(config.dimension);
         this.measure(config.measure);
         this.kpiDisplayName(config.kpiDisplayName);
@@ -71,8 +71,8 @@ function kpi() {
      * @param {number} index Index for a particular measure
      * @return {string}
      */
-    var _getKpiDisplayName = function(index) {
-        if(_kpiDisplayName[index].trim() == '') {
+    var _getKpiDisplayName = function (index) {
+        if (_kpiDisplayName[index] != undefined && _kpiDisplayName[index].trim() == '') {
             return _measure[index];
         }
 
@@ -87,7 +87,7 @@ function kpi() {
      * @param {nummber} index Index of the measure for which the HTML output of the KPI is required
      * @return {string}
      */
-    var _getKpi = function(value, endValue, index) {
+    var _getKpi = function (value, endValue, index) {
         var numberOutput = "",
             iconOutput = "";
 
@@ -98,7 +98,7 @@ function kpi() {
             'color': _kpiColor[index] || COMMON.DEFAULT_COLOR
         };
 
-        if(_kpiColorExpression[index].length) {
+        if (_kpiColorExpression[index].length) {
             style['color'] = UTIL.expressionEvaluator(_kpiColorExpression[index], endValue, 'color');
         }
 
@@ -115,7 +115,7 @@ function kpi() {
             'font-size': _kpiFontSize[index] || COMMON.DEFAULT_FONTSIZE
         };
 
-        if(_kpiIconExpression[index].length) {
+        if (_kpiIconExpression[index].length) {
             _kpiIcon[index] = UTIL.expressionEvaluator(_kpiIconExpression[index], endValue, 'icon');
             iconStyle['color'] = UTIL.expressionEvaluator(_kpiIconExpression[index], endValue, 'color');
         }
@@ -132,14 +132,14 @@ function kpi() {
     function chart(selection) {
         _localDiv = selection;
 
-        selection.each(function(data) {
+        selection.each(function (data) {
             var kpi = d3.select(this),
                 width = parseInt(kpi.style('width')),
                 height = parseInt(kpi.style('height'));
 
             /* total sum of the measure values */
-            _localTotal = _measure.map(function(m) {
-                return d3.sum(data.map(function(d) { return d[m]; }));
+            _localTotal = _measure.map(function (m) {
+                return d3.sum(data.map(function (d) { return d[m]; }));
             });
 
             /* store the data in local variable */
@@ -151,45 +151,45 @@ function kpi() {
                 .style('height', height - 2 * COMMON.PADDING)
                 .style('padding', COMMON.PADDING);
 
-            _measure.forEach(function(m, i) {
+            _measure.forEach(function (m, i) {
                 var measure = container.append('div')
                     .classed('measure', true)
-                    .style('align-items', function(d, i1) {
+                    .style('align-items', function (d, i1) {
                         return i ? 'center' : 'flex-end';
                     })
                     .style('justify-content', _kpiAlignment[i])
-                        .append('div')
-                        .classed('parent', true);
+                    .append('div')
+                    .classed('parent', true);
 
                 measure.append('div')
-                    .attr('id', function(d, i1) {
+                    .attr('id', function (d, i1) {
                         return 'kpi-label-' + i;
                     })
                     .classed('child', true)
                     .html(_getKpiDisplayName(i))
-                    .style('font-size', function(d, i1) {
+                    .style('font-size', function (d, i1) {
                         return _localLabelFontSize[i] + 'em';
                     })
                     .style('padding-left', '5px')
-                    .style('text-align', function(d, i1) {
+                    .style('text-align', function (d, i1) {
                         return i ? 'right' : 'Left';
                     });
 
-                measure.insert('div', (function() {
-                        return i ? ':first-child' : null;
-                    })())
-                    .attr('id', function(d, i1) {
+                measure.insert('div', (function () {
+                    return i ? ':first-child' : null;
+                })())
+                    .attr('id', function (d, i1) {
                         return 'kpi-measure-' + i;
                     })
                     .classed('child', true)
                     .style('font-size', _kpiFontSize[i])
-                    .style('border-radius', function(d, i1) {
+                    .style('border-radius', function (d, i1) {
                         return COMMON.BORDER_RADIUS + 'px';
                     })
-                    .style('background-color', function(d, i1) {
+                    .style('background-color', function (d, i1) {
                         return _kpiBackgroundColor[i] || 'transparent';
                     })
-                    .style('padding', function(d, i1) {
+                    .style('padding', function (d, i1) {
                         return (_kpiFontStyle[i] == 'oblique' && i)
                             ? '3px 8px'
                             : '3px 0px';
@@ -198,13 +198,13 @@ function kpi() {
                     .ease(d3.easeQuadIn)
                     .duration(1000)
                     .delay(0)
-                    .tween('html', function() {
+                    .tween('html', function () {
                         var me = d3.select(this),
                             interpolator = d3.interpolateNumber(_localPrevKpiValue[i], _localTotal[i]);
 
                         _localPrevKpiValue[i] = _localTotal[i];
-                        
-                        return function(t) {
+
+                        return function (t) {
                             me.html(_getKpi(interpolator(t), _localTotal[i], i));
                         }
                     });
@@ -212,42 +212,42 @@ function kpi() {
         });
     }
 
-    chart._getName = function() {
+    chart._getName = function () {
         return _NAME;
     }
 
-    chart.update = function(data) {
+    chart.update = function (data) {
         var div = _localDiv;
 
         /* store the data in local variable */
         _localData = data;
 
         /* total sum of the measure values */
-        _localTotal = _measure.map(function(m) {
-            return d3.sum(data.map(function(d) { return d[m]; }));
+        _localTotal = _measure.map(function (m) {
+            return d3.sum(data.map(function (d) { return d[m]; }));
         });
 
-        _measure.forEach(function(m, i) {
+        _measure.forEach(function (m, i) {
             d3.select('#kpi-measure-' + i)
                 .transition()
                 .ease(d3.easeQuadIn)
                 .duration(500)
                 .delay(0)
-                .tween('html', function() {
+                .tween('html', function () {
                     var me = d3.select(this),
                         interpolator = d3.interpolateNumber(_localPrevKpiValue[i], _localTotal[i]);
 
                     _localPrevKpiValue[i] = _localTotal[i];
 
-                    return function(t) {
+                    return function (t) {
                         me.html(_getKpi(interpolator(t), _localTotal[i], i));
                     }
                 });
         });
     }
 
-    chart.config = function(value) {
-        if(!arguments.length) {
+    chart.config = function (value) {
+        if (!arguments.length) {
             return _config;
         }
         _config = value;
@@ -255,22 +255,22 @@ function kpi() {
         return chart;
     }
 
-    chart.dimension = function(value) {
-        if(!arguments.length) {
+    chart.dimension = function (value) {
+        if (!arguments.length) {
             return _dimension;
         }
         _dimension = value;
         return chart;
     }
 
-    chart.measure = function(value) {
-        if(!arguments.length) {
+    chart.measure = function (value) {
+        if (!arguments.length) {
             return _measure;
         }
         _measure = value;
         return chart;
     }
-    
+
     /**
      * KPI Displayname accessor function
      *
@@ -278,7 +278,7 @@ function kpi() {
      * @param {string|null} measure Measure for which the value is to be set or retrieved
      * @return {string|array(string)|function}
      */
-    chart.kpiDisplayName = function(value, measure) {
+    chart.kpiDisplayName = function (value, measure) {
         return UTIL.baseAccessor.call(_kpiDisplayName, value, measure, _measure);
     }
 
@@ -289,7 +289,7 @@ function kpi() {
      * @param {string|null} measure Measure for which the value is to be set or retrieved
      * @return {string|array(string)|function}
      */
-    chart.kpiAlignment = function(value, measure) {
+    chart.kpiAlignment = function (value, measure) {
         return UTIL.baseAccessor.call(_kpiAlignment, value, measure, _measure);
     }
 
@@ -300,7 +300,7 @@ function kpi() {
      * @param {string|null} measure Measure for which the value is to be set or retrieved
      * @return {string|array(string)|function}
      */
-    chart.kpiBackgroundColor = function(value, measure) {
+    chart.kpiBackgroundColor = function (value, measure) {
         return UTIL.baseAccessor.call(_kpiBackgroundColor, value, measure, _measure);
     }
 
@@ -311,7 +311,7 @@ function kpi() {
      * @param {string|null} measure Measure for which the value is to be set or retrieved
      * @return {string|array(string)|function}
      */
-    chart.kpiNumberFormat = function(value, measure) {
+    chart.kpiNumberFormat = function (value, measure) {
         return UTIL.baseAccessor.call(_kpiNumberFormat, value, measure, _measure);
     }
 
@@ -322,7 +322,7 @@ function kpi() {
      * @param {string|null} measure Measure for which the value is to be set or retrieved
      * @return {string|array(string)|function}
      */
-    chart.kpiFontStyle = function(value, measure) {
+    chart.kpiFontStyle = function (value, measure) {
         return UTIL.baseAccessor.call(_kpiFontStyle, value, measure, _measure);
     }
 
@@ -333,7 +333,7 @@ function kpi() {
      * @param {string|null} measure Measure for which the value is to be set or retrieved
      * @return {string|array(string)|function}
      */
-    chart.kpiFontWeight = function(value, measure) {
+    chart.kpiFontWeight = function (value, measure) {
         return UTIL.baseAccessor.call(_kpiFontWeight, value, measure, _measure);
     }
 
@@ -344,7 +344,7 @@ function kpi() {
      * @param {string|null} measure Measure for which the value is to be set or retrieved
      * @return {string|array(string)|function}
      */
-    chart.kpiFontSize = function(value, measure) {
+    chart.kpiFontSize = function (value, measure) {
         return UTIL.baseAccessor.call(_kpiFontSize, value, measure, _measure);
     }
 
@@ -355,7 +355,7 @@ function kpi() {
      * @param {string|null} measure Measure for which the value is to be set or retrieved
      * @return {string|array(string)|function}
      */
-    chart.kpiColor = function(value, measure) {
+    chart.kpiColor = function (value, measure) {
         return UTIL.baseAccessor.call(_kpiColor, value, measure, _measure);
     }
 
@@ -366,8 +366,8 @@ function kpi() {
      * @param {string|null} measure Measure for which the value is to be set or retrieved
      * @return {string|array(string)|function}
      */
-    chart.kpiColorExpression = function(value, measure) {
-        if(!arguments.length) {
+    chart.kpiColorExpression = function (value, measure) {
+        if (!arguments.length) {
             /**
              * Getter method call with no arguments
              * E.g. <chart>.kpiColorExpression() ==> [<item1>, <item2>]
@@ -375,12 +375,12 @@ function kpi() {
             return _kpiColorExpression;
         }
 
-        if(value instanceof Array && measure == void 0) {
+        if (value instanceof Array && measure == void 0) {
             /**
              * Setter method call with only value argument
              * E.g. <chart>.kpiColorExpression([<item1>, <item2>]) ==> <chart_function>
              */
-            _kpiColorExpression = value.map(function(v) {
+            _kpiColorExpression = value.map(function (v) {
                 return UTIL.getExpressionConfig(v, ['color']);
             });
             return chart;
@@ -388,11 +388,11 @@ function kpi() {
 
         var index = _measure.indexOf(measure);
 
-        if(index === -1) {
+        if (index === -1) {
             throw new Error('Invalid measure provided');
         }
 
-        if(value == void 0) {
+        if (value == void 0) {
             /**
              * Getter method call with only measure argument
              * E.g. <chart>.kpiColorExpression(<measure>) ==> <item>
@@ -416,7 +416,7 @@ function kpi() {
      * @param {string|null} measure Measure for which the value is to be set or retrieved
      * @return {string|array(string)|function}
      */
-    chart.kpiIcon = function(value, measure) {
+    chart.kpiIcon = function (value, measure) {
         return UTIL.baseAccessor.call(_kpiIcon, value, measure, _measure);
     }
 
@@ -427,7 +427,7 @@ function kpi() {
      * @param {string|null} measure Measure for which the value is to be set or retrieved
      * @return {string|array(string)|function}
      */
-    chart.kpiIconFontWeight = function(value, measure) {
+    chart.kpiIconFontWeight = function (value, measure) {
         return UTIL.baseAccessor.call(_kpiIconFontWeight, value, measure, _measure);
     }
 
@@ -438,7 +438,7 @@ function kpi() {
      * @param {string|null} measure Measure for which the value is to be set or retrieved
      * @return {string|array(string)|function}
      */
-    chart.kpiIconColor = function(value, measure) {
+    chart.kpiIconColor = function (value, measure) {
         return UTIL.baseAccessor.call(_kpiIconColor, value, measure, _measure);
     }
 
@@ -449,8 +449,8 @@ function kpi() {
      * @param {string|null} measure Measure for which the value is to be set or retrieved
      * @return {string|array(string)|function}
      */
-    chart.kpiIconExpression = function(value, measure) {
-        if(!arguments.length) {
+    chart.kpiIconExpression = function (value, measure) {
+        if (!arguments.length) {
             /**
              * Getter method call with no arguments
              * E.g. <chart>.kpiIconExpression() ==> [<item1>, <item2>]
@@ -458,12 +458,12 @@ function kpi() {
             return _kpiIconExpression;
         }
 
-        if(value instanceof Array && measure == void 0) {
+        if (value instanceof Array && measure == void 0) {
             /**
              * Setter method call with only value argument
              * E.g. <chart>.kpiIconExpression([<item1>, <item2>]) ==> <chart_function>
              */
-            _kpiIconExpression = value.map(function(v) {
+            _kpiIconExpression = value.map(function (v) {
                 return UTIL.getExpressionConfig(v, ['icon', 'color']);
             });
             return chart;
@@ -471,11 +471,11 @@ function kpi() {
 
         var index = _measure.indexOf(measure);
 
-        if(index === -1) {
+        if (index === -1) {
             throw new Error('Invalid measure provided');
         }
 
-        if(value == void 0) {
+        if (value == void 0) {
             /**
              * Getter method call with only measure argument
              * E.g. <chart>.kpiIconExpression(<measure>) ==> <item>

@@ -1,5 +1,6 @@
 var d3 = require('d3');
 var COMMON = require('../extras/common.js')();
+var d3sankey = require('../../d3-libs/d3.sankey.js');
 var UTIL = require('../extras/util.js')();
 try {
     var d3Lasso = require("d3-lasso");
@@ -309,6 +310,7 @@ function sankey() {
             var svg = d3.select(this),
                 width = +svg.attr('width'),
                 height = +svg.attr('height');
+
             var data = getSankeyData(data);
 
             var svg = d3.select(this);
@@ -322,14 +324,14 @@ function sankey() {
             svg.attr('width', width)
                 .attr('height', height);
 
-            parentWidth = width - margin.left - margin.right,
-                parentHeight = height - margin.top - margin.bottom;
+            parentWidth = width - margin.left - margin.right;
+            parentHeight = height - margin.top - margin.bottom;
 
             var container = svg.append('g')
                 .attr('class', 'plot')
                 .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-            sankey = d3.sankey()
+            sankey = d3sankey()
                 .nodeWidth(12)
                 .nodePadding(4)
                 .size([parentWidth, parentHeight]);
@@ -357,11 +359,77 @@ function sankey() {
                 .data(data.links)
                 .enter().append('path')
                 .attr('class', 'link')
+                .style('stroke', '#efefef')
                 .attr('d', path)
                 .style('stroke-width', function (d) { return Math.max(1, d.dy); })
                 .sort(function (a, b) { return b.dy - a.dy; })
 
+            var node = container.append('g').selectAll('.node')
+                .data(data.nodes)
+                .enter().append('g')
+                .attr('class', 'node')
+                .attr('transform', function (d) {
+
+                    return 'translate(' + d.x + ',' + d.y + ')';
+                })
+                .call(drag);
+
+            node.append('rect')
+                .attr('width', sankey.nodeWidth())
+                .attr('height', function (d) { return d.dy; })
+                .style('cursor', 'move')
+                .style('fill', function (d, i) {
+                    return getFillColor(d, i);
+                })
+                .style('stroke', function (d) {
+                    return borderColor;
+                })
+
+            node.append('text')
+                .attr('x', -6)
+                .attr('y', function (d) { return d.dy / 2; })
+                .attr('dy', '.35em')
+                .attr('text-anchor', 'end')
+                .style('pointer-events', 'none')
+                .text(function (d) {
+                    if (d.dy > 4) {
+                        return d.name;
+                    }
+                    return "";
+                })
+                .text(function (d) {
+                    if (d.dy > 4) {
+                        if (dimension.indexOf(d.nodeType) >= dimension.length - 2) {
+                            return UTIL.getTruncatedLabel(this, d.name, nodeDistance / 2, 3);
+                        }
+                        return UTIL.getTruncatedLabel(this, d.name, nodeDistance, 3);
+                    }
+                    return "";
+                })
+                .style('visibility', function (d, i) {
+                    return showLabels[dimension.indexOf(d.nodeType)];
+                })
+                .style('font-style', function (d, i) {
+                    return fontStyle[dimension.indexOf(d.nodeType)];
+                })
+                .style('font-weight', function (d, i) {
+                    return fontWeight[dimension.indexOf(d.nodeType)];
+                })
+                .style('font-size', function (d, i) {
+                    return fontSize[dimension.indexOf(d.nodeType)];
+                })
+                .style('fill', function (d, i) {
+                    return textColor[dimension.indexOf(d.nodeType)];
+                })
+                .filter(function (d) { return d.x < parentWidth / 2; })
+                .attr('x', 6 + sankey.nodeWidth())
+                .attr('text-anchor', 'start');
+
             if (!_print) {
+
+                var _filter = UTIL.createFilterElement()
+                $(div).append(_filter);
+
                 link.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg, 'link'))
                     .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, 'link'))
                     .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'link'))
@@ -392,31 +460,8 @@ function sankey() {
                         }
                     })
 
-            }
-
-            var node = container.append('g').selectAll('.node')
-                .data(data.nodes)
-                .enter().append('g')
-                .attr('class', 'node')
-                .attr('transform', function (d) {
-
-                    return 'translate(' + d.x + ',' + d.y + ')';
-                })
-                .call(drag);
-
-            node.append('rect')
-                .attr('width', sankey.nodeWidth())
-                .attr('height', function (d) { return d.dy; })
-                .style('cursor', 'move')
-                .style('fill', function (d, i) {
-                    return getFillColor(d, i);
-                })
-                .style('stroke', function (d) {
-                    return borderColor;
-                })
-
-            if (!_print) {
-                node.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg, 'node'))
+                node.selectAll('rect')
+                    .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg, 'node'))
                     .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, 'node'))
                     .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'node'))
                     .on('click', function (d) {
@@ -468,52 +513,6 @@ function sankey() {
                             }
                         }
                     })
-            }
-
-            node.append('text')
-                .attr('x', -6)
-                .attr('y', function (d) { return d.dy / 2; })
-                .attr('dy', '.35em')
-                .attr('text-anchor', 'end')
-                .style('pointer-events', 'none')
-                .text(function (d) {
-                    if (d.dy > 4) {
-                        return d.name;
-                    }
-                    return "";
-                })
-                .text(function (d) {
-                    if (d.dy > 4) {
-                        if (dimension.indexOf(d.nodeType) >= dimension.length - 2) {
-                            return UTIL.getTruncatedLabel(this, d.name, nodeDistance / 2, 3);
-                        }
-                        return UTIL.getTruncatedLabel(this, d.name, nodeDistance, 3);
-                    }
-                    return "";
-                })
-                .style('visibility', function (d, i) {
-                    return showLabels[dimension.indexOf(d.nodeType)];
-                })
-                .style('font-style', function (d, i) {
-                    return fontStyle[dimension.indexOf(d.nodeType)];
-                })
-                .style('font-weight', function (d, i) {
-                    return fontWeight[dimension.indexOf(d.nodeType)];
-                })
-                .style('font-size', function (d, i) {
-                    return fontSize[dimension.indexOf(d.nodeType)];
-                })
-                .style('fill', function (d, i) {
-                    return textColor[dimension.indexOf(d.nodeType)];
-                })
-                .filter(function (d) { return d.x < parentWidth / 2; })
-                .attr('x', 6 + sankey.nodeWidth())
-                .attr('text-anchor', 'start');
-
-            if (!_print) {
-
-                var _filter = UTIL.createFilterElement()
-                $(div).append(_filter);
 
                 d3.select(div).select('.filterData')
                     .on('click', applyFilter());
@@ -526,20 +525,24 @@ function sankey() {
                     .closePathSelect(true)
                     .closePathDistance(100)
                     .items(node.select('rect'))
-                    .targetArea(svg);
+                    .targetArea(_local_svg);
 
                 lasso.on('start', onLassoStart(lasso, me))
                     .on('draw', onLassoDraw(lasso, me))
                     .on('end', onLassoEnd(lasso, me));
 
-                svg.call(lasso);
+                _local_svg.call(lasso);
             }
-
-
         });
-
     }
 
+    chart._getName = function () {
+        return _NAME;
+    }
+
+    chart._getHTML = function () {
+        return _local_svg.node().outerHTML;
+    }
 
     chart.update = function (data) {
 
@@ -563,6 +566,7 @@ function sankey() {
         newLink = link.enter().append('path')
             .attr('class', 'link')
             .attr('d', path)
+            .style('stroke', '#efefef')
             .style('stroke-width', function (d) { return Math.max(1, d.dy); })
             .sort(function (a, b) { return b.dy - a.dy; })
             .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg, 'link'))
