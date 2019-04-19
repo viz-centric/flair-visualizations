@@ -10,6 +10,7 @@ var heatmap = require('./charts/heatmap.js');
 var infographics = require('./charts/infographics.js');
 var kpi = require('./charts/kpi.js');
 var line = require('./charts/line.js');
+var map = require('./charts/map.js');
 var pie = require('./charts/pie.js');
 var pivot = require('./charts/pivottable.js');
 var scatter = require('./charts/scatter.js');
@@ -34,6 +35,7 @@ module.exports = {
 	infographics: infographics,
 	kpi: kpi,
 	line: line,
+	map: map,
 	pie: pie,
 	pivot: pivot,
 	scatter: scatter,

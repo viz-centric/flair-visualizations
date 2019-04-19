@@ -1,5 +1,7 @@
+var d3 = require('d3');
 var COMMON = require('../extras/common.js')();
 var UTIL = require('../extras/util.js')();
+
 
 function table() {
 
@@ -30,9 +32,10 @@ function table() {
         _iconExpressionForMeasure = [],
         _iconFontWeight = [],
         _iconColor = [],
-        _fontWeightForMeasure = [];
+        _fontWeightForMeasure = [],
+        _print;
 
-    var _localData, filterData = [];
+    var _localData, filterData = [], _originalData, _local_svg;
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
@@ -93,7 +96,7 @@ function table() {
         if (value == void 0) {
             /**
              * Getter method call with only measure argument
-             * E.g. <chart>.<accessor_function>(<measure>) ==> <item>
+ * E.g. <chart>.<accessor_function>(<measure>) ==> <item>
              */
             return me[index];
         } else {
@@ -157,19 +160,21 @@ function table() {
             _local_svg.html('')
 
             chart(_local_svg)
+            var confirm = _local_svg.select('div.confirm')
+                .style('visibility', 'visible');
         }
     }
     var clearFilter = function () {
         return function () {
-            d3.select('#' + div.attr('id'))
-                .datum(_localData)
+            d3.select('#' + _local_svg.attr('id'))
+                .datum(_originalData)
                 .call(chart);
 
             _local_svg.html('')
 
             chart(_local_svg)
             var confirm = div.select('div.confirm')
-                .style('visibility', 'visible');
+                .style('visibility', 'hidden');
         }
     }
     var readerTableChart = function (str, ctr, element) {
@@ -190,27 +195,30 @@ function table() {
 
         selection.each(function (data) {
             _localData = data
-            var margin = {
-                top: 0,
-                right: 0,
-                bottom: 0,
-                left: 45
-            };
-
             var div = d3.select(this);
 
             var svg = d3.select(this),
                 width = +svg.attr('width'),
                 height = +svg.attr('height');
-            var disv = d3.select('#' + div.attr('id'));
 
-            var _filter = UTIL.createFilterElement()
-            $('#' + div.attr('id')).append(_filter)
+            var id = svg.attr('id');
 
-            $('#' + div.attr('id')).css('width', width)
-                .css('height', height).css('overflow-y', 'hidden').css('overflow-x', 'auto');
+            //  var disv = d3.select('#' + id);
 
-            var table = $('<table id="viz_table" class="display nowrap" style="width:100%"></table>').addClass('table table-condensed table-hover');
+            svg
+                .attr('width', width)
+                .attr('height', height)
+                .style('overflow-y', 'hidden')
+                .style('overflow-x', 'auto');
+
+            var table = svg.append('table')
+                .attr('id', 'viz_table')
+                .style('width', '100%')
+                .classed('display', true)
+                .classed('nowrap', true)
+                .classed('table', true)
+                .classed('table-condensed', true)
+                .classed('table-hover', true);
 
             var thead = "<thead><tr>",
                 tbody = "<tbody>";
@@ -252,7 +260,9 @@ function table() {
             });
 
             thead += "</tr></thead>";
-            table.append(thead);
+
+            table.append('thead')
+                .html(thead);
 
             data.forEach(function (d) {
                 tbody += "<tr>";
@@ -295,41 +305,46 @@ function table() {
             });
 
             tbody += "</tbody>";
-            table.append(tbody);
+            table.append('tbody').html(tbody)
 
-            $('#' + div.attr('id')).append(table);
+            svg.append('table')
 
-            $('#' + div.attr('id')).find('#viz_table').dataTable({
-                scrollY: height - 100,
-                scrollX: true,
-                scrollCollapse: true,
-                ordering: true,
-                info: true,
+            if (!_print) {
 
-                pagingType: "full_numbers",
-                aLengthMenu: [[2, 5, 10, 15, 20, 25, -1], [2, 5, 10, 15, 20, 25, "All"]],
-                iDisplayLength: 20,
-                bDestroy: true,
-                dom: '<"table-header">rt<"table-footer"lp>',
-                fnDrawCallback: function (oSettings) {
-                    if (oSettings._iDisplayLength > oSettings.fnRecordsDisplay()) {
-                        $(oSettings.nTableWrapper).find('.dataTables_paginate').hide();
-                        $(oSettings.nTableWrapper).find('.dataTables_info').hide();
+                var _filter = UTIL.createFilterElement()
+                $('#' + id).append(_filter)
+
+                $('#' + div.attr('id')).find('#viz_table').dataTable({
+                    scrollY: height - 100,
+                    scrollX: true,
+                    scrollCollapse: true,
+                    ordering: true,
+                    info: true,
+
+                    pagingType: "full_numbers",
+                    aLengthMenu: [[2, 5, 10, 15, 20, 25, -1], [2, 5, 10, 15, 20, 25, "All"]],
+                    iDisplayLength: 20,
+                    bDestroy: true,
+                    dom: '<"table-header">rt<"table-footer"lp>',
+                    fnDrawCallback: function (oSettings) {
+                        if (oSettings._iDisplayLength > oSettings.fnRecordsDisplay()) {
+                            $(oSettings.nTableWrapper).find('.dataTables_paginate').hide();
+                            $(oSettings.nTableWrapper).find('.dataTables_info').hide();
+                        }
                     }
-                }
-            });
+                });
 
-            $($('#' + div.attr('id') + ' td')).on('click', function () {
-                readerTableChart.call(this.textContent, this, div)
-            })
+                $($('#' + div.attr('id') + ' td')).on('click', function () {
+                    readerTableChart.call(this.textContent, this, div)
+                })
 
-            div.select('.filterData')
-                .on('click', applyFilter(chart));
+                div.select('.filterData')
+                    .on('click', applyFilter());
 
-            div.select('.removeFilter')
-                .on('click', clearFilter());
+                div.select('.removeFilter')
+                    .on('click', clearFilter());
+            }
         }
-
         );
     }
     /**
@@ -498,7 +513,6 @@ function table() {
     chart.textAlignmentForMeasure = function (value, measure) {
         return _baseAccessor.call(_textAlignmentForMeasure, value, measure);
     }
-
     chart.textColorExpressionForMeasure = function (value, measure) {
         if (!arguments.length) {
             return _textColorExpressionForMeasure;
@@ -583,10 +597,18 @@ function table() {
         return _baseAccessor.call(_iconFontWeight, value, measure);
     }
 
-
     chart.iconColor = function (value, measure) {
         return _baseAccessor.call(_iconColor, value, measure);
     }
+
+    chart.print = function (value) {
+        if (!arguments.length) {
+            return _print;
+        }
+        _print = value;
+        return chart;
+    }
+
     return chart;
 }
 
