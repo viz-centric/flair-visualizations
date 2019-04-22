@@ -1,3 +1,4 @@
+var d3 = require('d3');
 function d3sankey() {
   var sankey = {},
     nodeWidth = 24,

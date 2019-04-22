@@ -654,7 +654,7 @@ function clusteredverticalbar() {
     var drawViz = function (element) {
         var me = this;
         if (!_print) {
-            element.append('rect')
+            var rect = element.append('rect')
                 .attr("x", function (d) {
                     return 0;
                 })
@@ -710,6 +710,8 @@ function clusteredverticalbar() {
                         }
                     }
                 })
+
+            rect
                 .transition()
                 .duration(COMMON.DURATION)
                 .attr("height", function (d, i) {

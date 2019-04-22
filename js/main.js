@@ -4,7 +4,7 @@ var boxplot = require('./charts/boxplot.js');
 var clusteredverticalbar = require('./charts/clusteredverticalbar.js');
 var clusteredhorizontalbar = require('./charts/clusteredhorizontalbar.js');
 var combo = require('./charts/combo-khushbu.js');
-var donut = require('./charts/donut.js');
+var doughnut = require('./charts/doughnut.js');
 var gauge = require('./charts/gauge.js');
 var heatmap = require('./charts/heatmap.js');
 var infographics = require('./charts/infographics.js');
@@ -29,7 +29,7 @@ module.exports = {
 	clusteredverticalbar: clusteredverticalbar,
 	clusteredhorizontalbar: clusteredhorizontalbar,
 	combo: combo,
-	donut: donut,
+	doughnut: doughnut,
 	gauge: gauge,
 	heatmap: heatmap,
 	infographics: infographics,
