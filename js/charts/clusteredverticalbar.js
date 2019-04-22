@@ -1,9 +1,14 @@
-var COMMON = require('../extras/common.js')(),
-    UTIL = require('../extras/util.js')(),
-    LEGEND = require('../extras/legend_barcharts.js')();
+var d3 = require('d3');
+var COMMON = require('../extras/common.js')();
+var UTIL = require('../extras/util.js')();
+var LEGEND = require('../extras/legend_barcharts.js')();
+
+try {
+    var d3Lasso = require("d3-lasso");
+
+} catch (ex) { }
 
 function clusteredverticalbar() {
-
     var _NAME = 'clusteredverticalbar';
 
     var _config,
@@ -19,7 +24,7 @@ function clusteredverticalbar() {
         _showYaxisLabel,
         _xAxisColor,
         _yAxisColor,
-        _showGrid ,
+        _showGrid,
         _stacked,
         _displayName,
         _legendData,
@@ -31,14 +36,15 @@ function clusteredverticalbar() {
         _textColor = [],
         _displayColor = [],
         _borderColor = [],
-        _fontSize = [];
+        _fontSize = [],
+        _print;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
     var _localXAxis,
         _localYAxis,
         _localXGrid,
         _localYGrid;
-    var parentWidth, parentHeight, plotWidth, plotHeight, container;
+    var parentWidth, parentHeight, plotWidth, plotHeight, container, tooltip;
 
     var x0, x1, _xDimensionGrid = d3.scaleLinear(), y;
     var margin = {
@@ -68,6 +74,7 @@ function clusteredverticalbar() {
         this.showYaxis(config.showYaxis);
         this.showXaxisLabel(config.showXaxisLabel);
         this.showYaxisLabel(config.showYaxisLabel);
+        this.showGrid(config.showGrid);
         this.xAxisColor(config.xAxisColor);
         this.yAxisColor(config.yAxisColor);
         this.displayName(config.displayName);
@@ -88,7 +95,7 @@ function clusteredverticalbar() {
     var _buildTooltipData = function (datum, chart) {
         var output = "";
 
-        output += "<table><tr>"
+        output += "<table data-toggle='tooltip'><tr>"
             + "<th>" + chart.dimension() + ": </th>"
             + "<td>" + datum[chart.dimension()] + "</td>"
             + "</tr><tr>"
@@ -165,23 +172,25 @@ function clusteredverticalbar() {
         }
     }
 
-    var applyFilter = function (chart) {
+    var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
                 chart.update(filterData);
             }
         }
     }
-    var clearFilter = function () {
+    var clearFilter = function (div) {
         return function () {
             chart.update(_originalData);
+            d3.select(div).select('.confirm')
+                .style('visibility', 'hidden');
+
         }
     }
     var _handleMouseOverFn = function (tooltip, container) {
         var me = this;
         return function (d, i) {
             d3.select(this).style('cursor', 'pointer')
-                .style('cursor', 'pointer')
                 .style('fill', COMMON.HIGHLIGHTER);
             var border = UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor)
             if (tooltip) {
@@ -238,9 +247,9 @@ function clusteredverticalbar() {
             _originalData = data;
             div = d3.select(this).node().parentNode;
 
-            _local_svg = d3.select(this);
-            var width = div.clientWidth,
-                height = div.clientHeight;
+            var svg = d3.select(this),
+                width = +svg.attr('width'),
+                height = +svg.attr('height');
 
             parentWidth = width - 2 * COMMON.PADDING - margin.left;
             parentHeight = (height - 2 * COMMON.PADDING - axisLabelSpace * 2);
@@ -256,33 +265,6 @@ function clusteredverticalbar() {
 
             d3.select(div).append('div')
                 .attr('class', 'arrow-down');
-
-            var str = UTIL.createAlert($(div).attr('id'), _measure);
-            $(div).append(str);
-
-            var _filter = UTIL.createFilterElement()
-            $(div).append(_filter);
-
-            $(document).on('click', '_local_svg', function (e) {
-                if ($("#myonoffswitch").prop('checked') == false) {
-                    var element = e.target
-                    if (element.tagName == "_local_svg") {
-                        $('#Modal_' + $(div).attr('id') + ' .measure').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', false)
-                        $('#Modal_' + $(div).attr('id')).modal('toggle');
-                    }
-                }
-            })
-
-            $(document).on('click', '#Modal_' + $(div).attr('id') + ' .ThresholdSubmit', function (e) {
-                var newValue = $('#Modal_' + $(div).attr('id') + ' .threshold').val();
-                var obj = new Object()
-                obj.measure = $('#Modal_' + $(div).attr('id') + ' .measure').val()
-                obj.threshold = newValue;
-                threshold.push(obj);
-                $('#Modal_' + $(div).attr('id')).modal('toggle');
-            })
 
             var legendWidth = 0,
                 legendHeight = 0;
@@ -316,22 +298,22 @@ function clusteredverticalbar() {
                         break;
                 }
 
-                if ((_legendPosition == 'Top') || (_legendPosition == 'Bottom')) {
+                if ((_legendPosition == 'top') || (_legendPosition == 'bottom')) {
                     plotWidth = parentWidth;
                     plotHeight = parentHeight - 3 * axisLabelSpace;
                     legendSpace = 20;
-                } else if ((_legendPosition == 'Left') || (_legendPosition == 'Right')) {
+                } else if ((_legendPosition == 'left') || (_legendPosition == 'right')) {
                     var legend = _local_svg.selectAll('.item');
                     legendSpace = legend.node().parentNode.getBBox().width;
                     plotWidth = (parentWidth - legendSpace) - margin.left + axisLabelSpace;
                     plotHeight = parentHeight;
 
                     legend.attr('transform', function (d, i) {
-                        if (_legendPosition == 'Left') {
+                        if (_legendPosition == 'left') {
                             return 'translate(0, ' + i * 20 + ')';
 
                         }
-                        else if (_legendPosition == 'Right') {
+                        else if (_legendPosition == 'right') {
                             return 'translate(' + (parentWidth - legendSpace + axisLabelSpace) + ', ' + i * 20 + ')';
                         }
                     });
@@ -355,8 +337,7 @@ function clusteredverticalbar() {
         var me = this;
         _Local_data = data;
         filterData = [];
-        var confirm = d3.select(div).select('.confirm')
-            .style('visibility', 'hidden');
+
         x0 = d3.scaleBand()
             .rangeRound([0, plotWidth])
             .paddingInner(0.1)
@@ -368,18 +349,17 @@ function clusteredverticalbar() {
         y = d3.scaleLinear()
             .rangeRound([plotHeight, 0]);
 
-
         var plot = container.append('g')
             .attr('class', 'clusteredverticalbar-plot')
             .classed('plot', true)
             .attr('transform', function () {
-                if (_legendPosition == 'Top') {
+                if (_legendPosition == 'top') {
                     return 'translate(' + margin.left + ', ' + parseInt(legendSpace * 2 + (20 * parseInt(legendBreakCount))) + ')';
-                } else if (_legendPosition == 'Bottom') {
+                } else if (_legendPosition == 'bottom') {
                     return 'translate(' + margin.left + ', 0)';
-                } else if (_legendPosition == 'Left') {
+                } else if (_legendPosition == 'left') {
                     return 'translate(' + (legendSpace + margin.left + axisLabelSpace) + ', 0)';
-                } else if (_legendPosition == 'Right') {
+                } else if (_legendPosition == 'right') {
                     return 'translate(' + margin.left + ', 0)';
                 }
             });
@@ -463,7 +443,6 @@ function clusteredverticalbar() {
 
         var rect = drawViz(clusteredverticalbar);
 
-
         var text = clusteredverticalbar.append('text')
             .text(function (d, i) {
                 return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat));
@@ -506,183 +485,272 @@ function clusteredverticalbar() {
         var xAxisGroup,
             yAxisGroup;
 
+        var isRotate = false;
 
-        _localXAxis = d3.axisBottom(x0)
-            .tickSize(0)
-            .tickPadding(10);
+        if (_showXaxis) {
+            _localXAxis = d3.axisBottom(x0)
+                .tickSize(0)
+                .tickFormat(function (d) {
+                    if (isRotate == false) {
+                        isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                    }
+                    return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                })
+                .tickPadding(10);
 
-        xAxisGroup = plot.append('g')
-            .attr('class', 'x axis')
-            .attr('visibility', function () {
-                return _showXaxis;
-            })
-            .attr('transform', 'translate(0, ' + plotHeight + ')')
-            .call(_localXAxis);
+            xAxisGroup = plot.append('g')
+                .attr('class', 'x axis')
+                .attr('visibility', function () {
+                    return 'visible';
+                })
+                .attr('transform', 'translate(0, ' + plotHeight + ')')
+                .call(_localXAxis);
 
-        xAxisGroup.append('g')
-            .attr('class', 'label')
-            .attr('transform', function () {
-                return 'translate(' + (plotWidth) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
-            })
-            .append('text')
-            .style('text-anchor', 'end')
-            .style('font-weight', 'bold')
-            .style('fill', _xAxisColor)
-            .attr('visibility', function () {
-                return _showXaxisLabel;
-            })
-            .text(_displayName);
+            xAxisGroup.append('g')
+                .attr('class', 'label')
+                .attr('transform', function () {
+                    return 'translate(' + (plotWidth) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
+                })
+                .append('text')
+                .style('text-anchor', 'end')
+                .style('font-weight', 'bold')
+                .style('fill', _xAxisColor)
+                .text(_displayName);
 
-        _setAxisColor(xAxisGroup, _xAxisColor);
+            if (isRotate) {
+                _local_svg.selectAll('.x .tick text')
+                    .attr("transform", "rotate(-15)");
+            }
 
-        _localYAxis = d3.axisLeft(y)
-            .tickSize(0)
-            .tickPadding(8)
-            .tickFormat(function (d) {
-                return UTIL.shortScale(2)(d);
-            });
+            _setAxisColor(xAxisGroup, _xAxisColor);
 
-        yAxisGroup = plot.append('g')
-            .attr('class', 'y axis')
-            .attr('visibility', _showYaxis)
-            .call(_localYAxis);
+        }
 
-        yAxisGroup.append('g')
-            .attr('class', 'label')
-            .attr('transform', function () {
-                return 'translate(' + (-COMMON.AXIS_THICKNESS / 1.15) + ', ' + '0)';
-            })
-            .append('text')
-            .attr('transform', 'rotate(-90)')
-            .style('text-anchor', 'end')
-            .style('font-weight', 'bold')
-            .style('fill', _yAxisColor)
-            .attr('visibility', _showYaxisLabel)
-            .text(function () {
-                return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
-            });
+        if (_showYaxis) {
+            _localYAxis = d3.axisLeft(y)
+                .tickSize(0)
+                .tickPadding(8)
+                .tickFormat(function (d) {
+                    return UTIL.shortScale(2)(d);
+                });
 
-        _setAxisColor(yAxisGroup, _yAxisColor);
+            yAxisGroup = plot.append('g')
+                .attr('class', 'y axis')
+                .attr('visibility', function () {
+                    return 'visible';
+                })
+                .call(_localYAxis);
 
+            yAxisGroup.append('g')
+                .attr('class', 'label')
+                .attr('transform', function () {
+                    return 'translate(' + (-COMMON.AXIS_THICKNESS / 1.15) + ', ' + '0)';
+                })
+                .append('text')
+                .attr('transform', 'rotate(-90)')
+                .style('text-anchor', 'end')
+                .style('font-weight', 'bold')
+                .style('fill', _yAxisColor)
+                .text(function () {
+                    return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+                });
 
-        _local_svg.select('g.sort').remove();
-        UTIL.sortingView(container, parentHeight, parentWidth + margin.left, legendBreakCount, axisLabelSpace, offsetX);
+            _setAxisColor(yAxisGroup, _yAxisColor);
+        }
 
-        _local_svg.select('g.sort').selectAll('text')
-            .on('click', function () {
-                var order = d3.select(this).attr('class')
-                switch (order) {
-                    case 'ascending':
-                        UTIL.toggleSortSelection(me, 'ascending', drawPlot, _local_svg, keys, _Local_data);
-                        break;
-                    case 'descending':
-                        UTIL.toggleSortSelection(me, 'descending', drawPlot, _local_svg, keys, _Local_data);
-                        break;
-                    case 'reset': {
-                        $(me).parent().find('.sort_selection,.arrow-down').css('visibility', 'hidden');
-                        _local_svg.select('.plot').remove()
-                        drawPlot.call(me, _Local_data);
-                        break; arrow - down
+        if (!_print) {
+
+            var confirm = $(me).parent().find('div.confirm')
+                .css('visibility', 'hidden');
+
+            var str = UTIL.createAlert($(div).attr('id'), _measure);
+            $(div).append(str);
+
+            var _filter = UTIL.createFilterElement()
+            $(div).append(_filter);
+
+            // var _alert = UTIL.createAlertElement()
+            // $(div).append(_alert);
+
+            $(document).on('click', _local_svg, function (e) {
+                if ($("#myonoffswitch").prop('checked') == false) {
+                    var element = e.target
+                    if (element.tagName == "_local_svg") {
+                        $('#Modal_' + $(div).attr('id') + ' .measure').val('')
+                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('')
+                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', false)
+                        $('#Modal_' + $(div).attr('id')).modal('toggle');
                     }
                 }
-            });
+            })
 
-        d3.select(div).select('.filterData')
-            .on('click', applyFilter(chart));
+            _local_svg.on('click', function (e, i) {
+                if ($(this).parent().find('.alert').prop('checked') == false) {
+                    var element = e.target
+                    if (element.tagName == "_local_svg") {
+                        $('#Modal_' + $(div).attr('id') + ' .measure').val('')
+                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('')
+                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', false)
+                        $('#Modal_' + $(div).attr('id')).modal('toggle');
+                    }
+                }
+            })
 
-        d3.select(div).select('.removeFilter')
-            .on('click', clearFilter());
+            $(document).on('click', '#Modal_' + $(div).attr('id') + ' .ThresholdSubmit', function (e) {
+                var newValue = $('#Modal_' + $(div).attr('id') + ' .threshold').val();
+                var obj = new Object()
+                obj.measure = $('#Modal_' + $(div).attr('id') + ' .measure').val()
+                obj.threshold = newValue;
+                threshold.push(obj);
+                $('#Modal_' + $(div).attr('id')).modal('toggle');
+            })
 
-        _local_svg.select('g.lasso').remove();
+            _local_svg.select('g.sort').remove();
+            UTIL.sortingView(container, parentHeight, parentWidth + margin.left, legendBreakCount, axisLabelSpace, offsetX);
 
-        var lasso = d3.lasso()
-            .hoverSelect(true)
-            .closePathSelect(true)
-            .closePathDistance(100)
-            .items(cluster)
-            .targetArea(_local_svg);
+            _local_svg.select('g.sort').selectAll('text')
+                .on('click', function () {
+                    var order = d3.select(this).attr('class')
+                    switch (order) {
+                        case 'ascending':
+                            UTIL.toggleSortSelection(me, 'ascending', drawPlot, _local_svg, keys, _Local_data);
+                            break;
+                        case 'descending':
+                            UTIL.toggleSortSelection(me, 'descending', drawPlot, _local_svg, keys, _Local_data);
+                            break;
+                        case 'reset': {
+                            $(me).parent().find('.sort_selection,.arrow-down').css('visibility', 'hidden');
+                            _local_svg.select('.plot').remove()
+                            drawPlot.call(me, _Local_data);
 
-        lasso.on('start', onLassoStart(lasso, me))
-            .on('draw', onLassoDraw(lasso, me))
-            .on('end', onLassoEnd(lasso, me));
+                            break;
+                        }
+                    }
+                });
 
-        _local_svg.call(lasso);
+            d3.select(div).select('.filterData')
+                .on('click', applyFilter());
 
+            d3.select(div).select('.removeFilter')
+                .on('click', clearFilter(div));
+
+            _local_svg.select('g.lasso').remove();
+
+            var lasso = d3Lasso.lasso()
+                .hoverSelect(true)
+                .closePathSelect(true)
+                .closePathDistance(100)
+                .items(cluster)
+                .targetArea(_local_svg);
+
+            lasso.on('start', onLassoStart(lasso, me))
+                .on('draw', onLassoDraw(lasso, me))
+                .on('end', onLassoEnd(lasso, me));
+
+            _local_svg.call(lasso);
+        }
     }
 
     var drawViz = function (element) {
         var me = this;
-
-        element.append('rect')
-            .attr("x", function (d) {
-                return 0;
-            })
-            .attr("y", function (d) {
-                return y(d[d.measure]);
-            })
-            .attr('class', 'bar')
-            .attr("width", x1.bandwidth())
-            .attr("height", function (d) {
-                return 0;
-            })
-            .style('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
-            })
-            .style('stroke', function (d, i) {
-                return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
-            })
-            .style('stroke-width', 2)
-            .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
-            .on('click', function (d) {
-                if ($("#myonoffswitch").prop('checked') == false) {
-                    $('#Modal_' + $(div).attr('id') + ' .measure').val(d.measure);
-                    $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
-                    $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
-                    $('#Modal_' + $(div).attr('id')).modal('toggle');
-                }
-                else {
-                    var confirm = d3.select(div).select('.confirm')
-                        .style('visibility', 'visible');
-                    var _filter = _Local_data.filter(function (d1) {
-                        return d[_dimension[0]] === d1[_dimension[0]]
-                    })
-                    var rect = d3.select(this);
-                    if (rect.classed('selected')) {
-                        rect.classed('selected', false);
-                        filterData.map(function (val, i) {
-                            if (val[_dimension[0]] == d[_dimension[0]]) {
-                                filterData.splice(i, 1)
-                            }
+        if (!_print) {
+            element.append('rect')
+                .attr("x", function (d) {
+                    return 0;
+                })
+                .attr("y", function (d) {
+                    return y(d[d.measure]);
+                })
+                .attr('class', 'bar')
+                .attr("width", x1.bandwidth())
+                .attr("height", function (d) {
+                    return 0;
+                })
+                .style('fill', function (d, i) {
+                    return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                })
+                .style('stroke', function (d, i) {
+                    return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
+                })
+                .style('stroke-width', 2)
+                .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+                .on('click', function (d) {
+                    if ($("#myonoffswitch").prop('checked') == false) {
+                        $('#Modal_' + $(div).attr('id') + ' .measure').val(d.measure);
+                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
+                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
+                        $('#Modal_' + $(div).attr('id')).modal('toggle');
+                    }
+                    else {
+                        var confirm = d3.select(div).select('.confirm')
+                            .style('visibility', 'visible');
+                        var _filter = _Local_data.filter(function (d1) {
+                            return d[_dimension[0]] === d1[_dimension[0]]
                         })
-                    } else {
-                        rect.classed('selected', true);
-                        var isExist = filterData.filter(function (val) {
-                            if (val[_dimension[0]] == d[_dimension[0]]) {
-                                return val
+                        var rect = d3.select(this);
+                        if (rect.classed('selected')) {
+                            rect.classed('selected', false);
+                            filterData.map(function (val, i) {
+                                if (val[_dimension[0]] == d[_dimension[0]]) {
+                                    filterData.splice(i, 1)
+                                }
+                            })
+                        } else {
+                            rect.classed('selected', true);
+                            var isExist = filterData.filter(function (val) {
+                                if (val[_dimension[0]] == d[_dimension[0]]) {
+                                    return val
+                                }
+                            })
+                            if (isExist.length == 0) {
+                                filterData.push(_filter[0]);
                             }
-                        })
-                        if (isExist.length == 0) {
-                            filterData.push(_filter[0]);
                         }
                     }
-                }
-            })
-            .transition()
-            .duration(COMMON.DURATION)
-            .attr("height", function (d, i) {
-                return plotHeight - y(d[d.measure]);
-            })
-            .attr("y", function (d, i) {
-                return y(d[d.measure]);
-            })
-            .attr("width", x1.bandwidth())
-            .attr("x", function (d, i) {
-                return x1(d.measure);;
-            })
+                })
+                .transition()
+                .duration(COMMON.DURATION)
+                .attr("height", function (d, i) {
+                    return plotHeight - y(d[d.measure]);
+                })
+                .attr("y", function (d, i) {
+                    return y(d[d.measure]);
+                })
+                .attr("width", x1.bandwidth())
+                .attr("x", function (d, i) {
+                    return x1(d.measure);;
+                })
+        }
+        else {
+            element.append('rect')
+                .attr('class', 'bar')
+                .style('fill', function (d, i) {
+                    return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                })
+                .style('stroke', function (d, i) {
+                    return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
+                })
+                .style('stroke-width', 2)
+                .attr("height", function (d, i) {
+                    return plotHeight - y(d[d.measure]);
+                })
+                .attr("y", function (d, i) {
+                    return y(d[d.measure]);
+                })
+                .attr("width", x1.bandwidth())
+                .attr("x", function (d, i) {
+                    return x1(d.measure);;
+                })
+        }
+
     }
     chart._legendInteraction = function (event, data, plot) {
+        if (_print) {
+            // No interaction during print enabled
+            return;
+        }
         switch (event) {
             case 'mouseover':
                 _legendMouseOver(data, plot);
@@ -731,6 +799,10 @@ function clusteredverticalbar() {
 
     chart._getName = function () {
         return _NAME;
+    }
+
+    chart._getHTML = function () {
+        return _local_svg.node().outerHTML;
     }
 
     chart.update = function (data) {
@@ -849,19 +921,40 @@ function clusteredverticalbar() {
         var xAxisGroup,
             yAxisGroup;
 
-        xAxisGroup = plot.select('.x.axis')
-            .transition()
-            .duration(COMMON.DURATION)
-            .call(d3.axisBottom(x0));
+        var isRotate = false;
 
-        _setAxisColor(xAxisGroup, _xAxisColor);
+        if (_showXaxis) {
+            xAxisGroup = plot.select('.x.axis')
+                .transition()
+                .duration(COMMON.DURATION)
+                .call(d3.axisBottom(x0)
+                    .tickFormat(function (d) {
+                        if (isRotate == false) {
+                            isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                        }
+                        return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                    }));
 
-        yAxisGroup = plot.select('.y.axis')
-            .transition()
-            .duration(COMMON.DURATION)
-            .call(d3.axisLeft(y).ticks(null, "s"));
+            _setAxisColor(xAxisGroup, _xAxisColor);
 
-        _setAxisColor(yAxisGroup, _yAxisColor);
+            if (isRotate) {
+                _local_svg.selectAll('.x .tick text')
+                    .attr("transform", "rotate(-15)");
+            }
+            else {
+                _local_svg.selectAll('.x .tick text')
+                    .attr("transform", "rotate(0)");
+            }
+        }
+
+        if (_showYaxis) {
+            yAxisGroup = plot.select('.y.axis')
+                .transition()
+                .duration(COMMON.DURATION)
+                .call(d3.axisLeft(y).ticks(null, "s"));
+
+            _setAxisColor(yAxisGroup, _yAxisColor);
+        }
 
         /* Update Axes Grid */
         _localXGrid.ticks(_localXLabels.length);
@@ -966,6 +1059,14 @@ function clusteredverticalbar() {
         return chart;
     }
 
+    chart.showGrid = function (value) {
+        if (!arguments.length) {
+            return _showGrid;
+        }
+        _showGrid = value;
+        return chart;
+    }
+
     chart.showYaxisLabel = function (value) {
         if (!arguments.length) {
             return _showYaxisLabel;
@@ -992,7 +1093,7 @@ function clusteredverticalbar() {
 
     chart.displayName = function (value) {
         if (!arguments.length) {
-            return _tooltip;
+            return _displayName;
         }
         _displayName = value;
         return chart;
@@ -1004,6 +1105,14 @@ function clusteredverticalbar() {
             measureName: measureName
         }
         return _legendData;
+    }
+
+    chart.print = function (value) {
+        if (!arguments.length) {
+            return _print;
+        }
+        _print = value;
+        return chart;
     }
 
     chart.showValues = function (value, measure) {

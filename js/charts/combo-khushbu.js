@@ -1,6 +1,12 @@
-var COMMON = require('../extras/common.js')(),
-    UTIL = require('../extras/util.js')(),
-    LEGEND = require('../extras/legend.js')();
+var d3 = require('d3');
+var COMMON = require('../extras/common.js')();
+var UTIL = require('../extras/util.js')();
+var LEGEND = require('../extras/legend_barcharts.js')();
+
+try {
+    var d3Lasso = require("d3-lasso");
+
+} catch (ex) { }
 
 function combo() {
 
@@ -35,14 +41,27 @@ function combo() {
         _fontSize,
         _lineType,
         _pointType,
-        _originalData;
+        _print;
 
-    var _local_svg, _Local_data;
-    var x0, x1, y;
+    var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
+    var x0, x1, _xDimensionGrid = d3.scaleLinear(), y;
+    var tickLength = d3.scaleLinear()
+        .domain([22, 34])
+        .range([4, 6]);
 
-    var parentWidth, parentHeight, plotWidth, plotHeight;
+    var parentWidth, parentHeight, plotWidth, plotHeight, container;
+    var _localXAxis,
+        _localYAxis,
+        _localXGrid,
+        _localYGrid;
+    var margin = {
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 45
+    };
 
-    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div;
+    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div, legendBreakCount = 1;
 
     var filter = false, filterData = [];
 
@@ -57,10 +76,10 @@ function combo() {
         this.showXaxis(config.showXaxis);
         this.showYaxis(config.showYaxis);
         this.showXaxisLabel(config.showXaxisLabel);
-
         this.showYaxisLabel(config.showYaxisLabel);
         this.xAxisColor(config.xAxisColor);
         this.yAxisColor(config.yAxisColor);
+        this.showGrid(config.showGrid);
         this.displayName(config.displayName);
         this.showYaxis(config.showYaxis);
         this.showXaxisLabel(config.showXaxisLabel);
@@ -150,7 +169,7 @@ function combo() {
         return output;
     }
 
-    var onLassoStart = function (lasso, chart) {
+    var onLassoStart = function (lasso, scope) {
         return function () {
             if (filter) {
                 lasso.items().selectAll('rect')
@@ -160,7 +179,7 @@ function combo() {
         }
     }
 
-    var onLassoDraw = function (lasso, chart) {
+    var onLassoDraw = function (lasso, scope) {
         return function () {
             filter = true;
             lasso.items().selectAll('rect')
@@ -176,7 +195,7 @@ function combo() {
         }
     }
 
-    var onLassoEnd = function (lasso, chart) {
+    var onLassoEnd = function (lasso, scope) {
         return function () {
             var data = lasso.selectedItems().data();
             if (!filter) {
@@ -193,8 +212,8 @@ function combo() {
 
             lasso.notSelectedItems().selectAll('rect');
 
-            var confirm = d3.select('.confirm')
-                .style('visibility', 'visible');
+            var confirm = $(scope).parent().find('div.confirm')
+                .css('visibility', 'visible');
 
             var _filter = [];
             var keys = UTIL.getMeasureList(data[0].data, _dimension);
@@ -217,7 +236,7 @@ function combo() {
         }
     }
 
-    var applyFilter = function (chart) {
+    var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
                 chart.update(filterData);
@@ -225,9 +244,11 @@ function combo() {
         }
     }
 
-    var clearFilter = function () {
+    var clearFilter = function (div) {
         return function () {
             chart.update(_originalData);
+            d3.select(div).select('.confirm')
+                .style('visibility', 'hidden');
         }
     }
 
@@ -274,24 +295,28 @@ function combo() {
             }
         }
     }
+    var _setAxisColor = function (axis, color) {
+        var path = axis.select('path'),
+            ticks = axis.selectAll('.tick');
 
+        path.style('stroke', color);
+
+        ticks.select('line')
+            .style('stroke', color);
+
+        ticks.select('text')
+            .style('fill', color);
+    }
     function chart(selection) {
         _local_svg = selection;
 
         selection.each(function (data) {
-            chart._Local_data = _originalData = data;
-            var margin = {
-                top: 0,
-                right: 0,
-                bottom: 0,
-                left: 45
-            };
-
-            var div = d3.select(this).node().parentNode;
+            _originalData = data;
+            div = d3.select(this).node().parentNode;
 
             var svg = d3.select(this),
-                width = div.clientWidth,
-                height = div.clientHeight;
+                width = +svg.attr('width'),
+                height = +svg.attr('height');
 
             parentWidth = width - 2 * COMMON.PADDING - margin.left;
             parentHeight = (height - 2 * COMMON.PADDING - axisLabelSpace * 2);
@@ -305,36 +330,11 @@ function combo() {
             d3.select(div).append('div')
                 .attr('class', 'arrow-down');
 
-            var str = UTIL.createAlert($(div).attr('id'), _measure);
-            $(div).append(str);
-
-            $(document).on('click', 'svg', function (e) {
-                if ($("#myonoffswitch").prop('checked') == false) {
-                    var element = e.target
-                    if (element.tagName == "svg") {
-                        $('#Modal_' + $(div).attr('id') + ' .measure').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', false)
-                        $('#Modal_' + $(div).attr('id')).modal('toggle');
-                    }
-                }
-            });
-
-            $(document).on('click', '#Modal_' + $(div).attr('id') + ' .ThresholdSubmit', function (e) {
-                var newValue = $('#Modal_' + $(div).attr('id') + ' .threshold').val();
-                var obj = new Object()
-                obj.measure = $('#Modal_' + $(div).attr('id') + ' .measure').val()
-                obj.threshold = newValue;
-                threshold.push(obj);
-                $('#Modal_' + $(div).attr('id')).modal('toggle');
-            });
-
-            var container = svg.append('g')
+            container = svg.append('g')
                 .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
             var legendWidth = 0,
-                legendHeight = 0,
-                legendBreakCount;
+                legendHeight = 0;
 
             plotWidth = parentWidth;
             plotHeight = parentHeight;
@@ -365,22 +365,22 @@ function combo() {
                         break;
                 }
 
-                if ((_legendPosition == 'Top') || (_legendPosition == 'Bottom')) {
+                if ((_legendPosition == 'top') || (_legendPosition == 'bottom')) {
                     plotWidth = parentWidth;
                     plotHeight = parentHeight - 3 * axisLabelSpace;
                     legendSpace = 20;
-                } else if ((_legendPosition == 'Left') || (_legendPosition == 'Right')) {
+                } else if ((_legendPosition == 'left') || (_legendPosition == 'right')) {
                     var legend = _local_svg.selectAll('.item');
                     legendSpace = legend.node().parentNode.getBBox().width;
                     plotWidth = (parentWidth - legendSpace) - margin.left + axisLabelSpace;
                     plotHeight = parentHeight;
 
                     legend.attr('transform', function (d, i) {
-                        if (_legendPosition == 'Left') {
+                        if (_legendPosition == 'left') {
                             return 'translate(0, ' + i * 20 + ')';
 
                         }
-                        else if (_legendPosition == 'Right') {
+                        else if (_legendPosition == 'right') {
                             return 'translate(' + (parentWidth - legendSpace + axisLabelSpace) + ', ' + i * 20 + ')';
                         }
                     });
@@ -397,386 +397,553 @@ function combo() {
             }
             chart.drawViz = function (element) {
                 var me = this;
+                if (!_print) {
+                    element.append('rect')
+                        .attr('width', x1.bandwidth())
+                        .style('fill', function (d, i) {
+                            return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                        })
+                        .style('stroke', function (d, i) {
+                            return UTIL.getBorderColor(_measure.indexOf(d['tag']), _borderColor);
+                        })
+                        .style('stroke-width', 1)
+                        .attr('x', function (d, i) {
+                            return x1(measuresBar[i]);
+                        })
+                        .attr('y', function (d, i) {
+                            if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
+                                return 0;
+                            } else if (d['data'][measuresBar[i]] > 0) {
+                                return y(d['data'][measuresBar[i]]);
+                            }
 
-                element.append('rect')
-                    .attr('width', x1.bandwidth())
-                    .style('fill', function (d, i) {
-                        return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
-                    })
-                    .style('stroke', function (d, i) {
-                        return UTIL.getBorderColor(_measure.indexOf(d['tag']), _borderColor);
-                    })
-                    .style('stroke-width', 1)
-                    .attr('x', function (d, i) {
-                        return x1(measuresBar[i]);
-                    })
-                    .attr('y', function (d, i) {
-                        if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
-                            return 0;
-                        } else if (d['data'][measuresBar[i]] > 0) {
-                            return y(d['data'][measuresBar[i]]);
-                        }
-
-                        return y(0);
-                    })
-                    .attr('height', function (d, i) {
-                        if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) return 0;
-                        return Math.abs(y(0) - y(d['data'][measuresBar[i]]));
-                    })
-                    .on('mouseover', _handleMouseOverFn.call(chart, tooltip, svg))
-                    .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg))
-                    .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg))
-                    .on('click', function (d) {
-                        if ($("#myonoffswitch").prop('checked') == false) {
-                            $('#Modal_' + $(div).attr('id') + ' .measure').val(d.measure);
-                            $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
-                            $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
-                            $('#Modal_' + $(div).attr('id')).modal('toggle');
-                        }
-                        else {
-                            var confirm = d3.select('.confirm')
-                                .style('visibility', 'visible');
-                            var _filter = chart._Local_data.filter(function (d1) {
-                                return d.data[_dimension[0]] === d1[_dimension[0]]
-                            })
-                            var rect = d3.select(this);
-                            if (rect.classed('selected')) {
-                                rect.classed('selected', false);
-                                filterData.map(function (val, i) {
-                                    if (val[_dimension[0]] == d[_dimension[0]]) {
-                                        filterData.splice(i, 1)
-                                    }
+                            return y(0);
+                        })
+                        .attr('height', 0)
+                        .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+                        .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+                        .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+                        .on('click', function (d) {
+                            if ($("#myonoffswitch").prop('checked') == false) {
+                                $('#Modal_' + $(div).attr('id') + ' .measure').val(d.measure);
+                                $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
+                                $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
+                                $('#Modal_' + $(div).attr('id')).modal('toggle');
+                            }
+                            else {
+                                var confirm = d3.select('.confirm')
+                                    .style('visibility', 'visible');
+                                var _filter = chart._Local_data.filter(function (d1) {
+                                    return d.data[_dimension[0]] === d1[_dimension[0]]
                                 })
-                            } else {
-                                rect.classed('selected', true);
-                                var isExist = filterData.filter(function (val) {
-                                    if (val[_dimension[0]] == d[_dimension[0]]) {
-                                        return val
+                                var rect = d3.select(this);
+                                if (rect.classed('selected')) {
+                                    rect.classed('selected', false);
+                                    filterData.map(function (val, i) {
+                                        if (val[_dimension[0]] == d[_dimension[0]]) {
+                                            filterData.splice(i, 1)
+                                        }
+                                    })
+                                } else {
+                                    rect.classed('selected', true);
+                                    var isExist = filterData.filter(function (val) {
+                                        if (val[_dimension[0]] == d[_dimension[0]]) {
+                                            return val
+                                        }
+                                    })
+                                    if (isExist.length == 0) {
+                                        filterData.push(_filter[0]);
                                     }
-                                })
-                                if (isExist.length == 0) {
-                                    filterData.push(_filter[0]);
                                 }
                             }
-                        }
-                    })
-            }
-            chart.drawPlot = function (data) {
-                var me = this;
-                _Local_data = data;
-                var keys = UTIL.getMeasureList(data[0], _dimension);
+                        })
+                        .transition()
+                        .duration(COMMON.DURATION)
+                        .attr('x', function (d, i) {
+                            return x1(measuresBar[i]);
+                        })
+                        .attr('y', function (d, i) {
+                            if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
+                                return 0;
+                            } else if (d['data'][measuresBar[i]] > 0) {
+                                return y(d['data'][measuresBar[i]]);
+                            }
 
-                measuresBar = [],
-                    measuresLine = [];
-                keys.forEach(function (m, i) {
-                    if (_comboChartType[_measure.indexOf(m)] == "bar") {
-                        measuresBar.push(m);
-                    } else {
-                        measuresLine.push(m);
+                            return y(0);
+                        })
+                        .attr('height', function (d, i) {
+                            if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) return 0;
+                            return Math.abs(y(0) - y(d['data'][measuresBar[i]]));
+                        })
+                        .attr('width', x1.bandwidth())
+                }
+                else {
+                    element.append('rect')
+                        .attr('width', x1.bandwidth())
+                        .style('fill', function (d, i) {
+                            return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                        })
+                        .style('stroke', function (d, i) {
+                            return UTIL.getBorderColor(_measure.indexOf(d['tag']), _borderColor);
+                        })
+                        .style('stroke-width', 1)
+                        .attr('x', function (d, i) {
+                            return x1(measuresBar[i]);
+                        })
+                        .attr('y', function (d, i) {
+                            if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
+                                return 0;
+                            } else if (d['data'][measuresBar[i]] > 0) {
+                                return y(d['data'][measuresBar[i]]);
+                            }
+
+                            return y(0);
+                        })
+                        .attr('height', function (d, i) {
+                            if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) return 0;
+                            return Math.abs(y(0) - y(d['data'][measuresBar[i]]));
+                        })
+
+                }
+
+            }
+
+            drawPlot.call(this, data)
+        });
+    }
+    var drawPlot = function (data) {
+        var me = this;
+        _Local_data = data;
+        var keys = UTIL.getMeasureList(data[0], _dimension);
+
+        measuresBar = [],
+            measuresLine = [];
+        keys.forEach(function (m, i) {
+            if (_comboChartType[_measure.indexOf(m)] == "Bar") {
+                measuresBar.push(m);
+            } else {
+                measuresLine.push(m);
+            }
+        });
+
+        var xLabels = getXLabels(data);
+
+        var plot = container.append('g')
+            .attr('class', 'combo-plot')
+            .classed('plot', true)
+            .attr('transform', function () {
+                if (_legendPosition == 'top') {
+                    return 'translate(' + margin.left + ', ' + parseInt(legendSpace * 2 + (20 * parseInt(legendBreakCount))) + ')';
+                } else if (_legendPosition == 'bottom') {
+                    return 'translate(' + margin.left + ', 0)';
+                } else if (_legendPosition == 'left') {
+                    return 'translate(' + (legendSpace + margin.left + axisLabelSpace) + ', 0)';
+                } else if (_legendPosition == 'right') {
+                    return 'translate(' + margin.left + ', 0)';
+                }
+            });
+
+        var content = plot.append('g')
+            .attr('class', 'chart')
+
+        var labelStack = [];
+
+        x0 = d3.scaleBand()
+            .domain(xLabels)
+            .rangeRound([0, plotWidth])
+            .padding([0.2]);
+
+        x1 = d3.scaleBand()
+            .domain(measuresBar)
+            .rangeRound([0, x0.bandwidth()])
+            .padding([0.2]);
+
+        y = d3.scaleLinear()
+            .range([plotHeight, 0]);
+
+        y.domain([0, d3.max(data, function (d) {
+            return d3.max(keys, function (key) {
+                return parseInt(d[key]);
+            });
+        })]).nice();
+
+        var _localXLabels = data.map(function (d) {
+            return d[_dimension[0]];
+        });
+
+        _xDimensionGrid.domain([0, _localXLabels.length])
+            .range([0, plotWidth]);
+
+        _localXGrid = d3.axisBottom()
+            .ticks(_localXLabels.length)
+            .tickFormat('')
+            .tickSize(-plotHeight);
+
+        _localYGrid = d3.axisLeft()
+            .tickFormat('')
+            .tickSize(-plotWidth);
+
+        _localXGrid.scale(_xDimensionGrid);
+        _localYGrid.scale(y);
+
+        plot.append('g')
+            .attr('class', 'x grid')
+            .attr('visibility', function () {
+                return _showGrid ? 'visible' : 'hidden';
+            })
+            .attr('transform', 'translate(0, ' + plotHeight + ')')
+            .call(_localXGrid);
+
+        plot.append('g')
+            .attr('class', 'y grid')
+            .attr('visibility', function () {
+                return _showGrid ? 'visible' : 'hidden';
+            })
+            .call(_localYGrid);
+
+        var areaGenerator = d3.area()
+            .curve(d3.curveLinear)
+            .x(function (d, i) {
+                return x0(d['data'][_dimension[0]]) + x0.bandwidth() / 2;
+            })
+            .y0(plotHeight)
+            .y1(function (d) {
+                return y(d['data'][d['tag']]);
+            });
+
+        var lineGenerator = d3.line()
+            .curve(d3.curveLinear)
+            .x(function (d, i) {
+                return x0(d['data'][_dimension[0]]) + x0.bandwidth() / 2;
+            })
+            .y(function (d, i) {
+                return y(d['data'][d['tag']]);
+            });
+
+        var clusterBar = content.selectAll('.cluster_bar')
+            .data(data)
+            .enter().append('g')
+            .attr('class', 'cluster_bar')
+            .attr('transform', function (d) {
+                return 'translate(' + x0(d[_dimension[0]]) + ', 0)';
+            });
+
+        var bar = clusterBar.selectAll('g.bar')
+            .data(function (d) {
+                return measuresBar
+                    .filter(function (m) { return labelStack.indexOf(m) == -1; })
+                    .map(function (m) { return { "tag": m, "data": d }; });
+            })
+            .enter().append('g')
+            .attr('class', 'bar');
+
+        chart.drawViz(bar)
+
+        var clusterLine = content.selectAll('.cluster_line')
+            .data(measuresLine.filter(function (m) { return labelStack.indexOf(m) == -1; }))
+            .enter().append('g')
+            .attr('class', 'cluster_line');
+
+        var area = clusterLine.append('path')
+            .datum(function (d, i) {
+                return data.map(function (datum) { return { "tag": d, "data": datum }; });
+            })
+            .attr('class', 'area')
+            .attr('fill', function (d, i) {
+                return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
+            })
+            .attr('visibility', function (d, i) {
+                if (_lineType[(_measure.indexOf(d[0]['tag']))] == "area") {
+                    return 'visible'
+                }
+                else {
+                    return 'hidden';
+                }
+
+            })
+            .style('fill-opacity', 0.5)
+            .attr('stroke', 'none')
+            .attr('d', areaGenerator);
+
+        var line = clusterLine.append('path')
+            .datum(function (d, i) {
+                return data.map(function (datum) { return { "tag": d, "data": datum }; });
+            })
+            .attr('class', 'line')
+            .attr('fill', 'none')
+            .attr('stroke', function (d, i) {
+                return UTIL.getBorderColor(_measure.indexOf(d[0]['tag']), _borderColor);
+            })
+            .style('stroke-linejoin', 'round')
+            .style('stroke-linecap', 'round')
+            .style('stroke-width', 3)
+            .attr('d', lineGenerator)
+
+
+        var point = clusterLine.selectAll('point')
+            .data(function (d, i) {
+                return data.map(function (datum) { return { "tag": d, "data": datum }; });
+            })
+            .enter().append('path')
+            .attr('class', 'point')
+            .attr('fill', function (d, i) {
+                return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+            })
+            .attr('d', function (d, i) {
+                return d3.symbol()
+                    .type(getPointType(_measure.indexOf(d.tag)))
+                    .size(40)();
+            })
+            .attr('transform', function (d) {
+                return 'translate('
+                    + (x0(d['data'][_dimension[0]]) + x0.bandwidth() / 2)
+                    + ',' + y(d['data'][d['tag']]) + ')';
+            })
+
+        if (!_print) {
+            line
+                .on("mouseover", function (d) {
+                    d3.select(this)
+                        .style("stroke-width", "2.5px")
+                        .style("cursor", "pointer");
+                })
+                .on("mouseout", function (d) {
+                    d3.select(this)
+                        .style("stroke-width", "1.5px")
+                        .style("cursor", "none");
+                })
+
+            point.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+        }
+
+        var xAxisGroup,
+            yAxisGroup;
+
+        var isRotate = false;
+
+        if (_showXaxis) {
+            _localXAxis = d3.axisBottom(x0)
+                .tickSize(0)
+                .tickFormat(function (d) {
+                    if (isRotate == false) {
+                        isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                    }
+                    return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                })
+                .tickPadding(10);
+
+            xAxisGroup = plot.append('g')
+                .attr('class', 'x axis')
+                .attr('visibility', function () {
+                    return 'visible';
+                })
+                .attr('transform', 'translate(0, ' + plotHeight + ')')
+                .call(_localXAxis);
+
+            xAxisGroup.append('g')
+                .attr('class', 'label')
+                .attr('transform', function () {
+                    return 'translate(' + (plotWidth) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
+                })
+                .append('text')
+                .style('text-anchor', 'end')
+                .style('font-weight', 'bold')
+                .style('fill', _xAxisColor)
+                .text(_displayName);
+
+            if (isRotate) {
+                _local_svg.selectAll('.x .tick text')
+                    .attr("transform", "rotate(-15)");
+            }
+
+            _setAxisColor(xAxisGroup, _xAxisColor);
+
+        }
+
+        if (_showYaxis) {
+            _localYAxis = d3.axisLeft(y)
+                .tickSize(0)
+                .tickPadding(8)
+                .tickFormat(function (d) {
+                    return UTIL.shortScale(2)(d);
+                });
+
+            yAxisGroup = plot.append('g')
+                .attr('class', 'y axis')
+                .attr('visibility', function () {
+                    return 'visible';
+                })
+                .call(_localYAxis);
+
+            yAxisGroup.append('g')
+                .attr('class', 'label')
+                .attr('transform', function () {
+                    return 'translate(' + (-COMMON.AXIS_THICKNESS / 1.15) + ', ' + '0)';
+                })
+                .append('text')
+                .attr('transform', 'rotate(-90)')
+                .style('text-anchor', 'end')
+                .style('font-weight', 'bold')
+                .style('fill', _yAxisColor)
+                .text(function () {
+                    return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+                });
+
+            _setAxisColor(yAxisGroup, _yAxisColor);
+        }
+
+        if (!_print) {
+            var str = UTIL.createAlert($(div).attr('id'), _measure);
+            $(div).append(str);
+
+            var _filter = UTIL.createFilterElement()
+            $(div).append(_filter);
+
+            $(document).on('click', 'svg', function (e) {
+                if ($("#myonoffswitch").prop('checked') == false) {
+                    var element = e.target
+                    if (element.tagName == "svg") {
+                        $('#Modal_' + $(div).attr('id') + ' .measure').val('')
+                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('')
+                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', false)
+                        $('#Modal_' + $(div).attr('id')).modal('toggle');
+                    }
+                }
+            });
+
+            $(document).on('click', '#Modal_' + $(div).attr('id') + ' .ThresholdSubmit', function (e) {
+                var newValue = $('#Modal_' + $(div).attr('id') + ' .threshold').val();
+                var obj = new Object()
+                obj.measure = $('#Modal_' + $(div).attr('id') + ' .measure').val()
+                obj.threshold = newValue;
+                threshold.push(obj);
+                $('#Modal_' + $(div).attr('id')).modal('toggle');
+            });
+
+            _local_svg.select('g.sort').remove();
+            UTIL.sortingView(container, parentHeight, parentWidth + margin.left, legendBreakCount, axisLabelSpace, offsetX);
+
+            _local_svg.select('g.sort').selectAll('text')
+                .on('click', function () {
+                    var order = d3.select(this).attr('class')
+                    switch (order) {
+                        case 'ascending':
+                            UTIL.toggleSortSelection(me, 'ascending', drawPlot, _local_svg, keys, _Local_data);
+                            break;
+                        case 'descending':
+                            UTIL.toggleSortSelection(me, 'descending', drawPlot, _local_svg, keys, _Local_data);
+                            break;
+                        case 'reset': {
+                            $(me).parent().find('.sort_selection,.arrow-down').css('visibility', 'hidden');
+                            _local_svg.select('.plot').remove()
+                            drawPlot.call(me, _Local_data);
+
+                            break;
+                        }
                     }
                 });
 
-                var xLabels = getXLabels(data);
+            d3.select(div).select('.filterData')
+                .on('click', applyFilter());
 
-                var plot = container.append('g')
-                    .attr('class', 'combo-plot')
-                    .classed('plot', true)
-                    .attr('transform', function () {
-                        if (_legendPosition == 'Top') {
-                            return 'translate(' + margin.left + ', ' + parseInt(legendSpace * 2 + (20 * parseInt(legendBreakCount))) + ')';
-                        } else if (_legendPosition == 'Bottom') {
-                            return 'translate(' + margin.left + ', 0)';
-                        } else if (_legendPosition == 'Left') {
-                            return 'translate(' + (legendSpace + margin.left + axisLabelSpace) + ', 0)';
-                        } else if (_legendPosition == 'Right') {
-                            return 'translate(' + margin.left + ', 0)';
-                        }
-                    });
+            d3.select(div).select('.removeFilter')
+                .on('click', clearFilter(div));
 
-                var content = plot.append('g')
-                    .attr('class', 'chart')
+            var lasso = d3Lasso.lasso()
+                .hoverSelect(true)
+                .closePathSelect(true)
+                .closePathDistance(100)
+                .items(bar)
+                .targetArea(_local_svg);
 
-                var labelStack = [];
+            lasso.on('start', onLassoStart(lasso, me))
+                .on('draw', onLassoDraw(lasso, me))
+                .on('end', onLassoEnd(lasso, me));
 
-                x0 = d3.scaleBand()
-                    .domain(xLabels)
-                    .rangeRound([0, plotWidth])
-                    .padding([0.2]);
+            _local_svg.call(lasso);
+        }
 
-                x1 = d3.scaleBand()
-                    .domain(measuresBar)
-                    .rangeRound([0, x0.bandwidth()])
-                    .padding([0.2]);
-
-                y = d3.scaleLinear()
-                    .range([plotHeight, 0]);
-
-                y.domain([0, d3.max(data, function (d) {
-                    return d3.max(keys, function (key) {
-                        return parseInt(d[key]);
-                    });
-                })]).nice();
-
-                var tickLength = d3.scaleLinear()
-                    .domain([22, 34])
-                    .range([4, 6]);
-
-                var areaGenerator = d3.area()
-                    .curve(d3.curveLinear)
-                    .x(function (d, i) {
-                        return x0(d['data'][_dimension[0]]) + x0.bandwidth() / 2;
-                    })
-                    .y0(plotHeight)
-                    .y1(function (d) {
-                        return y(d['data'][d['tag']]);
-                    });
-
-                var lineGenerator = d3.line()
-                    .curve(d3.curveLinear)
-                    .x(function (d, i) {
-                        return x0(d['data'][_dimension[0]]) + x0.bandwidth() / 2;
-                    })
-                    .y(function (d, i) {
-                        return y(d['data'][d['tag']]);
-                    });
-
-                var clusterBar = content.selectAll('.cluster_bar')
-                    .data(data)
-                    .enter().append('g')
-                    .attr('class', 'cluster_bar')
-                    .attr('transform', function (d) {
-                        return 'translate(' + x0(d[_dimension[0]]) + ', 0)';
-                    });
-
-                var bar = clusterBar.selectAll('g.bar')
-                    .data(function (d) {
-                        return measuresBar
-                            .filter(function (m) { return labelStack.indexOf(m) == -1; })
-                            .map(function (m) { return { "tag": m, "data": d }; });
-                    })
-                    .enter().append('g')
-                    .attr('class', 'bar');
-
-                chart.drawViz(bar)
-
-                var clusterLine = content.selectAll('.cluster_line')
-                    .data(measuresLine.filter(function (m) { return labelStack.indexOf(m) == -1; }))
-                    .enter().append('g')
-                    .attr('class', 'cluster_line');
-
-                var area = clusterLine.append('path')
-                    .datum(function (d, i) {
-                        return data.map(function (datum) { return { "tag": d, "data": datum }; });
-                    })
-                    .attr('class', 'area')
-                    .attr('fill', function (d, i) {
-                        return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
-                    })
-                    .attr('visibility', function (d, i) {
-                        if (_lineType[(_measure.indexOf(d[0]['tag']))] == "area") {
-                            return 'visible'
-                        }
-                        else {
-                            return 'hidden';
-                        }
-
-                    })
-                    .style('fill-opacity', 0.5)
-                    .attr('stroke', 'none')
-                    .attr('d', areaGenerator);
-
-                var line = clusterLine.append('path')
-                    .datum(function (d, i) {
-                        return data.map(function (datum) { return { "tag": d, "data": datum }; });
-                    })
-                    .attr('class', 'line')
-                    .attr('fill', 'none')
-                    .attr('stroke', function (d, i) {
-                        return UTIL.getBorderColor(_measure.indexOf(d[0]['tag']), _borderColor);
-                    })
-                    .attr('stroke-linejoin', 'round')
-                    .attr('stroke-linecap', 'round')
-                    .attr('stroke-width', 1)
-                    .on("mouseover", function (d) {
-                        d3.select(this)
-                            .style("stroke-width", "2.5px")
-                            .style("cursor", "pointer");
-                    })
-                    .on("mouseout", function (d) {
-                        d3.select(this)
-                            .style("stroke-width", "1.5px")
-                            .style("cursor", "none");
-                    })
-                    .attr('d', lineGenerator);
-
-                var point = clusterLine.selectAll('point')
-                    .data(function (d, i) {
-                        return data.map(function (datum) { return { "tag": d, "data": datum }; });
-                    })
-                    .enter().append('path')
-                    .attr('class', 'point')
-                    .attr('fill', function (d, i) {
-                        return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
-                    })
-                    .attr('d', function (d, i) {
-                        return d3.symbol()
-                            .type(getPointType(_measure.indexOf(d.tag)))
-                            .size(40)();
-                    })
-                    .attr('transform', function (d) {
-                        return 'translate('
-                            + (x0(d['data'][_dimension[0]]) + x0.bandwidth() / 2)
-                            + ',' + y(d['data'][d['tag']]) + ')';
-                    })
-                    .on('mouseover', _handleMouseOverFn.call(chart, tooltip, svg))
-                    .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg))
-                    .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg));
-
-                plot.append("g")
-                    .attr("class", "x_axis")
-                    .attr("transform", "translate(0," + plotHeight + ")")
-                    .call(d3.axisBottom(x0))
-                    .append("text")
-                    .attr("x", plotWidth / 2)
-                    .attr("y", 2 * axisLabelSpace)
-                    .attr("dy", "0.32em")
-                    .attr("fill", "#000")
-                    .attr("font-weight", "bold")
-                    .style('text-anchor', 'middle')
-                    .style('visibility', UTIL.getVisibility(_showXaxisLabel))
-                    .text(function () {
-                        return _displayName;
-                    });
-
-                plot.append("g")
-                    .attr("class", "y_axis")
-                    .call(d3.axisLeft(y).ticks(null, "s"))
-                    .append("text")
-                    .attr("x", plotHeight / 2)
-                    .attr("y", 2 * axisLabelSpace)
-                    .attr("transform", function (d) { return "rotate(" + 90 + ")"; })
-                    .attr("dy", "0.32em")
-                    .style('visibility', UTIL.getVisibility(_showYaxisLabel))
-                    .attr("font-weight", "bold")
-                    .style('text-anchor', 'middle')
-                    .text(function () {
-                        return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
-                    });
-
-                UTIL.setAxisColor(svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis, _showYaxis, _showXaxis);
-                svg.select('g.combo-sort').remove();
-                var sortButton = container.append('g')
-                    .attr('class', 'combo-sort')
-                    .attr('transform', function () {
-                        return 'translate(0, ' + parseInt((parentHeight - 2 * COMMON.PADDING + 20 + (legendBreakCount * 20))) + ')';
-                    })
-
-                var ascendingSort = sortButton.append('svg:text')
-                    .attr('fill', '#afafaf')
-                    .attr('cursor', 'pointer')
-                    .style('font-family', 'FontAwesome')
-                    .style('font-size', 12)
-                    .attr('transform', function () {
-                        return 'translate(' + (parentWidth - 3 * offsetX) + ', ' + 2 * axisLabelSpace + ')';
-                    })
-                    .style('text-anchor', 'end')
-                    .text(function () {
-                        return "\uf161";
-                    })
-                    .on('click', UTIL.toggleSortSelection(me, 'ascending', chart.drawPlot, svg, keys, _Local_data))
-
-
-                var descendingSort = sortButton.append('svg:text')
-                    .attr('fill', '#afafaf')
-                    .attr('cursor', 'pointer')
-                    .style('font-family', 'FontAwesome')
-                    .style('font-size', 12)
-                    .attr('transform', function () {
-                        return 'translate(' + (parentWidth - 1.5 * offsetX) + ', ' + 2 * axisLabelSpace + ')';
-                    })
-                    .style('text-anchor', 'end')
-                    .text(function () {
-                        return "\uf160";
-                    })
-                    .on('click', UTIL.toggleSortSelection(me, 'descending', chart.drawPlot, svg, keys, _Local_data))
-
-                var resetSort = sortButton.append('svg:text')
-                    .attr('fill', '#afafaf')
-                    .attr('cursor', 'pointer')
-                    .style('font-family', 'FontAwesome')
-                    .style('font-size', 12)
-                    .attr('transform', function () {
-                        return 'translate(' + parentWidth + ', ' + 2 * axisLabelSpace + ')';
-                    })
-                    .style('text-anchor', 'end')
-                    .text(function () {
-                        return "\uf0c9";
-                    })
-                    .on('click', function () {
-                        d3.select(me.parentElement).select('.combo-plot').remove();
-                        chart.drawPlot.call(me, _Local_data);
-                    });
-
-                d3.select(div).select('.btn-primary')
-                    .on('click', applyFilter(chart));
-
-                d3.select(div).select('.btn-default')
-                    .on('click', clearFilter());
-
-                var lasso = d3.lasso()
-                    .hoverSelect(true)
-                    .closePathSelect(true)
-                    .closePathDistance(100)
-                    .items(bar)
-                    .targetArea(svg);
-
-                lasso.on('start', onLassoStart(lasso, chart))
-                    .on('draw', onLassoDraw(lasso, chart))
-                    .on('end', onLassoEnd(lasso, chart));
-
-                svg.call(lasso);
-            }
-
-            chart.drawPlot.call(this, data)
-        });
     }
 
- chart._legendInteraction = function (event, data, plot) {        var clustered = d3.selectAll('g.bar')
+    chart._legendInteraction = function (event, data, plot) {
+        if (_print) {
+            // No interaction during print enabled
+            return;
+        }
+        switch (event) {
+            case 'mouseover':
+                _legendMouseOver(data, plot);
+                break;
+            case 'mousemove':
+                _legendMouseMove(data, plot);
+                break;
+            case 'mouseout':
+                _legendMouseOut(data, plot);
+                break;
+            case 'click':
+                _legendClick(data, plot);
+                break;
+        }
+    }
+    var _legendMouseOver = function (data, plot) {
+
+        var clustered = plot.selectAll('g.bar')
             .filter(function (d) {
                 return d.tag === data;
             });
 
-        var line = d3.selectAll('.line')
+        var line = plot.selectAll('.line')
             .filter(function (d, i) {
                 return d[i].tag === data;
             });
 
-        if (event === 'mouseover') {
-            clustered.select('rect')
-                .style('fill', COMMON.HIGHLIGHTER);
-            line
-                .style("stroke-width", "2.5px")
-                .style('stroke', COMMON.HIGHLIGHTER);
-
-        } else if (event === 'mousemove') {
-            // do something
-        } else if (event === 'mouseout') {
-            clustered.select('rect')
-                .style('fill', function (d, i) {
-                    return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
-                });
-            line
-                .style("stroke-width", "1.5px")
-                .style('stroke', function (d, i) {
-                    return UTIL.getBorderColor(_measure.indexOf(d[0]['tag']), _borderColor);
-                });
-        } else if (event === 'click') {
-
-        }
+        clustered.select('rect')
+            .style('fill', COMMON.HIGHLIGHTER);
+        line
+            .style("stroke-width", "2.5px")
+            .style('stroke', COMMON.HIGHLIGHTER)
     }
+
+    var _legendMouseMove = function (data, plot) {
+
+    }
+
+    var _legendMouseOut = function (data, plot) {
+        var clustered = plot.selectAll('g.bar')
+            .filter(function (d) {
+                return d.tag === data;
+            });
+
+        var line = plot.selectAll('.line')
+            .filter(function (d, i) {
+                return d[i].tag === data;
+            });
+
+        clustered.select('rect')
+            .style('fill', function (d, i) {
+                return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+            });
+        line
+            .style("stroke-width", "1.5px")
+            .style('stroke', function (d, i) {
+                return UTIL.getBorderColor(_measure.indexOf(d[0]['tag']), _borderColor);
+            });
+    }
+
+    var _legendClick = function (data) {
+        var _filter = UTIL.getFilterData(_localLabelStack, data, _originalData)
+        drawPlot.call(this, _filter);
+    }
+
 
     chart._getName = function () {
         return _NAME;
+    }
+
+    chart._getHTML = function () {
+        return _local_svg.node().outerHTML;
     }
 
     chart.update = function (data) {
@@ -790,7 +957,7 @@ function combo() {
         keys.splice(keys.indexOf(_dimension[0]), 1);
         measuresBar = [], measuresLine = [];
         keys.forEach(function (m, i) {
-            if (_comboChartType[_measure.indexOf(m)] == "bar") {
+            if (_comboChartType[_measure.indexOf(m)] == "Bar") {
                 measuresBar.push(m);
             } else {
                 measuresLine.push(m);
@@ -816,6 +983,12 @@ function combo() {
             });
         })]).nice();
 
+        var _localXLabels = data.map(function (d) {
+            return d[_dimension[0]];
+        });
+
+        _xDimensionGrid.domain([0, _localXLabels.length]);
+
         var plot = svg.select('.plot')
         var chartploat = svg.select('.chart')
         var labelStack = [];
@@ -827,7 +1000,7 @@ function combo() {
             })
             .y0(plotHeight)
             .y1(function (d) {
-                return y(d['data'][d.tag[0].tag]);
+                return y(d['data'][d['tag']]);
             });
 
         var lineGenerator = d3.line()
@@ -836,7 +1009,7 @@ function combo() {
                 return x0(d['data'][_dimension[0]]) + x0.bandwidth() / 2;
             })
             .y(function (d, i) {
-                return y(d['data'][d.tag[0].tag])!=undefined?y(d['data'][d.tag[0].tag]):y(d.tag[0].tag[0].tag);
+                return y(d['data'][d['tag']]);
             });
 
         var area = plot.selectAll('path.area')
@@ -845,14 +1018,20 @@ function combo() {
             })
             .attr('d', areaGenerator);
 
-        plot.selectAll('path.point').remove()
-
-
         var line = plot.selectAll('path.line')
+            .datum(function (d, i) {
+                return data.map(function (datum) {
+                    return {
+                        "tag": d, "data": datum
+                    };
+                });
+            })
+            .attr('d', lineGenerator);
+
+        var point = plot.selectAll('path.point')
             .datum(function (d, i) {
                 return data.map(function (datum) { return { "tag": d, "data": datum }; });
             })
-            .attr('d', lineGenerator);
 
         var clusterBar = chartploat.selectAll('g.cluster_bar')
             .data(data)
@@ -883,7 +1062,7 @@ function combo() {
             .attr('y', function (d, i) {
                 if ((d["data"][d.tag] === null) || (isNaN(d["data"][d.tag]))) {
                     return 0;
-                } else if (d["data"][d.tag]> 0) {
+                } else if (d["data"][d.tag] > 0) {
                     return y(d["data"][d.tag]);
                 }
                 return y(0);
@@ -900,20 +1079,67 @@ function combo() {
 
         chart.drawViz(newBars)
 
-        d3.selectAll('g.cluster_bar')
+        plot.selectAll('g.cluster_bar')
             .attr('transform', function (d) {
                 return 'translate(' + x0(d[_dimension[0]]) + ', 0)';
             });
 
-        plot.select('.x_axis')
-            .transition()
-            .duration(1000)
-            .call(d3.axisBottom(x0));
+        var xAxisGroup,
+            yAxisGroup;
 
-        plot.select('.y_axis')
+        var isRotate = false;
+
+        if (_showXaxis) {
+            xAxisGroup = plot.select('.x.axis')
+                .transition()
+                .duration(COMMON.DURATION)
+                .call(d3.axisBottom(x0)
+                    .tickFormat(function (d) {
+                        if (isRotate == false) {
+                            isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                        }
+                        return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                    }));
+
+            _setAxisColor(xAxisGroup, _xAxisColor);
+
+            if (isRotate) {
+                _local_svg.selectAll('.x .tick text')
+                    .attr("transform", "rotate(-15)");
+            }
+            else {
+                _local_svg.selectAll('.x .tick text')
+                    .attr("transform", "rotate(0)");
+            }
+        }
+
+        if (_showYaxis) {
+            yAxisGroup = plot.select('.y.axis')
+                .transition()
+                .duration(COMMON.DURATION)
+                .call(d3.axisLeft(y).ticks(null, "s"));
+
+            _setAxisColor(yAxisGroup, _yAxisColor);
+        }
+
+        /* Update Axes Grid */
+        _localXGrid.ticks(_localXLabels.length);
+
+        plot.select('.x.grid')
             .transition()
-            .duration(1000)
-            .call(d3.axisLeft(y).ticks(null, "s"));
+            .duration(COMMON.DURATION)
+            .attr('visibility', function () {
+                return _showGrid ? 'visible' : 'hidden';
+            })
+            .call(_localXGrid);
+
+        plot.select('.y.grid')
+            .transition()
+            .duration(COMMON.DURATION)
+            .attr('visibility', function () {
+                return _showGrid ? 'visible' : 'hidden';
+            })
+            .call(_localYGrid);
 
         UTIL.setAxisColor(svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis);
         UTIL.displayThreshold(threshold, data, keys);
@@ -1045,6 +1271,14 @@ function combo() {
             return _tooltip;
         }
         _displayName = value;
+        return chart;
+    }
+
+    chart.print = function (value) {
+        if (!arguments.length) {
+            return _print;
+        }
+        _print = value;
         return chart;
     }
 

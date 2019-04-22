@@ -1,5 +1,11 @@
-var COMMON = require('../extras/common.js')(),
-    UTIL = require('../extras/util.js')();
+var d3 = require('d3');
+var COMMON = require('../extras/common.js')();
+var d3sankey = require('../../d3-libs/d3.sankey.js');
+var UTIL = require('../extras/util.js')();
+try {
+    var d3Lasso = require("d3-lasso");
+
+} catch (ex) { }
 
 function sankey() {
 
@@ -18,12 +24,13 @@ function sankey() {
         borderColor,
         numberFormat,
         _sort,
-        _tooltip;
+        _tooltip,
+        _print;
 
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [];
 
-    var parentWidth, parentHeight, parentWidth, parentHeight,div;
+    var parentWidth, parentHeight, parentWidth, parentHeight, div;
     var sankey, path, gradientColor, link
     var margin = {
         top: 10,
@@ -168,7 +175,7 @@ function sankey() {
         }
     }
 
-    var applyFilter = function (chart) {
+    var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
                 chart.update(filterData);
@@ -176,9 +183,11 @@ function sankey() {
         }
     }
 
-    var clearFilter = function () {
+    var clearFilter = function (div) {
         return function () {
             chart.update(_originalData);
+            d3.select(div).select('.confirm')
+                .style('visibility', 'hidden');
         }
     }
 
@@ -298,9 +307,9 @@ function sankey() {
 
             div = d3.select(this).node().parentNode;
 
-            var _local_svg = d3.select(this),
-                width = div.clientWidth,
-                height = div.clientHeight;
+            var svg = d3.select(this),
+                width = +svg.attr('width'),
+                height = +svg.attr('height');
 
             var data = getSankeyData(data);
 
@@ -309,23 +318,20 @@ function sankey() {
             if (_tooltip) {
                 tooltip = d3.select(this.parentNode).select('#tooltip');
             }
-            var me=this;
+            var me = this;
             svg.selectAll('g').remove();
 
             svg.attr('width', width)
                 .attr('height', height);
 
-            parentWidth = width - margin.left - margin.right,
-                parentHeight = height - margin.top - margin.bottom;
-
-            var _filter = UTIL.createFilterElement()
-            $(div).append(_filter);
+            parentWidth = width - margin.left - margin.right;
+            parentHeight = height - margin.top - margin.bottom;
 
             var container = svg.append('g')
                 .attr('class', 'plot')
                 .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-            sankey = d3.sankey()
+            sankey = d3sankey()
                 .nodeWidth(12)
                 .nodePadding(4)
                 .size([parentWidth, parentHeight]);
@@ -353,38 +359,10 @@ function sankey() {
                 .data(data.links)
                 .enter().append('path')
                 .attr('class', 'link')
+                .style('stroke', '#efefef')
                 .attr('d', path)
                 .style('stroke-width', function (d) { return Math.max(1, d.dy); })
                 .sort(function (a, b) { return b.dy - a.dy; })
-                .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg, 'link'))
-                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, 'link'))
-                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'link'))
-                .on('click', function (d) {
-
-                    var confirm = d3.select(div).select('.confirm')
-                        .style('visibility', 'visible');
-
-                    if (d.nodeType == dimension[0]) {
-                        _Local_data.map(function (val) {
-                            if (dimension[0] == d.nodeType && val[dimension[0]] == d.name) {
-                                var searchObj = _filter.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
-                                if (searchObj == undefined) {
-                                    _filter.push(val)
-                                }
-                            }
-                        })
-                    }
-                    else {
-                        _Local_data.map(function (val) {
-                            if (dimension[1] == d.nodeType && val[dimension[1]] == d.name) {
-                                var searchObj = _filter.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
-                                if (searchObj == undefined) {
-                                    _filter.push(val)
-                                }
-                            }
-                        })
-                    }
-                })
 
             var node = container.append('g').selectAll('.node')
                 .data(data.nodes)
@@ -405,58 +383,6 @@ function sankey() {
                 })
                 .style('stroke', function (d) {
                     return borderColor;
-                })
-                .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg, 'node'))
-                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, 'node'))
-                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'node'))
-                .on('click', function (d) {
-                    var confirm = d3.select(div).select('.confirm')
-                        .style('visibility', 'visible');
-                    var rect = d3.select(this)
-                    if (rect.classed('selected')) {
-                        rect.classed('selected', false);
-                        if (d.nodeType == dimension[0]) {
-                            _Local_data.map(function (val) {
-                                filterData = filterData.filter(function (val) {
-                                    if (d.name != val[dimension[0]]) {
-                                        return val;
-                                    }
-                                })
-                            })
-                        }
-                        else {
-                            _Local_data.map(function (val) {
-                                filterData = filterData.filter(function (val) {
-                                    if (d.name != val[dimension[1]]) {
-                                        return val;
-                                    }
-                                })
-                            })
-                        }
-                    }
-                    else {
-                        rect.classed('selected', true);
-                        if (d.nodeType == dimension[0]) {
-                            _Local_data.map(function (val) {
-                                if (dimension[0] == d.nodeType && val[dimension[0]] == d.name) {
-                                    var searchObj = filterData.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
-                                    if (searchObj == undefined) {
-                                        filterData.push(val)
-                                    }
-                                }
-                            })
-                        }
-                        else {
-                            _Local_data.map(function (val) {
-                                if (dimension[1] == d.nodeType && val[dimension[1]] == d.name) {
-                                    var searchObj = filterData.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
-                                    if (searchObj == undefined) {
-                                        filterData.push(val)
-                                    }
-                                }
-                            })
-                        }
-                    }
                 })
 
             node.append('text')
@@ -499,28 +425,124 @@ function sankey() {
                 .attr('x', 6 + sankey.nodeWidth())
                 .attr('text-anchor', 'start');
 
-            d3.select(div).select('.filterData')
-                .on('click', applyFilter(chart));
+            if (!_print) {
 
-            d3.select(div).select('.removeFilter')
-                .on('click', clearFilter());
+                var _filter = UTIL.createFilterElement()
+                $(div).append(_filter);
 
-            var lasso = d3.lasso()
-                .hoverSelect(true)
-                .closePathSelect(true)
-                .closePathDistance(100)
-                .items(node.select('rect'))
-                .targetArea(svg);
+                link.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg, 'link'))
+                    .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, 'link'))
+                    .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'link'))
+                    .on('click', function (d) {
 
-            lasso.on('start', onLassoStart(lasso, me))
-                .on('draw', onLassoDraw(lasso, me))
-                .on('end', onLassoEnd(lasso, me));
+                        var confirm = d3.select(div).select('.confirm')
+                            .style('visibility', 'visible');
 
-            svg.call(lasso);
+                        if (d.nodeType == dimension[0]) {
+                            _Local_data.map(function (val) {
+                                if (dimension[0] == d.nodeType && val[dimension[0]] == d.name) {
+                                    var searchObj = _filter.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
+                                    if (searchObj == undefined) {
+                                        _filter.push(val)
+                                    }
+                                }
+                            })
+                        }
+                        else {
+                            _Local_data.map(function (val) {
+                                if (dimension[1] == d.nodeType && val[dimension[1]] == d.name) {
+                                    var searchObj = _filter.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
+                                    if (searchObj == undefined) {
+                                        _filter.push(val)
+                                    }
+                                }
+                            })
+                        }
+                    })
+
+                node.selectAll('rect')
+                    .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg, 'node'))
+                    .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, 'node'))
+                    .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'node'))
+                    .on('click', function (d) {
+                        var confirm = d3.select(div).select('.confirm')
+                            .style('visibility', 'visible');
+                        var rect = d3.select(this)
+                        if (rect.classed('selected')) {
+                            rect.classed('selected', false);
+                            if (d.nodeType == dimension[0]) {
+                                _Local_data.map(function (val) {
+                                    filterData = filterData.filter(function (val) {
+                                        if (d.name != val[dimension[0]]) {
+                                            return val;
+                                        }
+                                    })
+                                })
+                            }
+                            else {
+                                _Local_data.map(function (val) {
+                                    filterData = filterData.filter(function (val) {
+                                        if (d.name != val[dimension[1]]) {
+                                            return val;
+                                        }
+                                    })
+                                })
+                            }
+                        }
+                        else {
+                            rect.classed('selected', true);
+                            if (d.nodeType == dimension[0]) {
+                                _Local_data.map(function (val) {
+                                    if (dimension[0] == d.nodeType && val[dimension[0]] == d.name) {
+                                        var searchObj = filterData.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
+                                        if (searchObj == undefined) {
+                                            filterData.push(val)
+                                        }
+                                    }
+                                })
+                            }
+                            else {
+                                _Local_data.map(function (val) {
+                                    if (dimension[1] == d.nodeType && val[dimension[1]] == d.name) {
+                                        var searchObj = filterData.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
+                                        if (searchObj == undefined) {
+                                            filterData.push(val)
+                                        }
+                                    }
+                                })
+                            }
+                        }
+                    })
+
+                d3.select(div).select('.filterData')
+                    .on('click', applyFilter());
+
+                d3.select(div).select('.removeFilter')
+                    .on('click', clearFilter(div));
+
+                var lasso = d3Lasso.lasso()
+                    .hoverSelect(true)
+                    .closePathSelect(true)
+                    .closePathDistance(100)
+                    .items(node.select('rect'))
+                    .targetArea(_local_svg);
+
+                lasso.on('start', onLassoStart(lasso, me))
+                    .on('draw', onLassoDraw(lasso, me))
+                    .on('end', onLassoEnd(lasso, me));
+
+                _local_svg.call(lasso);
+            }
         });
-
     }
 
+    chart._getName = function () {
+        return _NAME;
+    }
+
+    chart._getHTML = function () {
+        return _local_svg.node().outerHTML;
+    }
 
     chart.update = function (data) {
 
@@ -544,6 +566,7 @@ function sankey() {
         newLink = link.enter().append('path')
             .attr('class', 'link')
             .attr('d', path)
+            .style('stroke', '#efefef')
             .style('stroke-width', function (d) { return Math.max(1, d.dy); })
             .sort(function (a, b) { return b.dy - a.dy; })
             .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg, 'link'))
@@ -823,6 +846,14 @@ function sankey() {
             return numberFormat;
         }
         numberFormat = value;
+        return chart;
+    }
+
+    chart.print = function (value) {
+        if (!arguments.length) {
+            return _print;
+        }
+        _print = value;
         return chart;
     }
 

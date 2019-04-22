@@ -1,5 +1,11 @@
-var COMMON = require('../extras/common.js')(),
-    UTIL = require('../extras/util.js')()
+var d3 = require('d3');
+var COMMON = require('../extras/common.js')();
+var d3bullet = require('../../d3-libs/d3.bullet.js');
+var UTIL = require('../extras/util.js')();
+try {
+    var d3Lasso = require("d3-lasso");
+
+} catch (ex) { }
 function bullet() {
 
     var _NAME = 'bullet';
@@ -20,7 +26,8 @@ function bullet() {
         measureNumberFormat,
         targetNumberFormat,
         _tooltip,
-        _sort;
+        _sort,
+        _print;
 
     var _local_svg, _Local_data, _originalData;
 
@@ -135,7 +142,7 @@ function bullet() {
         }
     }
 
-    var applyFilter = function (chart) {
+    var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
                 chart.update(filterData);
@@ -143,9 +150,11 @@ function bullet() {
         }
     }
 
-    var clearFilter = function () {
+    var clearFilter = function (div) {
         return function () {
             chart.update(_originalData);
+            d3.select(div).select('.confirm')
+                .style('visibility', 'hidden');
         }
     }
 
@@ -248,26 +257,31 @@ function bullet() {
         return margin;
     }
     var formatUsingCss = function (scope) {
-        var bullet = $(scope).find('.bullet'),
-            range = bullet.find('.range');
+        var bullet = scope.selectAll('.bullet'),
+            range = scope.selectAll('.range');
 
-        bullet.css('font', '9px sans-serif');
-        bullet.find('.marker').css('stroke', targetColor)
-            .css('stroke-width', '2px');
-        bullet.find('.tick line').css('stroke', '#666')
-            .css('stroke-width', '0.5px');
-        bullet.find('.measure').css('fill', valueColor);
-        bullet.find('.measure').removeClass('selected');
-        bullet.find('.title').css('font-size', '1.1em');
+        bullet.style('font', '9px sans-serif');
+        bullet.selectAll('.marker')
+            .style('stroke', targetColor)
+            .style('stroke-width', '2px');
+
+        bullet.selectAll('.tick line')
+            .style('stroke', '#666')
+            .style('stroke-width', '0.5px');
+
+        bullet.selectAll('.measure').style('fill', valueColor);
+        bullet.selectAll('.measure').classed('selected', false);
+        //set from config
+        //bullet.find('.title').css('font-size', '1.1em');
 
         if (orientation == 'Vertical') {
-            bullet.find('.tick text').each(function (i, d) {
-                var text = $(d).text();
+            bullet.selectAll('.tick text').each(function (i, d) {
+                var text = d;
                 //  $(d).text(UTIL.getTruncatedLabel(d, UTIL.shortScale(2)(UTIL.convertToNumber(text)), 25));
             });
         } else {
-            bullet.find('.tick text').each(function (i, d) {
-                var text = $(d).text();
+            bullet.selectAll('.tick text').each(function (i, d) {
+                var text = d;
                 //  $(d).text(UTIL.getTruncatedLabel(d, UTIL.shortScale(2)(UTIL.convertToNumber(text)), 25));
             });
         }
@@ -275,7 +289,7 @@ function bullet() {
         var obj;
         for (var property in obj = getSegmentColors(this)) {
             if (obj.hasOwnProperty(property)) {
-                range.filter(property).css('fill', obj[property]);
+                range.filter(property).style('fill', obj[property]);
             }
         }
     }
@@ -285,9 +299,13 @@ function bullet() {
         selection.each(function (data) {
             _originalData = _Local_data = data;
             div = d3.select(this).node().parentNode;
-            width = div.clientWidth,
-                height = div.clientHeight;
-            chart.local_svg = d3.select(this);
+
+            var me = this;
+
+            var svg = d3.select(this);
+            width = +svg.attr('width');
+            height = +svg.attr('height');
+
             _local_svg.selectAll('g').remove();
 
             _local_svg.attr('width', width)
@@ -295,9 +313,6 @@ function bullet() {
 
             container = _local_svg.append('g')
                 .attr('class', 'plot')
-
-            var _filter = UTIL.createFilterElement()
-            $(div).append(_filter);
 
             if (_tooltip) {
                 tooltip = d3.select(this.parentNode).select('#tooltip');
@@ -315,8 +330,14 @@ function bullet() {
                 return d;
             });
 
-            bullet = d3.bullet()
-                .duration(800);
+            if (!_print) {
+                bullet = d3bullet(_print)
+                    .duration(COMMON.DURATION);
+            }
+            else {
+                bullet = d3bullet(_print)
+            }
+
             var margin = getMargin(width);
             gWidth = Math.floor((width - margin.left - margin.right) / data.length);
             gHeight = Math.floor((height - margin.top - margin.bottom) / data.length);
@@ -354,33 +375,6 @@ function bullet() {
                     }
 
                 })
-                .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
-                .on('click', function (d) {
-
-                    var confirm = d3.select(div).select('.confirm')
-                        .style('visibility', 'visible');
-
-                    var rect = d3.select(this).select('rect.measure');
-
-                    if (rect.classed('selected')) {
-                        rect.classed('selected', false);
-                        filterData = filterData.filter(function (val) {
-                            if (val[dimension[0]] != d.title) {
-                                return val;
-                            }
-                        })
-                    } else {
-                        rect.classed('selected', true);
-                        var obj = new Object();
-                        obj[dimension] = d.title;
-                        obj[measures[0]] = d.measures.toString();
-                        obj[measures[1]] = d.markers.toString();
-
-                        filterData.push(obj)
-                    }
-                })
                 .call(bullet);
 
             var title = g.append('g')
@@ -402,9 +396,9 @@ function bullet() {
 
             title.append('text')
                 .attr('class', 'title')
-                .attr('font-style', fontStyle)
-                .attr('font-weight', fontWeight)
-                .attr('font-size', fontSize)
+                .style('font-style', fontStyle)
+                .style('font-weight', fontWeight)
+                .style('font-size', fontSize + 'px')
                 .attr('transform', function (d) {
                     if (orientation == 'Horizontal') {
                         return 'rotate(0)';
@@ -415,41 +409,84 @@ function bullet() {
                 .text(function (d) { return d.title; })
                 .text(function (d) {
                     if (orientation == 'Horizontal') {
-                        return UTIL.getTruncatedLabel(this, d.title, margin.left, offset);
+                        if (d.title.length > 3) {
+                            return d.title.substring(0, 3) + '...';
+                        }
+                        return d.title;
                     } else if (orientation == 'Vertical') {
                         return UTIL.getTruncatedLabel(this, d.title, Math.floor(gWidth / 2), offset);
                     }
                 });
-            formatUsingCss(this);
+            formatUsingCss(_local_svg);
 
-            d3.select(div).select('.filterData')
-                .on('click', applyFilter(chart));
+            if (!_print) {
 
-            d3.select(div).select('.removeFilter')
-                .on('click', clearFilter());
+                d3.selectAll('g.bullet')
+                    .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+                    .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+                    .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+                    .on('click', function (d) {
 
-            var lasso = d3.lasso()
-                .hoverSelect(true)
-                .closePathSelect(true)
-                .closePathDistance(100)
-                .items(g)
-                .targetArea(_local_svg);
+                        var confirm = d3.select(div).select('.confirm')
+                            .style('visibility', 'visible');
 
-            lasso.on('start', onLassoStart(lasso, me))
-                .on('draw', onLassoDraw(lasso, me))
-                .on('end', onLassoEnd(lasso, me));
+                        var rect = d3.select(this).select('rect.measure');
 
-            _local_svg.call(lasso);
+                        if (rect.classed('selected')) {
+                            rect.classed('selected', false);
+                            filterData = filterData.filter(function (val) {
+                                if (val[dimension[0]] != d.title) {
+                                    return val;
+                                }
+                            })
+                        } else {
+                            rect.classed('selected', true);
+                            var obj = new Object();
+                            obj[dimension] = d.title;
+                            obj[measures[0]] = d.measures.toString();
+                            obj[measures[1]] = d.markers.toString();
+
+                            filterData.push(obj)
+                        }
+                    })
+
+
+                var _filter = UTIL.createFilterElement()
+                $(div).append(_filter);
+
+                d3.select(div).select('.filterData')
+                    .on('click', applyFilter());
+
+                d3.select(div).select('.removeFilter')
+                    .on('click', clearFilter(div));
+
+                var lasso = d3Lasso.lasso()
+                    .hoverSelect(true)
+                    .closePathSelect(true)
+                    .closePathDistance(100)
+                    .items(g)
+                    .targetArea(_local_svg);
+
+                lasso.on('start', onLassoStart(lasso, me))
+                    .on('draw', onLassoDraw(lasso, me))
+                    .on('end', onLassoEnd(lasso, me));
+
+                _local_svg.call(lasso);
+            }
         });
     }
     chart._getName = function () {
         return _NAME;
     }
 
+    chart._getHTML = function () {
+        return _local_svg.node().outerHTML;
+    }
+
     chart.update = function (data) {
         _Local_data = data;
         filterData = [];
-        var svg = chart.local_svg;
+        var svg = _local_svg;
 
         data = data.map(function (item) {
             var d = {};
@@ -551,9 +588,9 @@ function bullet() {
 
         title.append('text')
             .attr('class', 'title')
-            .attr('font-style', fontStyle)
-            .attr('font-weight', fontWeight)
-            .attr('font-size', fontSize)
+            .style('font-style', fontStyle)
+            .style('font-weight', fontWeight)
+            .style('font-size', fontSize + 'px')
             .attr('transform', function (d) {
                 if (orientation == 'Horizontal') {
                     return 'rotate(0)';
@@ -570,7 +607,7 @@ function bullet() {
                 }
             });
 
-        formatUsingCss(this);
+        formatUsingCss(_local_svg);
     }
 
     chart.config = function (value) {
@@ -689,6 +726,15 @@ function bullet() {
         targetNumberFormat = value;
         return chart;
     }
+
+    chart.print = function (value) {
+        if (!arguments.length) {
+            return _print;
+        }
+        _print = value;
+        return chart;
+    }
+
     return chart;
 }
 

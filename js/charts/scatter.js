@@ -78,7 +78,7 @@ function scatter() {
         output += "<table>";
         _measure.forEach(element => {
             output += "<tr><th>" + element + ": </th>";
-            output += "<th>" + datum[ element] + "</th></tr>";
+            output += "<th>" + datum[element] + "</th></tr>";
         });
         output += "</table>";
 
@@ -147,7 +147,7 @@ function scatter() {
         }
     }
 
-    var applyFilter = function (chart) {
+    var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
                 chart(filterData);
@@ -176,7 +176,7 @@ function scatter() {
 
         return function (d, i) {
             if (tooltip) {
-                var border =  d3.select(this).attr('fill');
+                var border = d3.select(this).attr('fill');
                 UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border);
             }
         }
@@ -232,8 +232,8 @@ function scatter() {
             var div = d3.select(this).node().parentNode;
 
             var svg = d3.select(this),
-                width = div.clientWidth,
-                height = div.clientHeight;
+                width = +svg.attr('width'),
+                height = +svg.attr('height');
 
             parentWidth = width - 2 * COMMON.PADDING - margin.left;
             parentHeight = (height - 2 * COMMON.PADDING - axisLabelSpace * 2);
@@ -253,13 +253,13 @@ function scatter() {
                 .attr('class', 'scatter-plot')
                 .classed('plot', true)
                 .attr('transform', function () {
-                    if (_legendPosition == 'Top') {
+                    if (_legendPosition == 'top') {
                         return 'translate(' + margin.left + ', ' + legendSpace * 2 + ')';
-                    } else if (_legendPosition == 'Bottom') {
+                    } else if (_legendPosition == 'bottom') {
                         return 'translate(' + margin.left + ', 0)';
-                    } else if (_legendPosition == 'Left') {
+                    } else if (_legendPosition == 'left') {
                         return 'translate(' + (legendSpace + margin.left + axisLabelSpace) + ', 0)';
-                    } else if (_legendPosition == 'Right') {
+                    } else if (_legendPosition == 'right') {
                         return 'translate(' + margin.left + ', 0)';
                     }
                 });
@@ -376,34 +376,34 @@ function scatter() {
                 legendBreakCount = result.legendBreakCount;
 
                 switch (_legendPosition) {
-                    case 'Top':
+                    case 'top':
                         plotHeight = parentHeight - legendHeight - axisLabelSpace;
                         break;
-                    case 'Bottom':
+                    case 'bottom':
                         plotHeight = parentHeight - legendHeight - axisLabelSpace * 2;
                         break;
                     case 'right':
-                    case 'Left':
+                    case 'left':
                         plotWidth = parentWidth - legendWidth;
                         break;
                 }
 
-                if ((_legendPosition == 'Top') || (_legendPosition == 'Bottom')) {
+                if ((_legendPosition == 'top') || (_legendPosition == 'bottom')) {
                     plotWidth = parentWidth;
                     plotHeight = parentHeight - 3 * axisLabelSpace;
                     legendSpace = 20;
-                } else if ((_legendPosition == 'Left') || (_legendPosition == 'Right')) {
+                } else if ((_legendPosition == 'left') || (_legendPosition == 'right')) {
                     var legend = _local_svg.selectAll('.item');
                     legendSpace = legend.node().parentNode.getBBox().width;
                     plotWidth = (parentWidth - legendSpace) - margin.left + axisLabelSpace;
                     plotHeight = parentHeight;
 
                     legend.attr('transform', function (d, i) {
-                        if (_legendPosition == 'Left') {
+                        if (_legendPosition == 'left') {
                             return 'translate(0, ' + i * 20 + ')';
 
                         }
-                        else if (_legendPosition == 'Right') {
+                        else if (_legendPosition == 'right') {
                             return 'translate(' + (parentWidth - legendSpace + axisLabelSpace) + ', ' + i * 20 + ')';
                         }
                     });
@@ -420,7 +420,8 @@ function scatter() {
 
     }
 
- chart._legendInteraction = function (event, data, plot) {        var arcGroup = d3.selectAll('g.arc')
+    chart._legendInteraction = function (event, data, plot) {
+        var arcGroup = d3.selectAll('g.arc')
             .filter(function (d) {
                 return d.data[_dimension[0]] === data[_dimension[0]];
             });
@@ -540,7 +541,7 @@ function scatter() {
                 return _fontWeight[i];
             })
             .style('font-size', function (d, i) {
-                return _fontSize[i]+ 'px';
+                return _fontSize[i] + 'px';
             })
             .style('fill', function (d, i) {
                 return _textColor[i];
@@ -654,7 +655,7 @@ function scatter() {
 
     chart.showGrid = function (value) {
         if (!arguments.length) {
-            return _tooltip;
+            return _showGrid;
         }
         _showGrid = value;
         return chart;
@@ -662,7 +663,7 @@ function scatter() {
 
     chart.stacked = function (value) {
         if (!arguments.length) {
-            return _tooltip;
+            return _stacked;
         }
         _stacked = value;
         return chart;
@@ -670,7 +671,7 @@ function scatter() {
 
     chart.displayName = function (value) {
         if (!arguments.length) {
-            return _tooltip;
+            return _displayName;
         }
         _displayName = value;
         return chart;

@@ -1,5 +1,10 @@
-var COMMON = require('../extras/common.js')(),
-    UTIL = require('../extras/util.js')();
+var d3 = require('d3');
+var COMMON = require('../extras/common.js')();
+var UTIL = require('../extras/util.js')();
+try {
+    var d3Lasso = require("d3-lasso");
+
+} catch (ex) { }
 
 function treemap() {
 
@@ -28,19 +33,20 @@ function treemap() {
         displayColor = [],
         fontStyleForDimension = [],
         fontWeightForDimension = [],
-        fontSizeForDimension = [];
+        fontSizeForDimension = [],
+        _print;
 
     /* These are the common variables that is shared across the different private/public 
      * methods but is initialized/updated within the methods itself.
      */
-    var _localSVG,
+    var _local_svg,
         _localTotal,
         _localData = [],
         _localTooltip,
         textPadding = 2,
         _originalData,
         width,
-        height,div;
+        height, div;
     // _localLabelStack;
 
     /* These are the common private functions that is shared across the different private/public 
@@ -239,13 +245,16 @@ function treemap() {
     }
 
     var getVisibilityValue = function (element, node) {
-        var contWidth = node.x1 - node.x0,
-            contHeight = node.y1 - node.y0,
-            textWidth = element.getComputedTextLength(),
-            textHeight = parseInt(d3.select(element).style('font-size').replace('px', ''));
+        if (!_print) {
+            var contWidth = node.x1 - node.x0,
+                contHeight = node.y1 - node.y0,
+                textWidth = element.getComputedTextLength(),
+                textHeight = parseInt(d3.select(element).style('font-size').replace('px', ''));
 
-        if (((textWidth + 2 * textPadding) > contWidth) || ((textHeight + 2 * textPadding) > contHeight)) {
-            return 'hidden';
+            if (((textWidth + 2 * textPadding) > contWidth) || ((textHeight + 2 * textPadding) > contHeight)) {
+                return 'hidden';
+            }
+            return 'visible';
         }
         return 'visible';
     }
@@ -419,7 +428,7 @@ function treemap() {
             }
         }
     }
-    var applyFilter = function (chart) {
+    var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
                 chart.update(filterData);
@@ -427,9 +436,11 @@ function treemap() {
         }
     }
 
-    var clearFilter = function () {
+    var clearFilter = function (div) {
         return function () {
             chart.update(_originalData);
+            d3.select(div).select('.confirm')
+                .style('visibility', 'hidden');
         }
     }
 
@@ -454,62 +465,66 @@ function treemap() {
             .attr('id', function (d, i) {
                 return 'rect-' + i;
             })
-            .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
-            .on('click', function (d) {
 
-                var confirm = d3.select(div).select('.confirm')
-                    .style('visibility', 'visible');
-                var _filter = _localData.filter(function (d1) {
-                    return d.data.key === d1[_dimension[1]]
-                })
-                var rect = d3.select(this);
-                if (rect.classed('selected')) {
-                    rect.classed('selected', false);
-                    filterData.map(function (val, i) {
-                        if (val[_dimension[0]] == d[_dimension[0]]) {
-                            filterData.splice(i, 1)
-                        }
+        if (!_print) {
+            rect.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+                .on('click', function (d) {
+
+                    var confirm = d3.select(div).select('.confirm')
+                        .style('visibility', 'visible');
+                    var _filter = _localData.filter(function (d1) {
+                        return d.data.key === d1[_dimension[1]]
                     })
-                } else {
-                    rect.classed('selected', true);
-                    if (d.children != undefined) {
-                        for (var index = 0; index < d.data.values.length; index++) {
-
-                            var isExist = filterData.filter(function (val) {
-                                if (val[_dimension[1]] == d.data.key) {
-                                    return val
-                                }
-                            })
-                            if (isExist.length == 0) {
-                                var searchObj = _localData.find(o => o[_dimension[1]] === d.data.values[index].key);
-
+                    var rect = d3.select(this);
+                    if (rect.classed('selected')) {
+                        rect.classed('selected', false);
+                        filterData.map(function (val, i) {
+                            if (val[_dimension[0]] == d[_dimension[0]]) {
+                                filterData.splice(i, 1)
+                            }
+                        })
+                    } else {
+                        rect.classed('selected', true);
+                        if (d.children != undefined) {
+                            for (var index = 0; index < d.data.values.length; index++) {
 
                                 var isExist = filterData.filter(function (val) {
-                                    if (val[_dimension[0]] == searchObj[_dimension[0]] && val[_dimension[1]] == searchObj[_dimension[1]]) {
+                                    if (val[_dimension[1]] == d.data.key) {
                                         return val
                                     }
                                 })
                                 if (isExist.length == 0) {
-                                    filterData.push(searchObj);
+                                    var searchObj = _localData.find(o => o[_dimension[1]] === d.data.values[index].key);
+
+
+                                    var isExist = filterData.filter(function (val) {
+                                        if (val[_dimension[0]] == searchObj[_dimension[0]] && val[_dimension[1]] == searchObj[_dimension[1]]) {
+                                            return val
+                                        }
+                                    })
+                                    if (isExist.length == 0) {
+                                        filterData.push(searchObj);
+                                    }
                                 }
                             }
                         }
-                    }
-                    else {
-                        var isExist = filterData.filter(function (val) {
-                            if (val[_dimension[0]] == d[_dimension[0]]) {
-                                return val
+                        else {
+                            var isExist = filterData.filter(function (val) {
+                                if (val[_dimension[0]] == d[_dimension[0]]) {
+                                    return val
+                                }
+                            })
+                            if (isExist.length == 0) {
+                                filterData.push(_filter[0]);
                             }
-                        })
-                        if (isExist.length == 0) {
-                            filterData.push(_filter[0]);
                         }
-                    }
 
-                }
-            })
+                    }
+                })
+        }
+
 
         rect.transition(t)
             .attr('width', function (d) {
@@ -555,25 +570,27 @@ function treemap() {
                     return getFontSizeValue(d, i);
                 });
         }
+        if (!_print) {
+            var t = d3.transition()
+                .duration(COMMON.DURATION)
+                .ease(d3.easeQuadIn)
+                .on('end', afterTransition);
+        }
+        else {
+            afterTransition()
+        }
 
-        var t = d3.transition()
-            .duration(COMMON.DURATION)
-            .ease(d3.easeQuadIn)
-            .on('end', afterTransition);
     }
     function chart(selection) {
-        _localSVG = selection;
+        _local_svg = selection;
 
         selection.each(function (data) {
 
             var div = d3.select(this).node().parentNode;
-            _local_svg = d3.select(this);
 
-            width = div.clientWidth - 2 * COMMON.PADDING,
-                height = div.clientHeight - 2 * COMMON.PADDING;
-
-            var svg = d3.select(this);
-
+            var svg = d3.select(this),
+                width = +svg.attr('width') - 2 * COMMON.PADDING,
+                height = +svg.attr('height') - 2 * COMMON.PADDING;
             /* store the data in local variable */
             _localData = _originalData = data;
 
@@ -588,9 +605,6 @@ function treemap() {
             if (_tooltip) {
                 tooltip = d3.select(this.parentNode).select('#tooltip');
             }
-
-            var _filter = UTIL.createFilterElement()
-            $(div).append(_filter);
 
             treemap = d3.treemap()
                 .size([width, height])
@@ -648,30 +662,38 @@ function treemap() {
 
             drawViz(cell)
 
-            d3.select(div).select('.filterData')
-                .on('click', applyFilter(chart));
+            if (!_print) {
+                var _filter = UTIL.createFilterElement()
+                $(div).append(_filter);
 
-            d3.select(div).select('.removeFilter')
-                .on('click', clearFilter());
+                d3.select(div).select('.filterData')
+                    .on('click', applyFilter());
 
-            var lasso = d3.lasso()
-                .hoverSelect(true)
-                .closePathSelect(true)
-                .closePathDistance(100)
-                .items(cell)
-                .targetArea(svg);
+                d3.select(div).select('.removeFilter')
+                    .on('click', clearFilter(div));
 
-            lasso.on('start', onLassoStart(lasso, me))
-                .on('draw', onLassoDraw(lasso, me))
-                .on('end', onLassoEnd(lasso, me));
+                var lasso = d3Lasso.lasso()
+                    .hoverSelect(true)
+                    .closePathSelect(true)
+                    .closePathDistance(100)
+                    .items(cell)
+                    .targetArea(_local_svg);
 
-            _local_svg.call(lasso);
+                lasso.on('start', onLassoStart(lasso, me))
+                    .on('draw', onLassoDraw(lasso, me))
+                    .on('end', onLassoEnd(lasso, me));
 
+                _local_svg.call(lasso);
+            }
         });
     }
 
     chart._getName = function () {
         return _NAME;
+    }
+
+    chart._getHTML = function () {
+        return _local_svg.node().outerHTML;
     }
 
     chart.update = function (data) {
@@ -703,10 +725,10 @@ function treemap() {
             setColorDomainRange(root.descendants(), dim);
             dim -= 1;
         }
-        var svg = _localSVG
+        var svg = _local_svg
         treemap(root);
         var dim = _dimension.length;
-        var plot = _localSVG.select('.plot');
+        var plot = _local_svg.select('.plot');
 
         plot.selectAll('.information').remove();
         while (dim > 0) {
@@ -869,6 +891,14 @@ function treemap() {
             return numberFormat;
         }
         numberFormat = value;
+        return chart;
+    }
+
+    chart.print = function (value) {
+        if (!arguments.length) {
+            return _print;
+        }
+        _print = value;
         return chart;
     }
 

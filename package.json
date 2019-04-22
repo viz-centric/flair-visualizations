@@ -34,5 +34,11 @@
     "ttf-loader": "^1.0.2",
     "webpack": "^4.29.6",
     "webpack-cli": "^3.3.0"
+  },
+  "dependencies": {
+    "d3": "^5.0.0-rc.4",
+    "d3-lasso": "0.0.5",
+    "jquery": "^3.4.0",
+    "topojson": "^3.0.2"
   }
 }

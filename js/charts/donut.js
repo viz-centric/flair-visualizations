@@ -222,7 +222,7 @@ function donut() {
         }
     }
 
-    var applyFilter = function (chart) {
+    var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
                 chart.update(filterData);
@@ -341,12 +341,12 @@ function donut() {
                 legendHeight = result.legendHeight;
 
                 switch (_legendPosition) {
-                    case 'Top':
-                    case 'Bottom':
+                    case 'top':
+                    case 'bottom':
                         plotHeight = parentHeight - legendHeight;
                         break;
                     case 'right':
-                    case 'Left':
+                    case 'left':
                         plotWidth = parentWidth - legendWidth;
                         break;
                 }
@@ -382,14 +382,14 @@ function donut() {
                         var translate = [0, 0];
 
                         switch (_legendPosition) {
-                            case 'Top':
+                            case 'top':
                                 translate = [(plotWidth / 2), legendHeight + (plotHeight / 2)];
                                 break;
-                            case 'Bottom':
+                            case 'bottom':
                             case 'right':
                                 translate = [(plotWidth / 2), (plotHeight / 2)];
                                 break;
-                            case 'Left':
+                            case 'left':
                                 translate = [legendWidth + (plotWidth / 2), (plotHeight / 2)]
                         }
 
@@ -563,7 +563,7 @@ function donut() {
                     .on('end', onLassoEnd(lasso, me));
 
                 d3.select('.confirm')
-                    .on('click', applyFilter(chart));
+                    .on('click', applyFilter());
 
                 plot.call(lasso);
             }

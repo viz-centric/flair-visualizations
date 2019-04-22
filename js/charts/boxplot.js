@@ -1,6 +1,11 @@
-var COMMON = require('../extras/common.js')(),
-    UTIL = require('../extras/util.js')();
+var d3 = require('d3');
+var COMMON = require('../extras/common.js')();
+var UTIL = require('../extras/util.js')();
 
+try {
+    var d3Lasso = require("d3-lasso");
+
+} catch (ex) { }
 function boxplot() {
 
     var _NAME = 'boxplot';
@@ -16,7 +21,8 @@ function boxplot() {
         showLabels,
         labelColor,
         numberFormat = [],
-        displayColor = [];
+        displayColor = [],
+        _print;
 
     var x, y;
     var margin = {
@@ -26,8 +32,12 @@ function boxplot() {
         left: 35
     };
     var _local_svg, _Local_data, _originalData, horizontalLineConfigs, legendBreakCount = 1;
-    var div;
-    var width, gWidth, height, gHeight, container;
+
+    var width, gWidth, height, gHeight, container, div;
+
+    var tickLength = d3.scaleLinear()
+        .domain([22, 34])
+        .range([4, 6]);
 
     var filter = false, filterData = [];
     var threshold = [];
@@ -136,7 +146,7 @@ function boxplot() {
         }
     }
 
-    var applyFilter = function (chart) {
+    var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
                 chart.update(filterData);
@@ -144,9 +154,11 @@ function boxplot() {
         }
     }
 
-    var clearFilter = function () {
+    var clearFilter = function (div) {
         return function () {
             chart.update(_originalData);
+            d3.select(div).select('.confirm')
+                .style('visibility', 'hidden');
         }
     }
 
@@ -221,12 +233,11 @@ function boxplot() {
             _Local_data = _originalData = data;
             div = d3.select(this).node().parentNode;
 
-            var svg = _local_svg = d3.select(this);
+            var svg = d3.select(this);
+            width = +svg.attr('width');
+            height = +svg.attr('height');
 
-            width = div.clientWidth,
-                height = div.clientHeight;
-
-            svg.attr("width", width).
+            _local_svg.attr("width", width).
                 attr("height", height);
 
             var globalMin, globalMax, xLabels;
@@ -237,17 +248,14 @@ function boxplot() {
 
             xLabels = getXLabels(data);
 
-            gWidth = width - margin.left - margin.right,
-                gHeight = height - margin.top - margin.bottom;
+            gWidth = width - margin.left - margin.right;
+            gHeight = height - margin.top - margin.bottom;
 
             var barWidth = Math.floor(gWidth / data.length / 2);
             var me = this;
             if (_tooltip) {
                 tooltip = d3.select(this.parentNode).select('#tooltip');
             }
-
-            var _filter = UTIL.createFilterElement()
-            $(div).append(_filter);
 
             x = d3
                 .scalePoint()
@@ -264,9 +272,6 @@ function boxplot() {
                 .append("g")
                 .attr("class", "plot")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-            d3.selectAll('text.tick')
-                .attr("transform", "rotate(-20)");
 
             var boxPlot = plot
                 .append("g")
@@ -292,35 +297,6 @@ function boxplot() {
                 .attr("id", function (d, i) {
                     return "box" + i;
                 })
-                .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
-                .on('click', function (d) {
-                    var confirm = d3.select(div).select('.confirm')
-                        .style('visibility', 'visible');
-                    var _filter = _Local_data.filter(function (d1) {
-                        return d[_dimension[0]] === d1[_dimension[0]]
-                    })
-                    var rect = d3.select(this);
-                    if (rect.classed('selected')) {
-                        rect.classed('selected', false);
-                        filterData.map(function (val, i) {
-                            if (val[_dimension[0]] == d[_dimension[0]]) {
-                                filterData.splice(i, 1)
-                            }
-                        })
-                    } else {
-                        rect.classed('selected', true);
-                        var isExist = filterData.filter(function (val) {
-                            if (val[_dimension[0]] == d[_dimension[0]]) {
-                                return val
-                            }
-                        })
-                        if (isExist.length == 0) {
-                            filterData.push(_filter[0]);
-                        }
-                    }
-                })
 
             var lowerBox = box
                 .append("rect")
@@ -342,14 +318,6 @@ function boxplot() {
                         .darker();
                 })
                 .attr("stroke-width", 1)
-                .attr("height", 0)
-                .transition()
-                .duration(800)
-                .ease(d3.easeQuadIn)
-                .attr("height", function (d) {
-                    return y(d[_measure[1]]) - y(d[_measure[2]]);
-                });
-
 
             var upperBox = box
                 .append("rect")
@@ -371,20 +339,6 @@ function boxplot() {
                 .attr("y", function (d) {
                     return y(d[_measure[2]]);
                 })
-                .attr("height", 0)
-                .transition()
-                .duration(800)
-                .ease(d3.easeQuadIn)
-                .attr("height", function (d) {
-                    var height =
-                        y(d[_measure[2]]) -
-                        y(d[_measure[3]]);
-                    return height;
-                })
-                .attr("y", function (d) {
-                    return y(d[_measure[3]]);
-                })
-                .on("end", afterTransition);
 
             horizontalLineConfigs = [
                 {
@@ -486,41 +440,142 @@ function boxplot() {
                 });
             }
 
+            if (!_print) {
+                _local_svg.selectAll('.lowerBox')
+                    .attr("height", 0)
+                    .transition()
+                    .duration(COMMON.DURATION)
+                    .ease(d3.easeQuadIn)
+                    .attr("height", function (d) {
+                        return y(d[_measure[1]]) - y(d[_measure[2]]);
+                    });
+
+                _local_svg.selectAll('.upperBox')
+                    .attr("height", 0)
+                    .transition()
+                    .duration(COMMON.DURATION)
+                    .ease(d3.easeQuadIn)
+                    .attr("height", function (d) {
+                        var height =
+                            y(d[_measure[2]]) -
+                            y(d[_measure[3]]);
+                        return height;
+                    })
+                    .attr("y", function (d) {
+                        return y(d[_measure[3]]);
+                    })
+                    .on("end", afterTransition);
+
+            }
+            else {
+                _local_svg.selectAll('.lowerBox')
+                    .attr("height", function (d) {
+                        return y(d[_measure[1]]) - y(d[_measure[2]]);
+                    });
+
+                _local_svg.selectAll('.upperBox')
+                    .attr("height", function (d) {
+                        var height =
+                            y(d[_measure[2]]) -
+                            y(d[_measure[3]]);
+                        return height;
+                    })
+                    .attr("y", function (d) {
+                        return y(d[_measure[3]]);
+                    })
+                afterTransition();
+            }
+            var isRotate = false;
             plot.append("g")
                 .attr("class", "x_axis")
                 .attr("transform", "translate(0," + gHeight + ")")
-                .call(d3.axisBottom(x))
+                .call(d3.axisBottom(x)
+                    .tickSize(0)
+                    .tickFormat(function (d) {
+                        if (isRotate == false) {
+                            isRotate = UTIL.getTickRotate(d, (gWidth) / (xLabels.length - 1), tickLength);
+                        }
+                        return UTIL.getTruncatedTick(d, (gWidth) / (xLabels.length - 1), tickLength);
+                    })
+                    .tickPadding(10))
 
             plot.append("g")
                 .attr("class", "y_axis")
                 .call(d3.axisLeft(y).ticks(null, "s"))
 
+            if (isRotate) {
+                _local_svg.selectAll('.x_axis .tick text')
+                    .attr("transform", "rotate(-15)");
+            }
+
             UTIL.setAxisColor(_local_svg, "", "", true, true, true, true);
 
-            d3.select(div).select('.filterData')
-                .on('click', applyFilter(chart));
+            if (!_print) {
+                var _filter = UTIL.createFilterElement()
+                $(div).append(_filter);
 
-            d3.select(div).select('.removeFilter')
-                .on('click', clearFilter());
+                _local_svg.selectAll('g.box')
+                    .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+                    .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+                    .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+                    .on('click', function (d) {
 
-            var lasso = d3
-                .lasso()
-                .hoverSelect(true)
-                .closePathSelect(true)
-                .closePathDistance(100)
-                .items(box)
-                .targetArea(svg);
+                        var confirm = d3.select(div).select('.confirm')
+                            .style('visibility', 'visible');
 
-            lasso.on('start', onLassoStart(lasso, me))
-                .on('draw', onLassoDraw(lasso, me))
-                .on('end', onLassoEnd(lasso, me));
+                        var _filter = _Local_data.filter(function (d1) {
+                            return d[_dimension[0]] === d1[_dimension[0]]
+                        })
+                        var rect = d3.select(this);
+                        if (rect.classed('selected')) {
+                            rect.classed('selected', false);
+                            filterData.map(function (val, i) {
+                                if (val[_dimension[0]] == d[_dimension[0]]) {
+                                    filterData.splice(i, 1)
+                                }
+                            })
+                        } else {
+                            rect.classed('selected', true);
+                            var isExist = filterData.filter(function (val) {
+                                if (val[_dimension[0]] == d[_dimension[0]]) {
+                                    return val
+                                }
+                            })
+                            if (isExist.length == 0) {
+                                filterData.push(_filter[0]);
+                            }
+                        }
+                    })
 
-            boxPlot.call(lasso);
+                d3.select(div).select('.filterData')
+                    .on('click', applyFilter());
+
+                d3.select(div).select('.removeFilter')
+                    .on('click', clearFilter(div));
+
+                var lasso = d3Lasso
+                    .lasso()
+                    .hoverSelect(true)
+                    .closePathSelect(true)
+                    .closePathDistance(100)
+                    .items(box)
+                    .targetArea(_local_svg);
+
+                lasso.on('start', onLassoStart(lasso, me))
+                    .on('draw', onLassoDraw(lasso, me))
+                    .on('end', onLassoEnd(lasso, me));
+
+                _local_svg.call(lasso);
+            }
         });
     }
 
     chart._getName = function () {
         return _NAME;
+    }
+
+    chart._getHTML = function () {
+        return _local_svg.node().outerHTML;
     }
 
     chart.update = function (data) {
@@ -637,8 +692,6 @@ function boxplot() {
             .attr("height", function (d) {
                 return y(d[_measure[1]]) - y(d[_measure[2]]);
             });
-
-
 
         box.selectAll('.upperBox')
             .attr("width", barWidth)
@@ -829,6 +882,14 @@ function boxplot() {
             return labelColor;
         }
         labelColor = value;
+        return chart;
+    }
+
+    chart.print = function (value) {
+        if (!arguments.length) {
+            return _print;
+        }
+        _print = value;
         return chart;
     }
 
