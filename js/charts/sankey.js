@@ -398,13 +398,19 @@ function sankey() {
                     return "";
                 })
                 .text(function (d) {
-                    if (d.dy > 4) {
-                        if (dimension.indexOf(d.nodeType) >= dimension.length - 2) {
-                            return UTIL.getTruncatedLabel(this, d.name, nodeDistance / 2, 3);
+                    if (_print) {
+                        if (d.dy > 4) {
+                            if (dimension.indexOf(d.nodeType) >= dimension.length - 2) {
+                                return UTIL.getTruncatedLabel(this, d.name, nodeDistance / 2, 3);
+                            }
+                            return UTIL.getTruncatedLabel(this, d.name, nodeDistance, 3);
                         }
-                        return UTIL.getTruncatedLabel(this, d.name, nodeDistance, 3);
+                        return "";
                     }
-                    return "";
+                    else {
+                        d.name
+                    }
+
                 })
                 .style('visibility', function (d, i) {
                     return showLabels[dimension.indexOf(d.nodeType)];
