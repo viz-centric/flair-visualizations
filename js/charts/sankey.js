@@ -398,7 +398,7 @@ function sankey() {
                     return "";
                 })
                 .text(function (d) {
-                    if (_print) {
+                    if (!_print) {
                         if (d.dy > 4) {
                             if (dimension.indexOf(d.nodeType) >= dimension.length - 2) {
                                 return UTIL.getTruncatedLabel(this, d.name, nodeDistance / 2, 3);
@@ -408,7 +408,10 @@ function sankey() {
                         return "";
                     }
                     else {
-                        d.name
+                        if (d.dy > 4) {
+                            return d.name;
+                        }
+                        return "";
                     }
 
                 })

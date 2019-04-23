@@ -1,6 +1,13 @@
-var COMMON = require('../extras/common.js')(),
-    UTIL = require('../extras/util.js')(),
-    LEGEND = require('../extras/legend.js')();
+var d3 = require('d3');
+var COMMON = require('../extras/common.js')();
+var UTIL = require('../extras/util.js')();
+var LEGEND = require('../extras/scatter_legend.js')();
+
+try {
+    var d3Lasso = require("d3-lasso");
+
+} catch (ex) { }
+
 
 function scatter() {
 
@@ -32,16 +39,25 @@ function scatter() {
         _textColor,
         _displayColor,
         _borderColor,
-        _fontSize;
+        _fontSize,
+        _print;
 
 
     var _local_svg, _Local_data;
 
     var parentWidth, parentHeight, plotWidth, plotHeight;
+    var _localXAxis,
+        _localYAxis,
+        _localXGrid,
+        _localYGrid;
 
     var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div;
     var threshold = [];
     var filter = false, filterData = [];
+
+    var tickLength = d3.scaleLinear()
+        .domain([22, 34])
+        .range([4, 6]);
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
@@ -76,6 +92,10 @@ function scatter() {
     var _buildTooltipData = function (datum, chart) {
         var output = "";
         output += "<table>";
+        _dimension.forEach(element => {
+            output += "<tr><th>" + element + ": </th>";
+            output += "<th>" + datum[element] + "</th></tr>";
+        });
         _measure.forEach(element => {
             output += "<tr><th>" + element + ": </th>";
             output += "<th>" + datum[element] + "</th></tr>";
@@ -85,6 +105,18 @@ function scatter() {
         return output;
     }
 
+    var _setAxisColor = function (axis, color) {
+        var path = axis.select('path'),
+            ticks = axis.selectAll('.tick');
+
+        path.style('stroke', color);
+
+        ticks.select('line')
+            .style('stroke', color);
+
+        ticks.select('text')
+            .style('fill', color);
+    }
     var onLassoStart = function (lasso, chart) {
         return function () {
             if (filter) {
@@ -128,13 +160,13 @@ function scatter() {
 
             lasso.notSelectedItems().selectAll('rect');
 
-            var confirm = $(scope).parent().find('div.confirm')
-                .css('visibility', 'visible');
+            var confirm = d3.select('.confirm')
+                .style('visibility', 'visible');
 
             var _filter = [];
             data.forEach(function (d) {
                 var obj = new Object();
-                obj[_dimension[0]] = d[_dimension[0]];
+                obj[_dimension[1]] = d[_dimension[1]];
                 for (var index = 0; index < _measure.length; index++) {
                     obj[_measure[index]] = d[_measure[index]];
                 }
@@ -147,7 +179,7 @@ function scatter() {
         }
     }
 
-    var applyFilter = function () {
+    var applyFilter = function (chart) {
         return function () {
             if (filterData.length > 0) {
                 chart(filterData);
@@ -161,7 +193,7 @@ function scatter() {
         return function (d, i) {
             d3.select(this)
                 .style('cursor', 'pointer')
-                .style('fill-opacity', 1);
+                .style('fill-opacity', .5);
 
             var border = d3.select(this).attr('fill');
             if (tooltip) {
@@ -187,21 +219,21 @@ function scatter() {
 
         return function (d, i) {
             d3.select(this).style('cursor', 'default')
-                .style('fill-opacity', .5)
+                .style('fill-opacity', 1)
 
             var arcGroup = container.selectAll('g.arc')
                 .filter(function (d1) {
-                    return d1.data[_dimension[0]] === d.data[_dimension[0]];
+                    return d1.data[_dimension[1]] === d.data[_dimension[1]];
                 });
 
             arcGroup.select('path')
                 .style('fill', function (d1, i) {
-                    return COMMON.COLORSCALE(d1.data[_dimension[0]]);
+                    return COMMON.COLORSCALE(d1.data[_dimension[1]]);
                 });
 
             var arcMaskGroup = container.selectAll('g.arc-mask')
                 .filter(function (d1) {
-                    return d1.data[_dimension[0]] === d.data[_dimension[0]];
+                    return d1.data[_dimension[1]] === d.data[_dimension[1]];
                 });
 
             arcMaskGroup.select('path')
@@ -240,9 +272,6 @@ function scatter() {
             plotWidth = parentWidth;
             plotHeight = parentHeight;
             const color = COMMON.COLORSCALE;
-
-            var str = UTIL.createAlert($(div).attr('id'), _measure);
-            $(div).append(str);
 
             var container = svg.append('g')
                 .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
@@ -289,71 +318,148 @@ function scatter() {
 
 
             x.domain([0, d3.max(data, function (d) {
-                return parseInt(d[_dimension[0]]);
+                return parseInt(d[_dimension[1]]);
             })]).nice();
 
             y.domain([0, d3.max(data, function (d) {
-                return parseInt(d[_measure[3]]);
+                return parseInt(d[_measure[2]]);
             })]).nice();
+
+
+            var _localXLabels = data.map(function (d) {
+                return d[_dimension[0]];
+            });
+
+            _localXGrid = d3.axisBottom()
+                .ticks(_localXLabels.length)
+                .tickFormat('')
+                .tickSize(-plotHeight);
+
+            _localYGrid = d3.axisLeft()
+                .tickFormat('')
+                .tickSize(-plotWidth);
+
+            _localXGrid.scale(x);
+            _localYGrid.scale(y);
+
+            plot.append('g')
+                .attr('class', 'x grid')
+                .attr('visibility', function () {
+                    return _showGrid ? 'visible' : 'hidden';
+                })
+                .attr('transform', 'translate(0, ' + plotHeight + ')')
+                .call(_localXGrid);
+
+            plot.append('g')
+                .attr('class', 'y grid')
+                .attr('visibility', function () {
+                    return _showGrid ? 'visible' : 'hidden';
+                })
+                .call(_localYGrid);
 
             if (_tooltip) {
                 tooltip = d3.select(this.parentNode).select('#tooltip');
             }
 
-            plot.append("g")
-                .attr("class", "x_axis")
-                .attr("transform", "translate(0," + parseInt(plotHeight - 40) + ")")
-                .call(d3.axisBottom(x))
-                .append("text")
-                .attr("x", plotWidth / 2)
-                .attr("y", 2 * axisLabelSpace)
-                .attr("dy", "0.32em")
-                .attr("fill", "#000")
-                .attr("font-weight", "bold")
-                .style('text-anchor', 'middle')
-                .style('visibility', UTIL.getVisibility(_showXaxisLabel))
-                .text(function () {
-                    return _displayName;
-                });
+            var xAxisGroup,
+                yAxisGroup;
 
-            plot.append("g")
-                .attr("class", "y_axis")
-                .call(d3.axisLeft(y).ticks(null, "s"))
-                .append("text")
-                .attr("x", plotHeight / 2)
-                .attr("y", 2 * axisLabelSpace)
-                .attr("transform", function (d) { return "rotate(" + 90 + ")"; })
-                .attr("dy", "0.32em")
-                .style('visibility', UTIL.getVisibility(_showYaxisLabel))
-                .attr("font-weight", "bold")
-                .style('text-anchor', 'middle')
-                .text(function () {
-                    return _displayNameForMeasure.map(function (p) {
-                        return p;
-                    }).join(', ');
-                });
+            var isRotate = false;
 
-            plot.selectAll("circle")
+            if (_showXaxis) {
+                _localXAxis = d3.axisBottom(x)
+                    .tickSize(0)
+                    .tickFormat(function (d) {
+                        if (isRotate == false) {
+                            isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                        }
+                        return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                    })
+                    .tickPadding(10);
+
+                xAxisGroup = plot.append('g')
+                    .attr('class', 'x axis')
+                    .attr('visibility', function () {
+                        return 'visible';
+                    })
+                    .attr('transform', 'translate(0, ' + parseInt(plotHeight - 40) + ')')
+                    .call(_localXAxis);
+
+                xAxisGroup.append('g')
+                    .attr('class', 'label')
+                    .attr('transform', function () {
+                        return 'translate(' + (plotWidth) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
+                    })
+                    .append('text')
+                    .style('text-anchor', 'end')
+                    .style('font-weight', 'bold')
+                    .style('fill', _xAxisColor)
+                    .text(_displayName);
+
+                if (isRotate) {
+                    _local_svg.selectAll('.x .tick text')
+                        .attr("transform", "rotate(-15)");
+                }
+
+                _setAxisColor(xAxisGroup, _xAxisColor);
+
+            }
+
+            if (_showYaxis) {
+                _localYAxis = d3.axisLeft(y)
+                    .tickSize(0)
+                    .tickPadding(8)
+                    .tickFormat(function (d) {
+                        return UTIL.shortScale(2)(d);
+                    });
+
+                yAxisGroup = plot.append('g')
+                    .attr('class', 'y axis')
+                    .attr('visibility', function () {
+                        return 'visible';
+                    })
+                    .call(_localYAxis);
+
+                yAxisGroup.append('g')
+                    .attr('class', 'label')
+                    .attr('transform', function () {
+                        return 'translate(' + (-COMMON.AXIS_THICKNESS / 1.15) + ', ' + '0)';
+                    })
+                    .append('text')
+                    .attr('transform', 'rotate(-90)')
+                    .style('text-anchor', 'end')
+                    .style('font-weight', 'bold')
+                    .style('fill', _yAxisColor)
+                    .text(function () {
+                        return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+                    });
+
+                _setAxisColor(yAxisGroup, _yAxisColor);
+            }
+
+            var dataCircle = plot.selectAll("circle")
                 .data(data)
                 .enter()
                 .append("circle")
                 .attr("cx", function (d) {
-                    return x(d[_dimension[0]]);
+                    return x(d[_dimension[1]]);
                 })
                 .attr("cy", function (d) {
-                    return y(d[_measure[3]]);
+                    return y(d[_measure[2]]);
                 })
                 .attr("r", function (d) {
                     return rScale(parseInt(d[_measure[0]]));
                 })
                 .attr("fill", function (d) {
-                    return color(d[_measure[2]]);
+                    return color(d[_dimension[0]]);
                 })
+                .style('fill-opacity', 1)
 
-                .style('fill-opacity', .5)
-                .on('mouseover', _handleMouseOverFn.call(chart, tooltip, svg))
-                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg))
-                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg));
+            if (!_print) {
+                dataCircle.on('mouseover', _handleMouseOverFn.call(chart, tooltip, svg))
+                    .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg))
+                    .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg));
+            }
 
             var legendWidth = 0,
                 legendHeight = 0,
@@ -365,7 +471,7 @@ function scatter() {
             if (_showLegend) {
                 var clusteredverticalbarLegend = LEGEND.bind(chart);
 
-                var result = clusteredverticalbarLegend(_legendData, container, {
+                var result = clusteredverticalbarLegend(color.domain(), container, {
                     width: parentWidth,
                     height: parentHeight,
                     legendBreakCount: legendBreakCount
@@ -415,15 +521,14 @@ function scatter() {
                 plotHeight = parentHeight;
             }
 
-            UTIL.setAxisColor(svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis, _showYaxis, _showXaxis);
         });
 
     }
 
-    chart._legendInteraction = function (event, data, plot) {
+    chart._legendInteraction = function (event, data) {
         var arcGroup = d3.selectAll('g.arc')
             .filter(function (d) {
-                return d.data[_dimension[0]] === data[_dimension[0]];
+                return d.data[_dimension[1]] === data[_dimension[1]];
             });
 
         if (event === 'mouseover') {
@@ -434,7 +539,7 @@ function scatter() {
         } else if (event === 'mouseout') {
             arcGroup.select('path')
                 .style('fill', function (d, i) {
-                    return COMMON.COLORSCALE(d.data[_dimension[0]]);
+                    return COMMON.COLORSCALE(d.data[_dimension[1]]);
                 });
         } else if (event === 'click') {
 
@@ -445,107 +550,8 @@ function scatter() {
         return _NAME;
     }
 
-    chart.update = function (data) {
-        chart._Local_data = data,
-            svg = _local_svg;
-        filter = false;
-        filterData = [];
-        var key = function (d) {
-            return d.data[_dimension[0]];
-        };
-
-        var prevData = svg.selectAll('g.cluster')
-            .data().map(function (d) { return d.data });
-
-        if (prevData.length == 0) {
-            prevData = data;
-        }
-
-        //  var oldFilteredData = _mergeForTransition(data, prevData),
-        //      newFilteredData = _mergeForTransition(prevData, data);
-
-        var cluster = d3.selectAll('g.cluster')
-            .data(data);
-
-        cluster.enter().append('g')
-            .attr('class', 'cluster')
-            .attr('transform', function (d) {
-                return 'translate(' + xScaleDim(d[dimension[0]]) + ', 0)';
-            });
-
-        cluster.exit().remove();
-
-        cluster = d3.selectAll('g.cluster');
-        var labelStack = [];
-        var clusteredverticalbar = cluster.selectAll('g.clusteredverticalbar')
-            .data(function (d) {
-                return _measure.filter(function (m) {
-                    return labelStack.indexOf(m) == -1;
-                }).map(function (m) {
-                    var obj = {};
-                    obj[_dimension[0]] = d[_dimension[0]];
-                    obj[m] = d[m];
-                    obj['dimension'] = _dimension[0];
-                    obj['measure'] = m;
-                    return obj;
-                });
-            })
-            .enter().append('g')
-            .attr('class', 'clusteredverticalbar');
-
-
-        var rect = clusteredverticalbar.append('rect')
-            .attr("x", function (d) {
-                return x1(d.measure);
-            })
-            .attr("y", function (d) { return y(d[d.measure]); })
-            .attr("width", x1.bandwidth())
-            .attr("height", function (d) {
-                return plotHeight - y(d[d.measure]);
-            })
-            .style('fill', function (d, i) {
-                return UTIL.getDisplayColor(i, _displayColor);
-            })
-            .style('stroke', function (d, i) {
-                return UTIL.getBorderColor(i, _borderColor);
-            })
-            .style('stroke-width', 2)
-            .on('mouseover', _handleMouseOverFn.call(chart, tooltip, svg))
-            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg))
-            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg))
-
-        var text = clusteredverticalbar.append('text')
-            .text(function (d, i) {
-                return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat));
-            })
-            .attr("y", function (d, i) {
-                return y(d[d.measure]) - _fontSize[i];
-            })
-            .attr("x", function (d) {
-                return x1(d.measure);
-            })
-            .attr('dy', function (d, i) {
-                return offsetX / 10;
-            })
-            .attr('dx', function (d, i) {
-                return x1.bandwidth() / 2;
-            })
-            .style('text-anchor', 'middle')
-            .attr('visibility', function (d, i) {
-                return UTIL.getVisibility(_showValues[i]);
-            })
-            .style('font-style', function (d, i) {
-                return _fontStyle[i];
-            })
-            .style('font-weight', function (d, i) {
-                return _fontWeight[i];
-            })
-            .style('font-size', function (d, i) {
-                return _fontSize[i] + 'px';
-            })
-            .style('fill', function (d, i) {
-                return _textColor[i];
-            });
+    chart._getHTML = function () {
+        return _local_svg.node().outerHTML;
     }
 
     chart.config = function (value) {
@@ -655,7 +661,7 @@ function scatter() {
 
     chart.showGrid = function (value) {
         if (!arguments.length) {
-            return _showGrid;
+            return _tooltip;
         }
         _showGrid = value;
         return chart;
@@ -663,7 +669,7 @@ function scatter() {
 
     chart.stacked = function (value) {
         if (!arguments.length) {
-            return _stacked;
+            return _tooltip;
         }
         _stacked = value;
         return chart;
@@ -671,7 +677,7 @@ function scatter() {
 
     chart.displayName = function (value) {
         if (!arguments.length) {
-            return _displayName;
+            return _tooltip;
         }
         _displayName = value;
         return chart;
@@ -754,6 +760,14 @@ function scatter() {
             return _fontSize;
         }
         _fontSize = value;
+        return chart;
+    }
+
+    chart.print = function (value) {
+        if (!arguments.length) {
+            return _print;
+        }
+        _print = value;
         return chart;
     }
     return chart;
