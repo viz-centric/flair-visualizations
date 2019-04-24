@@ -41,16 +41,22 @@ function legend() {
                 return 'translate(' + translate.toString() + ')';
             })
             .on('mouseover', function (d, i) {
+                var k = d3.select(this.parentNode),
+                    plot = d3.select(k.node().parentNode).select('.plot')
                 d3.select(this).attr('cursor', 'pointer');
-                me._legendInteraction('mouseover', d);
+                me._legendInteraction('mouseover', d, plot);
             })
             .on('mousemove', function (d, i) {
+                var k = d3.select(this.parentNode),
+                    plot = d3.select(k.node().parentNode).select('.plot')
                 d3.select(this).attr('cursor', 'pointer');
-                me._legendInteraction('mousemove', d);
+                me._legendInteraction('mousemove', d, plot);
             })
             .on('mouseout', function (d, i) {
-                d3.select(this).attr('cursor', 'default');
-                me._legendInteraction('mouseout', d);
+                var k = d3.select(this.parentNode),
+                    plot = d3.select(k.node().parentNode).select('.plot')
+                d3.select(this).attr('cursor', 'pointer');
+                me._legendInteraction('mouseout', d, plot);
             })
             .on('click', function (d, i) {
                 d3.select(this).attr('')

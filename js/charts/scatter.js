@@ -92,14 +92,16 @@ function scatter() {
     var _buildTooltipData = function (datum, chart) {
         var output = "";
         output += "<table>";
-        _dimension.forEach(element => {
-            output += "<tr><th>" + element + ": </th>";
-            output += "<th>" + datum[element] + "</th></tr>";
-        });
-        _measure.forEach(element => {
-            output += "<tr><th>" + element + ": </th>";
-            output += "<th>" + datum[element] + "</th></tr>";
-        });
+
+        for (let index = 0; index < _dimension.length; index++) {
+            output += "<tr><th>" + _dimension[index] + ": </th>";
+            output += "<th>" + datum[_dimension[index]] + "</th></tr>";
+        }
+
+        for (let index = 0; index < _measure.length; index++) {
+            output += "<tr><th>" + _measure[index] + ": </th>";
+            output += "<th>" + datum[_measure[index]] + "</th></tr>";
+        }
         output += "</table>";
 
         return output;
@@ -160,8 +162,8 @@ function scatter() {
 
             lasso.notSelectedItems().selectAll('rect');
 
-            var confirm = d3.select('.confirm')
-                .style('visibility', 'visible');
+            var confirm = $(scope).parent().find('div.confirm')
+                .css('visibility', 'visible');
 
             var _filter = [];
             data.forEach(function (d) {
@@ -388,10 +390,10 @@ function scatter() {
                 xAxisGroup.append('g')
                     .attr('class', 'label')
                     .attr('transform', function () {
-                        return 'translate(' + (plotWidth) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
+                        return 'translate(' + (plotWidth / 2) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
                     })
                     .append('text')
-                    .style('text-anchor', 'end')
+                    .style('text-anchor', 'middle')
                     .style('font-weight', 'bold')
                     .style('fill', _xAxisColor)
                     .text(_displayName);
@@ -423,11 +425,11 @@ function scatter() {
                 yAxisGroup.append('g')
                     .attr('class', 'label')
                     .attr('transform', function () {
-                        return 'translate(' + (-COMMON.AXIS_THICKNESS / 1.15) + ', ' + '0)';
+                        return 'translate(' + (-COMMON.AXIS_THICKNESS / 1.15) + ', ' + (plotHeight / 2) + ')';
                     })
                     .append('text')
                     .attr('transform', 'rotate(-90)')
-                    .style('text-anchor', 'end')
+                    .style('text-anchor', 'middle')
                     .style('font-weight', 'bold')
                     .style('fill', _yAxisColor)
                     .text(function () {
@@ -441,6 +443,7 @@ function scatter() {
                 .data(data)
                 .enter()
                 .append("circle")
+                .attr("class", "circle")
                 .attr("cx", function (d) {
                     return x(d[_dimension[1]]);
                 })
@@ -451,6 +454,9 @@ function scatter() {
                     return rScale(parseInt(d[_measure[0]]));
                 })
                 .attr("fill", function (d) {
+                    return color(d[_dimension[0]]);
+                })
+                .attr("stroke", function (d) {
                     return color(d[_dimension[0]]);
                 })
                 .style('fill-opacity', 1)
@@ -525,25 +531,50 @@ function scatter() {
 
     }
 
-    chart._legendInteraction = function (event, data) {
-        var arcGroup = d3.selectAll('g.arc')
-            .filter(function (d) {
-                return d.data[_dimension[1]] === data[_dimension[1]];
-            });
-
-        if (event === 'mouseover') {
-            arcGroup.select('path')
-                .style('fill', COMMON.HIGHLIGHTER);
-        } else if (event === 'mousemove') {
-            // do something
-        } else if (event === 'mouseout') {
-            arcGroup.select('path')
-                .style('fill', function (d, i) {
-                    return COMMON.COLORSCALE(d.data[_dimension[1]]);
-                });
-        } else if (event === 'click') {
-
+    chart._legendInteraction = function (event, data, plot) {
+        if (_print) {
+            // No interaction during print enabled
+            return;
         }
+        switch (event) {
+            case 'mouseover':
+                _legendMouseOver(data, plot);
+                break;
+            case 'mousemove':
+                _legendMouseMove(data, plot);
+                break;
+            case 'mouseout':
+                _legendMouseOut(data, plot);
+                break;
+            case 'click':
+                _legendClick(data, plot);
+                break;
+        }
+    }
+    var _legendMouseOver = function (data, plot) {
+
+        plot.selectAll('circle')
+            .filter(function (d) {
+                return d[_dimension[0]] === data;
+            })
+            .style('fill', COMMON.HIGHLIGHTER);
+    }
+
+    var _legendMouseMove = function (data, plot) {
+
+    }
+
+    var _legendMouseOut = function (data, plot) {
+        var circle = plot.selectAll('circle')
+            .filter(function (d) {
+                return d[_dimension[0]] === data;
+            })
+        circle.style('fill', circle.attr('fill'));
+    }
+
+    var _legendClick = function (data) {
+        var _filter = UTIL.getFilterData(_localLabelStack, data, _originalData)
+        drawPlot.call(this, _filter);
     }
 
     chart._getName = function () {
@@ -661,7 +692,7 @@ function scatter() {
 
     chart.showGrid = function (value) {
         if (!arguments.length) {
-            return _tooltip;
+            return _showGrid;
         }
         _showGrid = value;
         return chart;
@@ -669,7 +700,7 @@ function scatter() {
 
     chart.stacked = function (value) {
         if (!arguments.length) {
-            return _tooltip;
+            return _stacked;
         }
         _stacked = value;
         return chart;
@@ -677,7 +708,7 @@ function scatter() {
 
     chart.displayName = function (value) {
         if (!arguments.length) {
-            return _tooltip;
+            return _displayName;
         }
         _displayName = value;
         return chart;
