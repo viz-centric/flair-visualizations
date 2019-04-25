@@ -59,26 +59,24 @@ function legend() {
                 me._legendInteraction('mouseout', d, plot);
             })
             .on('click', function (d, i) {
-                d3.select(this).attr('')
-                /*if(labelStack.indexOf(d) < 0) {
-                    labelStack.push(d);
-                } else {
-                    labelStack.splice(labelStack.indexOf(d), 1);
-                }
+                var k = d3.select(this.parentNode)
+                d3.select(k.node().parentNode).select('.plot').remove();
 
-                var o = parseInt(d3.select(this).select('rect').style('fill-opacity'));
-                if(!o) {
+                var rect = d3.select(this).select('rect'),
+                    o = parseInt(rect.style('fill-opacity'));
+
+                if (!o) {
                     d3.select(this).select('rect')
                         .style('fill-opacity', 1)
                         .style('stroke-width', 0);
+
                 } else {
                     d3.select(this).select('rect')
-                        .style('fill-opacity', 0)
-                        .style('stroke-width', 1);
+                        .style('fill-opacity', .5)
+                        .style('stroke-width', 2);
                 }
 
-                d3.select(me.container).select('.pie-plot').remove();
-                chart.drawPlot.call(me, data.filter(function(d) { return labelStack.indexOf(d) == -1; }));*/
+                me._legendInteraction('click', d);
             });
 
         legendItem.append('rect')

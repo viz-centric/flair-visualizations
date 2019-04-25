@@ -395,118 +395,7 @@ function combo() {
             if (_tooltip) {
                 tooltip = d3.select(this.parentNode).select('#tooltip');
             }
-            chart.drawViz = function (element) {
-                var me = this;
-                if (!_print) {
-                    element.append('rect')
-                        .attr('width', x1.bandwidth())
-                        .style('fill', function (d, i) {
-                            return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
-                        })
-                        .style('stroke', function (d, i) {
-                            return UTIL.getBorderColor(_measure.indexOf(d['tag']), _borderColor);
-                        })
-                        .style('stroke-width', 1)
-                        .attr('x', function (d, i) {
-                            return x1(measuresBar[i]);
-                        })
-                        .attr('y', function (d, i) {
-                            if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
-                                return 0;
-                            } else if (d['data'][measuresBar[i]] > 0) {
-                                return y(d['data'][measuresBar[i]]);
-                            }
-
-                            return y(0);
-                        })
-                        .attr('height', 0)
-                        .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-                        .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-                        .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
-                        .on('click', function (d) {
-                            if ($("#myonoffswitch").prop('checked') == false) {
-                                $('#Modal_' + $(div).attr('id') + ' .measure').val(d.measure);
-                                $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
-                                $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
-                                $('#Modal_' + $(div).attr('id')).modal('toggle');
-                            }
-                            else {
-                                var confirm = d3.select('.confirm')
-                                    .style('visibility', 'visible');
-                                var _filter = chart._Local_data.filter(function (d1) {
-                                    return d.data[_dimension[0]] === d1[_dimension[0]]
-                                })
-                                var rect = d3.select(this);
-                                if (rect.classed('selected')) {
-                                    rect.classed('selected', false);
-                                    filterData.map(function (val, i) {
-                                        if (val[_dimension[0]] == d[_dimension[0]]) {
-                                            filterData.splice(i, 1)
-                                        }
-                                    })
-                                } else {
-                                    rect.classed('selected', true);
-                                    var isExist = filterData.filter(function (val) {
-                                        if (val[_dimension[0]] == d[_dimension[0]]) {
-                                            return val
-                                        }
-                                    })
-                                    if (isExist.length == 0) {
-                                        filterData.push(_filter[0]);
-                                    }
-                                }
-                            }
-                        })
-                        .transition()
-                        .duration(COMMON.DURATION)
-                        .attr('x', function (d, i) {
-                            return x1(measuresBar[i]);
-                        })
-                        .attr('y', function (d, i) {
-                            if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
-                                return 0;
-                            } else if (d['data'][measuresBar[i]] > 0) {
-                                return y(d['data'][measuresBar[i]]);
-                            }
-
-                            return y(0);
-                        })
-                        .attr('height', function (d, i) {
-                            if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) return 0;
-                            return Math.abs(y(0) - y(d['data'][measuresBar[i]]));
-                        })
-                        .attr('width', x1.bandwidth())
-                }
-                else {
-                    element.append('rect')
-                        .attr('width', x1.bandwidth())
-                        .style('fill', function (d, i) {
-                            return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
-                        })
-                        .style('stroke', function (d, i) {
-                            return UTIL.getBorderColor(_measure.indexOf(d['tag']), _borderColor);
-                        })
-                        .style('stroke-width', 1)
-                        .attr('x', function (d, i) {
-                            return x1(measuresBar[i]);
-                        })
-                        .attr('y', function (d, i) {
-                            if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
-                                return 0;
-                            } else if (d['data'][measuresBar[i]] > 0) {
-                                return y(d['data'][measuresBar[i]]);
-                            }
-
-                            return y(0);
-                        })
-                        .attr('height', function (d, i) {
-                            if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) return 0;
-                            return Math.abs(y(0) - y(d['data'][measuresBar[i]]));
-                        })
-
-                }
-
-            }
+        
 
             drawPlot.call(this, data)
         });
@@ -637,7 +526,7 @@ function combo() {
             .enter().append('g')
             .attr('class', 'bar');
 
-        chart.drawViz(bar)
+        drawViz(bar)
 
         var clusterLine = content.selectAll('.cluster_line')
             .data(measuresLine.filter(function (m) { return labelStack.indexOf(m) == -1; }))
@@ -866,7 +755,118 @@ function combo() {
         }
 
     }
+    var drawViz = function (element) {
+        var me = this;
+        if (!_print) {
+            element.append('rect')
+                .attr('width', x1.bandwidth())
+                .style('fill', function (d, i) {
+                    return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                })
+                .style('stroke', function (d, i) {
+                    return UTIL.getBorderColor(_measure.indexOf(d['tag']), _borderColor);
+                })
+                .style('stroke-width', 1)
+                .attr('x', function (d, i) {
+                    return x1(measuresBar[i]);
+                })
+                .attr('y', function (d, i) {
+                    if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
+                        return 0;
+                    } else if (d['data'][measuresBar[i]] > 0) {
+                        return y(d['data'][measuresBar[i]]);
+                    }
 
+                    return y(0);
+                })
+                .attr('height', 0)
+                .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+                .on('click', function (d) {
+                    if ($("#myonoffswitch").prop('checked') == false) {
+                        $('#Modal_' + $(div).attr('id') + ' .measure').val(d.measure);
+                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
+                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
+                        $('#Modal_' + $(div).attr('id')).modal('toggle');
+                    }
+                    else {
+                        var confirm = d3.select('.confirm')
+                            .style('visibility', 'visible');
+                        var _filter = chart._Local_data.filter(function (d1) {
+                            return d.data[_dimension[0]] === d1[_dimension[0]]
+                        })
+                        var rect = d3.select(this);
+                        if (rect.classed('selected')) {
+                            rect.classed('selected', false);
+                            filterData.map(function (val, i) {
+                                if (val[_dimension[0]] == d[_dimension[0]]) {
+                                    filterData.splice(i, 1)
+                                }
+                            })
+                        } else {
+                            rect.classed('selected', true);
+                            var isExist = filterData.filter(function (val) {
+                                if (val[_dimension[0]] == d[_dimension[0]]) {
+                                    return val
+                                }
+                            })
+                            if (isExist.length == 0) {
+                                filterData.push(_filter[0]);
+                            }
+                        }
+                    }
+                })
+                .transition()
+                .duration(COMMON.DURATION)
+                .attr('x', function (d, i) {
+                    return x1(measuresBar[i]);
+                })
+                .attr('y', function (d, i) {
+                    if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
+                        return 0;
+                    } else if (d['data'][measuresBar[i]] > 0) {
+                        return y(d['data'][measuresBar[i]]);
+                    }
+
+                    return y(0);
+                })
+                .attr('height', function (d, i) {
+                    if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) return 0;
+                    return Math.abs(y(0) - y(d['data'][measuresBar[i]]));
+                })
+                .attr('width', x1.bandwidth())
+        }
+        else {
+            element.append('rect')
+                .attr('width', x1.bandwidth())
+                .style('fill', function (d, i) {
+                    return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                })
+                .style('stroke', function (d, i) {
+                    return UTIL.getBorderColor(_measure.indexOf(d['tag']), _borderColor);
+                })
+                .style('stroke-width', 1)
+                .attr('x', function (d, i) {
+                    return x1(measuresBar[i]);
+                })
+                .attr('y', function (d, i) {
+                    if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
+                        return 0;
+                    } else if (d['data'][measuresBar[i]] > 0) {
+                        return y(d['data'][measuresBar[i]]);
+                    }
+
+                    return y(0);
+                })
+                .attr('height', function (d, i) {
+                    if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) return 0;
+                    return Math.abs(y(0) - y(d['data'][measuresBar[i]]));
+                })
+
+        }
+
+    }
     chart._legendInteraction = function (event, data, plot) {
         if (_print) {
             // No interaction during print enabled
@@ -1077,7 +1077,7 @@ function combo() {
         var newBars = bar.enter().append('g')
             .attr('class', 'bar');
 
-        chart.drawViz(newBars)
+        drawViz(newBars)
 
         plot.selectAll('g.cluster_bar')
             .attr('transform', function (d) {
