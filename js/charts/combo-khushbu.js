@@ -543,9 +543,6 @@ function combo() {
                 }
             });
 
-        var content = plot.append('g')
-            .attr('class', 'chart')
-
         var labelStack = [];
 
         x0 = d3.scaleBand()
@@ -600,6 +597,9 @@ function combo() {
                 return _showGrid ? 'visible' : 'hidden';
             })
             .call(_localYGrid);
+
+        var content = plot.append('g')
+            .attr('class', 'chart')
 
         var areaGenerator = d3.area()
             .curve(d3.curveLinear)
@@ -745,10 +745,10 @@ function combo() {
             xAxisGroup.append('g')
                 .attr('class', 'label')
                 .attr('transform', function () {
-                    return 'translate(' + (plotWidth) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
+                   return 'translate(' + (plotWidth/2) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
                 })
                 .append('text')
-                .style('text-anchor', 'end')
+                 .style('text-anchor', 'middle')
                 .style('font-weight', 'bold')
                 .style('fill', _xAxisColor)
                 .text(_displayName);
@@ -780,11 +780,11 @@ function combo() {
             yAxisGroup.append('g')
                 .attr('class', 'label')
                 .attr('transform', function () {
-                    return 'translate(' + (-COMMON.AXIS_THICKNESS / 1.15) + ', ' + '0)';
+                    return 'translate(' + (-COMMON.AXIS_THICKNESS / 1.15) + ', ' + (plotHeight/2) + ')';
                 })
                 .append('text')
                 .attr('transform', 'rotate(-90)')
-                .style('text-anchor', 'end')
+                .style('text-anchor', 'middle')
                 .style('font-weight', 'bold')
                 .style('fill', _yAxisColor)
                 .text(function () {

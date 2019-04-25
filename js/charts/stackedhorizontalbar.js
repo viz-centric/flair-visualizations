@@ -254,7 +254,7 @@ function stackedhorizontalbar() {
             parentWidth = width - 2 * COMMON.PADDING - margin.left;
             parentHeight = (height - 2 * COMMON.PADDING - axisLabelSpace * 2);
 
-            _local_svg.attr('width', width)
+            svg.attr('width', width)
                 .attr('height', height)
 
             d3.select(div).append('div')
@@ -263,7 +263,7 @@ function stackedhorizontalbar() {
             d3.select(div).append('div')
                 .attr('class', 'arrow-down');
 
-            container = _local_svg.append('g')
+            container = svg.append('g')
                 .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
             var legendWidth = 0,
@@ -591,10 +591,10 @@ function stackedhorizontalbar() {
         xAxisGroup.append('g')
             .attr('class', 'label')
             .attr('transform', function () {
-                return 'translate(' + (plotWidth) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
+               return 'translate(' + (plotWidth/2) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
             })
             .append('text')
-            .style('text-anchor', 'end')
+             .style('text-anchor', 'middle')
             .style('font-weight', 'bold')
             .style('fill', _xAxisColor)
             .attr('visibility', function () {
@@ -622,11 +622,11 @@ function stackedhorizontalbar() {
         yAxisGroup.append('g')
             .attr('class', 'label')
             .attr('transform', function () {
-                return 'translate(' + (-margin.left) + ', ' + (0) + ')';
+                return 'translate(' + (-margin.left) + ', ' + (plotHeight/2) + ')';
             })
             .append('text')
             .attr('transform', 'rotate(-90)')
-            .style('text-anchor', 'end')
+            .style('text-anchor', 'middle')
             .style('font-weight', 'bold')
             .style('fill', _yAxisColor)
             .attr('visibility', _showYaxisLabel)

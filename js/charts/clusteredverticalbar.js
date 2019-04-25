@@ -254,10 +254,10 @@ function clusteredverticalbar() {
             parentWidth = width - 2 * COMMON.PADDING - margin.left;
             parentHeight = (height - 2 * COMMON.PADDING - axisLabelSpace * 2);
 
-            container = _local_svg.append('g')
+            container = svg.append('g')
                 .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
-            _local_svg.attr('width', width)
+            svg.attr('width', width)
                 .attr('height', height)
 
             d3.select(div).append('div')
@@ -509,10 +509,10 @@ function clusteredverticalbar() {
             xAxisGroup.append('g')
                 .attr('class', 'label')
                 .attr('transform', function () {
-                    return 'translate(' + (plotWidth) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
+                    return 'translate(' + (plotWidth / 2) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
                 })
                 .append('text')
-                .style('text-anchor', 'end')
+                .style('text-anchor', 'middle')
                 .style('font-weight', 'bold')
                 .style('fill', _xAxisColor)
                 .text(_displayName);
@@ -544,11 +544,11 @@ function clusteredverticalbar() {
             yAxisGroup.append('g')
                 .attr('class', 'label')
                 .attr('transform', function () {
-                    return 'translate(' + (-COMMON.AXIS_THICKNESS / 1.15) + ', ' + '0)';
+                    return 'translate(' + (-COMMON.AXIS_THICKNESS / 1.15) + ', ' + (plotHeight / 2) + ')';
                 })
                 .append('text')
                 .attr('transform', 'rotate(-90)')
-                .style('text-anchor', 'end')
+                .style('text-anchor', 'middle')
                 .style('font-weight', 'bold')
                 .style('fill', _yAxisColor)
                 .text(function () {
@@ -710,8 +710,6 @@ function clusteredverticalbar() {
                         }
                     }
                 })
-
-            rect
                 .transition()
                 .duration(COMMON.DURATION)
                 .attr("height", function (d, i) {

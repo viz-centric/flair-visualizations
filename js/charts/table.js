@@ -347,34 +347,7 @@ function table() {
         }
         );
     }
-    /**
-     * Builds the html data for the tooltip
-     *
-     * @param {object} datum Datum forming the arc
-     * @param {function} chart Pie chart function
-     * @return {string} String encoded HTML data
-     */
-    chart._legendInteraction = function (event, data, plot) {
-        var arcGroup = d3.selectAll('g.arc')
-            .filter(function (d) {
-                return d.data[_dimension[0]] === data[_dimension[0]];
-            });
-
-        if (event === 'mouseover') {
-            arcGroup.select('path')
-                .style('fill', COMMON.HIGHLIGHTER);
-        } else if (event === 'mousemove') {
-            // do something
-        } else if (event === 'mouseout') {
-            arcGroup.select('path')
-                .style('fill', function (d, i) {
-                    return COMMON.COLORSCALE(d.data[_dimension[0]]);
-                });
-        } else if (event === 'click') {
-
-        }
-    }
-
+  
     chart._getName = function () {
         return _NAME;
     }
