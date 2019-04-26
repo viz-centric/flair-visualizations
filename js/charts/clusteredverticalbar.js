@@ -441,45 +441,7 @@ function clusteredverticalbar() {
             .enter().append('g')
             .attr('class', 'clusteredverticalbar');
 
-        var rect = drawViz(clusteredverticalbar);
-
-        var text = clusteredverticalbar.append('text')
-            .text(function (d, i) {
-                return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat));
-            })
-            .attr("y", function (d, i) {
-                return y(d[d.measure]) - _fontSize[i];
-            })
-            .attr("x", function (d) {
-                return x1(d.measure);
-            })
-            .attr('dy', function (d, i) {
-                return -offsetX / 10;
-            })
-            .attr('dx', function (d, i) {
-                return x1.bandwidth() / 2;
-            })
-            .style('text-anchor', 'middle')
-            .attr('visibility', function (d, i) {
-                return UTIL.getVisibility(_showValues[i]);
-            })
-            .style('font-style', function (d, i) {
-                return _fontStyle[i];
-            })
-            .style('font-weight', function (d, i) {
-                return _fontWeight[i];
-            })
-            .style('font-size', function (d, i) {
-                return _fontSize[i] + 'px';
-            })
-            .style('fill', function (d, i) {
-                return _textColor[i];
-            })
-            .text(function (d, i) {
-                var barWidth = (1 - x0.padding()) * plotWidth / (data.length - 1);
-                barWidth = (1 - x1.padding()) * barWidth / keys.length;
-                return UTIL.getTruncatedTick(d3.select(this).text(), barWidth, tickLength);
-            });
+        var rect = drawViz(clusteredverticalbar,keys);
 
         /* Axes */
         var xAxisGroup,
@@ -651,7 +613,7 @@ function clusteredverticalbar() {
         }
     }
 
-    var drawViz = function (element) {
+    var drawViz = function (element,keys) {
         var me = this;
         if (!_print) {
             var rect = element.append('rect')
@@ -744,7 +706,43 @@ function clusteredverticalbar() {
                     return x1(d.measure);;
                 })
         }
-
+        var text = element.append('text')
+            .text(function (d, i) {
+                return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat));
+            })
+            .attr("y", function (d, i) {
+                return y(d[d.measure]) - _fontSize[i];
+            })
+            .attr("x", function (d) {
+                return x1(d.measure);
+            })
+            .attr('dy', function (d, i) {
+                return -offsetX / 10;
+            })
+            .attr('dx', function (d, i) {
+                return x1.bandwidth() / 2;
+            })
+            .style('text-anchor', 'middle')
+            .attr('visibility', function (d, i) {
+                return UTIL.getVisibility(_showValues[i]);
+            })
+            .style('font-style', function (d, i) {
+                return _fontStyle[i];
+            })
+            .style('font-weight', function (d, i) {
+                return _fontWeight[i];
+            })
+            .style('font-size', function (d, i) {
+                return _fontSize[i] + 'px';
+            })
+            .style('fill', function (d, i) {
+                return _textColor[i];
+            })
+            .text(function (d, i) {
+                var barWidth = (1 - x0.padding()) * plotWidth / (_Local_data.length - 1);
+                barWidth = (1 - x1.padding()) * barWidth / keys.length;
+                return UTIL.getTruncatedTick(d3.select(this).text(), barWidth, tickLength);
+            });
     }
     chart._legendInteraction = function (event, data, plot) {
         if (_print) {
@@ -889,7 +887,7 @@ function clusteredverticalbar() {
         var newBars = clusteredverticalbar.enter().append('g')
             .attr('class', 'clusteredverticalbar');
 
-        drawViz(newBars);
+        drawViz(newBars,keys);
 
         clusteredverticalbar.select('text')
             .text(function (d, i) {

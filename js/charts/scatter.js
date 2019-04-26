@@ -43,17 +43,25 @@ function scatter() {
         _print;
 
 
-    var _local_svg, _Local_data;
-
-    var parentWidth, parentHeight, plotWidth, plotHeight;
+    var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
+    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div, color;
+    var parentWidth, parentHeight, plotWidth, plotHeight, container;
     var _localXAxis,
         _localYAxis,
         _localXGrid,
         _localYGrid;
 
-    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div;
-    var threshold = [];
+    var x, y;
+
+    var margin = {
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 45
+    };
+
     var filter = false, filterData = [];
+    var threshold = [];
 
     var tickLength = d3.scaleLinear()
         .domain([22, 34])
@@ -75,7 +83,7 @@ function scatter() {
         this.displayName(config.displayName);
         this.showYaxis(config.showYaxis);
         this.showXaxisLabel(config.showXaxisLabel);
-
+        this.showGrid(config.showGrid);
         this.showValues(config.showValues);
         this.displayNameForMeasure(config.displayNameForMeasure);
         this.fontStyle(config.fontStyle);
@@ -119,73 +127,73 @@ function scatter() {
         ticks.select('text')
             .style('fill', color);
     }
-    var onLassoStart = function (lasso, chart) {
+    var onLassoStart = function (lasso, scope) {
         return function () {
             if (filter) {
-                lasso.items().selectAll('rect')
+                lasso.items()
                     .classed('not_possible', true)
                     .classed('selected', false);
             }
         }
     }
 
-    var onLassoDraw = function (lasso, chart) {
+    var onLassoDraw = function (lasso, scope) {
         return function () {
             filter = true;
-            lasso.items().selectAll('rect')
+            lasso.items()
                 .classed('selected', false);
 
-            lasso.possibleItems().selectAll('rect')
+            lasso.possibleItems()
                 .classed('not_possible', false)
                 .classed('possible', true);
 
-            lasso.notPossibleItems().selectAll('rect')
+            lasso.notPossibleItems()
                 .classed('not_possible', true)
                 .classed('possible', false);
         }
     }
 
-    var onLassoEnd = function (lasso, chart) {
+    var onLassoEnd = function (lasso, scope) {
         return function () {
             var data = lasso.selectedItems().data();
             if (!filter) {
                 return;
             }
             if (data.length > 0) {
-                lasso.items().selectAll('rect')
+                lasso.items()
                     .classed('not_possible', false)
                     .classed('possible', false);
             }
 
-            lasso.selectedItems().selectAll('rect')
+            lasso.selectedItems()
                 .classed('selected', true)
 
-            lasso.notSelectedItems().selectAll('rect');
+            lasso.notSelectedItems().selectAll('circle');
 
             var confirm = $(scope).parent().find('div.confirm')
                 .css('visibility', 'visible');
 
             var _filter = [];
-            data.forEach(function (d) {
-                var obj = new Object();
-                obj[_dimension[1]] = d[_dimension[1]];
-                for (var index = 0; index < _measure.length; index++) {
-                    obj[_measure[index]] = d[_measure[index]];
-                }
 
-                _filter.push(obj)
-            });
-            if (_filter.length > 0) {
-                filterData = _filter;
+            if (data.length > 0) {
+                filterData = data;
             }
         }
     }
 
-    var applyFilter = function (chart) {
+    var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
-                chart(filterData);
+                chart.update(filterData);
             }
+        }
+    }
+
+    var clearFilter = function (div) {
+        return function () {
+            chart.update(_originalData);
+            d3.select(div).select('.confirm')
+                .style('visibility', 'hidden');
         }
     }
 
@@ -250,20 +258,8 @@ function scatter() {
     function chart(selection) {
         _local_svg = selection;
         selection.each(function (data) {
-            chart._Local_data = _originalData = data;
-            var margin = {
-                top: 0,
-                right: 0,
-                bottom: 0,
-                left: 45
-            };
-
-            var legendSpace = 20,
-                axisLabelSpace = 20,
-                offsetX = 16,
-                offsetY = 3;
-
-            var div = d3.select(this).node().parentNode;
+            _Local_data = _originalData = data;
+            div = d3.select(this).node().parentNode;
 
             var svg = d3.select(this),
                 width = +svg.attr('width'),
@@ -273,206 +269,15 @@ function scatter() {
             parentHeight = (height - 2 * COMMON.PADDING - axisLabelSpace * 2);
             plotWidth = parentWidth;
             plotHeight = parentHeight;
-            const color = COMMON.COLORSCALE;
 
-            var container = svg.append('g')
+            container = svg.append('g')
                 .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
-            _local_total = d3.sum(data.map(function (d) { return d[_measure[0]]; }));
-
-            var plot = container.append('g')
-                .attr('class', 'scatter-plot')
-                .classed('plot', true)
-                .attr('transform', function () {
-                    if (_legendPosition == 'top') {
-                        return 'translate(' + margin.left + ', ' + legendSpace * 2 + ')';
-                    } else if (_legendPosition == 'bottom') {
-                        return 'translate(' + margin.left + ', 0)';
-                    } else if (_legendPosition == 'left') {
-                        return 'translate(' + (legendSpace + margin.left + axisLabelSpace) + ', 0)';
-                    } else if (_legendPosition == 'right') {
-                        return 'translate(' + margin.left + ', 0)';
-                    }
-                });
-
-            var keys = UTIL.getMeasureList(data[0], _dimension);
-
-            var maxGDP = d3.max(data, function (d) {
-                return d3.max(keys, function (key) {
-                    return parseInt(d[key]);
-                });
-            })
-            var minGDP = d3.min(data, function (d) {
-                return d3.min(keys, function (key) {
-                    return parseInt(d[key]);
-                });
-            })
-
-            var rScale = d3.scaleLinear()
-                .domain([minGDP, maxGDP])
-                .range([5, 25]);
-
-            var x = d3.scaleLinear()
-                .rangeRound([0, plotWidth])
-
-            var y = d3.scaleLinear()
-                .rangeRound([plotHeight - 40, 0]);
-
-
-            x.domain([0, d3.max(data, function (d) {
-                return parseInt(d[_dimension[1]]);
-            })]).nice();
-
-            y.domain([0, d3.max(data, function (d) {
-                return parseInt(d[_measure[2]]);
-            })]).nice();
-
-
-            var _localXLabels = data.map(function (d) {
-                return d[_dimension[0]];
-            });
-
-            _localXGrid = d3.axisBottom()
-                .ticks(_localXLabels.length)
-                .tickFormat('')
-                .tickSize(-plotHeight);
-
-            _localYGrid = d3.axisLeft()
-                .tickFormat('')
-                .tickSize(-plotWidth);
-
-            _localXGrid.scale(x);
-            _localYGrid.scale(y);
-
-            plot.append('g')
-                .attr('class', 'x grid')
-                .attr('visibility', function () {
-                    return _showGrid ? 'visible' : 'hidden';
-                })
-                .attr('transform', 'translate(0, ' + plotHeight + ')')
-                .call(_localXGrid);
-
-            plot.append('g')
-                .attr('class', 'y grid')
-                .attr('visibility', function () {
-                    return _showGrid ? 'visible' : 'hidden';
-                })
-                .call(_localYGrid);
-
-            if (_tooltip) {
-                tooltip = d3.select(this.parentNode).select('#tooltip');
-            }
-
-            var xAxisGroup,
-                yAxisGroup;
-
-            var isRotate = false;
-
-            if (_showXaxis) {
-                _localXAxis = d3.axisBottom(x)
-                    .tickSize(0)
-                    .tickFormat(function (d) {
-                        if (isRotate == false) {
-                            isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
-                        }
-                        return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
-                    })
-                    .tickPadding(10);
-
-                xAxisGroup = plot.append('g')
-                    .attr('class', 'x axis')
-                    .attr('visibility', function () {
-                        return 'visible';
-                    })
-                    .attr('transform', 'translate(0, ' + parseInt(plotHeight - 40) + ')')
-                    .call(_localXAxis);
-
-                xAxisGroup.append('g')
-                    .attr('class', 'label')
-                    .attr('transform', function () {
-                        return 'translate(' + (plotWidth / 2) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
-                    })
-                    .append('text')
-                    .style('text-anchor', 'middle')
-                    .style('font-weight', 'bold')
-                    .style('fill', _xAxisColor)
-                    .text(_displayName);
-
-                if (isRotate) {
-                    _local_svg.selectAll('.x .tick text')
-                        .attr("transform", "rotate(-15)");
-                }
-
-                _setAxisColor(xAxisGroup, _xAxisColor);
-
-            }
-
-            if (_showYaxis) {
-                _localYAxis = d3.axisLeft(y)
-                    .tickSize(0)
-                    .tickPadding(8)
-                    .tickFormat(function (d) {
-                        return UTIL.shortScale(2)(d);
-                    });
-
-                yAxisGroup = plot.append('g')
-                    .attr('class', 'y axis')
-                    .attr('visibility', function () {
-                        return 'visible';
-                    })
-                    .call(_localYAxis);
-
-                yAxisGroup.append('g')
-                    .attr('class', 'label')
-                    .attr('transform', function () {
-                        return 'translate(' + (-COMMON.AXIS_THICKNESS / 1.15) + ', ' + (plotHeight / 2) + ')';
-                    })
-                    .append('text')
-                    .attr('transform', 'rotate(-90)')
-                    .style('text-anchor', 'middle')
-                    .style('font-weight', 'bold')
-                    .style('fill', _yAxisColor)
-                    .text(function () {
-                        return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
-                    });
-
-                _setAxisColor(yAxisGroup, _yAxisColor);
-            }
-
-            var dataCircle = plot.selectAll("circle")
-                .data(data)
-                .enter()
-                .append("circle")
-                .attr("class", "circle")
-                .attr("cx", function (d) {
-                    return x(d[_dimension[1]]);
-                })
-                .attr("cy", function (d) {
-                    return y(d[_measure[2]]);
-                })
-                .attr("r", function (d) {
-                    return rScale(parseInt(d[_measure[0]]));
-                })
-                .attr("fill", function (d) {
-                    return color(d[_dimension[0]]);
-                })
-                .attr("stroke", function (d) {
-                    return color(d[_dimension[0]]);
-                })
-                .style('fill-opacity', 1)
-
-            if (!_print) {
-                dataCircle.on('mouseover', _handleMouseOverFn.call(chart, tooltip, svg))
-                    .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg))
-                    .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg));
-            }
+            drawPlot.call(this, data);
 
             var legendWidth = 0,
                 legendHeight = 0,
                 legendBreakCount;
-
-            plotWidth = parentWidth;
-            plotHeight = parentHeight;
 
             if (_showLegend) {
                 var clusteredverticalbarLegend = LEGEND.bind(chart);
@@ -531,6 +336,248 @@ function scatter() {
 
     }
 
+    var drawPlot = function (data) {
+        var me = this;
+        color = COMMON.COLORSCALE;
+        _local_total = d3.sum(data.map(function (d) { return d[_measure[0]]; }));
+
+        var plot = container.append('g')
+            .attr('class', 'scatter-plot')
+            .classed('plot', true)
+            .attr('transform', function () {
+                if (_legendPosition == 'top') {
+                    return 'translate(' + margin.left + ', ' + legendSpace * 2 + ')';
+                } else if (_legendPosition == 'bottom') {
+                    return 'translate(' + margin.left + ', 0)';
+                } else if (_legendPosition == 'left') {
+                    return 'translate(' + (legendSpace + margin.left + axisLabelSpace) + ', 0)';
+                } else if (_legendPosition == 'right') {
+                    return 'translate(' + margin.left + ', 0)';
+                }
+            });
+
+        var keys = UTIL.getMeasureList(data[0], _dimension);
+
+        var maxGDP = d3.max(data, function (d) {
+            return d3.max(keys, function (key) {
+                return parseInt(d[key]);
+            });
+        })
+        var minGDP = d3.min(data, function (d) {
+            return d3.min(keys, function (key) {
+                return parseInt(d[key]);
+            });
+        })
+
+        var rScale = d3.scaleLinear()
+            .domain([minGDP, maxGDP])
+            .range([5, 25]);
+
+        x = d3.scaleLinear()
+            .rangeRound([0, plotWidth])
+
+        y = d3.scaleLinear()
+            .rangeRound([plotHeight - 40, 0]);
+
+
+        x.domain([0, d3.max(data, function (d) {
+            return parseInt(d[_dimension[1]]);
+        })]).nice();
+
+        y.domain([0, d3.max(data, function (d) {
+            return parseInt(d[_measure[2]]);
+        })]).nice();
+
+
+        var _localXLabels = data.map(function (d) {
+            return d[_dimension[0]];
+        });
+
+        _localXGrid = d3.axisBottom()
+            .ticks(_localXLabels.length)
+            .tickFormat('')
+            .tickSize(-plotHeight + 40);
+
+        _localYGrid = d3.axisLeft()
+            .tickFormat('')
+            .tickSize(-plotWidth);
+
+        _localXGrid.scale(x);
+        _localYGrid.scale(y);
+
+        plot.append('g')
+            .attr('class', 'x grid')
+            .attr('visibility', function () {
+                return _showGrid ? 'visible' : 'hidden';
+            })
+            .attr('transform', 'translate(0, ' + parseInt(plotHeight - 40) + ')')
+            .call(_localXGrid);
+
+        plot.append('g')
+            .attr('class', 'y grid')
+            .attr('visibility', function () {
+                return _showGrid ? 'visible' : 'hidden';
+            })
+            .call(_localYGrid);
+
+        if (_tooltip) {
+            tooltip = d3.select(this.parentNode).select('#tooltip');
+        }
+
+        var xAxisGroup,
+            yAxisGroup;
+
+        var isRotate = false;
+
+        if (_showXaxis) {
+            _localXAxis = d3.axisBottom(x)
+                .tickSize(0)
+                .tickFormat(function (d) {
+                    if (isRotate == false) {
+                        isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                    }
+                    return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                })
+                .tickPadding(10);
+
+            xAxisGroup = plot.append('g')
+                .attr('class', 'x axis')
+                .attr('visibility', function () {
+                    return 'visible';
+                })
+                .attr('transform', 'translate(0, ' + parseInt(plotHeight - 40) + ')')
+                .call(_localXAxis);
+
+            xAxisGroup.append('g')
+                .attr('class', 'label')
+                .attr('transform', function () {
+                    return 'translate(' + (plotWidth / 2) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
+                })
+                .append('text')
+                .style('text-anchor', 'middle')
+                .style('font-weight', 'bold')
+                .style('fill', _xAxisColor)
+                .text(_displayName);
+
+            if (isRotate) {
+                _local_svg.selectAll('.x .tick text')
+                    .attr("transform", "rotate(-15)");
+            }
+
+            _setAxisColor(xAxisGroup, _xAxisColor);
+
+        }
+
+        if (_showYaxis) {
+            _localYAxis = d3.axisLeft(y)
+                .tickSize(0)
+                .tickPadding(8)
+                .tickFormat(function (d) {
+                    return UTIL.shortScale(2)(d);
+                });
+
+            yAxisGroup = plot.append('g')
+                .attr('class', 'y axis')
+                .attr('visibility', function () {
+                    return 'visible';
+                })
+                .call(_localYAxis);
+
+            yAxisGroup.append('g')
+                .attr('class', 'label')
+                .attr('transform', function () {
+                    return 'translate(' + (-COMMON.AXIS_THICKNESS / 1.15) + ', ' + (plotHeight / 2) + ')';
+                })
+                .append('text')
+                .attr('transform', 'rotate(-90)')
+                .style('text-anchor', 'middle')
+                .style('font-weight', 'bold')
+                .style('fill', _yAxisColor)
+                .text(function () {
+                    return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+                });
+
+            _setAxisColor(yAxisGroup, _yAxisColor);
+        }
+
+        var dataCircle = plot.selectAll("circle")
+            .data(data)
+            .enter()
+            .append("circle")
+            .attr("class", "circle")
+            .attr("cx", function (d) {
+                return x(d[_dimension[1]]);
+            })
+            .attr("cy", function (d) {
+                return y(d[_measure[2]]);
+            })
+            .attr("r", function (d) {
+                return rScale(parseInt(d[_measure[0]]));
+            })
+            .attr("fill", function (d) {
+                return color(d[_dimension[0]]);
+            })
+            .attr("stroke", function (d) {
+                return color(d[_dimension[0]]);
+            })
+            .style('fill-opacity', 1)
+
+        if (!_print) {
+            dataCircle.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg));
+
+            var confirm = $(me).parent().find('div.confirm')
+                .css('visibility', 'hidden');
+
+            var str = UTIL.createAlert($(div).attr('id'), _measure);
+            $(div).append(str);
+
+            var _filter = UTIL.createFilterElement()
+            $(div).append(_filter);
+
+            $(document).on('click', '_local_svg', function (e) {
+                if ($("#myonoffswitch").prop('checked') == false) {
+                    var element = e.target
+                    if (element.tagName == "_local_svg") {
+                        $('#Modal_' + $(div).attr('id') + ' .measure').val('')
+                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('')
+                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', false)
+                        $('#Modal_' + $(div).attr('id')).modal('toggle');
+                    }
+                }
+            })
+
+            $(document).on('click', '#Modal_' + $(div).attr('id') + ' .ThresholdSubmit', function (e) {
+                var newValue = $('#Modal_' + $(div).attr('id') + ' .threshold').val();
+                var obj = new Object()
+                obj.measure = $('#Modal_' + $(div).attr('id') + ' .measure').val()
+                obj.threshold = newValue;
+                threshold.push(obj);
+                $('#Modal_' + $(div).attr('id')).modal('toggle');
+            })
+            d3.select(div).select('.filterData')
+                .on('click', applyFilter());
+
+            d3.select(div).select('.removeFilter')
+                .on('click', clearFilter(div));
+
+            _local_svg.select('g.lasso').remove()
+            var lasso = d3Lasso.lasso()
+                .hoverSelect(true)
+                .closePathSelect(true)
+                .closePathDistance(100)
+                .items(dataCircle)
+                .targetArea(_local_svg);
+
+            lasso.on('start', onLassoStart(lasso, me))
+                .on('draw', onLassoDraw(lasso, me))
+                .on('end', onLassoEnd(lasso, me));
+
+            _local_svg.call(lasso);
+        }
+    }
+
     chart._legendInteraction = function (event, data, plot) {
         if (_print) {
             // No interaction during print enabled
@@ -573,7 +620,19 @@ function scatter() {
     }
 
     var _legendClick = function (data) {
-        var _filter = UTIL.getFilterData(_localLabelStack, data, _originalData)
+        if (_localLabelStack.indexOf(data) == -1) {
+            _localLabelStack.push(data);
+        } else {
+            _localLabelStack.splice(_localLabelStack.indexOf(data), 1);
+        }
+
+        var _filter =
+            _Local_data.filter(function (val) {
+                if (_localLabelStack.indexOf(val[_dimension[0]]) == -1) {
+                    return val
+                }
+            });
+
         drawPlot.call(this, _filter);
     }
 
@@ -585,6 +644,144 @@ function scatter() {
         return _local_svg.node().outerHTML;
     }
 
+    chart.update = function (data) {
+
+        _Local_data = data,
+            filterData = [];
+        var plot = _local_svg.select('.plot')
+
+        var keys = UTIL.getMeasureList(data[0], _dimension);
+
+        var maxGDP = d3.max(data, function (d) {
+            return d3.max(keys, function (key) {
+                return parseInt(d[key]);
+            });
+        })
+        var minGDP = d3.min(data, function (d) {
+            return d3.min(keys, function (key) {
+                return parseInt(d[key]);
+            });
+        })
+
+        var rScale = d3.scaleLinear()
+            .domain([minGDP, maxGDP])
+            .range([5, 25]);
+
+        x.domain([0, d3.max(data, function (d) {
+            return parseInt(d[_dimension[1]]);
+        })]).nice();
+
+        y.domain([0, d3.max(data, function (d) {
+            return parseInt(d[_measure[2]]);
+        })]).nice();
+
+        var circle = plot.selectAll('circle')
+            .data(data)
+
+        circle.exit().remove();
+
+        circle
+            .attr("cx", function (d) {
+                return x(d[_dimension[1]]);
+            })
+            .attr("cy", function (d) {
+                return y(d[_measure[2]]);
+            })
+            .attr("r", function (d) {
+                return rScale(parseInt(d[_measure[0]]));
+            })
+            .attr("fill", function (d) {
+                return color(d[_dimension[0]]);
+            })
+            .attr("stroke", function (d) {
+                return color(d[_dimension[0]]);
+            })
+            .style('fill-opacity', 1)
+            .classed('selected', false)
+
+        circle.enter().append('circle')
+            .attr('class', 'circle')
+            .attr("cx", function (d) {
+                return x(d[_dimension[1]]);
+            })
+            .attr("cy", function (d) {
+                return y(d[_measure[2]]);
+            })
+            .attr("r", function (d) {
+                return rScale(parseInt(d[_measure[0]]));
+            })
+            .attr("fill", function (d) {
+                return color(d[_dimension[0]]);
+            })
+            .attr("stroke", function (d) {
+                return color(d[_dimension[0]]);
+            })
+            .style('fill-opacity', 1)
+            .classed('selected', false)
+
+        var _localXLabels = data.map(function (d) {
+            return d[_dimension[0]];
+        });
+
+        var xAxisGroup,
+            yAxisGroup;
+
+        var isRotate = false;
+
+        if (_showXaxis) {
+            xAxisGroup = plot.select('.x.axis')
+                .transition()
+                .duration(COMMON.DURATION)
+                .call(d3.axisBottom(x)
+                    .tickFormat(function (d) {
+                        if (isRotate == false) {
+                            isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                        }
+                        return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                    }));
+
+            _setAxisColor(xAxisGroup, _xAxisColor);
+
+            if (isRotate) {
+                _local_svg.selectAll('.x .tick text')
+                    .attr("transform", "rotate(-15)");
+            }
+            else {
+                _local_svg.selectAll('.x .tick text')
+                    .attr("transform", "rotate(0)");
+            }
+        }
+
+        if (_showYaxis) {
+            yAxisGroup = plot.select('.y.axis')
+                .transition()
+                .duration(COMMON.DURATION)
+                .call(d3.axisLeft(y).ticks(null, "s"));
+
+            _setAxisColor(yAxisGroup, _yAxisColor);
+        }
+
+        /* Update Axes Grid */
+        _localXGrid.scale(x);
+        _localYGrid.scale(y);
+
+        plot.select('.x.grid')
+            .transition()
+            .duration(COMMON.DURATION)
+            .attr('visibility', function () {
+                return _showGrid ? 'visible' : 'hidden';
+            })
+            .call(_localXGrid);
+
+        plot.select('.y.grid')
+            .transition()
+            .duration(COMMON.DURATION)
+            .attr('visibility', function () {
+                return _showGrid ? 'visible' : 'hidden';
+            })
+            .call(_localYGrid);
+
+    }
     chart.config = function (value) {
         if (!arguments.length) {
             return _config;
