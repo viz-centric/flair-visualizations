@@ -254,7 +254,7 @@ function boxplot() {
             var barWidth = Math.floor(gWidth / data.length / 2);
             var me = this;
             if (_tooltip) {
-                tooltip = d3.select(this.parentNode).select('#tooltip');
+                tooltip = d3.select(this.parentNode).select('.tooltip');
             }
 
             x = d3
@@ -595,7 +595,7 @@ function boxplot() {
         var barWidth = Math.floor(gWidth / data.length / 2);
 
         if (_tooltip) {
-            tooltip = d3.select(this.parentNode).select('#tooltip');
+            tooltip = d3.select(this.parentNode).select('.tooltip');
         }
 
         x = d3

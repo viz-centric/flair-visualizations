@@ -462,7 +462,7 @@ function doughnut() {
             }
 
             if (_tooltip) {
-                _localTooltip = d3.select(this.parentNode).select('#tooltip');
+                _localTooltip = d3.select(this.parentNode).select('.tooltip');
             }
 
             outerRadius = Math.min(plotWidth, plotHeight) / 2.25;

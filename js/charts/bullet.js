@@ -315,7 +315,7 @@ function bullet() {
                 .attr('class', 'plot')
 
             if (_tooltip) {
-                tooltip = d3.select(this.parentNode).select('#tooltip');
+                tooltip = d3.select(this.parentNode).select('.tooltip');
             }
 
             data = data.map(function (item) {
