@@ -339,7 +339,7 @@ function stackedverticalbar() {
             }
 
             if (_tooltip) {
-                tooltip = d3.select(this.parentNode).select('#tooltip');
+                tooltip = d3.select(this.parentNode).select('.tooltip');
             }
 
             drawPlot.call(this, data);

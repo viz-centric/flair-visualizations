@@ -421,7 +421,7 @@ function scatter() {
             .call(_localYGrid);
 
         if (_tooltip) {
-            tooltip = d3.select(this.parentNode).select('#tooltip');
+            tooltip = d3.select(this.parentNode).select('.tooltip');
         }
 
         var xAxisGroup,
