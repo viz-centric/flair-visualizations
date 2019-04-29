@@ -231,7 +231,7 @@ function infographics() {
                 .style('pointer-events', 'none');
 
             var tooltip = container.append('div')
-                .attr('id', 'tooltip');
+                .attr('class', 'tooltip');
 
             if (_tooltip) {
                 _localTooltip = tooltip;
