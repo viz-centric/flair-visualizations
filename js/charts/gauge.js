@@ -27,7 +27,7 @@ function gauge() {
 
     var _local_svg;
 
-    var emptyArc, fillArc, targetArc, arc, svg, _measure, target;
+    var emptyArc, fillArc, targetArc, arc, _arc, svg, _measure, target;
     var ringInset, ringWidth;
 
     var _setConfigParams = function (config) {
@@ -96,6 +96,11 @@ function gauge() {
                 ringWidth = radius * 0.2;
 
             arc = d3.arc()
+                .innerRadius(radius - ringInset - ringWidth)
+                .outerRadius(radius - ringInset)
+                .startAngle(degToRad(-90))
+
+            _arc = d3.arc()
                 .innerRadius(radius - ringInset - ringWidth)
                 .outerRadius(radius - ringInset)
                 .startAngle(degToRad(-90))
@@ -192,6 +197,7 @@ function gauge() {
                 .call(arcTween, targetPi);
         }
         else {
+
             _measure
                 .text(displayName + " " + value[0][measures[0]])
 
@@ -202,15 +208,19 @@ function gauge() {
                 .style("fill", function () {
                     return displayColor;
                 })
-                .attr("d", arc(_measurePi))
+                .datum({
+                    endAngle: _measurePi
+                })
+                .attr("d", arc)
 
             targetArc
                 .style("fill", function () {
                     return targetDisplayColor;
                 })
-                .attr("d", function () {
-                    return arc(targetPi)
-                });
+                .datum({
+                    endAngle: targetPi
+                })
+                .attr("d", arc)
         }
 
     }

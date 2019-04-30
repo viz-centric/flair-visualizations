@@ -441,7 +441,7 @@ function clusteredverticalbar() {
             .enter().append('g')
             .attr('class', 'clusteredverticalbar');
 
-        var rect = drawViz(clusteredverticalbar,keys);
+        var rect = drawViz(clusteredverticalbar, keys);
 
         /* Axes */
         var xAxisGroup,
@@ -525,35 +525,25 @@ function clusteredverticalbar() {
             var confirm = $(me).parent().find('div.confirm')
                 .css('visibility', 'hidden');
 
+            _local_svg.attr('class', 'chartSvg_' + $(div).attr('id'));
+
+            var AlertElement = UTIL.createAlertElement();
+            $(div).append(AlertElement);
+
             var str = UTIL.createAlert($(div).attr('id'), _measure);
-            $(div).append(str);
+            $('body').append(str);
 
             var _filter = UTIL.createFilterElement()
             $(div).append(_filter);
 
-            // var _alert = UTIL.createAlertElement()
-            // $(div).append(_alert);
-
-            $(document).on('click', _local_svg, function (e) {
-                if ($("#myonoffswitch").prop('checked') == false) {
-                    var element = e.target
-                    if (element.tagName == "_local_svg") {
+            $(document).on('click', plot, function (e) {
+                if ($(div).find('.alert').prop('checked') == false) {
+                    var element = e.target.classList.value.split(' ')
+                    if (element.indexOf("chartSvg_" + $(div).attr('id')) >= 0) {
                         $('#Modal_' + $(div).attr('id') + ' .measure').val('')
                         $('#Modal_' + $(div).attr('id') + ' .threshold').val('')
                         $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', false)
-                        $('#Modal_' + $(div).attr('id')).modal('toggle');
-                    }
-                }
-            })
-
-            _local_svg.on('click', function (e, i) {
-                if ($(this).parent().find('.alert').prop('checked') == false) {
-                    var element = e.target
-                    if (element.tagName == "_local_svg") {
-                        $('#Modal_' + $(div).attr('id') + ' .measure').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', false)
-                        $('#Modal_' + $(div).attr('id')).modal('toggle');
+                        $('#Modal_' + $(div).attr('id')).modal('show');
                     }
                 }
             })
@@ -613,7 +603,7 @@ function clusteredverticalbar() {
         }
     }
 
-    var drawViz = function (element,keys) {
+    var drawViz = function (element, keys) {
         var me = this;
         if (!_print) {
             var rect = element.append('rect')
@@ -639,7 +629,7 @@ function clusteredverticalbar() {
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
-                    if ($("#myonoffswitch").prop('checked') == false) {
+                    if ($(div).find('.alert').prop('checked') == true) {
                         $('#Modal_' + $(div).attr('id') + ' .measure').val(d.measure);
                         $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
                         $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
@@ -887,7 +877,7 @@ function clusteredverticalbar() {
         var newBars = clusteredverticalbar.enter().append('g')
             .attr('class', 'clusteredverticalbar');
 
-        drawViz(newBars,keys);
+        drawViz(newBars, keys);
 
         clusteredverticalbar.select('text')
             .text(function (d, i) {
@@ -974,6 +964,7 @@ function clusteredverticalbar() {
             .call(_localYGrid);
 
         UTIL.displayThreshold(threshold, data, keys);
+        
     }
 
     chart.config = function (value) {

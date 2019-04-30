@@ -408,7 +408,7 @@ function util() {
         createAlert: function (id, _measure) {
             var output = "";
 
-            output += '<div id="Modal_' + id + '" class="modal fade alter" role="dialog">' +
+            output += '<div id="Modal_' + id + '" class="modal fade alter Modal_alert" role="dialog">' +
                 '<div class="modal-dialog" role="document">' +
                 '<div class="modal-content">' +
                 '<div class="modal-header">' +
@@ -458,11 +458,11 @@ function util() {
             return _filter
         },
 
-        createAlertElement: function () {
-            var _filter = ' <label class="switch">'+
+        createAlertElement: function (id) {
+            var _filter = '<div class="filterToggal" id="filter_'+id+'" > <label class="switch">'+
             '<input type="checkbox" checked class="alert">'+
             '<span class="slider round"></span>'+
-            '</label>';
+            '</label></div>';
             return _filter
         },
 

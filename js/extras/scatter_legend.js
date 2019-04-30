@@ -1,5 +1,7 @@
 var d3 = require('d3');
 var COMMON = require('../extras/common.js')();
+var UTIL = require('../extras/util.js')();
+
 function legend() {
     return function (data, selection, extraParams) {
         var me = this;
@@ -93,8 +95,19 @@ function legend() {
             .text(function (d, i) {
                 return d;
             })
+            .text(function (d) {
+                if (me.print() == false) {
+                    if ((me.legendPosition() == 'top') || (me.legendPosition() == 'bottom')) {
+                        return UTIL.getTruncatedLabel(this, d, Math.floor(extraParams.width / data.length) - 5);
+                    } else if ((me.legendPosition() == 'left') || (me.legendPosition() == 'right')) {
+                        return UTIL.getTruncatedLabel(this, d, extraParams.width / 5);
+                    }
+                }
+                else{
+                    return d;
+                }
+            })
             .style('font-weight', 'bold')
-
 
         var legendBreak = 0,
             legendBreakCount = 0;

@@ -117,10 +117,18 @@ function legend() {
                     return d[me.dimension()];
                 })
                 .text(function (d) {
-                    if ((me.legendPosition() == 'top') || (me.legendPosition() == 'bottom')) {
-                        return UTIL.getTruncatedLabel(this, d[me.dimension()], Math.floor(extraParams.width / data.length) - 5);
-                    } else if ((me.legendPosition() == 'left') || (me.legendPosition() == 'right')) {
-                        return UTIL.getTruncatedLabel(this, d[me.dimension()], extraParams.width / 5);
+                    if (me.print() == false) {
+                        if ((me.legendPosition() == 'top') || (me.legendPosition() == 'bottom')) {
+                            return UTIL.getTruncatedLabel(this, d[me.dimension()], Math.floor(extraParams.width / data.length) - 5);
+                        } else if ((me.legendPosition() == 'left') || (me.legendPosition() == 'right')) {
+                            return UTIL.getTruncatedLabel(this, d[me.dimension()], extraParams.width / 5);
+                        }
+                    }
+                    else {
+                        if (typeof d == 'string') {
+                            return d;
+                        }
+                        return d[me.dimension()];
                     }
                 })
                 .style('fill', COMMON.LEGEND_COLOR)
