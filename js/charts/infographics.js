@@ -391,6 +391,26 @@ function infographics() {
             else {
                 area.style('opacity', 1)
                 kpi.html(_getKpi(_localTotal, _localTotal))
+
+                var kpiData = graphics.append('text')
+                    .text(_getKpiDisplayName() + " " + _localTotal)
+
+                if (_kpiAlignment == "right") {
+                    kpiData
+                        .attr('transform', 'translate(' + width + ', ' + height / 2 + ')');
+                }
+                else if (_kpiAlignment == "left") {
+                    kpiData
+                        .attr('transform', 'translate(' + 0 + ', ' + height / 2 + ')');
+                }
+                else {
+                    kpiData
+                        .attr('transform', 'translate(' + width / 2 + ', ' + height / 2 + ')')
+                        .style('text-anchor', 'middle')
+                }
+
+                _localDiv = graphics
+
             }
         });
     }

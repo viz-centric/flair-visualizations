@@ -395,7 +395,7 @@ function combo() {
             if (_tooltip) {
                 tooltip = d3.select(this.parentNode).select('.tooltip');
             }
-        
+
 
             drawPlot.call(this, data)
         });
@@ -634,10 +634,10 @@ function combo() {
             xAxisGroup.append('g')
                 .attr('class', 'label')
                 .attr('transform', function () {
-                   return 'translate(' + (plotWidth/2) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
+                    return 'translate(' + (plotWidth / 2) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
                 })
                 .append('text')
-                 .style('text-anchor', 'middle')
+                .style('text-anchor', 'middle')
                 .style('font-weight', 'bold')
                 .style('fill', _xAxisColor)
                 .text(_displayName);
@@ -669,7 +669,7 @@ function combo() {
             yAxisGroup.append('g')
                 .attr('class', 'label')
                 .attr('transform', function () {
-                    return 'translate(' + (-COMMON.AXIS_THICKNESS / 1.15) + ', ' + (plotHeight/2) + ')';
+                    return 'translate(' + (-COMMON.AXIS_THICKNESS / 1.15) + ', ' + (plotHeight / 2) + ')';
                 })
                 .append('text')
                 .attr('transform', 'rotate(-90)')
