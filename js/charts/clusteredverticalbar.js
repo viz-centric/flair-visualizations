@@ -37,7 +37,9 @@ function clusteredverticalbar() {
         _displayColor = [],
         _borderColor = [],
         _fontSize = [],
-        _print;
+        _print,
+        broadcast,
+        filterParameters;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
     var _localXAxis,
@@ -169,6 +171,20 @@ function clusteredverticalbar() {
             if (_filter.length > 0) {
                 filterData = _filter;
             }
+
+            var idWidget = broadcast.updateWidget[scope.parentElement.id];
+            broadcast.updateWidget = {};
+            broadcast.updateWidget[scope.parentElement.id] = idWidget;
+
+            var _filterList = {}, list = []
+
+            filterData.map(function (val) {
+                list.push(val[_dimension[0]])
+            })
+            _filterList[_dimension[0]] = list
+            broadcast.filterSelection.filter = _filterList;
+            filterParameters.save(_filterList);
+
         }
     }
 
@@ -176,6 +192,15 @@ function clusteredverticalbar() {
         return function () {
             if (filterData.length > 0) {
                 chart.update(filterData);
+                if (broadcast) {
+                    broadcast.updateWidget = {};
+                    broadcast.filterSelection.id = null;
+                    broadcast.$broadcast('flairbiApp:filter-input-refresh');
+                    broadcast.$broadcast('flairbiApp:filter');
+                    broadcast.$broadcast('flairbiApp:filter-add');
+                    d3.select(this.parentNode)
+                        .style('visibility', 'hidden');
+                }
             }
         }
     }
@@ -964,7 +989,7 @@ function clusteredverticalbar() {
             .call(_localYGrid);
 
         UTIL.displayThreshold(threshold, data, keys);
-        
+
     }
 
     chart.config = function (value) {
@@ -1138,6 +1163,22 @@ function clusteredverticalbar() {
 
     chart.fontSize = function (value, measure) {
         return UTIL.baseAccessor.call(_fontSize, value, measure, _measure, chart);
+    }
+
+    chart.broadcast = function (value) {
+        if (!arguments.length) {
+            return broadcast;
+        }
+        broadcast = value;
+        return chart;
+    }
+
+    chart.filterParameters = function (value) {
+        if (!arguments.length) {
+            return filterParameters;
+        }
+        filterParameters = value;
+        return chart;
     }
 
     return chart;

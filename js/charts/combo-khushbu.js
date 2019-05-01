@@ -29,18 +29,18 @@ function combo() {
         _stacked,
         _displayName,
         _legendData,
-        _comboChartType,
-        _showValues,
-        _displayNameForMeasure,
-        _fontStyle,
-        _fontWeight,
-        _numberFormat,
-        _textColor,
-        _displayColor,
-        _borderColor,
-        _fontSize,
-        _lineType,
-        _pointType,
+        _comboChartType = [],
+        _showValues = [],
+        _displayNameForMeasure = [],
+        _fontStyle = [],
+        _fontWeight = [],
+        _numberFormat = [],
+        _textColor = [],
+        _displayColor = [],
+        _borderColor = [],
+        _fontSize = [],
+        _lineType = [],
+        _pointType = [],
         _print;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
@@ -526,7 +526,7 @@ function combo() {
             .enter().append('g')
             .attr('class', 'bar');
 
-        drawViz(bar)
+        drawViz(bar, keys)
 
         var clusterLine = content.selectAll('.cluster_line')
             .data(measuresLine.filter(function (m) { return labelStack.indexOf(m) == -1; }))
@@ -588,6 +588,45 @@ function combo() {
                     + (x0(d['data'][_dimension[0]]) + x0.bandwidth() / 2)
                     + ',' + y(d['data'][d['tag']]) + ')';
             })
+
+        var lineText = clusterLine.selectAll('text')
+            .data(function (d, i) {
+                return data.map(function (datum) { return { "tag": d, "data": datum }; });
+            })
+            .enter().append('text')
+            .attr('class', 'lineText')
+            .attr('x', function (d, i) {
+                return x0(d['data'][_dimension[0]]) + x0.bandwidth() / 2;
+            })
+            .attr('y', function (d, i) {
+                return y(d['data'][d['tag']]);
+            })
+            .attr('dy', function (d, i) {
+                return -2 * offsetY;
+            })
+            .style('text-anchor', 'middle')
+            .text(function (d, i) {
+                return UTIL.getFormattedValue(d['data'][d['tag']], UTIL.getValueNumberFormat(_measure.indexOf(d['tag']), _numberFormat));
+            })
+            .text(function (d, i) {
+                var width = (1 - x1.padding()) * plotWidth / (_localXLabels.length - 1);
+                return UTIL.getTruncatedLabel(this, d3.select(this).text(), width);
+            })
+            .attr('visibility', function (d, i) {
+                return UTIL.getVisibility(_showValues[_measure.indexOf(d['tag'])]);
+            })
+            .style('font-style', function (d, i) {
+                return _fontStyle[_measure.indexOf(d['tag'])];
+            })
+            .style('font-weight', function (d, i) {
+                return _fontWeight[_measure.indexOf(d['tag'])];
+            })
+            .style('font-size', function (d, i) {
+                return _fontSize[_measure.indexOf(d['tag'])];
+            })
+            .style('fill', function (d, i) {
+                return _textColor[_measure.indexOf(d['tag'])];
+            });
 
         if (!_print) {
             line
@@ -755,7 +794,7 @@ function combo() {
         }
 
     }
-    var drawViz = function (element) {
+    var drawViz = function (element, keys) {
         var me = this;
         if (!_print) {
             element.append('rect')
@@ -836,6 +875,50 @@ function combo() {
                     return Math.abs(y(0) - y(d['data'][measuresBar[i]]));
                 })
                 .attr('width', x1.bandwidth())
+
+            var text = element.append('text')
+                .text(function (d, i) {
+                    return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(i, _numberFormat));
+                })
+                .attr('x', function (d, i) {
+                    return x1(measuresBar[i]);
+                })
+                .attr('y', function (d, i) {
+                    if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
+                        return contentHeight;
+                    } else if (d['data'][measuresBar[i]] > 0) {
+                        return y(d['data'][measuresBar[i]]);
+                    }
+
+                    return y(0);
+                })
+                .attr('dx', function (d, i) {
+                    return x1.bandwidth() / 2;
+                })
+                .attr('dy', function (d, i) {
+                    return -offsetY;
+                })
+                .style('text-anchor', 'middle')
+                .attr('visibility', function (d, i) {
+                    return UTIL.getVisibility(_showValues[i]);
+                })
+                .style('font-style', function (d, i) {
+                    return _fontStyle[i];
+                })
+                .style('font-weight', function (d, i) {
+                    return _fontWeight[i];
+                })
+                .style('font-size', function (d, i) {
+                    return _fontSize[i] + 'px';
+                })
+                .style('fill', function (d, i) {
+                    return _textColor[i];
+                })
+                .text(function (d, i) {
+                    var barWidth = (1 - x0.padding()) * plotWidth / (_Local_data.length - 1);
+                    barWidth = (1 - x1.padding()) * barWidth / keys.length;
+                    return UTIL.getTruncatedTick(d3.select(this).text(), barWidth, tickLength);
+                });
         }
         else {
             element.append('rect')
@@ -1012,26 +1095,7 @@ function combo() {
                 return y(d['data'][d['tag']]);
             });
 
-        var area = plot.selectAll('path.area')
-            .datum(function (d, i) {
-                return data.map(function (datum) { return { "tag": d, "data": datum }; });
-            })
-            .attr('d', areaGenerator);
-
-        var line = plot.selectAll('path.line')
-            .datum(function (d, i) {
-                return data.map(function (datum) {
-                    return {
-                        "tag": d, "data": datum
-                    };
-                });
-            })
-            .attr('d', lineGenerator);
-
-        var point = plot.selectAll('path.point')
-            .datum(function (d, i) {
-                return data.map(function (datum) { return { "tag": d, "data": datum }; });
-            })
+        plot.selectAll('path.point').remove()
 
         var clusterBar = chartploat.selectAll('g.cluster_bar')
             .data(data)
@@ -1073,16 +1137,142 @@ function combo() {
             .classed('selected', false)
             .classed('possible', false);
 
+        bar.select('text')
+            .text(function (d, i) {
+                return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(i, _numberFormat));
+            })
+            .attr('x', function (d, i) {
+                return x1(measuresBar[i]);
+            })
+            .attr('y', function (d, i) {
+                if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
+                    return contentHeight;
+                } else if (d['data'][measuresBar[i]] > 0) {
+                    return y(d['data'][measuresBar[i]]);
+                }
+
+                return y(0);
+            })
+            .attr('dx', function (d, i) {
+                return x1.bandwidth() / 2;
+            })
+            .text(function (d, i) {
+                var barWidth = (1 - x0.padding()) * plotWidth / (_Local_data.length - 1);
+                barWidth = (1 - x1.padding()) * barWidth / keys.length;
+                return UTIL.getTruncatedTick(d3.select(this).text(), barWidth, tickLength);
+            });
+
 
         var newBars = bar.enter().append('g')
             .attr('class', 'bar');
 
-        drawViz(newBars)
+        drawViz(newBars, keys)
 
         plot.selectAll('g.cluster_bar')
             .attr('transform', function (d) {
                 return 'translate(' + x0(d[_dimension[0]]) + ', 0)';
             });
+
+        var clusterLine = plot.selectAll('.cluster_line')
+            .data(keys.filter(function (m) { return labelStack.indexOf(m) == -1; }))
+
+        var lineText = clusterLine.selectAll('text')
+            .data(function (d, i) {
+                return data.map(function (datum) { return { "tag": d, "data": datum }; });
+            })
+
+        lineText.exit().remove();
+
+        lineText.enter().append('text')
+            .attr('class', 'lineText')
+            .attr('x', function (d, i) {
+                return x0(d['data'][_dimension[0]]) + x0.bandwidth() / 2;
+            })
+            .attr('y', function (d, i) {
+                return y(d['data'][d['tag']]);
+            })
+            .attr('dy', function (d, i) {
+                return -2 * offsetY;
+            })
+            .style('text-anchor', 'middle')
+            .text(function (d, i) {
+                return UTIL.getFormattedValue(d['data'][d['tag']], UTIL.getValueNumberFormat(_measure.indexOf(d['tag']), _numberFormat));
+            })
+            .text(function (d, i) {
+                var width = (1 - x1.padding()) * plotWidth / (_localXLabels.length - 1);
+                return UTIL.getTruncatedLabel(this, d3.select(this).text(), width);
+            })
+            .attr('visibility', function (d, i) {
+                return UTIL.getVisibility(_showValues[_measure.indexOf(d['tag'])]);
+            })
+            .style('font-style', function (d, i) {
+                return _fontStyle[_measure.indexOf(d['tag'])];
+            })
+            .style('font-weight', function (d, i) {
+                return _fontWeight[_measure.indexOf(d['tag'])];
+            })
+            .style('font-size', function (d, i) {
+                return _fontSize[_measure.indexOf(d['tag'])];
+            })
+            .style('fill', function (d, i) {
+                return _textColor[_measure.indexOf(d['tag'])];
+            });
+
+        lineText
+            .attr('x', function (d, i) {
+                return x0(d['data'][_dimension[0]]) + x0.bandwidth() / 2;
+            })
+            .attr('y', function (d, i) {
+                return y(d['data'][d['tag']]);
+            })
+            .attr('dy', function (d, i) {
+                return -2 * offsetY;
+            })
+            .style('text-anchor', 'middle')
+            .text(function (d, i) {
+                return UTIL.getFormattedValue(d['data'][d['tag']], UTIL.getValueNumberFormat(_measure.indexOf(d['tag']), _numberFormat));
+            })
+            .text(function (d, i) {
+                var width = (1 - x1.padding()) * plotWidth / (_localXLabels.length - 1);
+                return UTIL.getTruncatedLabel(this, d3.select(this).text(), width);
+            })
+
+        var line = clusterLine.select('path.line')
+            .classed('line-path', true)
+            .datum(function (d, i) {
+                return data.map(function (datum) { return { "tag": d, "data": datum }; });
+            })
+            .attr('d', lineGenerator)
+
+
+        var area = clusterLine.select('path.area')
+            .datum(function (d, i) {
+                return data.map(function (datum) { return { "tag": d, "data": datum }; });
+            })
+            .attr('d', areaGenerator);
+
+        var point = clusterLine.selectAll('point')
+            .data(function (d, i) {
+                return data.map(function (datum) { return { "tag": d, "data": datum }; });
+            })
+            .enter().append('path')
+            .attr('class', 'point')
+            .attr('fill', function (d, i) {
+                return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+            })
+            .attr('d', function (d, i) {
+                return d3.symbol()
+                    .type(getPointType(_measure.indexOf(d.tag)))
+                    .size(40)();
+            })
+            .attr('transform', function (d) {
+                return 'translate('
+                    + (x0(d['data'][_dimension[0]]) + x0.bandwidth() / 2)
+                    + ',' + y(d['data'][d['tag']]) + ')';
+            })
+            .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
 
         var xAxisGroup,
             yAxisGroup;
@@ -1383,6 +1573,43 @@ function combo() {
         }
         _pointType = value;
         return chart;
+    }
+
+    chart.showValues = function (value, measure) {
+        return UTIL.baseAccessor.call(_showValues, value, measure, _measure, chart);
+    }
+    chart.displayNameForMeasure = function (value, measure) {
+        return UTIL.baseAccessor.call(_displayNameForMeasure, value, measure, _measure, chart);
+    }
+    chart.fontStyle = function (value, measure) {
+        return UTIL.baseAccessor.call(_fontStyle, value, measure, _measure, chart);
+    }
+    chart.fontWeight = function (value, measure) {
+        return UTIL.baseAccessor.call(_fontWeight, value, measure, _measure, chart);
+    }
+    chart.numberFormat = function (value, measure) {
+        return UTIL.baseAccessor.call(_numberFormat, value, measure, _measure, chart);
+    }
+    chart.textColor = function (value, measure) {
+        return UTIL.baseAccessor.call(_textColor, value, measure, _measure, chart);
+    }
+    chart.displayColor = function (value, measure) {
+        return UTIL.baseAccessor.call(_displayColor, value, measure, _measure, chart);
+    }
+    chart.borderColor = function (value, measure) {
+        return UTIL.baseAccessor.call(_borderColor, value, measure, _measure, chart);
+    }
+    chart.fontSize = function (value, measure) {
+        return UTIL.baseAccessor.call(_fontSize, value, measure, _measure, chart);
+    }
+    chart.comboChartType = function (value, measure) {
+        return UTIL.baseAccessor.call(_comboChartType, value, measure, _measure, chart);
+    }
+    chart.lineType = function (value, measure) {
+        return UTIL.baseAccessor.call(_lineType, value, measure, _measure, chart);
+    }
+    chart.pointType = function (value, measure) {
+        return UTIL.baseAccessor.call(_pointType, value, measure, _measure, chart);
     }
 
     return chart;

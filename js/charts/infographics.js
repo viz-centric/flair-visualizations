@@ -219,8 +219,8 @@ function infographics() {
 
             var graphics = container.append('svg')
                 .attr('id', 'graphics')
-                .attr("width", '100%')
-                .attr("height", '100%')
+                .attr("width",parentWidth)
+                .attr("height", parentWidth)
                 .style("position", 'absolute');
 
             var info = container.append('div')
@@ -278,8 +278,6 @@ function infographics() {
                 .style('stroke-linecap', 'round')
                 .style('stroke-width', 4)
                 .attr('d', _line)
-
-
 
             var area = plot.append('path')
                 .classed('infographics-area', true)
