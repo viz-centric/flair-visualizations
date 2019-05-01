@@ -399,9 +399,9 @@ function line() {
                 }
             });
         var labelStack = [];
-        var x = d3.scaleBand()
+        var x = d3.scalePoint()
             .rangeRound([0, plotWidth])
-            .padding([1]);
+            .padding([0.5]);
 
         var y = d3.scaleLinear()
             .rangeRound([plotHeight, 0]);
@@ -446,7 +446,6 @@ function line() {
             })
             .call(_localYGrid);
 
-
         var areaGenerator = d3.area()
             .curve(d3.curveLinear)
             .x(function (d, i) {
@@ -489,6 +488,8 @@ function line() {
             })
             .style('fill-opacity', 0.5)
             .attr('stroke', 'none')
+            .style('stroke-width', 0)
+            .style('opacity', 0)
             .attr('d', areaGenerator);
 
         var line = clusterLine.append('path')
@@ -497,6 +498,7 @@ function line() {
                 return data.map(function (datum) { return { "tag": d, "data": datum }; });
             })
             .attr('class', 'line')
+            .attr('stroke-dasharray', 'none')
             .style('fill', 'none')
             .attr('stroke', function (d, i) {
                 return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
@@ -504,32 +506,6 @@ function line() {
             .attr('stroke-linejoin', 'round')
             .attr('stroke-linecap', 'round')
             .attr('stroke-width', 1)
-
-        if (!_print) {
-            line
-                .on("mouseover", function (d) {
-                    d3.select(this)
-                        .style("stroke-width", "2.5px")
-                        .style("cursor", "pointer");
-                })
-                .on("mouseout", function (d) {
-                    d3.select(this)
-                        .style("stroke-width", "1.5px")
-                        .style("cursor", "none");
-                })
-                .attr('d', lineGenerator)
-                .transition()
-                .duration(COMMON.DURATION)
-                .attrTween('stroke-dasharray', function () {
-                    var l = this.getTotalLength(),
-                        interpolator = d3.interpolateString('0,' + l, l + ',' + l);
-
-                    return function (t) {
-                        return interpolator(t);
-                    }
-                });
-        }
-
 
         var point = clusterLine.selectAll('point')
             .data(function (d, i) {
@@ -553,6 +529,44 @@ function line() {
                     + (x(d['data'][_dimension[0]]) + x.bandwidth() / 2)
                     + ',' + y(d['data'][d['tag']]) + ')';
             })
+
+        var text = clusterLine.selectAll('text')
+            .data(function (d, i) {
+                return data.map(function (d) { return { "index": i, "data": d }; });
+            })
+            .enter().append('text')
+            .attr('x', function (d, i) {
+                return x(d['data'][_dimension[0]]);
+            })
+            .attr('y', function (d, i) {
+                return y(d['data'][_measure[d['index']]]);
+            })
+            .attr('dy', function (d, i) {
+                return -2 * offsetY;
+            })
+            .style('text-anchor', 'middle')
+            .text(function (d, i) {
+                return UTIL.getFormattedValue(d['data'][_measure[d['index']]], UTIL.getValueNumberFormat(d["index"], _numberFormat));
+            })
+            .text(function (d, i) {
+                var width = (1 - x.padding()) * plotWidth / (_localXLabels.length - 1);
+                return UTIL.getTruncatedLabel(this, d3.select(this).text(), width);
+            })
+            .attr('visibility', function (d, i) {
+                return UTIL.getVisibility(_showValues[d['index']]);
+            })
+            .style('font-style', function (d, i) {
+                return _fontStyle[d['index']];
+            })
+            .style('font-weight', function (d, i) {
+                return _fontWeight[d['index']];
+            })
+            .style('font-size', function (d, i) {
+                return _fontSize[d['index']];
+            })
+            .style('fill', function (d, i) {
+                return _textColor[d['index']];
+            });
 
         if (!_print) {
             point.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
@@ -669,12 +683,42 @@ function line() {
             _setAxisColor(yAxisGroup, _yAxisColor);
         }
 
-        if (_print) {
+        if (!_print) {
             var str = UTIL.createAlert($(div).attr('id'), _measure);
             $(div).append(str);
 
             var _filter = UTIL.createFilterElement()
             $(div).append(_filter);
+
+            line
+                .on("mouseover", function (d) {
+                    d3.select(this)
+                        .style("stroke-width", "2.5px")
+                        .style("cursor", "pointer");
+                })
+                .on("mouseout", function (d) {
+                    d3.select(this)
+                        .style("stroke-width", "1.5px")
+                        .style("cursor", "none");
+                })
+                .attr('d', lineGenerator)
+                .transition()
+                .duration(COMMON.DURATION)
+                .attrTween('stroke-dasharray', function () {
+                    var l = this.getTotalLength(),
+                        i = d3.interpolateString("0," + l, l + "," + l);
+                    return function (t) { return i(t); };
+                });
+
+            area.transition()
+                .duration(COMMON.DURATION)
+                .styleTween('opacity', function () {
+                    var interpolator = d3.interpolateNumber(0, 1);
+
+                    return function (t) {
+                        return interpolator(t);
+                    }
+                });
 
             $(document).on('click', '_local_svg', function (e) {
                 if ($("#myonoffswitch").prop('checked') == false) {
@@ -800,9 +844,9 @@ function line() {
         var chartplot = _local_svg.select('.chart')
         labelStack = [];
 
-        var x = d3.scaleBand()
+        var x = d3.scalePoint()
             .rangeRound([0, plotWidth])
-            .padding([1]);
+            .padding([0.5]);
 
         var y = d3.scaleLinear()
             .rangeRound([plotHeight, 0]);
@@ -829,7 +873,7 @@ function line() {
             })
             .y0(plotHeight)
             .y1(function (d) {
-                return y(d['data'][d.tag[0].tag]);
+                return y(d['data'][d['tag']]);
             });
 
         var lineGenerator = d3.line()
@@ -838,24 +882,145 @@ function line() {
                 return x(d['data'][_dimension[0]]) + x.bandwidth() / 2;
             })
             .y(function (d, i) {
-                return y(d['data'][d.tag[0].tag]);
+                return y(d['data'][d['tag']]);
             });
 
-        var area = plot.selectAll('path.area')
+        var clusterLine = plot.selectAll('.cluster_line')
+            .data(keys.filter(function (m) { return labelStack.indexOf(m) == -1; }))
+
+        var line = clusterLine.select('path.line')
+            .classed('line-path', true)
+            .datum(function (d, i) {
+                return data.map(function (datum) { return { "tag": d, "data": datum }; });
+            })
+            .attr('d', lineGenerator)
+
+
+        var area = clusterLine.select('path.area')
             .datum(function (d, i) {
                 return data.map(function (datum) { return { "tag": d, "data": datum }; });
             })
             .attr('d', areaGenerator);
 
-        var line = plot.selectAll('path.line')
-            .datum(function (d, i) {
-                return data.map(function (datum) { return { "tag": d, "data": datum }; });
-            })
-            .attr('d', lineGenerator);
-
-
         plot.selectAll('path.point').remove()
 
+
+        var point = clusterLine.selectAll('point')
+            .data(function (d, i) {
+                return data.map(function (datum) { return { "tag": d, "data": datum }; });
+            })
+            .enter().append('path')
+            .attr('class', 'point')
+            .attr('stroke', function (d, i) {
+                return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+            })
+            .attr('fill', function (d, i) {
+                return UTIL.getBorderColor(_measure.indexOf(d.tag), _borderColor);
+            })
+            .attr('d', function (d, i) {
+                return d3.symbol()
+                    .type(getPointType(_measure.indexOf(d.tag)))
+                    .size(40)();
+            })
+            .attr('transform', function (d) {
+                return 'translate('
+                    + (x(d['data'][_dimension[0]]) + x.bandwidth() / 2)
+                    + ',' + y(d['data'][d['tag']]) + ')';
+            })
+            .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+            .on('click', function (d) {
+                if ($("#myonoffswitch").prop('checked') == false) {
+                    $('#Modal_' + $(div).attr('id') + ' .measure').val(d.measure);
+                    $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
+                    $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
+                    $('#Modal_' + $(div).attr('id')).modal('toggle');
+                }
+                else {
+                    var confirm = d3.select(div).select('.confirm')
+                        .style('visibility', 'visible');
+                    var _filter = _Local_data.filter(function (d1) {
+                        return d.data[_dimension[0]] === d1[_dimension[0]]
+                    })
+                    var rect = d3.select(this);
+                    if (rect.classed('selected')) {
+                        rect.classed('selected', false);
+                        filterData.map(function (val, i) {
+                            if (val[_dimension[0]] == d.data[_dimension[0]]) {
+                                filterData.splice(i, 1)
+                            }
+                        })
+                    } else {
+                        rect.classed('selected', true);
+                        var isExist = filterData.filter(function (val) {
+                            if (val[_dimension[0]] == d.data[_dimension[0]]) {
+                                return val
+                            }
+                        })
+                        if (isExist.length == 0) {
+                            filterData.push(_filter[0]);
+                        }
+                    }
+                }
+            })
+
+
+        var lineText = clusterLine.selectAll('text')
+            .data(function (d, i) {
+                return data.map(function (d) { return { "index": i, "data": d }; });
+            })
+
+        lineText.exit().remove();
+
+        lineText.enter().append('text')
+            .attr('x', function (d, i) {
+                return x(d['data'][_dimension[0]]);
+            })
+            .attr('y', function (d, i) {
+                return y(d['data'][_measure[d['index']]]);
+            })
+            .attr('dy', function (d, i) {
+                return -2 * offsetY;
+            })
+            .style('text-anchor', 'middle')
+            .text(function (d, i) {
+                return UTIL.getFormattedValue(d['data'][_measure[d['index']]], UTIL.getValueNumberFormat(d["index"], _numberFormat));
+            })
+            .text(function (d, i) {
+                var width = (1 - x.padding()) * plotWidth / (_localXLabels.length - 1);
+                return UTIL.getTruncatedLabel(this, d3.select(this).text(), width);
+            })
+            .attr('visibility', function (d, i) {
+                return UTIL.getVisibility(_showValues[d['index']]);
+            })
+            .style('font-style', function (d, i) {
+                return _fontStyle[d['index']];
+            })
+            .style('font-weight', function (d, i) {
+                return _fontWeight[d['index']];
+            })
+            .style('font-size', function (d, i) {
+                return _fontSize[d['index']];
+            })
+            .style('fill', function (d, i) {
+                return _textColor[d['index']];
+            });
+
+        lineText
+            .attr('x', function (d, i) {
+                return x(d['data'][_dimension[0]]);
+            })
+            .attr('y', function (d, i) {
+                return y(d['data'][_measure[d['index']]]);
+            })
+            .text(function (d, i) {
+                return UTIL.getFormattedValue(d['data'][_measure[d['index']]], UTIL.getValueNumberFormat(d["index"], _numberFormat));
+            })
+            .text(function (d, i) {
+                var width = (1 - x.padding()) * plotWidth / (_localXLabels.length - 1);
+                return UTIL.getTruncatedLabel(this, d3.select(this).text(), width);
+            })
 
         var xAxisGroup,
             yAxisGroup;
