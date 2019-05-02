@@ -27,7 +27,9 @@ function bullet() {
         targetNumberFormat,
         _tooltip,
         _sort,
-        _print;
+        _print,
+        broadcast,
+        filterParameters;;
 
     var _local_svg, _Local_data, _originalData;
 
@@ -139,6 +141,20 @@ function bullet() {
             if (_filter.length > 0) {
                 filterData = _filter;
             }
+            if (broadcast) {
+                var idWidget = broadcast.updateWidget[scope.parentElement.id];
+                broadcast.updateWidget = {};
+                broadcast.updateWidget[scope.parentElement.id] = idWidget;
+
+                var _filterList = {}, list = []
+
+                filterData.map(function (val) {
+                    list.push(val[_dimension[0]])
+                })
+                _filterList[_dimension[0]] = list
+                broadcast.filterSelection.filter = _filterList;
+                filterParameters.save(_filterList);
+            }
         }
     }
 
@@ -146,6 +162,15 @@ function bullet() {
         return function () {
             if (filterData.length > 0) {
                 chart.update(filterData);
+                if (broadcast) {
+                    broadcast.updateWidget = {};
+                    broadcast.filterSelection.id = null;
+                    broadcast.$broadcast('flairbiApp:filter-input-refresh');
+                    broadcast.$broadcast('flairbiApp:filter');
+                    broadcast.$broadcast('flairbiApp:filter-add');
+                    d3.select(this.parentNode)
+                        .style('visibility', 'hidden');
+                }
             }
         }
     }
@@ -565,6 +590,33 @@ function bullet() {
 
                     filterData.push(obj)
                 }
+
+                var _filterDimension = {};
+                if(broadcast.filterSelection.id) {
+                    _filterDimension = broadcast.filterSelection.filter;
+                } else {
+                    broadcast.filterSelection.id = $(div).attr('id');
+                }
+                var dimension = _dimension[0];
+                if(_filterDimension[dimension]) {
+                    var temp = _filterDimension[dimension];
+                    if(temp.indexOf(d.title) < 0) {
+                        temp.push(d.title);
+                    } else {
+                        temp.splice(temp.indexOf(d.title), 1);
+                    }
+                    _filterDimension[dimension] = temp;
+                } else {
+                    _filterDimension[dimension] = [d.title];
+                }
+
+                var idWidget = broadcast.updateWidget[$(div).attr('id')];
+                broadcast.updateWidget = {};
+                broadcast.updateWidget[$(div).attr('id')] = idWidget;
+                broadcast.filterSelection.filter = _filterDimension;
+                var _filterParameters = filterParameters.get();
+                _filterParameters[dimension]=_filterDimension[dimension];
+                filterParameters.save(_filterParameters);
             })
             .call(bullet);
 
@@ -732,6 +784,22 @@ function bullet() {
             return _print;
         }
         _print = value;
+        return chart;
+    }
+
+    chart.broadcast = function (value) {
+        if (!arguments.length) {
+            return broadcast;
+        }
+        broadcast = value;
+        return chart;
+    }
+
+    chart.filterParameters = function (value) {
+        if (!arguments.length) {
+            return filterParameters;
+        }
+        filterParameters = value;
         return chart;
     }
 

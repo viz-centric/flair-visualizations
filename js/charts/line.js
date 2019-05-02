@@ -39,7 +39,9 @@ function line() {
         _fontSize = [],
         _lineType = [],
         _pointType = [],
-        _print;
+        _print,
+        broadcast,
+        filterParameters;;
 
     var margin = {
         top: 0,
@@ -212,12 +214,35 @@ function line() {
             if (_filter.length > 0) {
                 filterData = _filter;
             }
+            if (broadcast) {
+                var idWidget = broadcast.updateWidget[scope.parentElement.id];
+                broadcast.updateWidget = {};
+                broadcast.updateWidget[scope.parentElement.id] = idWidget;
+
+                var _filterList = {}, list = []
+
+                filterData.map(function (val) {
+                    list.push(val[_dimension[0]])
+                })
+                _filterList[_dimension[0]] = list
+                broadcast.filterSelection.filter = _filterList;
+                filterParameters.save(_filterList);
+            }
         }
     }
     var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
                 chart.update(filterData);
+                if (broadcast) {
+                    broadcast.updateWidget = {};
+                    broadcast.filterSelection.id = null;
+                    broadcast.$broadcast('flairbiApp:filter-input-refresh');
+                    broadcast.$broadcast('flairbiApp:filter');
+                    broadcast.$broadcast('flairbiApp:filter-add');
+                    d3.select(this.parentNode)
+                        .style('visibility', 'hidden');
+                }
             }
         }
     }
@@ -479,7 +504,7 @@ function line() {
                 return UTIL.getBorderColor(_measure.indexOf(d[0]['tag']), _borderColor);
             })
             .attr('visibility', function (d, i) {
-                if (_lineType[(_measure.indexOf(d[0]['tag']))] == "Area") {
+                if (_lineType[(_measure.indexOf(d[0]['tag']))] == "area") {
                     return 'visible'
                 }
                 else {
@@ -604,6 +629,33 @@ function line() {
                                 filterData.push(_filter[0]);
                             }
                         }
+
+                        var _filterDimension = {};
+                        if (broadcast.filterSelection.id) {
+                            _filterDimension = broadcast.filterSelection.filter;
+                        } else {
+                            broadcast.filterSelection.id = $(div).attr('id');
+                        }
+                        var dimension = _dimension[0];
+                        if (_filterDimension[dimension]) {
+                            var temp = _filterDimension[dimension];
+                            if (temp.indexOf(d.data[_dimension[0]]) < 0) {
+                                temp.push(d.data[_dimension[0]]);
+                            } else {
+                                temp.splice(temp.indexOf(d.data[_dimension[0]]), 1);
+                            }
+                            _filterDimension[dimension] = temp;
+                        } else {
+                            _filterDimension[dimension] = [d.data[_dimension[0]]];
+                        }
+
+                        var idWidget = broadcast.updateWidget[$(div).attr('id')];
+                        broadcast.updateWidget = {};
+                        broadcast.updateWidget[$(div).attr('id')] = idWidget;
+                        broadcast.filterSelection.filter = _filterDimension;
+                        var _filterParameters = filterParameters.get();
+                        _filterParameters[dimension] = _filterDimension[dimension];
+                        filterParameters.save(_filterParameters);
                     }
                 })
         }
@@ -782,6 +834,12 @@ function line() {
 
             _local_svg.call(lasso);
         }
+        else {
+            line
+                .attr('d', lineGenerator)
+            area
+                .style('opacity', 1);
+        }
 
     }
 
@@ -893,14 +951,35 @@ function line() {
             .datum(function (d, i) {
                 return data.map(function (datum) { return { "tag": d, "data": datum }; });
             })
+            .attr('stroke-dasharray', 'none')
             .attr('d', lineGenerator)
+            .transition()
+            .duration(COMMON.DURATION)
+            .attrTween('stroke-dasharray', function () {
+                var l = this.getTotalLength(),
+                    i = d3.interpolateString("0," + l, l + "," + l);
+                return function (t) { return i(t); };
+            });
 
 
         var area = clusterLine.select('path.area')
             .datum(function (d, i) {
                 return data.map(function (datum) { return { "tag": d, "data": datum }; });
             })
-            .attr('d', areaGenerator);
+            .attr('d', areaGenerator)
+            .style('fill-opacity', 0.5)
+            .attr('stroke', 'none')
+            .style('stroke-width', 0)
+            .style('opacity', 0)
+            .transition()
+            .duration(COMMON.DURATION)
+            .styleTween('opacity', function () {
+                var interpolator = d3.interpolateNumber(0, 1);
+
+                return function (t) {
+                    return interpolator(t);
+                }
+            });
 
         plot.selectAll('path.point').remove()
 
@@ -1290,6 +1369,21 @@ function line() {
         return UTIL.baseAccessor.call(_pointType, value, measure, _measure);
     }
 
+    chart.broadcast = function (value) {
+        if (!arguments.length) {
+            return broadcast;
+        }
+        broadcast = value;
+        return chart;
+    }
+
+    chart.filterParameters = function (value) {
+        if (!arguments.length) {
+            return filterParameters;
+        }
+        filterParameters = value;
+        return chart;
+    }
     return chart;
 }
 

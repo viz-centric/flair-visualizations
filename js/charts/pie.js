@@ -25,7 +25,9 @@ function pie() {
         _valuePosition,
         _sort,
         _tooltip,
-        _print;
+        _print,
+        broadcast,
+        filterParameters;;
 
     /* These are the common variables that is shared across the different private/public
      * methods but is initialized/updated within the methods itself.
@@ -241,6 +243,20 @@ function pie() {
             if (_filter.length > 0) {
                 filterData = _filter;
             }
+            if (broadcast) {
+                var idWidget = broadcast.updateWidget[scope.parentElement.id];
+                broadcast.updateWidget = {};
+                broadcast.updateWidget[scope.parentElement.id] = idWidget;
+
+                var _filterList = {}, list = []
+
+                filterData.map(function (val) {
+                    list.push(val[_dimension[0]])
+                })
+                _filterList[_dimension[0]] = list
+                broadcast.filterSelection.filter = _filterList;
+                filterParameters.save(_filterList);
+            }
         }
     }
 
@@ -248,6 +264,15 @@ function pie() {
         return function () {
             if (filterData.length > 0) {
                 chart.update(filterData);
+                if (broadcast) {
+                    broadcast.updateWidget = {};
+                    broadcast.filterSelection.id = null;
+                    broadcast.$broadcast('flairbiApp:filter-input-refresh');
+                    broadcast.$broadcast('flairbiApp:filter');
+                    broadcast.$broadcast('flairbiApp:filter-add');
+                    d3.select(this.parentNode)
+                        .style('visibility', 'hidden');
+                }
             }
         }
     }
@@ -677,7 +702,47 @@ function pie() {
                     .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, svg))
                     .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, svg))
                     .on('click', function (d, i) {
+                        var confirm = d3.select(div).select('.confirm')
+                            .style('visibility', 'visible');
+                        filter = false;
 
+                        var point = d3.select(this);
+                        if (point.classed('selected')) {
+                            point.classed('selected', false);
+                        } else {
+                            point.classed('selected', true);
+                        }
+                        var obj = new Object();
+                        obj[chart.dimension()] = d.data[_dimension[0]]
+                        obj[chart.measure()] = d.data[_measure[0]]
+                        filterData.push(obj)
+
+                        var _filterDimension = {};
+                        if (broadcast.filterSelection.id) {
+                            _filterDimension = broadcast.filterSelection.filter;
+                        } else {
+                            broadcast.filterSelection.id = $(div).attr('id');
+                        }
+                        var dimension = _dimension[0];
+                        if (_filterDimension[dimension]) {
+                            var temp = _filterDimension[dimension];
+                            if (temp.indexOf(d.data[_dimension[0]]) < 0) {
+                                temp.push(d.data[_dimension[0]]);
+                            } else {
+                                temp.splice(temp.indexOf(d.data[_dimension[0]]), 1);
+                            }
+                            _filterDimension[dimension] = temp;
+                        } else {
+                            _filterDimension[dimension] = [d.data[_dimension[0]]];
+                        }
+
+                        var idWidget = broadcast.updateWidget[$(div).attr('id')];
+                        broadcast.updateWidget = {};
+                        broadcast.updateWidget[$(div).attr('id')] = idWidget;
+                        broadcast.filterSelection.filter = _filterDimension;
+                        var _filterParameters = filterParameters.get();
+                        _filterParameters[dimension] = _filterDimension[dimension];
+                        filterParameters.save(_filterParameters);
                     });
 
                 _localSVG.select('g.lasso').remove()
@@ -751,6 +816,7 @@ function pie() {
 
         /* store the data in local variable */
         _localData = data;
+        filterData = [];
 
         data.sort(function (a, b) {
             return d3.ascending(a[_dimension[0]], b[_dimension[0]]);
@@ -852,7 +918,47 @@ function pie() {
                 .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, svg))
                 .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, svg))
                 .on('click', function (d, i) {
+                    var confirm = d3.select(div).select('.confirm')
+                        .style('visibility', 'visible');
+                    filter = false;
 
+                    var point = d3.select(this);
+                    if (point.classed('selected')) {
+                        point.classed('selected', false);
+                    } else {
+                        point.classed('selected', true);
+                    }
+                    var obj = new Object();
+                    obj[chart.dimension()] = d.data[_dimension[0]]
+                    obj[chart.measure()] = d.data[_measure[0]]
+                    filterData.push(obj)
+
+                    var _filterDimension = {};
+                    if (broadcast.filterSelection.id) {
+                        _filterDimension = broadcast.filterSelection.filter;
+                    } else {
+                        broadcast.filterSelection.id = $(div).attr('id');
+                    }
+                    var dimension = _dimension[0];
+                    if (_filterDimension[dimension]) {
+                        var temp = _filterDimension[dimension];
+                        if (temp.indexOf(d.data[_dimension[0]]) < 0) {
+                            temp.push(d.data[_dimension[0]]);
+                        } else {
+                            temp.splice(temp.indexOf(d.data[_dimension[0]]), 1);
+                        }
+                        _filterDimension[dimension] = temp;
+                    } else {
+                        _filterDimension[dimension] = [d.data[_dimension[0]]];
+                    }
+
+                    var idWidget = broadcast.updateWidget[$(div).attr('id')];
+                    broadcast.updateWidget = {};
+                    broadcast.updateWidget[$(div).attr('id')] = idWidget;
+                    broadcast.filterSelection.filter = _filterDimension;
+                    var _filterParameters = filterParameters.get();
+                    _filterParameters[dimension] = _filterDimension[dimension];
+                    filterParameters.save(_filterParameters);
                 });
         }
 
@@ -1001,6 +1107,21 @@ function pie() {
             return _print;
         }
         _print = value;
+        return chart;
+    }
+    chart.broadcast = function (value) {
+        if (!arguments.length) {
+            return broadcast;
+        }
+        broadcast = value;
+        return chart;
+    }
+
+    chart.filterParameters = function (value) {
+        if (!arguments.length) {
+            return filterParameters;
+        }
+        filterParameters = value;
         return chart;
     }
 

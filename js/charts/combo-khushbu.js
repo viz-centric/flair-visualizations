@@ -41,7 +41,9 @@ function combo() {
         _fontSize = [],
         _lineType = [],
         _pointType = [],
-        _print;
+        _print,
+        broadcast,
+        filterParameters;;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
     var x0, x1, _xDimensionGrid = d3.scaleLinear(), y;
@@ -233,6 +235,20 @@ function combo() {
             if (_filter.length > 0) {
                 filterData = _filter;
             }
+            if (broadcast) {
+                var idWidget = broadcast.updateWidget[scope.parentElement.id];
+                broadcast.updateWidget = {};
+                broadcast.updateWidget[scope.parentElement.id] = idWidget;
+
+                var _filterList = {}, list = []
+
+                filterData.map(function (val) {
+                    list.push(val[_dimension[0]])
+                })
+                _filterList[_dimension[0]] = list
+                broadcast.filterSelection.filter = _filterList;
+                filterParameters.save(_filterList);
+            }
         }
     }
 
@@ -240,6 +256,15 @@ function combo() {
         return function () {
             if (filterData.length > 0) {
                 chart.update(filterData);
+                if (broadcast) {
+                    broadcast.updateWidget = {};
+                    broadcast.filterSelection.id = null;
+                    broadcast.$broadcast('flairbiApp:filter-input-refresh');
+                    broadcast.$broadcast('flairbiApp:filter');
+                    broadcast.$broadcast('flairbiApp:filter-add');
+                    d3.select(this.parentNode)
+                        .style('visibility', 'hidden');
+                }
             }
         }
     }
@@ -548,10 +573,11 @@ function combo() {
                 else {
                     return 'hidden';
                 }
-
             })
             .style('fill-opacity', 0.5)
             .attr('stroke', 'none')
+            .style('stroke-width', 0)
+            .style('opacity', 0)
             .attr('d', areaGenerator);
 
         var line = clusterLine.append('path')
@@ -563,10 +589,9 @@ function combo() {
             .attr('stroke', function (d, i) {
                 return UTIL.getBorderColor(_measure.indexOf(d[0]['tag']), _borderColor);
             })
-            .style('stroke-linejoin', 'round')
-            .style('stroke-linecap', 'round')
-            .style('stroke-width', 3)
-            .attr('d', lineGenerator)
+            .attr('stroke-linejoin', 'round')
+            .attr('stroke-linecap', 'round')
+            .attr('stroke-width', 1)
 
 
         var point = clusterLine.selectAll('point')
@@ -629,6 +654,16 @@ function combo() {
             });
 
         if (!_print) {
+            area.transition()
+                .duration(COMMON.DURATION)
+                .styleTween('opacity', function () {
+                    var interpolator = d3.interpolateNumber(0, 1);
+
+                    return function (t) {
+                        return interpolator(t);
+                    }
+                });
+
             line
                 .on("mouseover", function (d) {
                     d3.select(this)
@@ -640,10 +675,24 @@ function combo() {
                         .style("stroke-width", "1.5px")
                         .style("cursor", "none");
                 })
+                .attr('d', lineGenerator)
+                .transition()
+                .duration(COMMON.DURATION)
+                .attrTween('stroke-dasharray', function () {
+                    var l = this.getTotalLength(),
+                        i = d3.interpolateString("0," + l, l + "," + l);
+                    return function (t) { return i(t); };
+                });
 
             point.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+        }
+        else {
+            line
+                .attr('d', lineGenerator)
+            area
+                .style('opacity', 1);
         }
 
         var xAxisGroup,
@@ -854,6 +903,33 @@ function combo() {
                                 filterData.push(_filter[0]);
                             }
                         }
+
+                        var _filterDimension = {};
+                        if(broadcast.filterSelection.id) {
+                            _filterDimension = broadcast.filterSelection.filter;
+                        } else {
+                            broadcast.filterSelection.id = $(div).attr('id');
+                        }
+                        var dimension = _dimension[0];
+                        if(_filterDimension[dimension]) {
+                            var temp = _filterDimension[dimension];
+                            if(temp.indexOf(d[_dimension[0]]) < 0) {
+                                temp.push(d[_dimension[0]]);
+                            } else {
+                                temp.splice(temp.indexOf(d[_dimension[0]]), 1);
+                            }
+                            _filterDimension[dimension] = temp;
+                        } else {
+                            _filterDimension[dimension] = [d[_dimension[0]]];
+                        }
+        
+                        var idWidget = broadcast.updateWidget[$(div).attr('id')];
+                        broadcast.updateWidget = {};
+                        broadcast.updateWidget[$(div).attr('id')] = idWidget;
+                        broadcast.filterSelection.filter = _filterDimension;
+                        var _filterParameters = filterParameters.get();
+                        _filterParameters[dimension]=_filterDimension[dimension];
+                        filterParameters.save(_filterParameters);
                     }
                 })
                 .transition()
@@ -1031,8 +1107,8 @@ function combo() {
 
     chart.update = function (data) {
 
-        chart._Local_data = data,
-            svg = _local_svg;
+        _Local_data = data;
+        svg = _local_svg;
         filterData = [];
         var xLabels = getXLabels(data);
         var keys = Object.keys(data[0]);
@@ -1173,7 +1249,7 @@ function combo() {
                 return 'translate(' + x0(d[_dimension[0]]) + ', 0)';
             });
 
-        var clusterLine = plot.selectAll('.cluster_line')
+        var clusterLine = chartploat.selectAll('.cluster_line')
             .data(keys.filter(function (m) { return labelStack.indexOf(m) == -1; }))
 
         var lineText = clusterLine.selectAll('text')
@@ -1242,14 +1318,35 @@ function combo() {
             .datum(function (d, i) {
                 return data.map(function (datum) { return { "tag": d, "data": datum }; });
             })
+            .attr('stroke-dasharray', 'none')
+            .transition()
+            .duration(COMMON.DURATION)
             .attr('d', lineGenerator)
+            .attrTween('stroke-dasharray', function () {
+                var l = this.getTotalLength(),
+                    i = d3.interpolateString("0," + l, l + "," + l);
+                return function (t) { return i(t); };
+            });
 
 
         var area = clusterLine.select('path.area')
             .datum(function (d, i) {
                 return data.map(function (datum) { return { "tag": d, "data": datum }; });
             })
-            .attr('d', areaGenerator);
+            .attr('d', areaGenerator)
+            .style('fill-opacity', 0.5)
+            .attr('stroke', 'none')
+            .style('stroke-width', 0)
+            .style('opacity', 0)
+            .transition()
+            .duration(COMMON.DURATION)
+            .styleTween('opacity', function () {
+                var interpolator = d3.interpolateNumber(0, 1);
+
+                return function (t) {
+                    return interpolator(t);
+                }
+            });
 
         var point = clusterLine.selectAll('point')
             .data(function (d, i) {
@@ -1610,6 +1707,22 @@ function combo() {
     }
     chart.pointType = function (value, measure) {
         return UTIL.baseAccessor.call(_pointType, value, measure, _measure, chart);
+    }
+
+    chart.broadcast = function (value) {
+        if (!arguments.length) {
+            return broadcast;
+        }
+        broadcast = value;
+        return chart;
+    }
+
+    chart.filterParameters = function (value) {
+        if (!arguments.length) {
+            return filterParameters;
+        }
+        filterParameters = value;
+        return chart;
     }
 
     return chart;
