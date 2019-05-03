@@ -435,7 +435,7 @@ function heatmap() {
 
             data = transformData(data);
             if (_tooltip) {
-                tooltip = d3.select(this.parentNode).select('.tooltip');
+                tooltip = d3.select(this.parentNode).select('.custom_tooltip');
             }
 
             var cell = plot.selectAll(".node")

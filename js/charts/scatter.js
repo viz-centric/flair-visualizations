@@ -346,7 +346,7 @@ function scatter() {
 
                         }
                         else if (_legendPosition == 'right') {
-                            return 'translate(' + (parentWidth - legendSpace + axisLabelSpace) + ', ' + i * 20 + ')';
+                            return 'translate(' + (parentWidth - legendSpace + axisLabelSpace+10) + ', ' + i * 20 + ')';
                         }
                     });
                 }
@@ -446,7 +446,7 @@ function scatter() {
             .call(_localYGrid);
 
         if (_tooltip) {
-            tooltip = d3.select(this.parentNode).select('.tooltip');
+            tooltip = d3.select(this.parentNode).select('.custom_tooltip');
         }
 
         var xAxisGroup,

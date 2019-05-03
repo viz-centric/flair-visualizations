@@ -352,7 +352,7 @@ function stackedverticalbar() {
 
                         }
                         else if (_legendPosition == 'right') {
-                            return 'translate(' + (parentWidth - legendSpace + axisLabelSpace) + ', ' + i * 20 + ')';
+                            return 'translate(' + (parentWidth - legendSpace + axisLabelSpace+10) + ', ' + i * 20 + ')';
                         }
                     });
                 }
@@ -364,7 +364,7 @@ function stackedverticalbar() {
             }
 
             if (_tooltip) {
-                tooltip = d3.select(this.parentNode).select('.tooltip');
+                tooltip = d3.select(this.parentNode).select('.custom_tooltip');
             }
 
             drawPlot.call(this, data);
@@ -462,6 +462,7 @@ function stackedverticalbar() {
                 .attr("x", function (d, i) {
                     return x(d.data[_dimension[0]]);
                 })
+                .on("end", setValueOnPoints);
         }
         else {
             element.append('rect')
@@ -481,57 +482,58 @@ function stackedverticalbar() {
                 .attr("x", function (d, i) {
                     return x(d.data[_dimension[0]]);
                 })
+            setValueOnPoints()
         }
 
-        element.append('text')
-            .text(function (d, i) {
-                return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat));
-            })
-            .attr('x', function (d, i) {
-                return x(d.data[_dimension[0]]) + x.bandwidth() / 2;
-            })
-            .attr('y', function (d, i) {
-                return y(d[1]) + 5;
-            })
-            .attr('dy', function (d, i) {
-                return offsetX / 2;
-            })
-            .style('text-anchor', 'middle')
-            .attr('visibility', function (d, i) {
-                return UTIL.getVisibility(_showValues[_measure.indexOf(d.key)]);
-            })
-            .transition()
-            .duration(COMMON.DURATION )
-            .attr('visibility', function (d, i) {
-                var rect = d3.select(this.previousElementSibling).node(),
-                    rectWidth = rect.getAttribute('width'),
-                    rectHeight = rect.getAttribute('height');
+        function setValueOnPoints() {
+            element.append('text')
+                .text(function (d, i) {
+                    return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat));
+                })
+                .attr('x', function (d, i) {
+                    return x(d.data[_dimension[0]]) + x.bandwidth() / 2;
+                })
+                .attr('y', function (d, i) {
+                    return y(d[1]) + 5;
+                })
+                .attr('dy', function (d, i) {
+                    return offsetX / 2;
+                })
+                .style('text-anchor', 'middle')
+                .attr('visibility', function (d, i) {
+                    return UTIL.getVisibility(_showValues[_measure.indexOf(d.key)]);
+                })
+                .attr('visibility', function (d, i) {
+                    var rect = d3.select(this.previousElementSibling).node(),
+                        rectWidth = rect.getAttribute('width'),
+                        rectHeight = rect.getAttribute('height');
 
-                if (!_print) {
-                    if (this.getAttribute('visibility') == 'hidden') return 'hidden';
+                    if (!_print) {
+                        if (this.getAttribute('visibility') == 'hidden') return 'hidden';
 
-                    if (rectHeight <= ((offsetX / 2) + parseFloat(d3.select(this).style('font-size').replace('px', '')))) {
-                        return 'hidden';
+                        if (rectHeight <= ((offsetX / 2) + parseFloat(d3.select(this).style('font-size').replace('px', '')))) {
+                            return 'hidden';
+                        }
+
+                        if (this.getComputedTextLength() > parseFloat(rectWidth)) {
+                            return 'hidden';
+                        }
                     }
-
-                    if (this.getComputedTextLength() > parseFloat(rectWidth)) {
-                        return 'hidden';
-                    }
-                }
-                return 'visible';
-            })
-            .style('font-style', function (d, i) {
-                return _fontStyle[_measure.indexOf(d.key)]["fontStyle"];
-            })
-            .style('font-weight', function (d, i) {
-                return _fontWeight[_measure.indexOf(d.key)]["fontWeight"];
-            })
-            .style('font-size', function (d, i) {
-                return _fontSize[_measure.indexOf(d.key)]['fontSize'] + 'px';
-            })
-            .style('fill', function (d, i) {
-                return _textColor[_measure.indexOf(d.key)]["textColor"];
-            });
+                    return 'visible';
+                })
+                .style('font-style', function (d, i) {
+                    return _fontStyle[_measure.indexOf(d.key)];
+                })
+                .style('font-weight', function (d, i) {
+                    return _fontWeight[_measure.indexOf(d.key)];
+                })
+                .style('font-size', function (d, i) {
+                    return _fontSize[_measure.indexOf(d.key)] + 'px';
+                })
+                .style('fill', function (d, i) {
+                    return _textColor[_measure.indexOf(d.key)];
+                });
+        }
     }
     var drawPlot = function (data) {
         var me = this;
@@ -905,7 +907,6 @@ function stackedverticalbar() {
                 return d;
             });
 
-
         stackedverticalbar.select('rect')
             .attr("x", function (d) {
                 return x(d.data[_dimension[0]]);
@@ -916,8 +917,7 @@ function stackedverticalbar() {
             .attr("y", function (d) { return y(d[1]); })
             .attr("height", 0)
             .attr("width", x.bandwidth())
-            .transition()
-            .duration(COMMON.DURATION)
+
             .attr("x", function (d) {
                 return x(d.data[_dimension[0]]);
             })
@@ -925,6 +925,7 @@ function stackedverticalbar() {
             .attr("height", function (d) { return y(d[0]) - y(d[1]); })
             .attr("width", x.bandwidth())
             .style('stroke-width', 2)
+
 
         stackedverticalbar.select('text')
             .text(function (d, i) {

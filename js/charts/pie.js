@@ -489,7 +489,7 @@ function pie() {
             }
 
             if (_tooltip) {
-                _localTooltip = d3.select(this.parentNode).select('.tooltip');
+                _localTooltip = d3.select(this.parentNode).select('.custom_tooltip');
             }
 
             outerRadius = Math.min(plotWidth, plotHeight) / 2.25;
@@ -602,6 +602,12 @@ function pie() {
                             return -5;
                         }
                     })
+                    .attr("transform", function(d) {
+                        var _d = _arc.centroid(d);
+                        _d[0] *= 1.5;	//multiply by a constant factor
+                        _d[1] *= 1.5;	//multiply by a constant factor
+                        return "translate(" + _d + ")";
+                      })
 
                 var textPath = pieLabel.append('textPath')
                     .attr('xlink:href', function (d, i) {
@@ -610,23 +616,25 @@ function pie() {
                     .attr('text-anchor', function () {
                         return 'middle';
                     })
+                    .text(_labelFn())
+                    
 
                 if (!_print) {
-                    textPath.transition()
-                        .delay(_delayFn(200))
-                        .on('start', function () {
-                            d3.select(this).attr('startOffset', function (d) {
-                                var length = pieArcPath.nodes()[d.index].getTotalLength();
-                                return 50 * (length - 2 * outerRadius) / length + '%';
-                            })
-                                .text(_labelFn())
-                                .filter(function (d, i) {
-                                    /* length of arc = angle in radians * radius */
-                                    var diff = d.endAngle - d.startAngle;
-                                    return outerRadius * diff < this.getComputedTextLength();
-                                })
-                                .remove();
-                        });
+                    // textPath.transition()
+                    //     .delay(_delayFn(200))
+                    //     .on('start', function () {
+                    //         d3.select(this).attr('startOffset', function (d) {
+                    //             var length = pieArcPath.nodes()[d.index].getTotalLength();
+                    //             return 50 * (length - 2 * outerRadius) / length + '%';
+                    //         })
+                    //             .text(_labelFn())
+                    //             .filter(function (d, i) {
+                    //                 /* length of arc = angle in radians * radius */
+                    //                 var diff = d.endAngle - d.startAngle;
+                    //                 return outerRadius * diff < this.getComputedTextLength();
+                    //             })
+                    //             .remove();
+                    //     });
                 }
                 else {
                     textPath.text(_labelFn())
@@ -887,9 +895,9 @@ function pie() {
             .data(_pie(filteredData), _localKey);
 
         pieMask.exit()
-            .transition()
-            .delay(1000)
-            .duration(0)
+            // .transition()
+            // .delay(1000)
+            // .duration(0)
             .remove();
 
         var pieArcGroup = svg.select('#arc-group')
@@ -980,9 +988,9 @@ function pie() {
             .data(_pie(filteredData), _localKey);
 
         pieArcGroup.exit()
-            .transition()
-            .delay(1000)
-            .duration(0)
+            // .transition()
+            // .delay(1000)
+            // .duration(0)
             .remove();
 
         if (_valueAsArc) {
@@ -1002,21 +1010,22 @@ function pie() {
                 .attr('text-anchor', function () {
                     return 'middle';
                 })
-                .transition()
-                .delay(_delayFn(200))
-                .on('start', function () {
-                    d3.select(this).attr('startOffset', function (d) {
-                        var length = pieArcPath.nodes()[d.index].getTotalLength();
-                        return 50 * (length - 2 * outerRadius) / length + '%';
-                    })
-                        .text(_labelFn())
-                        .filter(function (d, i) {
-                            /* length of arc = angle in radians * radius */
-                            var diff = d.endAngle - d.startAngle;
-                            return outerRadius * diff < this.getComputedTextLength();
-                        })
-                        .remove();
-                });
+                .text(_labelFn())
+                // .transition()
+                // .delay(_delayFn(200))
+                // .on('start', function () {
+                //     d3.select(this).attr('startOffset', function (d) {
+                //         var length = pieArcPath.nodes()[d.index].getTotalLength();
+                //         return 50 * (length - 2 * outerRadius) / length + '%';
+                //     })
+                //         .text(_labelFn())
+                //         .filter(function (d, i) {
+                //             /* length of arc = angle in radians * radius */
+                //             var diff = d.endAngle - d.startAngle;
+                //             return outerRadius * diff < this.getComputedTextLength();
+                //         })
+                //         .remove();
+                // });
         }
     }
 

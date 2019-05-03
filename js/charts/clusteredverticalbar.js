@@ -221,7 +221,7 @@ function clusteredverticalbar() {
             var border = UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor)
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border, this);
             }
         }
     }
@@ -232,7 +232,7 @@ function clusteredverticalbar() {
         return function (d, i) {
             if (tooltip) {
                 var border = UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor)
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border, this);
             }
         }
     }
@@ -340,7 +340,7 @@ function clusteredverticalbar() {
 
                         }
                         else if (_legendPosition == 'right') {
-                            return 'translate(' + (parentWidth - legendSpace + axisLabelSpace) + ', ' + i * 20 + ')';
+                            return 'translate(' + (parentWidth - legendSpace + axisLabelSpace + 10) + ', ' + i * 20 + ')';
                         }
                     });
                 }
@@ -352,7 +352,7 @@ function clusteredverticalbar() {
             }
 
             if (_tooltip) {
-                tooltip = d3.select(this.parentNode).select('.tooltip');
+                tooltip = d3.select(this.parentNode).select('.custom_tooltip');
             }
             drawPlot.call(this, data);
         });
@@ -688,15 +688,15 @@ function clusteredverticalbar() {
                     }
 
                     var _filterDimension = {};
-                    if(broadcast.filterSelection.id) {
+                    if (broadcast.filterSelection.id) {
                         _filterDimension = broadcast.filterSelection.filter;
                     } else {
                         broadcast.filterSelection.id = $(div).attr('id');
                     }
                     var dimension = _dimension[0];
-                    if(_filterDimension[dimension]) {
+                    if (_filterDimension[dimension]) {
                         var temp = _filterDimension[dimension];
-                        if(temp.indexOf(d[dimension]) < 0) {
+                        if (temp.indexOf(d[dimension]) < 0) {
                             temp.push(d[dimension]);
                         } else {
                             temp.splice(temp.indexOf(d[dimension]), 1);
@@ -711,7 +711,7 @@ function clusteredverticalbar() {
                     broadcast.updateWidget[$(div).attr('id')] = idWidget;
                     broadcast.filterSelection.filter = _filterDimension;
                     var _filterParameters = filterParameters.get();
-                    _filterParameters[dimension]=_filterDimension[dimension];
+                    _filterParameters[dimension] = _filterDimension[dimension];
                     filterParameters.save(_filterParameters);
                 })
                 .transition()
