@@ -537,6 +537,8 @@ function util() {
             var _onRadioButtonClick = function (event) {
                 $(this).closest('.sort_selection').parent().find('.plot').remove();
                 callback.call(scope, me.sortData(_Local_data, event.data.measure, sortType));
+                $(scope).parent().find('.sort_selection').css('visibility', 'hidden');
+                $(scope).parent().find('.arrow-down').css('visibility', 'hidden');
             }
 
           //  d3.event.stopPropagation();

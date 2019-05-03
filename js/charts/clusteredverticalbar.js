@@ -172,19 +172,20 @@ function clusteredverticalbar() {
                 filterData = _filter;
             }
 
-            var idWidget = broadcast.updateWidget[scope.parentElement.id];
-            broadcast.updateWidget = {};
-            broadcast.updateWidget[scope.parentElement.id] = idWidget;
+            if (broadcast) {
+                var idWidget = broadcast.updateWidget[scope.parentElement.id];
+                broadcast.updateWidget = {};
+                broadcast.updateWidget[scope.parentElement.id] = idWidget;
 
-            var _filterList = {}, list = []
+                var _filterList = {}, list = []
 
-            filterData.map(function (val) {
-                list.push(val[_dimension[0]])
-            })
-            _filterList[_dimension[0]] = list
-            broadcast.filterSelection.filter = _filterList;
-            filterParameters.save(_filterList);
-
+                filterData.map(function (val) {
+                    list.push(val[_dimension[0]])
+                })
+                _filterList[_dimension[0]] = list
+                broadcast.filterSelection.filter = _filterList;
+                filterParameters.save(_filterList);
+            }
         }
     }
 
@@ -629,7 +630,6 @@ function clusteredverticalbar() {
     }
 
     var drawViz = function (element, keys) {
-        var me = this;
         if (!_print) {
             var rect = element.append('rect')
                 .attr("x", function (d) {
@@ -686,6 +686,33 @@ function clusteredverticalbar() {
                             }
                         }
                     }
+
+                    var _filterDimension = {};
+                    if(broadcast.filterSelection.id) {
+                        _filterDimension = broadcast.filterSelection.filter;
+                    } else {
+                        broadcast.filterSelection.id = $(div).attr('id');
+                    }
+                    var dimension = _dimension[0];
+                    if(_filterDimension[dimension]) {
+                        var temp = _filterDimension[dimension];
+                        if(temp.indexOf(d[dimension]) < 0) {
+                            temp.push(d[dimension]);
+                        } else {
+                            temp.splice(temp.indexOf(d[dimension]), 1);
+                        }
+                        _filterDimension[dimension] = temp;
+                    } else {
+                        _filterDimension[dimension] = [d[dimension]];
+                    }
+
+                    var idWidget = broadcast.updateWidget[$(div).attr('id')];
+                    broadcast.updateWidget = {};
+                    broadcast.updateWidget[$(div).attr('id')] = idWidget;
+                    broadcast.filterSelection.filter = _filterDimension;
+                    var _filterParameters = filterParameters.get();
+                    _filterParameters[dimension]=_filterDimension[dimension];
+                    filterParameters.save(_filterParameters);
                 })
                 .transition()
                 .duration(COMMON.DURATION)

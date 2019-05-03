@@ -119,7 +119,7 @@ function legend() {
                 .text(function (d) {
                     if (me.print() == false) {
                         if ((me.legendPosition() == 'top') || (me.legendPosition() == 'bottom')) {
-                            return UTIL.getTruncatedLabel(this, d[me.dimension()], Math.floor(extraParams.width / data.length) - 5);
+                            return UTIL.getTruncatedLabel(this, d[me.dimension()], Math.floor(extraParams.width / data.length) - 10);
                         } else if ((me.legendPosition() == 'left') || (me.legendPosition() == 'right')) {
                             return UTIL.getTruncatedLabel(this, d[me.dimension()], extraParams.width / 5);
                         }
