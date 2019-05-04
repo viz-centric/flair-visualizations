@@ -12,9 +12,9 @@ function util() {
     }
 
     var _boundTooltip = function (container, tooltip) {
-        var left = container.offsetLeft,
-            width = container.offsetWidth,
-            height = container.offsetHeight,
+        var left = container.getBBox().x,
+            width = container.getBBox().width,
+            height = container.getBBox().height,
             top = 0;
 
         var tipLeft = tooltip.offsetLeft,
@@ -219,18 +219,18 @@ function util() {
             return truncLabel;
         },
 
-        getTickRotate: function(label, containerLength, scale) {
-            var isRotate=false;
-            if(typeof(label) === 'undefined') {
+        getTickRotate: function (label, containerLength, scale) {
+            var isRotate = false;
+            if (typeof (label) === 'undefined') {
                 return isRotate;
             }
-            
-            if(scale!=undefined && scale.invert(label.length) >= containerLength) {
-                isRotate=true;
+
+            if (scale != undefined && scale.invert(label.length) >= containerLength) {
+                isRotate = true;
             }
             return isRotate;
         },
-        
+
         /**
          * Provides D3's number formatting function
          *
@@ -459,10 +459,10 @@ function util() {
         },
 
         createAlertElement: function (id) {
-            var _filter = '<div class="filterToggal" id="filter_'+id+'" > <label class="switch">'+
-            '<input type="checkbox" checked class="alert">'+
-            '<span class="slider round"></span>'+
-            '</label></div>';
+            var _filter = '<div class="filterToggal" id="filter_' + id + '" > <label class="switch">' +
+                '<input type="checkbox" checked class="alert">' +
+                '<span class="slider round"></span>' +
+                '</label></div>';
             return _filter
         },
 
@@ -541,7 +541,7 @@ function util() {
                 $(scope).parent().find('.arrow-down').css('visibility', 'hidden');
             }
 
-          //  d3.event.stopPropagation();
+            //  d3.event.stopPropagation();
             var div = _local_svg.node().parentNode
             var sortWindow = d3.select(div).select('.sort_selection')
                 .style('visibility', 'visible');

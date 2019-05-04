@@ -487,7 +487,7 @@ function doughnut() {
             }
 
             if (_tooltip) {
-                _localTooltip = d3.select(this.parentNode).select('.tooltip');
+                _localTooltip = d3.select(this.parentNode).select('.custom_tooltip');
             }
 
             outerRadius = Math.min(plotWidth, plotHeight) / 2.25;
@@ -817,6 +817,8 @@ function doughnut() {
         /* store the data in local variable */
         _localData = data;
 
+        outerRadius = Math.min(parentWidth, parentHeight) / 2.25;
+
         data.sort(function (a, b) {
             return d3.ascending(a[_dimension[0]], b[_dimension[0]]);
         });
@@ -984,6 +986,7 @@ function doughnut() {
             .remove();
 
         if (_valueAsArc) {
+            doughnutArcGroup.selectAll('text').remove()
             doughnutLabel = doughnutArcGroup.append('text')
                 .attr('dy', function (d, i) {
                     if (_valuePosition == 'inside') {
@@ -1004,8 +1007,16 @@ function doughnut() {
                 .delay(_delayFn(200))
                 .on('start', function () {
                     d3.select(this).attr('startOffset', function (d) {
-                        var length = doughnutArcPath.nodes()[d.index].getTotalLength();
-                        return 50 * (length - 2 * outerRadius) / length + '%';
+                        if (doughnutArcPath.nodes()[d.index] != undefined) {
+                            var length = doughnutArcPath.nodes()[d.index].getTotalLength();
+                            if (length == 0) {
+                                return 0 + '%';
+                            }
+                            else {
+                                return 50 * (length - 2 * outerRadius) / length + '%';
+                            }
+                        }
+                        return 0 + '%';
                     })
                         .text(_labelFn())
                         .filter(function (d, i) {

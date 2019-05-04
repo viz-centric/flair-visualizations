@@ -35,7 +35,7 @@ function legend() {
                         translate = [i * Math.floor(extraParams.width / data.measureConfig.length), (extraParams.height - COMMON.PADDING)];
                         break;
                     case 'right':
-                        translate = [(4 / 5) * extraParams.width, i * 20];
+                        translate = [((4 / 5) * extraParams.width)+10, i * 20];
                         break;
                     case 'left':
                         translate = [0, i * 20];

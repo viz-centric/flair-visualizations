@@ -21,7 +21,7 @@ var table = require('./charts/table.js');
 var treemap = require('./charts/treemap.js');
 
 // Load the required CSS files
-require('../styles/stylesheets/screen.css');
+//require('../styles/stylesheets/screen.css');
 
 module.exports = {
 	bullet: bullet,

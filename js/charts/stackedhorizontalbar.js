@@ -339,7 +339,7 @@ function stackedhorizontalbar() {
 
                         }
                         else if (_legendPosition == 'right') {
-                            return 'translate(' + (parentWidth - legendSpace + axisLabelSpace) + ', ' + i * 20 + ')';
+                            return 'translate(' + (parentWidth + axisLabelSpace) + ', ' + i * 20 + ')';
                         }
                     });
                 }
@@ -351,7 +351,7 @@ function stackedhorizontalbar() {
             }
 
             if (_tooltip) {
-                tooltip = d3.select(this.parentNode).select('.tooltip');
+                tooltip = d3.select(this.parentNode).select('.custom_tooltip');
             }
 
             drawPlot.call(this, data);
@@ -415,15 +415,15 @@ function stackedhorizontalbar() {
                             }
                         }
                         var _filterDimension = {};
-                        if(broadcast.filterSelection.id) {
+                        if (broadcast.filterSelection.id) {
                             _filterDimension = broadcast.filterSelection.filter;
                         } else {
                             broadcast.filterSelection.id = $(div).attr('id');
                         }
                         var dimension = _dimension[0];
-                        if(_filterDimension[dimension]) {
+                        if (_filterDimension[dimension]) {
                             var temp = _filterDimension[dimension];
-                            if(temp.indexOf(d.data[_dimension[0]]) < 0) {
+                            if (temp.indexOf(d.data[_dimension[0]]) < 0) {
                                 temp.push(d.data[_dimension[0]]);
                             } else {
                                 temp.splice(temp.indexOf(d.data[_dimension[0]]), 1);
@@ -432,13 +432,13 @@ function stackedhorizontalbar() {
                         } else {
                             _filterDimension[dimension] = [d.data[_dimension[0]]];
                         }
-    
+
                         var idWidget = broadcast.updateWidget[$(div).attr('id')];
                         broadcast.updateWidget = {};
                         broadcast.updateWidget[$(div).attr('id')] = idWidget;
                         broadcast.filterSelection.filter = _filterDimension;
                         var _filterParameters = filterParameters.get();
-                        _filterParameters[dimension]=_filterDimension[dimension];
+                        _filterParameters[dimension] = _filterDimension[dimension];
                         filterParameters.save(_filterParameters);
                     }
                 })
@@ -454,6 +454,7 @@ function stackedhorizontalbar() {
                     return Math.abs(y(d[1]) - y(d[0]));
                 })
                 .attr("height", x.bandwidth())
+                .on('end', setValueOnPoints);
         }
         else {
             element.append('rect')
@@ -474,58 +475,59 @@ function stackedhorizontalbar() {
                 })
                 .attr("height", x.bandwidth())
                 .style('stroke-width', 2)
-
+            setValueOnPoints()
         }
 
+        function setValueOnPoints() {
+            element.append('text')
+                .text(function (d, i) {
+                    return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat));
+                })
+                .attr('x', function (d, i) {
+                    return y(d[1]) - 20;
+                })
+                .attr('y', function (d, i) {
+                    return x(d.data[_dimension[0]]) + x.bandwidth() / 2;
+                })
+                .attr('dy', function (d, i) {
+                    return offsetX / 4;
+                })
+                .style('text-anchor', 'middle')
+                .attr('visibility', function (d, i) {
+                    return UTIL.getVisibility(_showValues[_measure.indexOf(d.key)]);
+                })
+                .attr('visibility', function (d, i) {
+                    var rect = d3.select(this.previousElementSibling).node(),
+                        rectWidth = rect.getAttribute('width'),
+                        rectHeight = rect.getAttribute('height');
 
-        element.append('text')
-            .text(function (d, i) {
-                return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat));
-            })
-            .attr('x', function (d, i) {
-                return y(d[1]) - 20;
-            })
-            .attr('y', function (d, i) {
-                return x(d.data[_dimension[0]]) + x.bandwidth() / 2;
-            })
-            .attr('dy', function (d, i) {
-                return offsetX / 2;
-            })
-            .style('text-anchor', 'middle')
-            .attr('visibility', function (d, i) {
-                return UTIL.getVisibility(_showValues[_measure.indexOf(d.key)]);
-            })
-            .attr('visibility', function (d, i) {
-                var rect = d3.select(this.previousElementSibling).node(),
-                    rectWidth = rect.getAttribute('width'),
-                    rectHeight = rect.getAttribute('height');
+                    if (!_print) {
+                        if (this.getAttribute('visibility') == 'hidden') return 'hidden';
 
-                if (!_print) {
-                    if (this.getAttribute('visibility') == 'hidden') return 'hidden';
+                        if (rectHeight <= parseFloat(d3.select(this).style('font-size').replace('px', ''))) {
+                            return 'hidden';
+                        }
 
-                    if (rectHeight <= parseFloat(d3.select(this).style('font-size').replace('px', ''))) {
-                        return 'hidden';
+                        if ((this.getComputedTextLength() + (offsetX / 4)) > parseFloat(rectWidth)) {
+                            return 'hidden';
+                        }
                     }
 
-                    if ((this.getComputedTextLength() + (offsetX / 4)) > parseFloat(rectWidth)) {
-                        return 'hidden';
-                    }
-                }
-
-                return 'visible';
-            })
-            .style('font-style', function (d, i) {
-                return _fontStyle[_measure.indexOf(d.key)];
-            })
-            .style('font-weight', function (d, i) {
-                return _fontWeight[_measure.indexOf(d.key)];
-            })
-            .style('font-size', function (d, i) {
-                return _fontSize[_measure.indexOf(d.key)] + 'px';
-            })
-            .style('fill', function (d, i) {
-                return _textColor[_measure.indexOf(d.key)];
-            });
+                    return 'visible';
+                })
+                .style('font-style', function (d, i) {
+                    return _fontStyle[_measure.indexOf(d.key)];
+                })
+                .style('font-weight', function (d, i) {
+                    return _fontWeight[_measure.indexOf(d.key)];
+                })
+                .style('font-size', function (d, i) {
+                    return _fontSize[_measure.indexOf(d.key)] + 'px';
+                })
+                .style('fill', function (d, i) {
+                    return _textColor[_measure.indexOf(d.key)];
+                });
+        }
     }
     var drawPlot = function (data) {
         var me = this;
@@ -642,10 +644,10 @@ function stackedhorizontalbar() {
         xAxisGroup.append('g')
             .attr('class', 'label')
             .attr('transform', function () {
-               return 'translate(' + (plotWidth/2) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
+                return 'translate(' + (plotWidth / 2) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
             })
             .append('text')
-             .style('text-anchor', 'middle')
+            .style('text-anchor', 'middle')
             .style('font-weight', 'bold')
             .style('fill', _xAxisColor)
             .attr('visibility', function () {
@@ -673,7 +675,7 @@ function stackedhorizontalbar() {
         yAxisGroup.append('g')
             .attr('class', 'label')
             .attr('transform', function () {
-                return 'translate(' + (-margin.left) + ', ' + (plotHeight/2) + ')';
+                return 'translate(' + (-margin.left) + ', ' + (plotHeight / 2) + ')';
             })
             .append('text')
             .attr('transform', 'rotate(-90)')
@@ -692,8 +694,9 @@ function stackedhorizontalbar() {
             var confirm = $(me).parent().find('div.confirm')
                 .css('visibility', 'hidden');
 
-            var str = UTIL.createAlert($(div).attr('id'), _measure);
-            $(div).append(str);
+            //remove Threshold modal popup 
+            // var str = UTIL.createAlert($(div).attr('id'), _measure);
+            // $(div).append(str);
 
             var _filter = UTIL.createFilterElement()
             $(div).append(_filter);
@@ -877,8 +880,6 @@ function stackedhorizontalbar() {
             .classed('possible', false)
             .attr("height", 0)
             .style('stroke-width', 2)
-            .transition()
-            .duration(COMMON.DURATION)
             .attr("y", function (d) {
                 return x(d.data[_dimension[0]]);
             })

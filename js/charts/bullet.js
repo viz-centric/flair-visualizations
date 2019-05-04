@@ -188,8 +188,10 @@ function bullet() {
         return function (d, i) {
 
             d3.select(this).style('cursor', 'pointer')
-                .style('cursor', 'pointer')
-                .style('fill', COMMON.HIGHLIGHTER);
+
+            d3.select(this).select('.measure')
+                .style('fill', targetColor)
+                .style('stroke', valueColor)
 
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
@@ -212,6 +214,12 @@ function bullet() {
         var me = this;
 
         return function (d, i) {
+
+            d3.select(this).style('cursor', 'default')
+
+            d3.select(this).select('.measure')
+                .style('fill', valueColor)
+                .style('stroke', targetColor)
 
             if (tooltip) {
                 UTIL.hideTooltip(tooltip);
@@ -340,7 +348,7 @@ function bullet() {
                 .attr('class', 'plot')
 
             if (_tooltip) {
-                tooltip = d3.select(this.parentNode).select('.tooltip');
+                tooltip = d3.select(this.parentNode).select('.custom_tooltip');
             }
 
             data = data.map(function (item) {
@@ -592,15 +600,15 @@ function bullet() {
                 }
 
                 var _filterDimension = {};
-                if(broadcast.filterSelection.id) {
+                if (broadcast.filterSelection.id) {
                     _filterDimension = broadcast.filterSelection.filter;
                 } else {
                     broadcast.filterSelection.id = $(div).attr('id');
                 }
                 var dimension = _dimension[0];
-                if(_filterDimension[dimension]) {
+                if (_filterDimension[dimension]) {
                     var temp = _filterDimension[dimension];
-                    if(temp.indexOf(d.title) < 0) {
+                    if (temp.indexOf(d.title) < 0) {
                         temp.push(d.title);
                     } else {
                         temp.splice(temp.indexOf(d.title), 1);
@@ -615,7 +623,7 @@ function bullet() {
                 broadcast.updateWidget[$(div).attr('id')] = idWidget;
                 broadcast.filterSelection.filter = _filterDimension;
                 var _filterParameters = filterParameters.get();
-                _filterParameters[dimension]=_filterDimension[dimension];
+                _filterParameters[dimension] = _filterDimension[dimension];
                 filterParameters.save(_filterParameters);
             })
             .call(bullet);
