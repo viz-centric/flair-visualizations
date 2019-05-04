@@ -339,7 +339,7 @@ function stackedhorizontalbar() {
 
                         }
                         else if (_legendPosition == 'right') {
-                            return 'translate(' + (parentWidth  + axisLabelSpace) + ', ' + i * 20 + ')';
+                            return 'translate(' + (parentWidth + axisLabelSpace) + ', ' + i * 20 + ')';
                         }
                     });
                 }
@@ -694,8 +694,9 @@ function stackedhorizontalbar() {
             var confirm = $(me).parent().find('div.confirm')
                 .css('visibility', 'hidden');
 
-            var str = UTIL.createAlert($(div).attr('id'), _measure);
-            $(div).append(str);
+            //remove Threshold modal popup 
+            // var str = UTIL.createAlert($(div).attr('id'), _measure);
+            // $(div).append(str);
 
             var _filter = UTIL.createFilterElement()
             $(div).append(_filter);

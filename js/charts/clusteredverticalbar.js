@@ -553,11 +553,13 @@ function clusteredverticalbar() {
 
             _local_svg.attr('class', 'chartSvg_' + $(div).attr('id'));
 
-            var AlertElement = UTIL.createAlertElement();
-            $(div).append(AlertElement);
+            //remove Threshold popup icon
+            // var AlertElement = UTIL.createAlertElement();
+            // $(div).append(AlertElement);
 
-            var str = UTIL.createAlert($(div).attr('id'), _measure);
-            $('body').append(str);
+             //remove Threshold modal popup 
+            // var str = UTIL.createAlert($(div).attr('id'), _measure);
+            // $('body').append(str);
 
             var _filter = UTIL.createFilterElement()
             $(div).append(_filter);

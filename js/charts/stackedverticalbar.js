@@ -352,7 +352,7 @@ function stackedverticalbar() {
 
                         }
                         else if (_legendPosition == 'right') {
-                            return 'translate(' + (parentWidth - legendSpace + axisLabelSpace+10) + ', ' + i * 20 + ')';
+                            return 'translate(' + (parentWidth - legendSpace + axisLabelSpace + 10) + ', ' + i * 20 + ')';
                         }
                     });
                 }
@@ -743,8 +743,9 @@ function stackedverticalbar() {
                     }
                 });
 
-            var str = UTIL.createAlert($(div).attr('id'), _measure);
-            $(div).append(str);
+            //remove Threshold modal popup 
+            // var str = UTIL.createAlert($(div).attr('id'), _measure);
+            // $(div).append(str);
 
             var _filter = UTIL.createFilterElement()
             $(div).append(_filter);

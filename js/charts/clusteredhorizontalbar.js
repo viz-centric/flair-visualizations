@@ -341,7 +341,7 @@ function clusteredhorizontalbar() {
 
                         }
                         else if (_legendPosition == 'right') {
-                            return 'translate(' + (parentWidth - legendSpace + axisLabelSpace+10) + ', ' + i * 20 + ')';
+                            return 'translate(' + (parentWidth - legendSpace + axisLabelSpace + 10) + ', ' + i * 20 + ')';
                         }
                     });
                 }
@@ -530,8 +530,9 @@ function clusteredhorizontalbar() {
             var confirm = $(me).parent().find('div.confirm')
                 .css('visibility', 'hidden');
 
-            var str = UTIL.createAlert($(div).attr('id'), _measure);
-            $(div).append(str);
+            //remove Threshold modal popup 
+            // var str = UTIL.createAlert($(div).attr('id'), _measure);
+            // $(div).append(str);
 
             var _filter = UTIL.createFilterElement()
             $(div).append(_filter);
@@ -660,15 +661,15 @@ function clusteredhorizontalbar() {
                             }
                         }
                         var _filterDimension = {};
-                        if(broadcast.filterSelection.id) {
+                        if (broadcast.filterSelection.id) {
                             _filterDimension = broadcast.filterSelection.filter;
                         } else {
                             broadcast.filterSelection.id = $(div).attr('id');
                         }
                         var dimension = _dimension[0];
-                        if(_filterDimension[dimension]) {
+                        if (_filterDimension[dimension]) {
                             var temp = _filterDimension[dimension];
-                            if(temp.indexOf(d[dimension]) < 0) {
+                            if (temp.indexOf(d[dimension]) < 0) {
                                 temp.push(d[dimension]);
                             } else {
                                 temp.splice(temp.indexOf(d[dimension]), 1);
@@ -677,13 +678,13 @@ function clusteredhorizontalbar() {
                         } else {
                             _filterDimension[dimension] = [d[dimension]];
                         }
-    
+
                         var idWidget = broadcast.updateWidget[$(div).attr('id')];
                         broadcast.updateWidget = {};
                         broadcast.updateWidget[$(div).attr('id')] = idWidget;
                         broadcast.filterSelection.filter = _filterDimension;
                         var _filterParameters = filterParameters.get();
-                        _filterParameters[dimension]=_filterDimension[dimension];
+                        _filterParameters[dimension] = _filterDimension[dimension];
                         filterParameters.save(_filterParameters);
                     }
                 })
