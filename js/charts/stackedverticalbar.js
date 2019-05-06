@@ -375,6 +375,8 @@ function stackedverticalbar() {
         var me = this;
         if (!_print) {
             element.append('rect')
+                .attr("uib-tooltip", "Live")
+
                 .style('fill', function (d, i) {
                     return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);;
                 })
@@ -861,7 +863,9 @@ function stackedverticalbar() {
             .paddingInner(0.1)
             .padding([0.1])
             .align(0.1);
+
         var labelStack = [];
+
         y = d3.scaleLinear()
             .rangeRound([plotHeight, 0]);
 
@@ -953,17 +957,21 @@ function stackedverticalbar() {
 
         var isRotate = false;
 
+        _localXAxis = d3.axisBottom(x)
+            .tickSize(0)
+            .tickFormat(function (d) {
+                if (isRotate == false) {
+                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                }
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+            })
+            .tickPadding(10);
+
         if (_showXaxis) {
             xAxisGroup = plot.select('.x.axis')
                 .transition()
                 .duration(COMMON.DURATION)
-                .call(d3.axisBottom(x)
-                    .tickFormat(function (d) {
-                        if (isRotate == false) {
-                            isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
-                        }
-                        return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
-                    }));
+                .call(_localXAxis);
 
             _setAxisColor(xAxisGroup, _xAxisColor);
 

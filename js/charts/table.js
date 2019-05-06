@@ -320,12 +320,16 @@ function table() {
                     scrollCollapse: true,
                     ordering: true,
                     info: true,
-
+                    'dom': 'Rlfrtip',
+                    colReorder: {
+                        allowReorder: false
+                    },
                     pagingType: "full_numbers",
                     aLengthMenu: [[2, 5, 10, 15, 20, 25, -1], [2, 5, 10, 15, 20, 25, "All"]],
                     iDisplayLength: 20,
                     bDestroy: true,
-                    dom: '<"table-header">rt<"table-footer"lp>',
+                 //   dom: '<"table-header">rt<"table-footer"lp>',
+                  //  "sDom": "Rlfrtip",
                     fnDrawCallback: function (oSettings) {
                         if (oSettings._iDisplayLength > oSettings.fnRecordsDisplay()) {
                             $(oSettings.nTableWrapper).find('.dataTables_paginate').hide();
