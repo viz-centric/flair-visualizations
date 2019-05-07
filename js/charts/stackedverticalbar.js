@@ -41,10 +41,11 @@ function stackedverticalbar() {
         _fontSize = [],
         _print,
         broadcast,
-        filterParameters;;
+        filterParameters,
+        isAnimationDisable = false;
 
 
-    var x, y;
+    var x = d3.scaleBand(), y = d3.scaleLinear();
     var margin = {
         top: 0,
         right: 0,
@@ -201,7 +202,8 @@ function stackedverticalbar() {
     var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
-                chart.update(filterData);
+                //Viz renders twice issue
+                // chart.update(filterData);
                 if (broadcast) {
                     broadcast.updateWidget = {};
                     broadcast.filterSelection.id = null;
@@ -562,15 +564,6 @@ function stackedverticalbar() {
                 });
         }
 
-        x = d3.scaleBand()
-            .rangeRound([0, plotWidth])
-            .paddingInner(0.1)
-            .padding([0.1])
-            .align(0.1);
-
-        y = d3.scaleLinear()
-            .rangeRound([plotHeight, 0]);
-
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
         for (i = 0; i < data.length; i++) {
@@ -581,10 +574,16 @@ function stackedverticalbar() {
             data[i].total = t;
         }
 
-        x.domain(data.map(function (d) { return d[_dimension[0]]; }));
-        y.domain([0, d3.max(data, function (d) {
-            return d.total;
-        })]).nice();
+        x.rangeRound([0, plotWidth])
+            .paddingInner(0.1)
+            .padding([0.1])
+            .align(0.1)
+            .domain(data.map(function (d) { return d[_dimension[0]]; }));
+
+        y.rangeRound([plotHeight, 0])
+            .domain([0, d3.max(data, function (d) {
+                return d.total;
+            })]).nice();
 
         data.map(function (val) {
             delete val['total'];
@@ -857,17 +856,10 @@ function stackedverticalbar() {
 
         _Local_data = data,
             filterData = [];
-
-        x = d3.scaleBand()
-            .rangeRound([0, plotWidth])
-            .paddingInner(0.1)
-            .padding([0.1])
-            .align(0.1);
-
-        var labelStack = [];
-
-        y = d3.scaleLinear()
-            .rangeRound([plotHeight, 0]);
+        var DURATION = COMMON.DURATION;
+        if (isAnimationDisable) {
+            DURATION = 0;
+        }
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
@@ -880,6 +872,7 @@ function stackedverticalbar() {
         }
 
         x.domain(data.map(function (d) { return d[_dimension[0]]; }));
+
         y.domain([0, d3.max(data, function (d) {
             return d.total;
         })]).nice();
@@ -900,8 +893,6 @@ function stackedverticalbar() {
         stack.enter().append('g')
             .attr('class', 'stackedverticalbar-group');
 
-        stack.exit().remove();
-
         var stackedVerticalbarGroup = plot.select('g.stack').selectAll('g.stackedverticalbar-group');
 
         var stackedverticalbar = stackedVerticalbarGroup.selectAll('g.stackedverticalbar')
@@ -911,6 +902,8 @@ function stackedverticalbar() {
                 })
                 return d;
             });
+
+        stackedverticalbar.exit().remove();
 
         stackedverticalbar.select('rect')
             .attr("x", function (d) {
@@ -922,7 +915,8 @@ function stackedverticalbar() {
             .attr("y", function (d) { return y(d[1]); })
             .attr("height", 0)
             .attr("width", x.bandwidth())
-
+            .transition()
+            .duration(DURATION)
             .attr("x", function (d) {
                 return x(d.data[_dimension[0]]);
             })
@@ -930,7 +924,6 @@ function stackedverticalbar() {
             .attr("height", function (d) { return y(d[0]) - y(d[1]); })
             .attr("width", x.bandwidth())
             .style('stroke-width', 2)
-
 
         stackedverticalbar.select('text')
             .text(function (d, i) {
@@ -952,20 +945,20 @@ function stackedverticalbar() {
 
         drawViz(newBars);
 
+        stack.exit().remove();
+
         var xAxisGroup,
             yAxisGroup;
 
         var isRotate = false;
 
-        _localXAxis = d3.axisBottom(x)
-            .tickSize(0)
+        _localXAxis
             .tickFormat(function (d) {
                 if (isRotate == false) {
                     isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
                 }
                 return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
             })
-            .tickPadding(10);
 
         if (_showXaxis) {
             xAxisGroup = plot.select('.x.axis')
@@ -989,7 +982,7 @@ function stackedverticalbar() {
             yAxisGroup = plot.select('.y.axis')
                 .transition()
                 .duration(COMMON.DURATION)
-                .call(d3.axisLeft(y).ticks(null, "s"));
+                .call(_localYAxis);
 
             _setAxisColor(yAxisGroup, _yAxisColor);
         }
@@ -1013,12 +1006,6 @@ function stackedverticalbar() {
                 return _showGrid ? 'visible' : 'hidden';
             })
             .call(_localYGrid);
-
-        stackedverticalbar.exit()
-            .transition()
-            .duration(COMMON.DURATION)
-            .remove();
-
 
         UTIL.displayThreshold(threshold, data, keys);
     }
@@ -1216,6 +1203,13 @@ function stackedverticalbar() {
             return filterParameters;
         }
         filterParameters = value;
+        return chart;
+    }
+    chart.isAnimationDisable = function (value) {
+        if (!arguments.length) {
+            return isAnimationDisable;
+        }
+        isAnimationDisable = value;
         return chart;
     }
     return chart;

@@ -165,7 +165,8 @@ function boxplot() {
     var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
-                chart.update(filterData);
+                //Viz renders twice issue
+                // chart.update(filterData);
                 if (broadcast) {
                     broadcast.updateWidget = {};
                     broadcast.filterSelection.id = null;
@@ -572,15 +573,15 @@ function boxplot() {
                         }
 
                         var _filterDimension = {};
-                        if(broadcast.filterSelection.id) {
+                        if (broadcast.filterSelection.id) {
                             _filterDimension = broadcast.filterSelection.filter;
                         } else {
                             broadcast.filterSelection.id = $(div).attr('id');
                         }
                         var dimension = _dimension[0];
-                        if(_filterDimension[dimension]) {
+                        if (_filterDimension[dimension]) {
                             var temp = _filterDimension[dimension];
-                            if(temp.indexOf(d[_dimension[0]]) < 0) {
+                            if (temp.indexOf(d[_dimension[0]]) < 0) {
                                 temp.push(d[_dimension[0]]);
                             } else {
                                 temp.splice(temp.indexOf(d[_dimension[0]]), 1);
@@ -589,13 +590,13 @@ function boxplot() {
                         } else {
                             _filterDimension[dimension] = [d[_dimension[0]]];
                         }
-    
+
                         var idWidget = broadcast.updateWidget[$(div).attr('id')];
                         broadcast.updateWidget = {};
                         broadcast.updateWidget[$(div).attr('id')] = idWidget;
                         broadcast.filterSelection.filter = _filterDimension;
                         var _filterParameters = filterParameters.get();
-                        _filterParameters[dimension]=_filterDimension[dimension];
+                        _filterParameters[dimension] = _filterDimension[dimension];
                         filterParameters.save(_filterParameters);
                     })
 

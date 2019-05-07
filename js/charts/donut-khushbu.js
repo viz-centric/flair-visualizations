@@ -225,7 +225,8 @@ function donut() {
     var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
-                chart.update(filterData);
+                //Viz renders twice issue
+                // chart.update(filterData);
             }
         }
     }
@@ -578,7 +579,8 @@ function donut() {
      * @param {function} chart Pie chart function
      * @return {string} String encoded HTML data
      */
- chart._legendInteraction = function (event, data, plot) {        var arcGroup = d3.selectAll('g.arc')
+    chart._legendInteraction = function (event, data, plot) {
+        var arcGroup = d3.selectAll('g.arc')
             .filter(function (d) {
                 return d.data[_dimension[0]] === data[_dimension[0]];
             });
@@ -673,7 +675,7 @@ function donut() {
             .data(_pie(newFilteredData), key);
 
         pieArcGroup.select('path')
-            .transition() .duration(COMMON.DURATION)
+            .transition().duration(COMMON.DURATION)
             .attrTween('d', function (d) {
                 var interpolate = d3.interpolate(this._current, d);
                 var _this = this;
