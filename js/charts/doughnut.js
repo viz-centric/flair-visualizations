@@ -188,7 +188,8 @@ function doughnut() {
     var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
-                chart.update(filterData);
+                //Viz renders twice issue
+                // chart.update(filterData);
                 if (broadcast) {
                     broadcast.updateWidget = {};
                     broadcast.filterSelection.id = null;
@@ -848,7 +849,7 @@ function doughnut() {
                 labelStack: _localLabelStack
             });
         }
-
+        var outerRadius = Math.min(parentWidth, parentHeight) / 2.25;
         var doughnutMask = svg.select('#arc-mask-group')
             .selectAll('g.arc-mask')
             .data(_doughnut(oldFilteredData), _localKey)
@@ -1006,17 +1007,19 @@ function doughnut() {
                 .transition()
                 .delay(_delayFn(200))
                 .on('start', function () {
+
                     d3.select(this).attr('startOffset', function (d) {
+
                         if (doughnutArcPath.nodes()[d.index] != undefined) {
                             var length = doughnutArcPath.nodes()[d.index].getTotalLength();
                             if (length == 0) {
-                                return 0 + '%';
+                                return 10 + '%';
                             }
                             else {
                                 return 50 * (length - 2 * outerRadius) / length + '%';
                             }
                         }
-                        return 0 + '%';
+                        return 10 + '%';
                     })
                         .text(_labelFn())
                         .filter(function (d, i) {

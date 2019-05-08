@@ -161,7 +161,8 @@ function bullet() {
     var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
-                chart.update(filterData);
+                //Viz renders twice issue
+                // chart.update(filterData);
                 if (broadcast) {
                     broadcast.updateWidget = {};
                     broadcast.filterSelection.id = null;

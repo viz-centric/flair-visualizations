@@ -53,7 +53,7 @@ function scatter() {
         _localXGrid,
         _localYGrid;
 
-    var x, y;
+    var x = d3.scaleLinear(), y = d3.scaleLinear();
 
     var margin = {
         top: 0,
@@ -200,7 +200,8 @@ function scatter() {
     var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
-                chart.update(filterData);
+                //Viz renders twice issue
+                // chart.update(filterData);
                 if (broadcast) {
                     broadcast.updateWidget = {};
                     broadcast.filterSelection.id = null;
@@ -255,24 +256,6 @@ function scatter() {
         return function (d, i) {
             d3.select(this).style('cursor', 'default')
                 .style('fill-opacity', 1)
-
-            var arcGroup = container.selectAll('g.arc')
-                .filter(function (d1) {
-                    return d1.data[_dimension[1]] === d.data[_dimension[1]];
-                });
-
-            arcGroup.select('path')
-                .style('fill', function (d1, i) {
-                    return COMMON.COLORSCALE(d1.data[_dimension[1]]);
-                });
-
-            var arcMaskGroup = container.selectAll('g.arc-mask')
-                .filter(function (d1) {
-                    return d1.data[_dimension[1]] === d.data[_dimension[1]];
-                });
-
-            arcMaskGroup.select('path')
-                .style('visibility', 'hidden');
 
             if (tooltip) {
                 UTIL.hideTooltip(tooltip);
@@ -398,21 +381,15 @@ function scatter() {
             .domain([minGDP, maxGDP])
             .range([5, 25]);
 
-        x = d3.scaleLinear()
-            .rangeRound([0, plotWidth])
+        x.rangeRound([0, plotWidth])
+            .domain([0, d3.max(data, function (d) {
+                return parseInt(d[_dimension[1]]);
+            })]).nice();
 
-        y = d3.scaleLinear()
-            .rangeRound([plotHeight - 40, 0]);
-
-
-        x.domain([0, d3.max(data, function (d) {
-            return parseInt(d[_dimension[1]]);
-        })]).nice();
-
-        y.domain([0, d3.max(data, function (d) {
-            return parseInt(d[_measure[2]]);
-        })]).nice();
-
+        y.rangeRound([plotHeight - 40, 0])
+            .domain([0, d3.max(data, function (d) {
+                return parseInt(d[_measure[2]]);
+            })]).nice();
 
         var _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
@@ -550,7 +527,10 @@ function scatter() {
         if (!_print) {
             dataCircle.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg));
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+                .on('click', function () {
+
+                })
 
             var confirm = $(me).parent().find('div.confirm')
                 .css('visibility', 'hidden');
@@ -754,17 +734,18 @@ function scatter() {
 
         var isRotate = false;
 
+        _localXAxis.tickFormat(function (d) {
+            if (isRotate == false) {
+                isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+            }
+            return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+        })
+
         if (_showXaxis) {
             xAxisGroup = plot.select('.x.axis')
                 .transition()
                 .duration(COMMON.DURATION)
-                .call(d3.axisBottom(x)
-                    .tickFormat(function (d) {
-                        if (isRotate == false) {
-                            isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
-                        }
-                        return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
-                    }));
+                .call(_localXAxis);
 
             _setAxisColor(xAxisGroup, _xAxisColor);
 
@@ -782,7 +763,7 @@ function scatter() {
             yAxisGroup = plot.select('.y.axis')
                 .transition()
                 .duration(COMMON.DURATION)
-                .call(d3.axisLeft(y).ticks(null, "s"));
+                .call(_localYAxis);
 
             _setAxisColor(yAxisGroup, _yAxisColor);
         }

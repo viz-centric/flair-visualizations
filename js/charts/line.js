@@ -56,6 +56,8 @@ function line() {
         _localXGrid,
         _localYGrid;
 
+    var x = d3.scalePoint(), y = d3.scaleLinear();
+
     var tickLength = d3.scaleLinear()
         .domain([22, 34])
         .range([4, 6]);
@@ -233,7 +235,8 @@ function line() {
     var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
-                chart.update(filterData);
+                //Viz renders twice issue
+                // chart.update(filterData);
                 if (broadcast) {
                     broadcast.updateWidget = {};
                     broadcast.filterSelection.id = null;
@@ -406,9 +409,6 @@ function line() {
         var me = this;
         _Local_data = _originalData = data;
 
-        var confirm = $(me).parent().find('div.confirm')
-            .css('visibility', 'hidden');
-
         var plot = container.append('g')
             .attr('class', 'line-plot')
             .classed('plot', true)
@@ -424,21 +424,18 @@ function line() {
                 }
             });
         var labelStack = [];
-        var x = d3.scalePoint()
-            .rangeRound([0, plotWidth])
-            .padding([0.5]);
-
-        var y = d3.scaleLinear()
-            .rangeRound([plotHeight, 0]);
-
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
-        x.domain(data.map(function (d) { return d[_dimension[0]]; }));
-        y.domain([0, d3.max(data, function (d) {
-            return d3.max(keys, function (key) {
-                return parseInt(d[key]);
-            });
-        })]).nice();
+        x.rangeRound([0, plotWidth])
+            .padding([0.5])
+            .domain(data.map(function (d) { return d[_dimension[0]]; }));
+
+        y.rangeRound([plotHeight, 0])
+            .domain([0, d3.max(data, function (d) {
+                return d3.max(keys, function (key) {
+                    return parseInt(d[key]);
+                });
+            })]).nice();
 
         var _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
@@ -741,6 +738,9 @@ function line() {
             // var str = UTIL.createAlert($(div).attr('id'), _measure);
             // $(div).append(str);
 
+            var confirm = $(me).parent().find('div.confirm')
+                .css('visibility', 'hidden');
+
             var _filter = UTIL.createFilterElement()
             $(div).append(_filter);
 
@@ -903,13 +903,6 @@ function line() {
         var plot = _local_svg.select('.plot')
         var chartplot = _local_svg.select('.chart')
         labelStack = [];
-
-        var x = d3.scalePoint()
-            .rangeRound([0, plotWidth])
-            .padding([0.5]);
-
-        var y = d3.scaleLinear()
-            .rangeRound([plotHeight, 0]);
 
         var _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
@@ -1108,17 +1101,19 @@ function line() {
 
         var isRotate = false;
 
+        _localXAxis
+            .tickFormat(function (d) {
+                if (isRotate == false) {
+                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                }
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+            })
+
         if (_showXaxis) {
             xAxisGroup = plot.select('.x.axis')
                 .transition()
                 .duration(COMMON.DURATION)
-                .call(d3.axisBottom(x)
-                    .tickFormat(function (d) {
-                        if (isRotate == false) {
-                            isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
-                        }
-                        return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
-                    }));
+                .call(_localXAxis);
 
             _setAxisColor(xAxisGroup, _xAxisColor);
 
@@ -1136,7 +1131,7 @@ function line() {
             yAxisGroup = plot.select('.y.axis')
                 .transition()
                 .duration(COMMON.DURATION)
-                .call(d3.axisLeft(y).ticks(null, "s"));
+                .call(_localYAxis);
 
             _setAxisColor(yAxisGroup, _yAxisColor);
         }
@@ -1161,7 +1156,6 @@ function line() {
             })
             .call(_localYGrid);
 
-        UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis);
         UTIL.displayThreshold(threshold, data, keys);
 
     }

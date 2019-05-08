@@ -39,7 +39,8 @@ function clusteredverticalbar() {
         _fontSize = [],
         _print,
         broadcast,
-        filterParameters;
+        filterParameters,
+        isAnimationDisable = false;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
     var _localXAxis,
@@ -48,7 +49,8 @@ function clusteredverticalbar() {
         _localYGrid;
     var parentWidth, parentHeight, plotWidth, plotHeight, container, tooltip;
 
-    var x0, x1, _xDimensionGrid = d3.scaleLinear(), y;
+    var x0 = d3.scaleBand(), x1 = d3.scaleBand(), _xDimensionGrid = d3.scaleLinear(), y = d3.scaleLinear();
+
     var margin = {
         top: 0,
         right: 0,
@@ -97,7 +99,7 @@ function clusteredverticalbar() {
     var _buildTooltipData = function (datum, chart) {
         var output = "";
 
-        output += "<table data-toggle='tooltip'><tr>"
+        output += "<table><tr>"
             + "<th>" + chart.dimension() + ": </th>"
             + "<td>" + datum[chart.dimension()] + "</td>"
             + "</tr><tr>"
@@ -192,7 +194,8 @@ function clusteredverticalbar() {
     var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
-                chart.update(filterData);
+                //Viz renders twice issue
+                // chart.update(filterData);
                 if (broadcast) {
                     broadcast.updateWidget = {};
                     broadcast.filterSelection.id = null;
@@ -364,17 +367,6 @@ function clusteredverticalbar() {
         _Local_data = data;
         filterData = [];
 
-        x0 = d3.scaleBand()
-            .rangeRound([0, plotWidth])
-            .paddingInner(0.1)
-            .padding([0.1]);
-
-        x1 = d3.scaleBand()
-            .padding(0.2);
-
-        y = d3.scaleLinear()
-            .rangeRound([plotHeight, 0]);
-
         var plot = container.append('g')
             .attr('class', 'clusteredverticalbar-plot')
             .classed('plot', true)
@@ -399,13 +391,20 @@ function clusteredverticalbar() {
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
-        x0.domain(data.map(function (d) { return d[_dimension[0]]; }));
-        x1.domain(keys).rangeRound([0, x0.bandwidth()]);
-        y.domain([0, d3.max(data, function (d) {
-            return d3.max(keys, function (key) {
-                return parseInt(d[key]);
-            });
-        })]).nice();
+        x0.rangeRound([0, plotWidth])
+            .paddingInner(0.1)
+            .padding([0.1])
+            .domain(data.map(function (d) { return d[_dimension[0]]; }));
+
+        x1.padding(0.2)
+            .domain(keys).rangeRound([0, x0.bandwidth()]);
+
+        y.rangeRound([plotHeight, 0])
+            .domain([0, d3.max(data, function (d) {
+                return d3.max(keys, function (key) {
+                    return parseInt(d[key]);
+                });
+            })]).nice();
 
         var _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
@@ -557,7 +556,7 @@ function clusteredverticalbar() {
             // var AlertElement = UTIL.createAlertElement();
             // $(div).append(AlertElement);
 
-             //remove Threshold modal popup 
+            //remove Threshold modal popup 
             // var str = UTIL.createAlert($(div).attr('id'), _measure);
             // $('body').append(str);
 
@@ -848,19 +847,12 @@ function clusteredverticalbar() {
     }
 
     chart.update = function (data) {
+        var DURATION = COMMON.DURATION;
+        if (isAnimationDisable) {
+            DURATION = 0;
+        }
         _Local_data = data;
         filterData = [];
-
-        x0 = d3.scaleBand()
-            .rangeRound([0, plotWidth])
-            .paddingInner(0.1)
-            .padding([0.1]);
-
-        x1 = d3.scaleBand()
-            .padding(0.2);
-
-        y = d3.scaleLinear()
-            .rangeRound([plotHeight, 0]);
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
@@ -888,9 +880,7 @@ function clusteredverticalbar() {
                 return 'translate(' + x0(d[_dimension[0]]) + ', 0)';
             });
 
-        cluster
-            .exit()
-            .remove();
+        cluster.exit().remove();
 
         cluster = plot.selectAll('g.cluster');
         var labelStack = [];
@@ -916,7 +906,7 @@ function clusteredverticalbar() {
                 return 0;
             })
             .transition()
-            .duration(COMMON.DURATION)
+            .duration(DURATION)
             .attr("height", function (d, i) {
                 return plotHeight - y(d[d.measure]);
             })
@@ -965,17 +955,19 @@ function clusteredverticalbar() {
 
         var isRotate = false;
 
+        _localXAxis
+            .tickFormat(function (d) {
+                if (isRotate == false) {
+                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                }
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+            })
+
         if (_showXaxis) {
             xAxisGroup = plot.select('.x.axis')
                 .transition()
                 .duration(COMMON.DURATION)
-                .call(d3.axisBottom(x0)
-                    .tickFormat(function (d) {
-                        if (isRotate == false) {
-                            isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
-                        }
-                        return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
-                    }));
+                .call(_localXAxis);
 
             _setAxisColor(xAxisGroup, _xAxisColor);
 
@@ -993,7 +985,7 @@ function clusteredverticalbar() {
             yAxisGroup = plot.select('.y.axis')
                 .transition()
                 .duration(COMMON.DURATION)
-                .call(d3.axisLeft(y).ticks(null, "s"));
+                .call(_localYAxis);
 
             _setAxisColor(yAxisGroup, _yAxisColor);
         }
@@ -1207,6 +1199,14 @@ function clusteredverticalbar() {
             return filterParameters;
         }
         filterParameters = value;
+        return chart;
+    }
+
+    chart.isAnimationDisable = function (value) {
+        if (!arguments.length) {
+            return isAnimationDisable;
+        }
+        isAnimationDisable = value;
         return chart;
     }
 

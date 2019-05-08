@@ -43,19 +43,23 @@ function combo() {
         _pointType = [],
         _print,
         broadcast,
-        filterParameters;;
+        filterParameters,
+        isAnimationDisable = false;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
-    var x0, x1, _xDimensionGrid = d3.scaleLinear(), y;
+    var x0 = d3.scaleBand(), x1 = d3.scaleBand(), _xDimensionGrid = d3.scaleLinear(), y = d3.scaleLinear();
+
     var tickLength = d3.scaleLinear()
         .domain([22, 34])
         .range([4, 6]);
 
     var parentWidth, parentHeight, plotWidth, plotHeight, container;
+
     var _localXAxis,
         _localYAxis,
         _localXGrid,
         _localYGrid;
+
     var margin = {
         top: 0,
         right: 0,
@@ -66,6 +70,7 @@ function combo() {
     var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div, legendBreakCount = 1;
 
     var filter = false, filterData = [];
+    var threshold = [];
 
     var measuresBar = [], measuresLine = [];
 
@@ -255,7 +260,8 @@ function combo() {
     var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
-                chart.update(filterData);
+                //Viz renders twice issue
+                // chart.update(filterData);
                 if (broadcast) {
                     broadcast.updateWidget = {};
                     broadcast.filterSelection.id = null;
@@ -459,24 +465,20 @@ function combo() {
 
         var labelStack = [];
 
-        x0 = d3.scaleBand()
-            .domain(xLabels)
+        x0.domain(xLabels)
             .rangeRound([0, plotWidth])
             .padding([0.2]);
 
-        x1 = d3.scaleBand()
-            .domain(measuresBar)
+        x1.domain(measuresBar)
             .rangeRound([0, x0.bandwidth()])
             .padding([0.2]);
 
-        y = d3.scaleLinear()
-            .range([plotHeight, 0]);
-
-        y.domain([0, d3.max(data, function (d) {
-            return d3.max(keys, function (key) {
-                return parseInt(d[key]);
-            });
-        })]).nice();
+        y.range([plotHeight, 0])
+            .domain([0, d3.max(data, function (d) {
+                return d3.max(keys, function (key) {
+                    return parseInt(d[key]);
+                });
+            })]).nice();
 
         var _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
@@ -817,7 +819,6 @@ function combo() {
                             $(me).parent().find('.sort_selection,.arrow-down').css('visibility', 'hidden');
                             _local_svg.select('.plot').remove()
                             drawPlot.call(me, _Local_data);
-
                             break;
                         }
                     }
@@ -880,7 +881,7 @@ function combo() {
                         $('#Modal_' + $(div).attr('id')).modal('toggle');
                     }
                     else {
-                        var confirm = d3.select('.confirm')
+                        var confirm = d3.select(div).select('.confirm')
                             .style('visibility', 'visible');
                         var _filter = _Local_data.filter(function (d1) {
                             return d.data[_dimension[0]] === d1[_dimension[0]]
@@ -1110,6 +1111,11 @@ function combo() {
 
         _Local_data = data;
         svg = _local_svg;
+
+        var DURATION = COMMON.DURATION;
+        if (isAnimationDisable) {
+            DURATION = 0;
+        }
         filterData = [];
         var xLabels = getXLabels(data);
         var keys = Object.keys(data[0]);
@@ -1124,19 +1130,9 @@ function combo() {
             }
         });
 
-        x0 = d3.scaleBand()
-            .domain(xLabels)
-            .rangeRound([0, plotWidth])
-            .padding([0.2]);
-
-        x1 = d3.scaleBand()
-            .domain(measuresBar)
+        x0.domain(xLabels)
+        x1.domain(measuresBar)
             .rangeRound([0, x0.bandwidth()])
-            .padding([0.2]);
-
-        y = d3.scaleLinear()
-            .range([plotHeight, 0]);
-
         y.domain([0, d3.max(data, function (d) {
             return d3.max(keys, function (key) {
                 return parseInt(d[key]);
@@ -1208,11 +1204,25 @@ function combo() {
                 }
                 return y(0);
             })
+            .attr('height', 0)
+            .classed('selected', false)
+            .classed('possible', false)
+            .transition()
+            .duration(DURATION)
+            .attr('x', function (d, i) {
+                return x1(measuresBar[measuresBar.indexOf(d.tag)]);
+            })
+            .attr('y', function (d, i) {
+                if ((d["data"][d.tag] === null) || (isNaN(d["data"][d.tag]))) {
+                    return 0;
+                } else if (d["data"][d.tag] > 0) {
+                    return y(d["data"][d.tag]);
+                }
+                return y(0);
+            })
             .attr('height', function (d, i) {
                 return Math.abs(y(0) - y(d["data"][d.tag]));
             })
-            .classed('selected', false)
-            .classed('possible', false);
 
         bar.select('text')
             .text(function (d, i) {
@@ -1377,17 +1387,19 @@ function combo() {
 
         var isRotate = false;
 
+        _localXAxis
+            .tickFormat(function (d) {
+                if (isRotate == false) {
+                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                }
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+            })
+
         if (_showXaxis) {
             xAxisGroup = plot.select('.x.axis')
                 .transition()
                 .duration(COMMON.DURATION)
-                .call(d3.axisBottom(x0)
-                    .tickFormat(function (d) {
-                        if (isRotate == false) {
-                            isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
-                        }
-                        return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
-                    }));
+                .call(_localXAxis);
 
             _setAxisColor(xAxisGroup, _xAxisColor);
 
@@ -1405,7 +1417,7 @@ function combo() {
             yAxisGroup = plot.select('.y.axis')
                 .transition()
                 .duration(COMMON.DURATION)
-                .call(d3.axisLeft(y).ticks(null, "s"));
+                .call(_localYAxis);
 
             _setAxisColor(yAxisGroup, _yAxisColor);
         }
@@ -1429,7 +1441,6 @@ function combo() {
             })
             .call(_localYGrid);
 
-        UTIL.setAxisColor(svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis);
         UTIL.displayThreshold(threshold, data, keys);
     }
 
@@ -1723,6 +1734,13 @@ function combo() {
             return filterParameters;
         }
         filterParameters = value;
+        return chart;
+    }
+    chart.isAnimationDisable = function (value) {
+        if (!arguments.length) {
+            return isAnimationDisable;
+        }
+        isAnimationDisable = value;
         return chart;
     }
 

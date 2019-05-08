@@ -40,7 +40,8 @@ function clusteredhorizontalbar() {
         _fontSize = [],
         _print,
         broadcast,
-        filterParameters;
+        filterParameters,
+        isAnimationDisable = false;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
 
@@ -50,7 +51,8 @@ function clusteredhorizontalbar() {
         _localXGrid,
         _localYGrid;
 
-    var x0, x1, _xDimensionGrid = d3.scaleLinear(), y;
+    var x0 = d3.scaleBand(), x1 = d3.scaleBand(), _xDimensionGrid = d3.scaleLinear(), y = d3.scaleLinear();
+
     var margin = {
         top: 0,
         right: 0,
@@ -189,7 +191,8 @@ function clusteredhorizontalbar() {
     var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
-                chart.update(filterData);
+                //Viz renders twice issue
+                // chart.update(filterData);
                 if (broadcast) {
                     broadcast.updateWidget = {};
                     broadcast.filterSelection.id = null;
@@ -365,17 +368,6 @@ function clusteredhorizontalbar() {
         var me = this;
         _Local_data = data;
 
-        x0 = d3.scaleBand()
-            .rangeRound([plotHeight, 0])
-            .paddingInner(0.1)
-            .padding([0.1]);
-
-        x1 = d3.scaleBand()
-            .padding(0.2);
-
-        y = d3.scaleLinear()
-            .rangeRound([0, plotWidth]);
-
         var plot = container.append('g')
             .attr('class', 'clusteredhorizontalbar-plot')
             .classed('plot', true)
@@ -400,13 +392,20 @@ function clusteredhorizontalbar() {
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
-        x0.domain(data.map(function (d) { return d[_dimension[0]]; }));
-        x1.domain(keys).rangeRound([0, x0.bandwidth()]);
-        y.domain([0, d3.max(data, function (d) {
-            return d3.max(keys, function (key) {
-                return parseInt(d[key]);
-            });
-        })]).nice();
+        x0.rangeRound([plotHeight, 0])
+            .paddingInner(0.1)
+            .padding([0.1])
+            .domain(data.map(function (d) { return d[_dimension[0]]; }));
+
+        x1.padding(0.2)
+            .domain(keys).rangeRound([0, x0.bandwidth()]);
+
+        y.rangeRound([0, plotWidth])
+            .domain([0, d3.max(data, function (d) {
+                return d3.max(keys, function (key) {
+                    return parseInt(d[key]);
+                });
+            })]).nice();
 
         _localYGrid = d3.axisBottom()
             .tickFormat('')
@@ -808,7 +807,7 @@ function clusteredhorizontalbar() {
 
     var _legendMouseOver = function (data, plot) {
 
-        d3.selectAll('g.clusteredhorizontalbar')
+        plot.selectAll('g.clusteredhorizontalbar')
             .filter(function (d) {
                 return d.measure === data;
             })
@@ -821,7 +820,7 @@ function clusteredhorizontalbar() {
     }
 
     var _legendMouseOut = function (data, plot) {
-        d3.selectAll('g.clusteredhorizontalbar')
+        plot.selectAll('g.clusteredhorizontalbar')
             .filter(function (d) {
                 return d.measure === data;
             })
@@ -838,19 +837,12 @@ function clusteredhorizontalbar() {
 
     chart.update = function (data) {
 
+        var DURATION = COMMON.DURATION;
+        if (isAnimationDisable) {
+            DURATION = 0;
+        }
         _Local_data = data,
             filterData = [];
-
-        x0 = d3.scaleBand()
-            .rangeRound([plotHeight, 0])
-            .paddingInner(0.1)
-            .padding([0.1]);
-
-        x1 = d3.scaleBand()
-            .padding(0.2);
-
-        y = d3.scaleLinear()
-            .rangeRound([0, plotWidth]);
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
@@ -897,10 +889,18 @@ function clusteredhorizontalbar() {
                 return x1(d.measure);
             })
             .attr("height", x1.bandwidth())
+            .attr("width", 0)
+            .attr('class', '')
+            .transition()
+            .duration(DURATION)
+            .attr("y", function (d) {
+                return x1(d.measure);
+            })
+            .attr("x", 1)
+            .attr("height", x1.bandwidth())
             .attr("width", function (d) {
                 return y(d[d.measure]);
             })
-            .attr('class', '')
 
         clusteredhorizontalbar.select('text')
             .text(function (d, i) {
@@ -970,20 +970,14 @@ function clusteredhorizontalbar() {
         xAxisGroup = plot.select('.x.axis')
             .transition()
             .duration(COMMON.DURATION)
-            .call(d3.axisBottom(y));
+            .call(_localXAxis);
 
         _setAxisColor(xAxisGroup, _xAxisColor);
 
         yAxisGroup = plot.select('.y.axis')
             .transition()
             .duration(COMMON.DURATION)
-            .call(d3.axisLeft(x0).ticks(null, "s")
-                .tickFormat(function (d) {
-                    if (d.length > 3) {
-                        return d.substring(0, 3) + '...';
-                    }
-                    return d;
-                }));
+            .call(_localYAxis);
 
         _setAxisColor(yAxisGroup, _yAxisColor);
 
@@ -1186,7 +1180,13 @@ function clusteredhorizontalbar() {
         filterParameters = value;
         return chart;
     }
-
+    chart.isAnimationDisable = function (value) {
+        if (!arguments.length) {
+            return isAnimationDisable;
+        }
+        isAnimationDisable = value;
+        return chart;
+    }
     return chart;
 }
 

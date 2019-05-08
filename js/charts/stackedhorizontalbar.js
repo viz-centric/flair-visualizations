@@ -40,7 +40,8 @@ function stackedhorizontalbar() {
         _fontSize = [],
         _print,
         broadcast,
-        filterParameters;
+        filterParameters,
+        isAnimationDisable = false;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
     var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div;
@@ -50,7 +51,7 @@ function stackedhorizontalbar() {
         _localXGrid,
         _localYGrid;
 
-    var x, y;
+    var x = d3.scaleBand(), y = d3.scaleLinear();
 
     var margin = {
         top: 0,
@@ -189,7 +190,8 @@ function stackedhorizontalbar() {
     var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
-                chart.update(filterData);
+                //Viz renders twice issue
+                // chart.update(filterData);
                 if (broadcast) {
                     broadcast.updateWidget = {};
                     broadcast.filterSelection.id = null;
@@ -554,13 +556,6 @@ function stackedhorizontalbar() {
                 });
         }
 
-        x = d3.scaleBand()
-            .rangeRound([0, plotHeight])
-            .padding([0.2])
-
-        y = d3.scaleLinear()
-            .rangeRound([0, plotWidth]);
-
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
         for (i = 0; i < data.length; i++) {
@@ -571,10 +566,14 @@ function stackedhorizontalbar() {
             data[i].total = t;
         }
 
-        x.domain(data.map(function (d) { return d[_dimension[0]]; }));
-        y.domain([0, d3.max(data, function (d) {
-            return d.total;
-        })]).nice();
+        x.rangeRound([0, plotHeight])
+            .padding([0.2])
+            .domain(data.map(function (d) { return d[_dimension[0]]; }));
+
+        y.rangeRound([0, plotWidth])
+            .domain([0, d3.max(data, function (d) {
+                return d.total;
+            })]).nice();
 
         data.map(function (val) {
             delete val['total'];
@@ -606,7 +605,6 @@ function stackedhorizontalbar() {
             .attr('transform', 'translate(0, ' + plotHeight + ')')
             .call(_localYGrid);
 
-        var labelStack = [];
         var stack = plot.append('g')
             .attr('class', 'stack')
             .selectAll('g')
@@ -816,16 +814,12 @@ function stackedhorizontalbar() {
     }
 
     chart.update = function (data) {
-
+        var DURATION = COMMON.DURATION;
+        if (isAnimationDisable) {
+            DURATION = 0;
+        }
         _Local_data = data;
         filterData = [];
-
-        x = d3.scaleBand()
-            .rangeRound([0, plotHeight])
-            .padding([0.2])
-
-        y = d3.scaleLinear()
-            .rangeRound([0, plotWidth]);
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
         for (i = 0; i < data.length; i++) {
@@ -845,7 +839,6 @@ function stackedhorizontalbar() {
             delete val['total'];
         })
 
-        var labelStack = [];
         var plot = _local_svg.select('.plot')
 
         var stack = plot.select('g.stack').selectAll('g.stackedhorizontalbar-group')
@@ -866,6 +859,8 @@ function stackedhorizontalbar() {
                 return d;
             });
 
+        stackedhorizontalbar.exit().remove();
+
         stackedhorizontalbar.select('rect')
             .attr("y", function (d) {
                 return x(d.data[_dimension[0]]);
@@ -873,13 +868,13 @@ function stackedhorizontalbar() {
             .attr("x", function (d) {
                 return (d[0] < d[1]) ? (y(d[0]) + 1) : (y(d[1]) + 1);
             })
-            .attr("width", function (d) {
-                return Math.abs(y(d[1]) - y(d[0]));
-            })
+            .attr("width", 0)
             .classed('selected', false)
             .classed('possible', false)
-            .attr("height", 0)
+            .attr("height", x.bandwidth())
             .style('stroke-width', 2)
+            .transition()
+            .duration(DURATION)
             .attr("y", function (d) {
                 return x(d.data[_dimension[0]]);
             })
@@ -953,27 +948,16 @@ function stackedhorizontalbar() {
         xAxisGroup = plot.select('.x.axis')
             .transition()
             .duration(COMMON.DURATION)
-            .call(d3.axisBottom(y));
+            .call(_localXAxis);
 
         _setAxisColor(xAxisGroup, _xAxisColor);
 
         yAxisGroup = plot.select('.y.axis')
             .transition()
             .duration(COMMON.DURATION)
-            .call(d3.axisLeft(x).ticks(null, "s")
-                .tickFormat(function (d) {
-                    if (d.length > 3) {
-                        return d.substring(0, 3) + '...';
-                    }
-                    return d;
-                }));
+            .call(_localYAxis);
 
         _setAxisColor(yAxisGroup, _yAxisColor);
-
-        stackedhorizontalbar.exit()
-            .transition()
-            .duration(COMMON.DURATION)
-            .remove();
 
         UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis);
         UTIL.displayThreshold(threshold, data, keys);
@@ -1178,6 +1162,13 @@ function stackedhorizontalbar() {
             return filterParameters;
         }
         filterParameters = value;
+        return chart;
+    }
+    chart.isAnimationDisable = function (value) {
+        if (!arguments.length) {
+            return isAnimationDisable;
+        }
+        isAnimationDisable = value;
         return chart;
     }
     return chart;
