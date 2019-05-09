@@ -217,6 +217,7 @@ function clusteredverticalbar() {
         }
     }
     var _handleMouseOverFn = function (tooltip, container) {
+
         var me = this;
         return function (d, i) {
             d3.select(this).style('cursor', 'pointer')
@@ -392,11 +393,10 @@ function clusteredverticalbar() {
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
         x0.rangeRound([0, plotWidth])
-            .paddingInner(0.1)
-            .padding([0.1])
+            .padding([0.2])
             .domain(data.map(function (d) { return d[_dimension[0]]; }));
 
-        x1.padding(0.2)
+        x1.padding([0.2])
             .domain(keys).rangeRound([0, x0.bandwidth()]);
 
         y.rangeRound([plotHeight, 0])

@@ -11,7 +11,7 @@ function util() {
         }
     }
 
-    var _boundTooltip = function (container, tooltip) {
+    var _boundTooltip = function (container, tooltip, pt) {
         var left = container.getBBox().x,
             width = container.getBBox().width,
             height = container.getBBox().height,
@@ -27,7 +27,14 @@ function util() {
         }
 
         if (tipLeft + tipWidth > left + width) {
-            tooltip.style.left = (left + width - tipWidth) + 'px';
+            // tooltip.style.left = (left + width - tipWidth - 15) + 'px';
+            // if ((left + width - tipWidth - 15) < pt[0]) {
+            tooltip.style.left = (left + width - tipWidth - 15) - (width - pt[0]) + 'px';
+            //}
+            // else {
+            //     var diff = (pt[0] - (left + width - tipWidth - 15));
+            //     tooltip.style.left = (left + width - tipWidth - 15) - (diff + 15) + 'px';
+            // }
         }
 
         if (tipTop < top) {
@@ -49,16 +56,61 @@ function util() {
         },
 
         updateTooltip: function (data, container, borderColor) {
-            var pt = d3.mouse(container.node()),
-                x = pt[0] + 15,
-                y = pt[1] + 20;
+            // var pt = d3.mouse(container),
+            //     x = pt[0] + 15,
+            //     y = pt[1] + 20;
 
+            var offset = $(container.node()).offset();
+            var x = d3.event.pageX - offset.left,
+                y = d3.event.pageY - offset.top;
+
+            // console.log("Mouse XY :" + pt[0] + "-" + pt[1]);
             this.style('Top', y + 'px')
-                .style('Left', x + 'px')
+                //     .style('Left', x + 'px')
                 .style('border', 'solid 2px' + borderColor)
+
                 .html(data);
 
-            _boundTooltip(container.node(), this.node());
+            var tooltip = this.node()
+            var left = container.node().offsetLeft,
+                width = container.node().offsetWidth,
+                height = container.node().offsetHeight,
+                top = 0;
+
+            var tipLeft = tooltip.offsetLeft,
+                tipWidth = tooltip.offsetWidth,
+                tipHeight = tooltip.offsetHeight,
+                tipTop = tooltip.offsetTop;
+
+            if (tipLeft < left) {
+                tooltip.style.left = left + "px";
+            }
+            else {
+                tooltip.style.left = (left + width - tipWidth - 15) - (width - x) + 'px';
+            }
+
+            if (tipLeft + tipWidth > left + width) {
+                // tooltip.style.left = (left + width - tipWidth - 15) + 'px';
+                // if ((left + width - tipWidth - 15) < pt[0]) {
+                tooltip.style.left = (left + width - tipWidth - 15) - (width - x) + 'px';
+                //}
+                // else {
+                //     var diff = (pt[0] - (left + width - tipWidth - 15));
+                //     tooltip.style.left = (left + width - tipWidth - 15) - (diff + 15) + 'px';
+                // }
+            }
+            else {
+                tooltip.style.left = x + 'px';
+            }
+
+            if (tipTop < top) {
+                tooltip.style.top = top + "px";
+            }
+
+            if (tipTop + tipHeight > top + height) {
+                tooltip.style.top = (top + height - tipHeight) + 'px';
+            }
+            // _boundTooltip(container.node(), this.node(), pt);
         },
 
         hideTooltip: function (tooltip) {

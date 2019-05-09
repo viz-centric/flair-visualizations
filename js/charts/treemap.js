@@ -112,7 +112,7 @@ function treemap() {
                     return displayColor[1];
                 }
             } else {
-                return this.displayColor[0];
+                return displayColor[0];
             }
         } else if (colorPattern == 'unique_color') {
 

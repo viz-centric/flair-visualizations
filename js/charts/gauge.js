@@ -54,6 +54,10 @@ function gauge() {
         return deg * Math.PI / 180;
     }
 
+    var degToRad_circle = function (deg) {
+        return deg * Math.PI / 360;
+    }
+
     var percToDeg = function (perc) {
         return perc * 360;
     }
@@ -85,7 +89,9 @@ function gauge() {
                 .attr('height', height)
 
             var radius;
+            var degree = 90;
             if (gaugeType === 'radial') {
+                degree = 180;
                 radius = Math.min(width, height) / 2;
             } else {
                 radius = Math.max(width, height) / 2;
@@ -98,12 +104,12 @@ function gauge() {
             arc = d3.arc()
                 .innerRadius(radius - ringInset - ringWidth)
                 .outerRadius(radius - ringInset)
-                .startAngle(degToRad(-90))
+                .startAngle(degToRad(-degree))
 
             _arc = d3.arc()
                 .innerRadius(radius - ringInset - ringWidth)
                 .outerRadius(radius - ringInset)
-                .startAngle(degToRad(-90))
+                .startAngle(degToRad(-degree))
 
             var plot = _local_svg
                 .append("g")
@@ -111,7 +117,7 @@ function gauge() {
 
             emptyArc = plot.append("path")
                 .datum({
-                    endAngle: degToRad(90)
+                    endAngle: degToRad(degree)
                 })
                 .style("fill", ' #efefef')
                 .attr("class", "gaugeBackground")
@@ -119,7 +125,7 @@ function gauge() {
 
             fillArc = plot.append("path")
                 .datum({
-                    endAngle: degToRad(-90)
+                    endAngle: degToRad(-degree)
                 })
                 .attr("class", "fillArc")
                 .style("fill", displayColor)
@@ -127,7 +133,7 @@ function gauge() {
 
             targetArc = plot.append("path")
                 .datum({
-                    endAngle: degToRad(-90)
+                    endAngle: degToRad(-degree)
                 })
                 .attr("class", "targetArc")
                 .style("fill", targetDisplayColor)
@@ -141,8 +147,22 @@ function gauge() {
                 .style('font-style', fontStyle)
                 .style('visibility', showValues)
                 .style('fill', textColor)
-                .attr('dy', -15)
-                .text(displayName + " " + data[0][measures[0]])
+                .attr('dy', function () {
+                    if (gaugeType === 'radial') {
+                        return 0;
+                    } else {
+                        return -15;
+                    }
+                })
+                .text(function () {
+                    return displayName + " " + data[0][measures[0]];
+                })
+                .text(function () {
+                    return UTIL.getTruncatedLabel(this, displayName + " " + data[0][measures[0]], ringInset)
+                })
+
+
+            // displayName + " " + data[0][measures[0]])
 
             target = plot.append("text")
                 .attr("transform", "translate(0," + -(-20 + ringInset / 4 + 15) + ")")
@@ -152,8 +172,19 @@ function gauge() {
                 .style('font-style', targetFontStyle)
                 .style('visibility', targetShowValues)
                 .style('fill', targetTextColor)
-                .attr('dy', -15)
-                .text(displayName + " " + data[0][measures[0]])
+                .attr('dy', function () {
+                    if (gaugeType === 'radial') {
+                        return 0;
+                    } else {
+                        return -15;
+                    }
+                })
+                .text(function () {
+                    return displayName + " " + data[0][measures[1]];
+                })
+                .text(function () {
+                    return UTIL.getTruncatedLabel(this, displayName + " " + data[0][measures[1]], ringInset)
+                })
 
             chart.update(data);
 
@@ -171,16 +202,28 @@ function gauge() {
     chart.update = function (value) {
 
         var maxVal = Math.max(value[0][measures[0]], value[0][measures[1]]);
-
-        var _measurePi = degToRad(Math.floor(value[0][measures[0]] * 180 / maxVal - 90));
-        var targetPi = degToRad(Math.floor(value[0][measures[1]] * 180 / maxVal - 90));
+        var _measurePi, targetPi
+        if (gaugeType == 'radial') {
+            _measurePi = degToRad_circle(Math.floor(value[0][measures[0]] * 360 / maxVal));
+            targetPi = degToRad_circle(Math.floor(value[0][measures[1]] * 360 / maxVal));
+        }
+        else {
+            _measurePi = degToRad_circle(Math.floor(value[0][measures[0]] * 180 / maxVal));
+            targetPi = degToRad_circle(Math.floor(value[0][measures[1]] * 180 / maxVal));
+        }
 
         if (!_print) {
-            _measure.transition()
+            _measure
                 .text(displayName + " " + value[0][measures[0]])
+                .text(function () {
+                    return UTIL.getTruncatedLabel(this, displayName + " " + value[0][measures[0]], ringInset*2)
+                })
 
-            target.transition()
+            target
                 .text(targetDisplayName + " " + value[0][measures[1]])
+                .text(function () {
+                    return UTIL.getTruncatedLabel(this, targetDisplayName + " " + value[0][measures[1]], ringInset*0)
+                })
 
             fillArc.transition()
                 .duration(COMMON.DURATION)
