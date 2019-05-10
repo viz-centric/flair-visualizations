@@ -1,5 +1,7 @@
 var d3 = require('d3');
 var COMMON = require('../extras/common.js')();
+var currentEvent = require('d3-selection');
+
 function util() {
 
     var privateMethods = function (precision) {
@@ -12,9 +14,9 @@ function util() {
     }
 
     var _boundTooltip = function (container, tooltip, pt) {
-        var left = container.getBBox().x,
-            width = container.getBBox().width,
-            height = container.getBBox().height,
+        var left = container.offsetLeft,
+            width = container.offsetWidth,
+            height = container.offsetHeight,
             top = 0;
 
         var tipLeft = tooltip.offsetLeft,
@@ -27,14 +29,7 @@ function util() {
         }
 
         if (tipLeft + tipWidth > left + width) {
-            // tooltip.style.left = (left + width - tipWidth - 15) + 'px';
-            // if ((left + width - tipWidth - 15) < pt[0]) {
-            tooltip.style.left = (left + width - tipWidth - 15) - (width - pt[0]) + 'px';
-            //}
-            // else {
-            //     var diff = (pt[0] - (left + width - tipWidth - 15));
-            //     tooltip.style.left = (left + width - tipWidth - 15) - (diff + 15) + 'px';
-            // }
+            tooltip.style.left = (left + width - tipWidth) + 'px';
         }
 
         if (tipTop < top) {
@@ -55,26 +50,23 @@ function util() {
             if (tooltip) tooltip.style('visibility', 'visible');
         },
 
+
         updateTooltip: function (data, container, borderColor) {
-            // var pt = d3.mouse(container),
-            //     x = pt[0] + 15,
-            //     y = pt[1] + 20;
+            var pt = d3.mouse(container.node()),
+                x = pt[0] + 15,
+                y = pt[1] + 20;
 
-            var offset = $(container.node()).offset();
-            var x = d3.event.pageX - offset.left,
-                y = d3.event.pageY - offset.top;
-
-            // console.log("Mouse XY :" + pt[0] + "-" + pt[1]);
             this.style('Top', y + 'px')
-                //     .style('Left', x + 'px')
+                .style('Left', x + 'px')
                 .style('border', 'solid 2px' + borderColor)
 
                 .html(data);
 
             var tooltip = this.node()
-            var left = container.node().offsetLeft,
-                width = container.node().offsetWidth,
-                height = container.node().offsetHeight,
+            var c = container.node();
+            var left = c.clientLeft,
+                width = c.clientWidth,
+                height = c.clientHeight,
                 top = 0;
 
             var tipLeft = tooltip.offsetLeft,
@@ -82,6 +74,8 @@ function util() {
                 tipHeight = tooltip.offsetHeight,
                 tipTop = tooltip.offsetTop;
 
+            //setting tooltip position    
+            // to do  
             if (tipLeft < left) {
                 tooltip.style.left = left + "px";
             }
@@ -90,14 +84,8 @@ function util() {
             }
 
             if (tipLeft + tipWidth > left + width) {
-                // tooltip.style.left = (left + width - tipWidth - 15) + 'px';
-                // if ((left + width - tipWidth - 15) < pt[0]) {
                 tooltip.style.left = (left + width - tipWidth - 15) - (width - x) + 'px';
-                //}
-                // else {
-                //     var diff = (pt[0] - (left + width - tipWidth - 15));
-                //     tooltip.style.left = (left + width - tipWidth - 15) - (diff + 15) + 'px';
-                // }
+
             }
             else {
                 tooltip.style.left = x + 'px';
@@ -110,7 +98,7 @@ function util() {
             if (tipTop + tipHeight > top + height) {
                 tooltip.style.top = (top + height - tipHeight) + 'px';
             }
-            // _boundTooltip(container.node(), this.node(), pt);
+
         },
 
         hideTooltip: function (tooltip) {

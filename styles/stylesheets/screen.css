@@ -159,6 +159,12 @@ text {
   margin: 5px;
 }
 
+/* line 90, ../sass/partials/_common.scss */
+svg.sankey .link {
+  stroke: #000 !important;
+  stroke-opacity: 0.2;
+}
+
 /* line 2, ../sass/partials/_grid.scss */
 .grid path {
   stroke: #ededed;

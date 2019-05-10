@@ -2,7 +2,6 @@ var d3 = require('d3');
 var COMMON = require('../extras/common.js')();
 var UTIL = require('../extras/util.js')();
 var LEGEND = require('../extras/legend_barcharts.js')();
-
 try {
     var d3Lasso = require("d3-lasso");
 
@@ -60,7 +59,7 @@ function clusteredverticalbar() {
 
     var tickLength = d3.scaleLinear()
         .domain([22, 34])
-        .range([4, 6]);
+        .range([2, 4]);
 
     var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div;
 
@@ -847,6 +846,7 @@ function clusteredverticalbar() {
     }
 
     chart.update = function (data) {
+        
         var DURATION = COMMON.DURATION;
         if (isAnimationDisable) {
             DURATION = 0;
@@ -1010,6 +1010,21 @@ function clusteredverticalbar() {
             .call(_localYGrid);
 
         UTIL.displayThreshold(threshold, data, keys);
+
+        _local_svg.select('g.lasso').remove();
+
+        var lasso = d3Lasso.lasso()
+            .hoverSelect(true)
+            .closePathSelect(true)
+            .closePathDistance(100)
+            .items(cluster)
+            .targetArea(_local_svg);
+
+        lasso.on('start', onLassoStart(lasso, div))
+            .on('draw', onLassoDraw(lasso, div))
+            .on('end', onLassoEnd(lasso, div));
+
+        _local_svg.call(lasso);
 
     }
 

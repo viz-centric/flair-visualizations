@@ -62,7 +62,7 @@ function clusteredhorizontalbar() {
 
     var tickLength = d3.scaleLinear()
         .domain([22, 34])
-        .range([4, 6]);
+        .range([2, 4]);
 
     var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div;
 
@@ -536,26 +536,28 @@ function clusteredhorizontalbar() {
             var _filter = UTIL.createFilterElement()
             $(div).append(_filter);
 
-            $(document).on('click', '_local_svg', function (e) {
-                if ($("#myonoffswitch").prop('checked') == false) {
-                    var element = e.target
-                    if (element.tagName == "_local_svg") {
-                        $('#Modal_' + $(div).attr('id') + ' .measure').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', false)
-                        $('#Modal_' + $(div).attr('id')).modal('toggle');
-                    }
-                }
-            })
+            //comment for now working on it
 
-            $(document).on('click', '#Modal_' + $(div).attr('id') + ' .ThresholdSubmit', function (e) {
-                var newValue = $('#Modal_' + $(div).attr('id') + ' .threshold').val();
-                var obj = new Object()
-                obj.measure = $('#Modal_' + $(div).attr('id') + ' .measure').val()
-                obj.threshold = newValue;
-                threshold.push(obj);
-                $('#Modal_' + $(div).attr('id')).modal('toggle');
-            })
+            // $(document).on('click', '_local_svg', function (e) {
+            //     if ($("#myonoffswitch").prop('checked') == false) {
+            //         var element = e.target
+            //         if (element.tagName == "_local_svg") {
+            //             $('#Modal_' + $(div).attr('id') + ' .measure').val('')
+            //             $('#Modal_' + $(div).attr('id') + ' .threshold').val('')
+            //             $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', false)
+            //             $('#Modal_' + $(div).attr('id')).modal('toggle');
+            //         }
+            //     }
+            // })
+
+            // $(document).on('click', '#Modal_' + $(div).attr('id') + ' .ThresholdSubmit', function (e) {
+            //     var newValue = $('#Modal_' + $(div).attr('id') + ' .threshold').val();
+            //     var obj = new Object()
+            //     obj.measure = $('#Modal_' + $(div).attr('id') + ' .measure').val()
+            //     obj.threshold = newValue;
+            //     threshold.push(obj);
+            //     $('#Modal_' + $(div).attr('id')).modal('toggle');
+            // })
 
 
             _local_svg.select('g.sort').remove();
@@ -838,6 +840,7 @@ function clusteredhorizontalbar() {
     chart.update = function (data) {
 
         var DURATION = COMMON.DURATION;
+        var svg = _local_svg;
         if (isAnimationDisable) {
             DURATION = 0;
         }
@@ -854,7 +857,7 @@ function clusteredhorizontalbar() {
             });
         })]).nice();
 
-        var plot = _local_svg.select('.plot')
+        var plot = svg.select('.plot')
         var cluster = plot.selectAll("g.cluster")
             .data(data);
 
@@ -938,7 +941,96 @@ function clusteredhorizontalbar() {
         var newBars = clusteredhorizontalbar.enter().append('g')
             .attr('class', 'clusteredhorizontalbar');
 
-        drawViz(newBars);
+        //drawViz(newBars);
+        var rect = newBars.append('rect')
+            .attr("y", function (d) {
+                return x1(d.measure);
+            })
+            .attr("x", 1)
+            .attr("height", x1.bandwidth())
+            .attr("width", function (d) {
+                return 0;
+            })
+            .style('fill', function (d, i) {
+                return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+            })
+            .style('stroke', function (d, i) {
+                return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
+            })
+            .style('stroke-width', 2)
+            .on('mouseover', _handleMouseOverFn.call(chart, tooltip, svg))
+            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg))
+            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg))
+            .on('click', function (d) {
+                if ($("#myonoffswitch").prop('checked') == false) {
+                    $('#Modal_' + $(div).attr('id') + ' .measure').val(d.measure);
+                    $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
+                    $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
+                    $('#Modal_' + $(div).attr('id')).modal('toggle');
+                }
+                else {
+                    var confirm = d3.select(div).select('.confirm')
+                        .style('visibility', 'visible');
+                    var _filter = _Local_data.filter(function (d1) {
+                        return d[_dimension[0]] === d1[_dimension[0]]
+                    })
+                    var rect = d3.select(this);
+                    if (rect.classed('selected')) {
+                        rect.classed('selected', false);
+                        filterData.map(function (val, i) {
+                            if (val[_dimension[0]] == d[_dimension[0]]) {
+                                filterData.splice(i, 1)
+                            }
+                        })
+                    } else {
+                        rect.classed('selected', true);
+                        var isExist = filterData.filter(function (val) {
+                            if (val[_dimension[0]] == d[_dimension[0]]) {
+                                return val
+                            }
+                        })
+                        if (isExist.length == 0) {
+                            filterData.push(_filter[0]);
+                        }
+                    }
+                    var _filterDimension = {};
+                    if (broadcast.filterSelection.id) {
+                        _filterDimension = broadcast.filterSelection.filter;
+                    } else {
+                        broadcast.filterSelection.id = $(div).attr('id');
+                    }
+                    var dimension = _dimension[0];
+                    if (_filterDimension[dimension]) {
+                        var temp = _filterDimension[dimension];
+                        if (temp.indexOf(d[dimension]) < 0) {
+                            temp.push(d[dimension]);
+                        } else {
+                            temp.splice(temp.indexOf(d[dimension]), 1);
+                        }
+                        _filterDimension[dimension] = temp;
+                    } else {
+                        _filterDimension[dimension] = [d[dimension]];
+                    }
+
+                    var idWidget = broadcast.updateWidget[$(div).attr('id')];
+                    broadcast.updateWidget = {};
+                    broadcast.updateWidget[$(div).attr('id')] = idWidget;
+                    broadcast.filterSelection.filter = _filterDimension;
+                    var _filterParameters = filterParameters.get();
+                    _filterParameters[dimension] = _filterDimension[dimension];
+                    filterParameters.save(_filterParameters);
+                }
+            })
+            .transition()
+            .duration(COMMON.DURATION)
+            .attr("y", function (d) {
+                return x1(d.measure);
+            })
+            .attr("x", 1)
+            .attr("height", x1.bandwidth())
+            .attr("width", function (d) {
+                return y(d[d.measure]);
+            })
 
         plot.selectAll('g.cluster')
             .attr('transform', function (d) {
@@ -981,8 +1073,22 @@ function clusteredhorizontalbar() {
 
         _setAxisColor(yAxisGroup, _yAxisColor);
 
-        UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis);
         UTIL.displayThreshold(threshold, data, keys);
+
+        _local_svg.select('g.lasso').remove()
+
+        var lasso = d3Lasso.lasso()
+            .hoverSelect(true)
+            .closePathSelect(true)
+            .closePathDistance(100)
+            .items(cluster)
+            .targetArea(_local_svg);
+
+        lasso.on('start', onLassoStart(lasso, div))
+            .on('draw', onLassoDraw(lasso, div))
+            .on('end', onLassoEnd(lasso, div));
+
+        _local_svg.call(lasso);
 
     }
 

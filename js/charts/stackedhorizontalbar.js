@@ -567,7 +567,7 @@ function stackedhorizontalbar() {
         }
 
         x.rangeRound([0, plotHeight])
-            .padding([0.2])
+            .padding([0.5])
             .domain(data.map(function (d) { return d[_dimension[0]]; }));
 
         y.rangeRound([0, plotWidth])
@@ -747,6 +747,8 @@ function stackedhorizontalbar() {
 
             d3.select(div).select('.removeFilter')
                 .on('click', clearFilter(div));
+
+            _local_svg.select('g.lasso').remove()
 
             var lasso = d3Lasso.lasso()
                 .hoverSelect(true)
@@ -959,8 +961,22 @@ function stackedhorizontalbar() {
 
         _setAxisColor(yAxisGroup, _yAxisColor);
 
-        UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis);
         UTIL.displayThreshold(threshold, data, keys);
+
+        _local_svg.select('g.lasso').remove()
+
+        var lasso = d3Lasso.lasso()
+            .hoverSelect(true)
+            .closePathSelect(true)
+            .closePathDistance(100)
+            .items(stackedhorizontalbar)
+            .targetArea(_local_svg);
+
+        lasso.on('start', onLassoStart(lasso, div))
+            .on('draw', onLassoDraw(lasso, div))
+            .on('end', onLassoEnd(lasso, div));
+
+        _local_svg.call(lasso);
     }
 
     chart._getName = function () {

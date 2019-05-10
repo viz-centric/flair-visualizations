@@ -60,7 +60,7 @@ function line() {
 
     var tickLength = d3.scaleLinear()
         .domain([22, 34])
-        .range([4, 6]);
+        .range([2, 4]);
 
     var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div;
     var parentWidth, parentHeight, plotWidth, plotHeight, container;
@@ -206,9 +206,9 @@ function line() {
             var _filter = [];
             data.forEach(function (d) {
                 var obj = new Object();
-                obj[_dimension[0]] = d[_dimension[0]];
+                obj[_dimension[0]] = d.data[_dimension[0]];
                 for (var index = 0; index < _measure.length; index++) {
-                    obj[_measure[index]] = d[_measure[index]];
+                    obj[_measure[index]] = d.data[_measure[index]];
                 }
 
                 _filter.push(obj)
@@ -407,7 +407,7 @@ function line() {
 
     var drawPlot = function (data) {
         var me = this;
-        _Local_data = _originalData = data;
+        _Local_data = data;
 
         var plot = container.append('g')
             .attr('class', 'line-plot')
@@ -823,6 +823,8 @@ function line() {
             d3.select(div).select('.removeFilter')
                 .on('click', clearFilter(div));
 
+            _local_svg.select('g.lasso').remove()
+
             var lasso = d3Lasso.lasso()
                 .hoverSelect(true)
                 .closePathSelect(true)
@@ -1157,6 +1159,20 @@ function line() {
             .call(_localYGrid);
 
         UTIL.displayThreshold(threshold, data, keys);
+        _local_svg.select('g.lasso').remove()
+
+        var lasso = d3Lasso.lasso()
+            .hoverSelect(true)
+            .closePathSelect(true)
+            .closePathDistance(100)
+            .items(point)
+            .targetArea(_local_svg);
+
+        lasso.on('start', onLassoStart(lasso, div))
+            .on('draw', onLassoDraw(lasso, div))
+            .on('end', onLassoEnd(lasso, div))
+
+        _local_svg.call(lasso);
 
     }
 

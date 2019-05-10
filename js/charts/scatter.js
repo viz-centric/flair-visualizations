@@ -838,6 +838,20 @@ function scatter() {
             })
             .call(_localYGrid);
 
+        _local_svg.select('g.lasso').remove()
+        var lasso = d3Lasso.lasso()
+            .hoverSelect(true)
+            .closePathSelect(true)
+            .closePathDistance(100)
+            .items(circle)
+            .targetArea(_local_svg);
+
+        lasso.on('start', onLassoStart(lasso, div))
+            .on('draw', onLassoDraw(lasso, div))
+            .on('end', onLassoEnd(lasso, div));
+
+        _local_svg.call(lasso);
+
     }
     chart.config = function (value) {
         if (!arguments.length) {

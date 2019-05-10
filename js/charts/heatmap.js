@@ -38,12 +38,12 @@ function heatmap() {
         filterParameters;;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [];
-    var width, height, cellWidth, cellHeight;
+    var width, height, cellWidth, cellHeight, div;
     var margin = {
         top: 30,
         right: 15,
         bottom: 15,
-        left: 45
+        left: 55
     };
     var yScale = d3.scaleBand(),
         xScale = d3.scaleBand();
@@ -176,7 +176,7 @@ function heatmap() {
             }
         });
 
-        return result || "#efefef";
+        return result || COMMON.COLORSCALE(_measure.indexOf(data.x));
     }
     var getIconPosition = function (data, width) {
         var iconProp = iconPosition[_measure.indexOf(data.x)]
@@ -349,12 +349,11 @@ function heatmap() {
 
         selection.each(function (data) {
 
-            var div = d3.select(this).node().parentNode;
-            var svg = d3.select(this),
-                width = +svg.attr('width'),
-                height = +svg.attr('height');
-
+            div = d3.select(this).node().parentNode;
             var svg = d3.select(this);
+
+            width = +svg.attr('width');
+            height = +svg.attr('height');
 
             svg.selectAll('g').remove();
 
@@ -457,6 +456,8 @@ function heatmap() {
 
                 d3.select(div).select('.removeFilter')
                     .on('click', clearFilter(div));
+
+                _local_svg.select('g.lasso').remove()
 
                 var lasso = d3Lasso.lasso()
                     .hoverSelect(true)
@@ -848,6 +849,21 @@ function heatmap() {
             .attr('transform', function (d) {
                 return 'translate(' + xScale(d.column + '_' + d.x) + ',' + yScale(d.y) + ')';
             });
+
+        _local_svg.select('g.lasso').remove()
+
+        var lasso = d3Lasso.lasso()
+            .hoverSelect(true)
+            .closePathSelect(true)
+            .closePathDistance(100)
+            .items(cell)
+            .targetArea(_local_svg);
+
+        lasso.on('start', onLassoStart(lasso, div))
+            .on('draw', onLassoDraw(lasso, div))
+            .on('end', onLassoEnd(lasso, div));
+
+        _local_svg.call(lasso);
     }
 
     chart._getName = function () {

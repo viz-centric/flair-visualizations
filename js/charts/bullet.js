@@ -149,9 +149,9 @@ function bullet() {
                 var _filterList = {}, list = []
 
                 filterData.map(function (val) {
-                    list.push(val[_dimension[0]])
+                    list.push(val[dimension[0]])
                 })
-                _filterList[_dimension[0]] = list
+                _filterList[dimension[0]] = list
                 broadcast.filterSelection.filter = _filterList;
                 filterParameters.save(_filterList);
             }
@@ -494,6 +494,8 @@ function bullet() {
                 d3.select(div).select('.removeFilter')
                     .on('click', clearFilter(div));
 
+                _local_svg.select('g.lasso').remove()
+
                 var lasso = d3Lasso.lasso()
                     .hoverSelect(true)
                     .closePathSelect(true)
@@ -669,6 +671,21 @@ function bullet() {
             });
 
         formatUsingCss(_local_svg);
+
+        _local_svg.select('g.lasso').remove()
+
+        var lasso = d3Lasso.lasso()
+            .hoverSelect(true)
+            .closePathSelect(true)
+            .closePathDistance(100)
+            .items(_bullet)
+            .targetArea(_local_svg);
+
+        lasso.on('start', onLassoStart(lasso, div))
+            .on('draw', onLassoDraw(lasso, div))
+            .on('end', onLassoEnd(lasso, div));
+
+        _local_svg.call(lasso);
     }
 
     chart.config = function (value) {
