@@ -1,5 +1,7 @@
 var d3 = require('d3');
 var COMMON = require('../extras/common.js')();
+var currentEvent = require('d3-selection');
+
 function util() {
 
     var privateMethods = function (precision) {
@@ -11,10 +13,10 @@ function util() {
         }
     }
 
-    var _boundTooltip = function (container, tooltip) {
-        var left = container.getBBox().x,
-            width = container.getBBox().width,
-            height = container.getBBox().height,
+    var _boundTooltip = function (container, tooltip, pt) {
+        var left = container.offsetLeft,
+            width = container.offsetWidth,
+            height = container.offsetHeight,
             top = 0;
 
         var tipLeft = tooltip.offsetLeft,
@@ -48,6 +50,7 @@ function util() {
             if (tooltip) tooltip.style('visibility', 'visible');
         },
 
+
         updateTooltip: function (data, container, borderColor) {
             var pt = d3.mouse(container.node()),
                 x = pt[0] + 15,
@@ -56,9 +59,46 @@ function util() {
             this.style('Top', y + 'px')
                 .style('Left', x + 'px')
                 .style('border', 'solid 2px' + borderColor)
+
                 .html(data);
 
-            _boundTooltip(container.node(), this.node());
+            var tooltip = this.node()
+            var c = container.node();
+            var left = c.clientLeft,
+                width = c.clientWidth,
+                height = c.clientHeight,
+                top = 0;
+
+            var tipLeft = tooltip.offsetLeft,
+                tipWidth = tooltip.offsetWidth,
+                tipHeight = tooltip.offsetHeight,
+                tipTop = tooltip.offsetTop;
+
+            //setting tooltip position    
+            // to do  
+            if (tipLeft < left) {
+                tooltip.style.left = left + "px";
+            }
+            else {
+                tooltip.style.left = (left + width - tipWidth - 15) - (width - x) + 'px';
+            }
+
+            if (tipLeft + tipWidth > left + width) {
+                tooltip.style.left = (left + width - tipWidth - 15) - (width - x) + 'px';
+
+            }
+            else {
+                tooltip.style.left = x + 'px';
+            }
+
+            if (tipTop < top) {
+                tooltip.style.top = top + "px";
+            }
+
+            if (tipTop + tipHeight > top + height) {
+                tooltip.style.top = (top + height - tipHeight) + 'px';
+            }
+
         },
 
         hideTooltip: function (tooltip) {

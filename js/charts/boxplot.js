@@ -39,7 +39,7 @@ function boxplot() {
 
     var tickLength = d3.scaleLinear()
         .domain([22, 34])
-        .range([4, 6]);
+        .range([2, 4]);
 
     var filter = false, filterData = [];
     var threshold = [];

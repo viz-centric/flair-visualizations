@@ -112,7 +112,7 @@ function treemap() {
                     return displayColor[1];
                 }
             } else {
-                return this.displayColor[0];
+                return displayColor[0];
             }
         } else if (colorPattern == 'unique_color') {
 
@@ -749,6 +749,7 @@ function treemap() {
                 d3.select(div).select('.removeFilter')
                     .on('click', clearFilter(div));
 
+                _local_svg.select('g.lasso').remove();
                 var lasso = d3Lasso.lasso()
                     .hoverSelect(true)
                     .closePathSelect(true)
@@ -886,6 +887,20 @@ function treemap() {
             .attr('transform', function (d) {
                 return 'translate(' + d.x0 + ',' + d.y0 + ')';
             })
+
+        _local_svg.select('g.lasso').remove();
+        var lasso = d3Lasso.lasso()
+            .hoverSelect(true)
+            .closePathSelect(true)
+            .closePathDistance(100)
+            .items(cell)
+            .targetArea(_local_svg);
+
+        lasso.on('start', onLassoStart(lasso, div))
+            .on('draw', onLassoDraw(lasso, div))
+            .on('end', onLassoEnd(lasso, div));
+
+        _local_svg.call(lasso);
 
     }
 

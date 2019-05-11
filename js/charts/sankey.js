@@ -182,9 +182,11 @@ function sankey() {
                 var _filterList = {}, list = []
 
                 filterData.map(function (val) {
-                    list.push(val[_dimension[0]])
+                    list.push(val[dimension[0]])
                 })
-                _filterList[_dimension[0]] = list
+
+                list = list.filter(function (item, i, ar) { return ar.indexOf(item) === i; });
+                _filterList[dimension[0]] = list
                 broadcast.filterSelection.filter = _filterList;
                 filterParameters.save(_filterList);
             }
@@ -348,7 +350,8 @@ function sankey() {
             svg.selectAll('g').remove();
 
             svg.attr('width', width)
-                .attr('height', height);
+                .attr('height', height)
+                .attr('class', 'sankey');
 
             parentWidth = width - margin.left - margin.right;
             parentHeight = height - margin.top - margin.bottom;
@@ -606,6 +609,8 @@ function sankey() {
                 d3.select(div).select('.removeFilter')
                     .on('click', clearFilter(div));
 
+                _local_svg.select('g.lasso').remove()
+
                 var lasso = d3Lasso.lasso()
                     .hoverSelect(true)
                     .closePathSelect(true)
@@ -633,6 +638,7 @@ function sankey() {
     chart.update = function (data) {
 
         data = getSankeyData(data);
+        filterData = [];
         var plot = _local_svg.select('.plot');
         path = sankey.link();
         sankey.nodes(data.nodes)
@@ -860,6 +866,21 @@ function sankey() {
             .filter(function (d) { return d.x < parentWidth / 2; })
             .attr('x', 6 + sankey.nodeWidth())
             .attr('text-anchor', 'start');
+
+        _local_svg.select('g.lasso').remove()
+
+        var lasso = d3Lasso.lasso()
+            .hoverSelect(true)
+            .closePathSelect(true)
+            .closePathDistance(100)
+            .items(node.select('rect'))
+            .targetArea(_local_svg);
+
+        lasso.on('start', onLassoStart(lasso, div))
+            .on('draw', onLassoDraw(lasso, div))
+            .on('end', onLassoEnd(lasso, div));
+
+        _local_svg.call(lasso);
     }
 
     chart.config = function (value) {

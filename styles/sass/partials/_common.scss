@@ -86,3 +86,8 @@ text {
   right: 45px;
   margin: 5px;
 }
+
+svg.sankey .link{
+  stroke: #000 !important;
+  stroke-opacity: 0.2;
+}

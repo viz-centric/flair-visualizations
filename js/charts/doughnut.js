@@ -707,6 +707,8 @@ function doughnut() {
                 d3.select(div).select('.removeFilter')
                     .on('click', clearFilter(div));
 
+                _localSVG.select('g.lasso').remove();
+
                 var lasso = d3Lasso.lasso()
                     .hoverSelect(true)
                     .closePathSelect(true)
@@ -1030,6 +1032,21 @@ function doughnut() {
                         .remove();
                 });
         }
+
+        _localSVG.select('g.lasso').remove();
+
+        var lasso = d3Lasso.lasso()
+            .hoverSelect(true)
+            .closePathSelect(true)
+            .closePathDistance(100)
+            .items(doughnutArcGroup)
+            .targetArea(_localSVG);
+
+        lasso.on('start', onLassoStart(lasso, div))
+            .on('draw', onLassoDraw(lasso, div))
+            .on('end', onLassoEnd(lasso, div));
+
+        _localSVG.call(lasso);
     }
 
     chart.config = function (value) {

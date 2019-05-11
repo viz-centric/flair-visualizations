@@ -528,8 +528,58 @@ function scatter() {
             dataCircle.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
-                .on('click', function () {
+                .on('click', function (d) {
 
+                    var confirm = d3.select(div).select('.confirm')
+                        .style('visibility', 'visible');
+                    var rect = d3.select(this);
+                    if (rect.classed('selected')) {
+                        rect.classed('selected', false);
+                    }
+                    else {
+                        rect.classed('selected', true);
+                    }
+                    if (_localLabelStack.indexOf(d[_dimension[0]]) == -1) {
+                        _localLabelStack.push(d[_dimension[0]]);
+                    } else {
+                        _localLabelStack.splice(_localLabelStack.indexOf(d[_dimension[0]]), 1);
+                    }
+
+                    var _filter =
+                        _Local_data.filter(function (val) {
+                            if (_localLabelStack.indexOf(val[_dimension[0]]) == -1) {
+                                return val
+                            }
+                        });
+
+                    filterData = _filter;
+
+                    var _filterDimension = {};
+                    if (broadcast.filterSelection.id) {
+                        _filterDimension = broadcast.filterSelection.filter;
+                    } else {
+                        broadcast.filterSelection.id = $(div).attr('id');
+                    }
+                    var dimension = _dimension[0];
+                    if (_filterDimension[dimension]) {
+                        var temp = _filterDimension[dimension];
+                        if (temp.indexOf(d[_dimension[0]]) < 0) {
+                            temp.push(d[_dimension[0]]);
+                        } else {
+                            temp.splice(temp.indexOf(d[_dimension[0]]), 1);
+                        }
+                        _filterDimension[dimension] = temp;
+                    } else {
+                        _filterDimension[dimension] = [d[_dimension[0]]];
+                    }
+
+                    var idWidget = broadcast.updateWidget[$(div).attr('id')];
+                    broadcast.updateWidget = {};
+                    broadcast.updateWidget[$(div).attr('id')] = idWidget;
+                    broadcast.filterSelection.filter = _filterDimension;
+                    var _filterParameters = filterParameters.get();
+                    _filterParameters[dimension] = _filterDimension[dimension];
+                    filterParameters.save(_filterParameters);
                 })
 
             var confirm = $(me).parent().find('div.confirm')
@@ -787,6 +837,20 @@ function scatter() {
                 return _showGrid ? 'visible' : 'hidden';
             })
             .call(_localYGrid);
+
+        _local_svg.select('g.lasso').remove()
+        var lasso = d3Lasso.lasso()
+            .hoverSelect(true)
+            .closePathSelect(true)
+            .closePathDistance(100)
+            .items(circle)
+            .targetArea(_local_svg);
+
+        lasso.on('start', onLassoStart(lasso, div))
+            .on('draw', onLassoDraw(lasso, div))
+            .on('end', onLassoEnd(lasso, div));
+
+        _local_svg.call(lasso);
 
     }
     chart.config = function (value) {

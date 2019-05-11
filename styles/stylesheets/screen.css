@@ -159,6 +159,12 @@ text {
   margin: 5px;
 }
 
+/* line 90, ../sass/partials/_common.scss */
+svg.sankey .link {
+  stroke: #000 !important;
+  stroke-opacity: 0.2;
+}
+
 /* line 2, ../sass/partials/_grid.scss */
 .grid path {
   stroke: #ededed;
@@ -244,7 +250,7 @@ svg#graphics {
 /* line 1, ../sass/partials/_tooltip.scss */
 .custom_tooltip {
   visibility: hidden;
-  position: fixed;
+  position: absolute;
   opacity: 1;
   background-color: white;
   -webkit-border-radius: 1px;
@@ -253,6 +259,7 @@ svg#graphics {
   padding: 5px 2px;
   z-index: 10;
   box-shadow: 0px 0px 1px #BCBCBC;
+  pointer-events: none;
   transition-duration: 0.3s;
   -moz-transition-duration: 0.3s;
   -webkit-transition-duration: 0.3s;

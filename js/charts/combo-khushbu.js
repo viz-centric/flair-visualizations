@@ -51,7 +51,7 @@ function combo() {
 
     var tickLength = d3.scaleLinear()
         .domain([22, 34])
-        .range([4, 6]);
+        .range([2, 4]);
 
     var parentWidth, parentHeight, plotWidth, plotHeight, container;
 
@@ -830,6 +830,7 @@ function combo() {
             d3.select(div).select('.removeFilter')
                 .on('click', clearFilter(div));
 
+            _local_svg.select('g.lasso').remove()
             var lasso = d3Lasso.lasso()
                 .hoverSelect(true)
                 .closePathSelect(true)
@@ -1442,6 +1443,19 @@ function combo() {
             .call(_localYGrid);
 
         UTIL.displayThreshold(threshold, data, keys);
+        _local_svg.select('g.lasso').remove()
+        var lasso = d3Lasso.lasso()
+            .hoverSelect(true)
+            .closePathSelect(true)
+            .closePathDistance(100)
+            .items(bar)
+            .targetArea(_local_svg);
+
+        lasso.on('start', onLassoStart(lasso, div))
+            .on('draw', onLassoDraw(lasso, div))
+            .on('end', onLassoEnd(lasso, div));
+
+        _local_svg.call(lasso);
     }
 
     chart.config = function (value) {

@@ -61,7 +61,7 @@ function stackedverticalbar() {
 
     var tickLength = d3.scaleLinear()
         .domain([22, 34])
-        .range([4, 6]);
+        .range([2, 4]);
 
     var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div;
     var parentWidth, parentHeight, plotWidth, plotHeight, container;
@@ -575,9 +575,7 @@ function stackedverticalbar() {
         }
 
         x.rangeRound([0, plotWidth])
-            .paddingInner(0.1)
-            .padding([0.1])
-            .align(0.1)
+            .padding([0.2])
             .domain(data.map(function (d) { return d[_dimension[0]]; }));
 
         y.rangeRound([plotHeight, 0])
@@ -1008,6 +1006,20 @@ function stackedverticalbar() {
             .call(_localYGrid);
 
         UTIL.displayThreshold(threshold, data, keys);
+
+        _local_svg.select('g.lasso').remove()
+        var lasso = d3Lasso.lasso()
+            .hoverSelect(true)
+            .closePathSelect(true)
+            .closePathDistance(100)
+            .items(stackedverticalbar)
+            .targetArea(_local_svg);
+
+        lasso.on('start', onLassoStart(lasso, div))
+            .on('draw', onLassoDraw(lasso, div))
+            .on('end', onLassoEnd(lasso, div));
+
+        _local_svg.call(lasso);
     }
 
     chart.config = function (value) {
