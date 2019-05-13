@@ -59,7 +59,7 @@ function util() {
             this.style('Top', y + 'px')
                 .style('Left', x + 'px')
                 .style('border', 'solid 2px' + borderColor)
-
+                .style('border-color', borderColor)
                 .html(data);
 
             var tooltip = this.node()

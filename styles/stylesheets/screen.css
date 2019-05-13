@@ -285,3 +285,20 @@ svg#graphics {
   color: #28689C;
   padding: 2px 5px;
 }
+
+/* line 1, ../sass/partials/_table.scss */
+#viz_table_wrapper .table th {
+  font-weight: bold;
+  border-bottom: 0px;
+  border-left: 1px solid #d3d4d4;
+  border-right: 1px solid #d3d4d4;
+}
+
+/* line 7, ../sass/partials/_table.scss */
+.dataTables_length {
+  text-align: left !important;
+}
+/* line 10, ../sass/partials/_table.scss */
+.dataTables_length label {
+  width: auto;
+}
