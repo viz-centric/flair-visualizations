@@ -273,13 +273,12 @@ function table() {
                         'background-color': _cellColorForDimension[index],
                         'font-style': _fontStyleForDimension[index],
                         'font-weight': _fontWeightForDimension[index],
-                        'font-size': _fontSizeForDimension[index],
+                        'font-size': _fontSizeForDimension[index] + "px",
                         'color': _textColorForDimension[index]
                     };
-                    style['color'] = UTIL.expressionEvaluator(_textColorExpressionForDimension[index], d[_dimension[index]], 'color');
-
+                    
                     style = JSON.stringify(style);
-                    style = style.replace(/","/g, ';').replace(/["{}]/g, '');
+                    style = style.replace(/["{}]/g, '').replace(/,/g, ';');
                     //    tbody += "<td onClick=\"readerTableChart('" + d[_dimension[index]] + "',this,_local_svg,'" + item + "')\" style=\"" + style + "\">" + d[_dimension[index]] + "</td>";
                     tbody += "<td id=\"" + item + "\"  style=\"" + style + "\">" + d[_dimension[index]] + "</td>";
                 });
@@ -290,13 +289,19 @@ function table() {
                         'background-color': _cellColorForMeasure[index],
                         'font-style': _fontStyleForMeasure[index],
                         'font-weight': _fontWeightForMeasure[index],
-                        'font-size': _fontSizeForMeasure[index],
+                        'font-size': _fontSizeForMeasure[index] + "px",
                         'color': _textColorForMeasure[index]
                     };
-                    style['color'] = UTIL.expressionEvaluator(_textColorExpressionForMeasure[index], d[_measure[index]], 'color');
-                    style['background-color'] = UTIL.expressionEvaluator(_cellColorExpressionForMeasure[index], d[_measure[index]], 'color');
+
+                    if (_textColorExpressionForMeasure[index].length>0){
+                        style['color'] = UTIL.expressionEvaluator(_textColorExpressionForMeasure[index], d[_measure[index]], 'color');
+                    }
+                    if (_cellColorExpressionForMeasure[index].length>0){
+                        style['background-color'] = UTIL.expressionEvaluator(_cellColorExpressionForMeasure[index], d[_measure[index]], 'color');
+                    }
+                    
                     style = JSON.stringify(style);
-                    style = style.replace(/","/g, ';').replace(/["{}]/g, '');
+                    style = style.replace(/["{}]/g, '').replace(/,/g, ';');
                     tbody += "<td id=\"" + item + "\" style=\"" + style + "\">" + getIcon(index, d[_measure[index]]) + UTIL.getFormattedValue(d[_measure[index]], UTIL.getValueNumberFormat(index, _numberFormatForMeasure)) + "</td>";
                     //  tbody += "<td onClick=\"readerTableChart('" + d[_measure[index]] + "',this,_local_svg,'" + item + "')\" style=\"" + style + "\">" + getIcon(index, d[_measure[index]]) + UTIL.getFormattedValue(d[_measure[index]], UTIL.getValueNumberFormat(index, _numberFormatForMeasure)) + "</td>";
 

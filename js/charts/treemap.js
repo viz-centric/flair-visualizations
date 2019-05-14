@@ -395,15 +395,15 @@ function treemap() {
                         for (var index = 0; index < d.data.values.length; index++) {
 
                             var isExist = _filter.filter(function (val) {
-                                if (val[_dimension[1]] == d.data.key) {
+                                if (val[_dimension[1]] == d.data.values[index].key) {
                                     return val
                                 }
                             })
                             if (isExist.length == 0) {
-                                var searchObj = _localData.find(o => o[_dimension[1]] === d.data.values[index].key);
+                                var searchObj = _localData.find(o => o[_dimension[1]].toString() === d.data.values[index].key);
 
                                 var isExist = _filter.filter(function (val) {
-                                    if (val[_dimension[0]] == searchObj[_dimension[0]] && val[_dimension[1]] == searchObj[_dimension[1]]) {
+                                    if (val[_dimension[0]] == searchObj[_dimension[0]] && val[_dimension[1]].toString() == searchObj[_dimension[1]].toString()) {
                                         return val
                                     }
                                 })
@@ -437,6 +437,7 @@ function treemap() {
                     filterData.map(function (val) {
                         list.push(val[_dimension[0]])
                     })
+                    list = list.filter(function (item, i, ar) { return ar.indexOf(item) === i; });
                     _filterList[_dimension[0]] = list
                     broadcast.filterSelection.filter = _filterList;
                     filterParameters.save(_filterList);
