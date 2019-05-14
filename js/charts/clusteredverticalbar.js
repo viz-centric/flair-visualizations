@@ -141,6 +141,7 @@ function clusteredverticalbar() {
             if (!filter) {
                 return;
             }
+          
             if (data.length > 0) {
                 lasso.items().selectAll('rect')
                     .classed('not_possible', false)
@@ -167,6 +168,9 @@ function clusteredverticalbar() {
 
                     _filter.push(obj)
                 });
+            }
+            else{
+                filterData=[];
             }
 
             if (_filter.length > 0) {
@@ -661,6 +665,7 @@ function clusteredverticalbar() {
                         $('#Modal_' + $(div).attr('id')).modal('toggle');
                     }
                     else {
+                        filter=false;
                         var confirm = d3.select(div).select('.confirm')
                             .style('visibility', 'visible');
                         var _filter = _Local_data.filter(function (d1) {

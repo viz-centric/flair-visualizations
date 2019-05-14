@@ -43,7 +43,7 @@ function bullet() {
 
     var offset = 6, div;
 
-    var filter = false, filterData = [];
+    var filter = false, filterData = [], measuresSum, targetSum;
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
@@ -65,19 +65,52 @@ function bullet() {
     var _buildTooltipData = function (datum, chart) {
         var output = "";
 
+        var measureNf = UTIL.getNumberFormatter(measureNumberFormat),
+            targetNf = UTIL.getNumberFormatter(targetNumberFormat),
+            measure,
+            target;
+
+        if (measureNumberFormat == "Percent") {
+            measure = measureNf(datum.measures.toString() / measuresSum);
+        } else {
+            measure = measureNf(datum.measures.toString());
+        }
+
+        if (measure.indexOf('G') != -1) {
+            measure = measure.slice(0, -1) + "B";
+        }
+
+        if (targetNumberFormat == "Percent") {
+            target = targetNf(datum.markers.toString() / targetSum);
+        } else {
+            target = targetNf(datum.markers.toString());
+        }
+
+        if (target.indexOf('G') != -1) {
+            target = target.slice(0, -1) + "B";
+        }
+
         output += "<table><tr>"
             + "<th>" + chart.dimension() + ": </th>"
             + "<td>" + datum.title + "</td>"
             + "</tr><tr>"
             + "<th>" + 'Value' + ": </th>"
-            + "<td>" + datum.measures.toString() + "</td>"
+            + "<td>" + measure + "</td>"
             + "</tr><tr>"
             + "<th>" + "Target" + ": </th>"
-            + "<td>" + datum.markers.toString() + "</td>"
+            + "<td>" + target + "</td>"
             + "</tr>"
             + "</table>";
 
         return output;
+    }
+
+    var setMeasuresSum = function (val) {
+        measuresSum = val;
+    }
+
+    var setTargetSum = function (val) {
+        targetSum = val;
     }
 
     var onLassoStart = function (lasso, scope) {
@@ -336,16 +369,19 @@ function bullet() {
 
             var me = this;
 
+            setMeasuresSum(UTIL.getSum(data, measures[0]));
+            setTargetSum(UTIL.getSum(data, measures[1]));
+
             var svg = d3.select(this);
             width = +svg.attr('width');
             height = +svg.attr('height');
 
-            _local_svg.selectAll('g').remove();
+            svg.selectAll('g').remove();
 
-            _local_svg.attr('width', width)
+            svg.attr('width', width)
                 .attr('height', height);
 
-            container = _local_svg.append('g')
+            container = svg.append('g')
                 .attr('class', 'plot')
 
             if (_tooltip) {
@@ -546,6 +582,24 @@ function bullet() {
         gWidth = Math.floor((width - margin.left - margin.right) / data.length);
         gHeight = Math.floor((height - margin.top - margin.bottom) / data.length);
 
+        if (orientation == 'Horizontal') {
+            bullet.width(width - margin.left - margin.right);
+            if (data.length == 1) {
+                bullet.height(Math.floor(3 * gHeight / 4));
+            } else {
+                bullet.height(Math.floor(gHeight / 2));
+            }
+        } else if (orientation == 'Vertical') {
+            bullet.width(height - margin.top - margin.bottom);
+            if (data.length == 1) {
+                bullet.height(Math.floor(3 * gWidth / 4));
+            } else {
+                bullet.height(Math.floor(gWidth / 2));
+            }
+        } else {
+            throw "Invalid orientation";
+        }
+
         _bullet.exit().remove();
 
         _bullet = plot.selectAll('g.bullet');
@@ -664,7 +718,10 @@ function bullet() {
             .text(function (d) { return d.title; })
             .text(function (d) {
                 if (orientation == 'Horizontal') {
-                    return UTIL.getTruncatedLabel(this, d.title, margin.left, offset);
+                    if (d.title.length > 3) {
+                        return d.title.substring(0, 3) + '...';
+                    }
+                    return d.title;
                 } else if (orientation == 'Vertical') {
                     return UTIL.getTruncatedLabel(this, d.title, Math.floor(gWidth / 2), offset);
                 }
