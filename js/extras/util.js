@@ -53,8 +53,8 @@ function util() {
 
         updateTooltip: function (data, container, borderColor) {
             var pt = d3.mouse(container.node()),
-                x = pt[0] + 15,
-                y = pt[1] + 20;
+                x = pt[0] + 20,
+                y = pt[1] ;
 
             this.style('Top', y + 'px')
                 .style('Left', x + 'px')
@@ -80,15 +80,20 @@ function util() {
                 tooltip.style.left = left + "px";
             }
             else {
-                tooltip.style.left = (left + width - tipWidth - 15) - (width - x) + 'px';
+                tooltip.style.left = (left + width - tipWidth - 20) - (width - x) + 'px';
             }
 
             if (tipLeft + tipWidth > left + width) {
-                tooltip.style.left = (left + width - tipWidth - 15) - (width - x) + 'px';
+                tooltip.style.left = (left + width - tipWidth - 20) - (width - x) + 'px';
 
             }
             else {
-                tooltip.style.left = x + 'px';
+                if (parseInt(container.node().getAttribute('width')) - x <=( tipWidth+20)) {
+                    tooltip.style.left = (left + width - tipWidth - 20) - (width - x) + 'px';
+                }
+                else {
+                    tooltip.style.left = x + 'px';
+                }
             }
 
             if (tipTop < top) {
@@ -138,6 +143,16 @@ function util() {
             svg.selectAll('.y_axis .tick')
                 .style('visibility', UTIL.getVisibility(_showYaxis))
 
+        },
+
+        getSum: function(data, key) {
+            var sum = 0;
+
+            data.forEach(function(d) {
+                sum += d[key];
+            });
+
+            return sum;
         },
         /**
          * Sorts the data based upon the order and keys

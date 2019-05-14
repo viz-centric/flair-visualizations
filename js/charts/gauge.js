@@ -216,13 +216,13 @@ function gauge() {
             _measure
                 .text(displayName + " " + value[0][measures[0]])
                 .text(function () {
-                    return UTIL.getTruncatedLabel(this, displayName + " " + value[0][measures[0]], ringInset*2)
+                    return UTIL.getTruncatedLabel(this, displayName + " " +  UTIL.getFormattedValue(value[0][measures[0]], UTIL.getNumberFormatter(numberFormat), ringInset*2));
                 })
 
             target
                 .text(targetDisplayName + " " + value[0][measures[1]])
                 .text(function () {
-                    return UTIL.getTruncatedLabel(this, targetDisplayName + " " + value[0][measures[1]], ringInset*0)
+                    return UTIL.getTruncatedLabel(this, targetDisplayName + " " + UTIL.getFormattedValue(value[0][measures[1]], UTIL.getNumberFormatter(targetNumberFormat), ringInset*2));
                 })
 
             fillArc.transition()

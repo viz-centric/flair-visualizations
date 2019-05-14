@@ -35,7 +35,8 @@ function heatmap() {
         fontSizeForMeasure = [],
         _print,
         broadcast,
-        filterParameters;;
+        filterParameters,
+        displayColor=[];
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [];
     var width, height, cellWidth, cellHeight, div;
@@ -74,6 +75,7 @@ function heatmap() {
         this.fontWeightForMeasure(config.fontWeightForMeasure);
         this.numberFormat(config.numberFormat);
         this.fontSizeForMeasure(config.fontSizeForMeasure);
+        this.displayColor(config.displayColor);
     }
 
     var _buildTooltipData = function (datum, chart) {
@@ -176,7 +178,7 @@ function heatmap() {
             }
         });
 
-        return result || COMMON.COLORSCALE(_measure.indexOf(data.x));
+        return result || displayColor[_measure.indexOf(data.x)];
     }
     var getIconPosition = function (data, width) {
         var iconProp = iconPosition[_measure.indexOf(data.x)]
@@ -401,7 +403,7 @@ function heatmap() {
                 })
                 .attr('x', 0)
                 .attr('y', function (d, i) { return i * cellHeight; })
-                .attr('fill', dimLabelColor)
+                .style('fill', dimLabelColor)
                 .style('font-style', fontStyleForDimension)
                 .style('font-weight', fontWeightForDimension)
                 .style('font-size', fontSizeForDimension)
@@ -416,7 +418,7 @@ function heatmap() {
                 .attr('class', 'mesLabel')
                 .text(function (d) { return d; })
                 .text(function (d) {
-                    return UTIL.title(d);
+                    return UTIL.title(UTIL.getTruncatedLabel(this, d, cellWidth));
                 })
                 .attr('x', function (d, i) { return i * cellWidth; })
                 .attr('y', 0)
@@ -477,8 +479,6 @@ function heatmap() {
     }
 
     var drawViz = function (element) {
-
-
         if (!_print) {
             element.append('rect')
                 .attr('rx', '3px')
@@ -565,20 +565,6 @@ function heatmap() {
                 });
         }
 
-        element.append('foreignObject')
-            .attr('x', function (d) {
-                return getIconPosition(d, cellWidth);
-            })
-            .attr('y', function (d) {
-                return cellHeight - 20;
-            })
-            .attr('visibility', function (d) {
-                return UTIL.getVisibility(showIcon[_measure.indexOf(d.x)]);
-            })
-            .html(function (d) {
-                return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + '"></i>';
-            });
-
         element.append('text')
             .attr('x', function (d) {
                 return getValuePosition(d, cellWidth);
@@ -621,6 +607,24 @@ function heatmap() {
             .style('font-size', function (d) {
                 return fontSizeForMeasure[_measure.indexOf(d.x)];
             });
+
+
+        element.append('foreignObject')
+            .attr('x', function (d) {
+                return getIconPosition(d, cellWidth);
+            })
+            .attr('y', function (d) {
+                return cellHeight / 2;;
+            })
+            .attr('visibility', function (d) {
+                return UTIL.getVisibility(showIcon[_measure.indexOf(d.x)]);
+            })
+            .attr('width', cellWidth - 1)
+            .attr('height', cellHeight - 1)
+            .html(function (d) {
+                return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + '"></i>';
+            });
+
     }
 
     chart.update = function (data) {
@@ -957,6 +961,9 @@ function heatmap() {
 
     chart.showValues = function (value, measure) {
         return UTIL.baseAccessor.call(showValues, value, measure, _measure);
+    }
+    chart.displayColor = function (value, measure) {
+        return UTIL.baseAccessor.call(displayColor, value, measure, _measure);
     }
     chart.displayNameForMeasure = function (value, measure) {
         return UTIL.baseAccessor.call(displayNameForMeasure, value, measure, _measure);
