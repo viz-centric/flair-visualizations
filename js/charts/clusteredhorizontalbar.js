@@ -168,6 +168,9 @@ function clusteredhorizontalbar() {
                     _filter.push(obj)
                 });
             }
+            else {
+                filterData = [];
+            }
             if (_filter.length > 0) {
                 filterData = _filter;
             }
@@ -281,8 +284,8 @@ function clusteredhorizontalbar() {
                 width = +svg.attr('width'),
                 height = +svg.attr('height');
 
-            parentWidth = width - 2 * COMMON.PADDING - margin.left;
-            parentHeight = (height - 2 * COMMON.PADDING - axisLabelSpace * 2);
+            parentWidth = width - 2 * COMMON.PADDING - (_showXaxis == true ? margin.left : 0);
+            parentHeight = (height - 2 * COMMON.PADDING - (_showYaxis == true ? axisLabelSpace * 2 : 0));
 
             svg.attr('width', width)
                 .attr('height', height)
@@ -389,6 +392,12 @@ function clusteredhorizontalbar() {
                     return 'translate(' + margin.left + ', ' + 0 + ')';
                 });
         }
+        if (!_showXaxis) {
+            _local_svg.select('.plot')
+                .attr('transform', function () {
+                    return 'translate(' + 0 + ', ' + 0 + ')';
+                });
+        }
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
@@ -464,66 +473,72 @@ function clusteredhorizontalbar() {
         /* Axes */
         var xAxisGroup,
             yAxisGroup;
+        if (_showXaxis) {
 
-        _localXAxis = d3.axisBottom(y)
-        // .tickSize(0)
-        // .tickPadding(10);
+            _localXAxis = d3.axisBottom(y)
+                .tickFormat(function (d) {
+                    var format = d3.format(".0s")
+                    return this.textContent || format(d);
+                })
+            // .tickSize(0)
+            // .tickPadding(10);
 
-        xAxisGroup = plot.append('g')
-            .attr('class', 'x axis')
-            .attr('visibility', function () {
-                return _showXaxis;
-            })
-            .attr('transform', 'translate(0, ' + plotHeight + ')')
-            .call(_localXAxis);
+            xAxisGroup = plot.append('g')
+                .attr('class', 'x axis')
+                .attr('visibility', function () {
+                    return _showXaxis;
+                })
+                .attr('transform', 'translate(0, ' + plotHeight + ')')
+                .call(_localXAxis);
 
-        xAxisGroup.append('g')
-            .attr('class', 'label')
-            .attr('transform', function () {
-                return 'translate(' + (plotWidth / 2) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
-            })
-            .append('text')
-            .style('text-anchor', 'middle')
-            .style('font-weight', 'bold')
-            .style('fill', _xAxisColor)
-            .attr('visibility', function () {
-                return _showXaxisLabel;
-            })
-            .text(_displayName);
+            xAxisGroup.append('g')
+                .attr('class', 'label')
+                .attr('transform', function () {
+                    return 'translate(' + (plotWidth / 2) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
+                })
+                .append('text')
+                .style('text-anchor', 'middle')
+                .style('font-weight', 'bold')
+                .style('fill', _xAxisColor)
+                .attr('visibility', UTIL.getVisibility(_showXaxisLabel))
+                .text(_displayName);
 
-        _setAxisColor(xAxisGroup, _xAxisColor);
+            _setAxisColor(xAxisGroup, _xAxisColor);
+        }
 
-        _localYAxis = d3.axisLeft(x0)
-            .tickSize(0)
-            .tickFormat(function (d) {
-                if (d.length > 3) {
-                    return d.substring(0, 3) + '...';
-                }
-                return d;
-            })
-            .tickPadding(8)
+        if (_showYaxis) {
+            _localYAxis = d3.axisLeft(x0)
+                .tickSize(0)
+                .tickFormat(function (d) {
+                    if (d.length > 3) {
+                        return d.substring(0, 3) + '...';
+                    }
+                    return d;
+                })
+                .tickPadding(8)
 
-        yAxisGroup = plot.append('g')
-            .attr('class', 'y axis')
-            .attr('visibility', _showYaxis)
-            .call(_localYAxis);
+            yAxisGroup = plot.append('g')
+                .attr('class', 'y axis')
+                .attr('visibility', _showYaxis)
+                .call(_localYAxis);
 
-        yAxisGroup.append('g')
-            .attr('class', 'label')
-            .attr('transform', function () {
-                return 'translate(' + (-margin.left) + ', ' + (plotHeight / 2) + ')';
-            })
-            .append('text')
-            .attr('transform', 'rotate(-90)')
-            .style('text-anchor', 'middle')
-            .style('font-weight', 'bold')
-            .style('fill', _yAxisColor)
-            .attr('visibility', _showYaxisLabel)
-            .text(function () {
-                return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
-            });
+            yAxisGroup.append('g')
+                .attr('class', 'label')
+                .attr('transform', function () {
+                    return 'translate(' + (-margin.left) + ', ' + (plotHeight / 2) + ')';
+                })
+                .append('text')
+                .attr('transform', 'rotate(-90)')
+                .style('text-anchor', 'middle')
+                .style('font-weight', 'bold')
+                .style('fill', _yAxisColor)
+                .attr('visibility', UTIL.getVisibility(_showYaxisLabel))
+                .text(function () {
+                    return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+                });
 
-        _setAxisColor(yAxisGroup, _yAxisColor);
+            _setAxisColor(yAxisGroup, _yAxisColor);
+        }
         if (!_print) {
 
             var confirm = $(me).parent().find('div.confirm')
@@ -532,7 +547,7 @@ function clusteredhorizontalbar() {
             //remove Threshold modal popup 
             // var str = UTIL.createAlert($(div).attr('id'), _measure);
             // $(div).append(str);
-
+            $(me).parent().find('div.confirm').remove()
             var _filter = UTIL.createFilterElement()
             $(div).append(_filter);
 
@@ -637,6 +652,7 @@ function clusteredhorizontalbar() {
                         $('#Modal_' + $(div).attr('id')).modal('toggle');
                     }
                     else {
+                        filter = false;
                         var confirm = d3.select(div).select('.confirm')
                             .style('visibility', 'visible');
                         var _filter = _Local_data.filter(function (d1) {
@@ -724,17 +740,15 @@ function clusteredhorizontalbar() {
                 return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat));
             })
             .attr('x', function (d, i) {
-                return y(d[d.measure]) + 20;
+                return y(d[d.measure]);
             })
             .attr('y', function (d, i) {
-                return x1(d['measure']);
+                return x1(d['measure']) + (x1.bandwidth() / 2);
             })
             .attr('dx', function (d, i) {
                 return offsetX / 8;
             })
-            .attr('dy', function (d, i) {
-                return x1.bandwidth() / 2 + d3.select(this).style('font-size').replace('px', '') / 2.5;
-            })
+
             .style('text-anchor', 'middle')
             .attr('visibility', function (d, i) {
                 return UTIL.getVisibility(_showValues[i]);
@@ -969,6 +983,7 @@ function clusteredhorizontalbar() {
                     $('#Modal_' + $(div).attr('id')).modal('toggle');
                 }
                 else {
+                    filter = false;
                     var confirm = d3.select(div).select('.confirm')
                         .style('visibility', 'visible');
                     var _filter = _Local_data.filter(function (d1) {

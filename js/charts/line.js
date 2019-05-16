@@ -204,15 +204,20 @@ function line() {
                 .css('visibility', 'visible');
 
             var _filter = [];
-            data.forEach(function (d) {
-                var obj = new Object();
-                obj[_dimension[0]] = d.data[_dimension[0]];
-                for (var index = 0; index < _measure.length; index++) {
-                    obj[_measure[index]] = d.data[_measure[index]];
-                }
+            if (data.length > 0) {
+                data.forEach(function (d) {
+                    var obj = new Object();
+                    obj[_dimension[0]] = d.data[_dimension[0]];
+                    for (var index = 0; index < _measure.length; index++) {
+                        obj[_measure[index]] = d.data[_measure[index]];
+                    }
 
-                _filter.push(obj)
-            });
+                    _filter.push(obj)
+                });
+            }
+            else {
+                filterData = [];
+            }
             if (_filter.length > 0) {
                 filterData = _filter;
             }
@@ -318,8 +323,8 @@ function line() {
                 width = +svg.attr('width'),
                 height = +svg.attr('height');
 
-            parentWidth = width - 2 * COMMON.PADDING - margin.left;
-            parentHeight = (height - 2 * COMMON.PADDING - axisLabelSpace * 2);
+            parentWidth = width - 2 * COMMON.PADDING - (_showXaxis == true ? margin.left : 0);
+            parentHeight = (height - 2 * COMMON.PADDING - (_showYaxis == true ? axisLabelSpace * 2 : 0));
 
             container = svg.append('g')
                 .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
@@ -602,6 +607,7 @@ function line() {
                         $('#Modal_' + $(div).attr('id')).modal('toggle');
                     }
                     else {
+                        filter = false;
                         var confirm = d3.select(div).select('.confirm')
                             .style('visibility', 'visible');
                         var _filter = _Local_data.filter(function (d1) {
@@ -691,6 +697,7 @@ function line() {
                 .style('text-anchor', 'middle')
                 .style('font-weight', 'bold')
                 .style('fill', _xAxisColor)
+                .attr('visibility', UTIL.getVisibility(_showXaxisLabel))
                 .text(_displayName);
 
             if (isRotate) {
@@ -725,6 +732,7 @@ function line() {
                 .style('text-anchor', 'middle')
                 .style('font-weight', 'bold')
                 .style('fill', _yAxisColor)
+                .attr('visibility', UTIL.getVisibility(_showYaxisLabel))
                 .text(function () {
                     return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
                 });
@@ -1014,6 +1022,7 @@ function line() {
                     $('#Modal_' + $(div).attr('id')).modal('toggle');
                 }
                 else {
+                    filter = false;
                     var confirm = d3.select(div).select('.confirm')
                         .style('visibility', 'visible');
                     var _filter = _Local_data.filter(function (d1) {

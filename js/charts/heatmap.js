@@ -36,7 +36,7 @@ function heatmap() {
         _print,
         broadcast,
         filterParameters,
-        displayColor=[];
+        displayColor = [];
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [];
     var width, height, cellWidth, cellHeight, div;
@@ -303,6 +303,9 @@ function heatmap() {
                     filterData = _filter;
                 }
             }
+            else {
+                filterData = [];
+            }
             if (broadcast) {
                 var idWidget = broadcast.updateWidget[scope.parentElement.id];
                 broadcast.updateWidget = {};
@@ -499,6 +502,7 @@ function heatmap() {
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
+                    filter = false;
                     var confirm = d3.select(div).select('.confirm')
                         .style('visibility', 'visible');
                     var _filter = _localData.filter(function (d1) {
@@ -765,6 +769,7 @@ function heatmap() {
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
             .on('click', function (d) {
+                filter = false;
                 var confirm = d3.select(div).select('.confirm')
                     .style('visibility', 'visible');
                 var _filter = _localData.filter(function (d1) {

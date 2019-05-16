@@ -141,7 +141,7 @@ function clusteredverticalbar() {
             if (!filter) {
                 return;
             }
-          
+
             if (data.length > 0) {
                 lasso.items().selectAll('rect')
                     .classed('not_possible', false)
@@ -169,8 +169,8 @@ function clusteredverticalbar() {
                     _filter.push(obj)
                 });
             }
-            else{
-                filterData=[];
+            else {
+                filterData = [];
             }
 
             if (_filter.length > 0) {
@@ -284,8 +284,8 @@ function clusteredverticalbar() {
                 width = +svg.attr('width'),
                 height = +svg.attr('height');
 
-            parentWidth = width - 2 * COMMON.PADDING - margin.left;
-            parentHeight = (height - 2 * COMMON.PADDING - axisLabelSpace * 2);
+            parentWidth = width - 2 * COMMON.PADDING - (_showXaxis == true ? margin.left : 0);
+            parentHeight = (height - 2 * COMMON.PADDING - (_showYaxis == true ? axisLabelSpace * 2 : 0));
 
             container = svg.append('g')
                 .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
@@ -390,6 +390,12 @@ function clusteredverticalbar() {
             _local_svg.select('.plot')
                 .attr('transform', function () {
                     return 'translate(' + margin.left + ', ' + 0 + ')';
+                });
+        }
+        if (!_showXaxis) {
+            _local_svg.select('.plot')
+                .attr('transform', function () {
+                    return 'translate(' + 0 + ', ' + 0 + ')';
                 });
         }
 
@@ -505,6 +511,7 @@ function clusteredverticalbar() {
                 .style('text-anchor', 'middle')
                 .style('font-weight', 'bold')
                 .style('fill', _xAxisColor)
+                .attr('visibility',UTIL.getVisibility( _showXaxisLabel))
                 .text(_displayName);
 
             if (isRotate) {
@@ -540,7 +547,7 @@ function clusteredverticalbar() {
                 .attr('transform', 'rotate(-90)')
                 .style('text-anchor', 'middle')
                 .style('font-weight', 'bold')
-                .style('fill', _yAxisColor)
+                .attr('visibility',UTIL.getVisibility( _showYaxisLabel))
                 .text(function () {
                     return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
                 });
@@ -603,7 +610,7 @@ function clusteredverticalbar() {
                         case 'reset': {
                             $(me).parent().find('.sort_selection,.arrow-down').css('visibility', 'hidden');
                             _local_svg.select('.plot').remove()
-                            drawPlot.call(me, _Local_data);
+                            drawPlot.call(me, _originalData);
 
                             break;
                         }
@@ -665,7 +672,7 @@ function clusteredverticalbar() {
                         $('#Modal_' + $(div).attr('id')).modal('toggle');
                     }
                     else {
-                        filter=false;
+                        filter = false;
                         var confirm = d3.select(div).select('.confirm')
                             .style('visibility', 'visible');
                         var _filter = _Local_data.filter(function (d1) {
@@ -758,16 +765,13 @@ function clusteredverticalbar() {
                 return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat));
             })
             .attr("y", function (d, i) {
-                return y(d[d.measure]) - _fontSize[i];
+                return y(d[d.measure]);
             })
             .attr("x", function (d) {
-                return x1(d.measure);
+                return x1(d.measure) + (x1.bandwidth() / 2);
             })
             .attr('dy', function (d, i) {
-                return -offsetX / 10;
-            })
-            .attr('dx', function (d, i) {
-                return x1.bandwidth() / 2;
+                return COMMON.OFFSET;
             })
             .style('text-anchor', 'middle')
             .attr('visibility', function (d, i) {
@@ -786,9 +790,15 @@ function clusteredverticalbar() {
                 return _textColor[i];
             })
             .text(function (d, i) {
-                var barWidth = (1 - x0.padding()) * plotWidth / (_Local_data.length - 1);
-                barWidth = (1 - x1.padding()) * barWidth / keys.length;
-                return UTIL.getTruncatedTick(d3.select(this).text(), barWidth, tickLength);
+                if (!print) {
+                    var barWidth = (1 - x0.padding()) * plotWidth / (_Local_data.length - 1);
+                    barWidth = (1 - x1.padding()) * barWidth / keys.length;
+                    return UTIL.getTruncatedTick(d3.select(this).text(), barWidth, tickLength);
+                }
+                else {
+                    return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat));
+                }
+
             });
     }
     chart._legendInteraction = function (event, data, plot) {
@@ -851,7 +861,7 @@ function clusteredverticalbar() {
     }
 
     chart.update = function (data) {
-        
+
         var DURATION = COMMON.DURATION;
         if (isAnimationDisable) {
             DURATION = 0;
@@ -933,21 +943,24 @@ function clusteredverticalbar() {
                 return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat));
             })
             .attr("y", function (d, i) {
-                return y(d[d.measure]) - _fontSize[i];
+                return y(d[d.measure]);
             })
             .attr("x", function (d) {
-                return x1(d.measure);
+                return x1(d.measure) + (x1.bandwidth() / 2);
             })
             .attr('dy', function (d, i) {
-                return -offsetX / 10;
+                return COMMON.OFFSET;
             })
-            .attr('dx', function (d, i) {
-                return x1.bandwidth() / 2;
-            })
+            .style('text-anchor', 'middle')
             .text(function (d, i) {
-                var barWidth = (1 - x0.padding()) * plotWidth / (data.length - 1);
-                barWidth = (1 - x1.padding()) * barWidth / keys.length;
-                return UTIL.getTruncatedTick(d3.select(this).text(), barWidth, tickLength);
+                if (!print) {
+                    var barWidth = (1 - x0.padding()) * plotWidth / (_Local_data.length - 1);
+                    barWidth = (1 - x1.padding()) * barWidth / keys.length;
+                    return UTIL.getTruncatedTick(d3.select(this).text(), barWidth, tickLength);
+                }
+                else {
+                    return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat));
+                }
             });
 
         plot.selectAll('g.cluster')

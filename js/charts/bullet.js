@@ -170,7 +170,9 @@ function bullet() {
                     _filter.push(obj)
                 });
             }
-
+            else {
+                filterData = [];
+            }
             if (_filter.length > 0) {
                 filterData = _filter;
             }
@@ -633,7 +635,7 @@ function bullet() {
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
             .on('click', function (d) {
-
+                filter = false;
                 var confirm = d3.select(div).select('.confirm')
                     .style('visibility', 'visible');
 

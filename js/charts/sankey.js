@@ -171,6 +171,9 @@ function sankey() {
                     }
                 });
             }
+            else {
+                filterData = []
+            }
             if (_filter.length > 0) {
                 filterData = _filter;
             }
@@ -472,7 +475,7 @@ function sankey() {
                     .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, 'link'))
                     .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'link'))
                     .on('click', function (d) {
-
+                        filter = false;
                         var confirm = d3.select(div).select('.confirm')
                             .style('visibility', 'visible');
 
@@ -496,8 +499,7 @@ function sankey() {
                                 }
                             })
                         }
-                        var confirm = d3.select(div).select('.confirm')
-                            .style('visibility', 'visible');
+                    
                         var _filter = _Local_data.filter(function (d1) {
                             return d.data[_dimension[0]] === d1[_dimension[0]]
                         })
@@ -554,6 +556,7 @@ function sankey() {
                     .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, 'node'))
                     .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'node'))
                     .on('click', function (d) {
+                        filter = false;
                         var confirm = d3.select(div).select('.confirm')
                             .style('visibility', 'visible');
                         var rect = d3.select(this)
@@ -665,7 +668,7 @@ function sankey() {
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, 'link'))
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'link'))
             .on('click', function (d) {
-
+                filter = false;
                 var confirm = d3.select(div).select('.confirm')
                     .style('visibility', 'visible');
 
@@ -727,6 +730,7 @@ function sankey() {
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, 'node'))
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'node'))
             .on('click', function (d) {
+                filter = false;
                 var confirm = d3.select(div).select('.confirm')
                     .style('visibility', 'visible');
                 var rect = d3.select(this)

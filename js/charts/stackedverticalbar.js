@@ -167,18 +167,23 @@ function stackedverticalbar() {
 
             var _filter = [];
             var keys = UTIL.getMeasureList(data[0].data, _dimension);
-            data.forEach(function (d) {
-                var obj = new Object();
-                var temp = d.data[_dimension[0]];
-                var searchObj = _filter.find(o => o[_dimension[0]] === temp);
-                if (searchObj == undefined) {
-                    obj[_dimension[0]] = d.data[_dimension[0]];
-                    for (var index = 0; index < keys.length; index++) {
-                        obj[keys[index]] = d.data[keys[index]];
+            if (data.length > 0) {
+                data.forEach(function (d) {
+                    var obj = new Object();
+                    var temp = d.data[_dimension[0]];
+                    var searchObj = _filter.find(o => o[_dimension[0]] === temp);
+                    if (searchObj == undefined) {
+                        obj[_dimension[0]] = d.data[_dimension[0]];
+                        for (var index = 0; index < keys.length; index++) {
+                            obj[keys[index]] = d.data[keys[index]];
+                        }
+                        _filter.push(obj)
                     }
-                    _filter.push(obj)
-                }
-            });
+                });
+            }
+            else {
+                filterData = []
+            }
             if (_filter.length > 0) {
                 filterData = _filter;
             }
@@ -291,8 +296,8 @@ function stackedverticalbar() {
                 width = +svg.attr('width'),
                 height = +svg.attr('height');
 
-            parentWidth = width - 2 * COMMON.PADDING - margin.left;
-            parentHeight = (height - 2 * COMMON.PADDING - axisLabelSpace * 2);
+            parentWidth = width - 2 * COMMON.PADDING - (_showXaxis == true ? margin.left : 0);
+            parentHeight = (height - 2 * COMMON.PADDING - (_showYaxis == true ? axisLabelSpace * 2 : 0));
 
             container = svg.append('g')
                 .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
@@ -406,6 +411,7 @@ function stackedverticalbar() {
                         $('#Modal_' + $(div).attr('id')).modal('toggle');
                     }
                     else {
+                        filter = false;
                         var confirm = d3.select(div).select('.confirm')
                             .style('visibility', 'visible');
                         var _filter = _Local_data.filter(function (d1) {
@@ -563,6 +569,12 @@ function stackedverticalbar() {
                     return 'translate(' + margin.left + ', ' + 0 + ')';
                 });
         }
+        if (!_showXaxis) {
+            _local_svg.select('.plot')
+                .attr('transform', function () {
+                    return 'translate(' + 0 + ', ' + 0 + ')';
+                });
+        }
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
@@ -672,6 +684,7 @@ function stackedverticalbar() {
                 .style('text-anchor', 'middle')
                 .style('font-weight', 'bold')
                 .style('fill', _xAxisColor)
+                .attr('visibility', UTIL.getVisibility(_showXaxisLabel))
                 .text(_displayName);
 
             if (isRotate) {
@@ -708,6 +721,7 @@ function stackedverticalbar() {
                 .style('text-anchor', 'middle')
                 .style('font-weight', 'bold')
                 .style('fill', _yAxisColor)
+                .attr('visibility', UTIL.getVisibility(_showYaxisLabel))
                 .text(function () {
                     return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
                 });

@@ -155,18 +155,23 @@ function stackedhorizontalbar() {
 
             var _filter = [];
             var keys = UTIL.getMeasureList(data[0].data, _dimension);
-            data.forEach(function (d) {
-                var obj = new Object();
-                var temp = d.data[_dimension[0]];
-                var searchObj = _filter.find(o => o[_dimension[0]] === temp);
-                if (searchObj == undefined) {
-                    obj[_dimension[0]] = d.data[_dimension[0]];
-                    for (var index = 0; index < keys.length; index++) {
-                        obj[keys[index]] = d.data[keys[index]];
+            if (data.length > 0) {
+                data.forEach(function (d) {
+                    var obj = new Object();
+                    var temp = d.data[_dimension[0]];
+                    var searchObj = _filter.find(o => o[_dimension[0]] === temp);
+                    if (searchObj == undefined) {
+                        obj[_dimension[0]] = d.data[_dimension[0]];
+                        for (var index = 0; index < keys.length; index++) {
+                            obj[keys[index]] = d.data[keys[index]];
+                        }
+                        _filter.push(obj)
                     }
-                    _filter.push(obj)
-                }
-            });
+                });
+            }
+            else {
+                filterData = []
+            }
             if (_filter.length > 0) {
                 filterData = _filter;
             }
@@ -278,8 +283,8 @@ function stackedhorizontalbar() {
                 width = +svg.attr('width'),
                 height = +svg.attr('height');
 
-            parentWidth = width - 2 * COMMON.PADDING - margin.left;
-            parentHeight = (height - 2 * COMMON.PADDING - axisLabelSpace * 2);
+            parentWidth = width - 2 * COMMON.PADDING - (_showXaxis == true ? margin.left : 0);
+            parentHeight = (height - 2 * COMMON.PADDING - (_showYaxis == true ? axisLabelSpace * 2 : 0));
 
             svg.attr('width', width)
                 .attr('height', height)
@@ -392,6 +397,7 @@ function stackedhorizontalbar() {
                         $('#Modal_' + $(div).attr('id')).modal('toggle');
                     }
                     else {
+                        filter = false;
                         var confirm = d3.select(div).select('.confirm')
                             .style('visibility', 'visible');
                         var _filter = _Local_data.filter(function (d1) {
@@ -555,6 +561,12 @@ function stackedhorizontalbar() {
                     return 'translate(' + margin.left + ', ' + 0 + ')';
                 });
         }
+        if (!_showXaxis) {
+            _local_svg.select('.plot')
+                .attr('transform', function () {
+                    return 'translate(' + 0 + ', ' + 0 + ')';
+                });
+        }
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
@@ -626,66 +638,71 @@ function stackedhorizontalbar() {
 
         var xAxisGroup,
             yAxisGroup;
+        if (_showXaxis) {
+            _localXAxis = d3.axisBottom(y)
+                .tickFormat(function (d) {
+                    var format = d3.format(".0s")
+                    return this.textContent || format(d);
+                })
+            // .tickSize(0)
+            // .tickPadding(10);
 
-        _localXAxis = d3.axisBottom(y)
-        // .tickSize(0)
-        // .tickPadding(10);
+            xAxisGroup = plot.append('g')
+                .attr('class', 'x axis')
+                .attr('visibility', function () {
+                    return _showXaxis;
+                })
+                .attr('transform', 'translate(0, ' + plotHeight + ')')
+                .call(_localXAxis);
 
-        xAxisGroup = plot.append('g')
-            .attr('class', 'x axis')
-            .attr('visibility', function () {
-                return _showXaxis;
-            })
-            .attr('transform', 'translate(0, ' + plotHeight + ')')
-            .call(_localXAxis);
+            xAxisGroup.append('g')
+                .attr('class', 'label')
+                .attr('transform', function () {
+                    return 'translate(' + (plotWidth / 2) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
+                })
+                .append('text')
+                .style('text-anchor', 'middle')
+                .style('font-weight', 'bold')
+                .style('fill', _xAxisColor)
+                .attr('visibility', UTIL.getVisibility(_showXaxisLabel))
+                .text(_displayName);
 
-        xAxisGroup.append('g')
-            .attr('class', 'label')
-            .attr('transform', function () {
-                return 'translate(' + (plotWidth / 2) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
-            })
-            .append('text')
-            .style('text-anchor', 'middle')
-            .style('font-weight', 'bold')
-            .style('fill', _xAxisColor)
-            .attr('visibility', function () {
-                return _showXaxisLabel;
-            })
-            .text(_displayName);
+            _setAxisColor(xAxisGroup, _xAxisColor);
+        }
 
-        _setAxisColor(xAxisGroup, _xAxisColor);
+        if (_showYaxis) {
+            _localYAxis = d3.axisLeft(x)
+                .tickSize(0)
+                .tickFormat(function (d) {
+                    if (d.length > 3) {
+                        return d.substring(0, 3) + '...';
+                    }
+                    return d;
+                })
+                .tickPadding(8)
 
-        _localYAxis = d3.axisLeft(x)
-            .tickSize(0)
-            .tickFormat(function (d) {
-                if (d.length > 3) {
-                    return d.substring(0, 3) + '...';
-                }
-                return d;
-            })
-            .tickPadding(8)
+            yAxisGroup = plot.append('g')
+                .attr('class', 'y axis')
+                .attr('visibility', _showYaxis)
+                .call(_localYAxis);
 
-        yAxisGroup = plot.append('g')
-            .attr('class', 'y axis')
-            .attr('visibility', _showYaxis)
-            .call(_localYAxis);
+            yAxisGroup.append('g')
+                .attr('class', 'label')
+                .attr('transform', function () {
+                    return 'translate(' + (-margin.left) + ', ' + (plotHeight / 2) + ')';
+                })
+                .append('text')
+                .attr('transform', 'rotate(-90)')
+                .style('text-anchor', 'middle')
+                .style('font-weight', 'bold')
+                .style('fill', _yAxisColor)
+                .attr('visibility', UTIL.getVisibility(_showYaxisLabel))
+                .text(function () {
+                    return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+                });
 
-        yAxisGroup.append('g')
-            .attr('class', 'label')
-            .attr('transform', function () {
-                return 'translate(' + (-margin.left) + ', ' + (plotHeight / 2) + ')';
-            })
-            .append('text')
-            .attr('transform', 'rotate(-90)')
-            .style('text-anchor', 'middle')
-            .style('font-weight', 'bold')
-            .style('fill', _yAxisColor)
-            .attr('visibility', _showYaxisLabel)
-            .text(function () {
-                return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
-            });
-
-        _setAxisColor(yAxisGroup, _yAxisColor);
+            _setAxisColor(yAxisGroup, _yAxisColor);
+        }
 
         if (!_print) {
 
