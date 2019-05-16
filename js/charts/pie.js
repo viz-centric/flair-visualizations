@@ -234,12 +234,18 @@ function pie() {
                 .css('visibility', 'visible');
 
             var _filter = [];
-            data.forEach(function (d) {
-                var obj = new Object();
-                obj[chart.dimension()] = d.data[chart.dimension()]
-                obj[chart.measure()] = d.data[chart.measure()]
-                _filter.push(obj)
-            });
+            if (data.length > 0) {
+                data.forEach(function (d) {
+                    var obj = new Object();
+                    obj[chart.dimension()] = d.data[chart.dimension()]
+                    obj[chart.measure()] = d.data[chart.measure()]
+                    _filter.push(obj)
+                });
+            }
+            else {
+                filterData = []
+            }
+
             if (_filter.length > 0) {
                 filterData = _filter;
             }

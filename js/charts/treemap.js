@@ -443,6 +443,9 @@ function treemap() {
                     filterParameters.save(_filterList);
                 }
             }
+            else {
+                filterData = []
+            }
         }
     }
     var applyFilter = function () {
@@ -498,7 +501,7 @@ function treemap() {
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
-
+                    filter = false;
                     var confirm = d3.select(div).select('.confirm')
                         .style('visibility', 'visible');
                     var _filter = _localData.filter(function (d1) {

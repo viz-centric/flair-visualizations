@@ -180,6 +180,9 @@ function scatter() {
             if (data.length > 0) {
                 filterData = data;
             }
+            else {
+                filterData = []
+            }
             if (broadcast) {
                 var idWidget = broadcast.updateWidget[scope.parentElement.id];
                 broadcast.updateWidget = {};
@@ -190,6 +193,7 @@ function scatter() {
                 filterData.map(function (val) {
                     list.push(val[_dimension[0]])
                 })
+                list = list.filter(function (item, i, ar) { return ar.indexOf(item) === i; });
                 _filterList[_dimension[0]] = list
                 broadcast.filterSelection.filter = _filterList;
                 filterParameters.save(_filterList);
@@ -273,8 +277,8 @@ function scatter() {
                 width = +svg.attr('width'),
                 height = +svg.attr('height');
 
-            parentWidth = width - 2 * COMMON.PADDING - margin.left;
-            parentHeight = (height - 2 * COMMON.PADDING - axisLabelSpace * 2);
+           parentWidth = width - 2 * COMMON.PADDING - (_showXaxis == true ? margin.left : 0);
+             parentHeight = (height - 2 * COMMON.PADDING - (_showYaxis == true ? axisLabelSpace * 2 : 0));
             plotWidth = parentWidth;
             plotHeight = parentHeight;
 
@@ -377,19 +381,24 @@ function scatter() {
             });
         })
 
+        var maxGDP = d3.max(data, (d) => d[_measure[1]]);
+        var minGDP = d3.min(data, (d) => d[_measure[1]]);
+
         var rScale = d3.scaleLinear()
             .domain([minGDP, maxGDP])
             .range([5, 25]);
 
+        var maxx = d3.max(data, (d) => d[_measure[2]]);
+        var minx = d3.min(data, (d) => d[_measure[2]]);
+
         x.rangeRound([0, plotWidth])
-            .domain([0, d3.max(data, function (d) {
-                return parseInt(d[_dimension[1]]);
-            })]).nice();
+            .domain([minx, maxx+100]);
+
+        var maxy = d3.max(data, (d) => d[_measure[0]]);
+        var miny = d3.min(data, (d) => d[_measure[0]]);
 
         y.rangeRound([plotHeight - 40, 0])
-            .domain([0, d3.max(data, function (d) {
-                return parseInt(d[_measure[2]]);
-            })]).nice();
+            .domain([miny, maxy+100]);
 
         var _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
@@ -459,6 +468,7 @@ function scatter() {
                 .style('text-anchor', 'middle')
                 .style('font-weight', 'bold')
                 .style('fill', _xAxisColor)
+                .attr('visibility',UTIL.getVisibility( _showXaxisLabel))
                 .text(_displayName);
 
             if (isRotate) {
@@ -494,7 +504,8 @@ function scatter() {
                 .attr('transform', 'rotate(-90)')
                 .style('text-anchor', 'middle')
                 .style('font-weight', 'bold')
-                .style('fill', _yAxisColor)
+                 .style('fill', _yAxisColor)
+                .attr('visibility',UTIL.getVisibility( _showYaxisLabel))
                 .text(function () {
                     return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
                 });
@@ -508,13 +519,13 @@ function scatter() {
             .append("circle")
             .attr("class", "circle")
             .attr("cx", function (d) {
-                return x(d[_dimension[1]]);
+                return x(d[_measure[2]]);
             })
             .attr("cy", function (d) {
-                return y(d[_measure[2]]);
+                return y(d[_measure[0]]);
             })
             .attr("r", function (d) {
-                return rScale(parseInt(d[_measure[0]]));
+                return rScale(parseInt(d[_measure[1]]));
             })
             .attr("fill", function (d) {
                 return color(d[_dimension[0]]);
@@ -529,7 +540,7 @@ function scatter() {
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
-
+                    filter = false;
                     var confirm = d3.select(div).select('.confirm')
                         .style('visibility', 'visible');
                     var rect = d3.select(this);
@@ -719,17 +730,22 @@ function scatter() {
             });
         })
 
+        var maxGDP = d3.max(data, (d) => d[_measure[1]]);
+        var minGDP = d3.min(data, (d) => d[_measure[1]]);
+
         var rScale = d3.scaleLinear()
             .domain([minGDP, maxGDP])
             .range([5, 25]);
 
-        x.domain([0, d3.max(data, function (d) {
-            return parseInt(d[_dimension[1]]);
-        })]).nice();
+        x.rangeRound([0, plotWidth])
+            .domain([0, d3.max(data, function (d) {
+                return parseInt(d[_measure[2]]);
+            })]).nice();
 
-        y.domain([0, d3.max(data, function (d) {
-            return parseInt(d[_measure[2]]);
-        })]).nice();
+        y.rangeRound([plotHeight - 40, 0])
+            .domain([0, d3.max(data, function (d) {
+                return parseInt(d[_measure[0]]);
+            })]).nice();
 
         var circle = plot.selectAll('circle')
             .data(data)
@@ -738,13 +754,13 @@ function scatter() {
 
         circle
             .attr("cx", function (d) {
-                return x(d[_dimension[1]]);
+                return x(d[_measure[2]]);
             })
             .attr("cy", function (d) {
-                return y(d[_measure[2]]);
+                return y(d[_measure[0]]);
             })
             .attr("r", function (d) {
-                return rScale(parseInt(d[_measure[0]]));
+                return rScale(parseInt(d[_measure[1]]));
             })
             .attr("fill", function (d) {
                 return color(d[_dimension[0]]);
@@ -758,13 +774,13 @@ function scatter() {
         circle.enter().append('circle')
             .attr('class', 'circle')
             .attr("cx", function (d) {
-                return x(d[_dimension[1]]);
+                return x(d[_measure[2]]);
             })
             .attr("cy", function (d) {
-                return y(d[_measure[2]]);
+                return y(d[_measure[0]]);
             })
             .attr("r", function (d) {
-                return rScale(parseInt(d[_measure[0]]));
+                return rScale(parseInt(d[_measure[1]]));
             })
             .attr("fill", function (d) {
                 return color(d[_dimension[0]]);
@@ -774,6 +790,64 @@ function scatter() {
             })
             .style('fill-opacity', 1)
             .classed('selected', false)
+            .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+            .on('click', function (d) {
+                filter = false;
+                var confirm = d3.select(div).select('.confirm')
+                    .style('visibility', 'visible');
+                var rect = d3.select(this);
+                if (rect.classed('selected')) {
+                    rect.classed('selected', false);
+                }
+                else {
+                    rect.classed('selected', true);
+                }
+                if (_localLabelStack.indexOf(d[_dimension[0]]) == -1) {
+                    _localLabelStack.push(d[_dimension[0]]);
+                } else {
+                    _localLabelStack.splice(_localLabelStack.indexOf(d[_dimension[0]]), 1);
+                }
+
+                var _filter =
+                    _Local_data.filter(function (val) {
+                        if (_localLabelStack.indexOf(val[_dimension[0]]) == -1) {
+                            return val
+                        }
+                    });
+
+                filterData = _filter;
+
+                var _filterDimension = {};
+                if (broadcast.filterSelection.id) {
+                    _filterDimension = broadcast.filterSelection.filter;
+                } else {
+                    broadcast.filterSelection.id = $(div).attr('id');
+                }
+                var dimension = _dimension[0];
+                if (_filterDimension[dimension]) {
+                    var temp = _filterDimension[dimension];
+                    if (temp.indexOf(d[_dimension[0]]) < 0) {
+                        temp.push(d[_dimension[0]]);
+                    } else {
+                        temp.splice(temp.indexOf(d[_dimension[0]]), 1);
+                    }
+                    _filterDimension[dimension] = temp;
+                } else {
+                    _filterDimension[dimension] = [d[_dimension[0]]];
+                }
+
+                var idWidget = broadcast.updateWidget[$(div).attr('id')];
+                broadcast.updateWidget = {};
+                broadcast.updateWidget[$(div).attr('id')] = idWidget;
+                broadcast.filterSelection.filter = _filterDimension;
+                var _filterParameters = filterParameters.get();
+                _filterParameters[dimension] = _filterDimension[dimension];
+                filterParameters.save(_filterParameters);
+            })
+
+
 
         var _localXLabels = data.map(function (d) {
             return d[_dimension[0]];

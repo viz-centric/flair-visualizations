@@ -145,6 +145,9 @@ function boxplot() {
             if (data.length > 0) {
                 filterData = data;
             }
+            else {
+                filterData = [];
+            }
             if (broadcast) {
                 var idWidget = broadcast.updateWidget[scope.parentElement.id];
                 broadcast.updateWidget = {};
@@ -545,7 +548,7 @@ function boxplot() {
                     .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
                     .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                     .on('click', function (d) {
-
+                        filter = false;
                         var confirm = d3.select(div).select('.confirm')
                             .style('visibility', 'visible');
 

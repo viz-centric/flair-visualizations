@@ -257,12 +257,17 @@ function doughnut() {
                 .css('visibility', 'visible');
 
             var _filter = [];
-            data.forEach(function (d) {
-                var obj = new Object();
-                obj[chart.dimension()] = d.data[chart.dimension()]
-                obj[chart.measure()] = d.data[chart.measure()]
-                _filter.push(obj)
-            });
+            if (data.length > 0) {
+                data.forEach(function (d) {
+                    var obj = new Object();
+                    obj[chart.dimension()] = d.data[chart.dimension()]
+                    obj[chart.measure()] = d.data[chart.measure()]
+                    _filter.push(obj)
+                });
+            }
+            else {
+                filterData = [];
+            }
             if (_filter.length > 0) {
                 filterData = _filter;
             }
@@ -727,6 +732,7 @@ function doughnut() {
                     .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, svg))
                     .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, svg))
                     .on('click', function (d, i) {
+
                         var confirm = d3.select(div).select('.confirm')
                             .style('visibility', 'visible');
                         filter = false;
