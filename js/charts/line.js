@@ -576,8 +576,13 @@ function line() {
                 return UTIL.getFormattedValue(d['data'][_measure[d['index']]], UTIL.getValueNumberFormat(d["index"], _numberFormat));
             })
             .text(function (d, i) {
-                var width = (1 - x.padding()) * plotWidth / (_localXLabels.length - 1);
-                return UTIL.getTruncatedLabel(this, d3.select(this).text(), width);
+                if (!_print) {
+                    var width = (1 - x.padding()) * plotWidth / (_localXLabels.length - 1);
+                    return UTIL.getTruncatedLabel(this, d3.select(this).text(), width);
+                }
+                else {
+                    return UTIL.getFormattedValue(d['data'][_measure[d['index']]], UTIL.getValueNumberFormat(d["index"], _numberFormat));
+                }
             })
             .attr('visibility', function (d, i) {
                 return UTIL.getVisibility(_showValues[d['index']]);

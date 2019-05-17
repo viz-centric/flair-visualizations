@@ -2,82 +2,13 @@
  * In this file you should write your main styles. (or centralize your imports)
  * Import this file using the following HTML or equivalent:
  * <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css" /> */
-/* line 5, ../../../../../../../usr/share/compass/frameworks/compass/stylesheets/compass/reset/_utilities.scss */
-html, body, div, span, applet, object, iframe,
-h1, h2, h3, h4, h5, h6, p, blockquote, pre,
-a, abbr, acronym, address, big, cite, code,
-del, dfn, em, img, ins, kbd, q, s, samp,
-small, strike, strong, sub, sup, tt, var,
-b, u, i, center,
-dl, dt, dd, ol, ul, li,
-fieldset, form, label, legend,
-table, caption, tbody, tfoot, thead, tr, th, td,
-article, aside, canvas, details, embed,
-figure, figcaption, footer, header, hgroup,
-menu, nav, output, ruby, section, summary,
-time, mark, audio, video {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  font: inherit;
-  font-size: 100%;
-  vertical-align: baseline;
-}
-
-/* line 22, ../../../../../../../usr/share/compass/frameworks/compass/stylesheets/compass/reset/_utilities.scss */
-html {
-  line-height: 1;
-}
-
-/* line 24, ../../../../../../../usr/share/compass/frameworks/compass/stylesheets/compass/reset/_utilities.scss */
-ol, ul {
-  list-style: none;
-}
-
-/* line 26, ../../../../../../../usr/share/compass/frameworks/compass/stylesheets/compass/reset/_utilities.scss */
-table {
-  border-collapse: collapse;
-  border-spacing: 0;
-}
-
-/* line 28, ../../../../../../../usr/share/compass/frameworks/compass/stylesheets/compass/reset/_utilities.scss */
-caption, th, td {
-  text-align: left;
-  font-weight: normal;
-  vertical-align: middle;
-}
-
-/* line 30, ../../../../../../../usr/share/compass/frameworks/compass/stylesheets/compass/reset/_utilities.scss */
-q, blockquote {
-  quotes: none;
-}
-/* line 103, ../../../../../../../usr/share/compass/frameworks/compass/stylesheets/compass/reset/_utilities.scss */
-q:before, q:after, blockquote:before, blockquote:after {
-  content: "";
-  content: none;
-}
-
-/* line 32, ../../../../../../../usr/share/compass/frameworks/compass/stylesheets/compass/reset/_utilities.scss */
-a img {
-  border: none;
-}
-
-/* line 116, ../../../../../../../usr/share/compass/frameworks/compass/stylesheets/compass/reset/_utilities.scss */
-article, aside, details, figcaption, figure, footer, header, hgroup, main, menu, nav, section, summary {
-  display: block;
-}
-
+/*@import "compass/reset";*/
 /* line 1, ../sass/partials/_common.scss */
-body {
-  font-family: "Fira Sans Extra Condensed", sans-serif;
-}
-
-/* line 5, ../sass/partials/_common.scss */
 text {
   font-size: 0.6rem;
 }
 
-/* line 9, ../sass/partials/_common.scss */
+/* line 5, ../sass/partials/_common.scss */
 .filterToggal {
   visibility: visible;
   position: absolute;
@@ -88,20 +19,20 @@ text {
   margin: 5px;
   /* Rounded sliders */
 }
-/* line 18, ../sass/partials/_common.scss */
+/* line 14, ../sass/partials/_common.scss */
 .filterToggal .switch {
   position: relative;
   display: inline-block;
   width: 40px;
   height: 20px;
 }
-/* line 25, ../sass/partials/_common.scss */
+/* line 21, ../sass/partials/_common.scss */
 .filterToggal .switch input {
   opacity: 0;
   width: 0;
   height: 0;
 }
-/* line 31, ../sass/partials/_common.scss */
+/* line 27, ../sass/partials/_common.scss */
 .filterToggal .slider {
   position: absolute;
   cursor: pointer;
@@ -113,7 +44,7 @@ text {
   -webkit-transition: 0.4s;
   transition: 0.4s;
 }
-/* line 43, ../sass/partials/_common.scss */
+/* line 39, ../sass/partials/_common.scss */
 .filterToggal .slider:before {
   position: absolute;
   content: "";
@@ -125,30 +56,30 @@ text {
   -webkit-transition: 0.4s;
   transition: 0.4s;
 }
-/* line 55, ../sass/partials/_common.scss */
+/* line 51, ../sass/partials/_common.scss */
 .filterToggal input:checked + .slider {
   background-color: #2196f3;
 }
-/* line 59, ../sass/partials/_common.scss */
+/* line 55, ../sass/partials/_common.scss */
 .filterToggal input:focus + .slider {
   box-shadow: 0 0 1px #2196f3;
 }
-/* line 63, ../sass/partials/_common.scss */
+/* line 59, ../sass/partials/_common.scss */
 .filterToggal input:checked + .slider:before {
   -webkit-transform: translateX(15px);
   -ms-transform: translateX(15px);
   transform: translateX(15px);
 }
-/* line 71, ../sass/partials/_common.scss */
+/* line 67, ../sass/partials/_common.scss */
 .filterToggal .slider.round {
   border-radius: 34px;
 }
-/* line 75, ../sass/partials/_common.scss */
+/* line 71, ../sass/partials/_common.scss */
 .filterToggal .slider.round:before {
   border-radius: 50%;
 }
 
-/* line 80, ../sass/partials/_common.scss */
+/* line 76, ../sass/partials/_common.scss */
 .confirm {
   visibility: hidden;
   position: absolute;
@@ -159,7 +90,7 @@ text {
   margin: 5px;
 }
 
-/* line 90, ../sass/partials/_common.scss */
+/* line 86, ../sass/partials/_common.scss */
 svg.sankey .link {
   stroke: #000 !important;
   stroke-opacity: 0.2;
@@ -269,7 +200,7 @@ svg#graphics {
 }
 /* line 20, ../sass/partials/_tooltip.scss */
 .custom_tooltip table {
-  font-size: 0.6rem;
+  font-size: 10px;
   font-weight: bold;
   border-collapse: separate;
   border-spacing: 5px;
@@ -300,5 +231,5 @@ svg#graphics {
 }
 /* line 10, ../sass/partials/_table.scss */
 .dataTables_length label {
-  width: auto;
+  width: auto !important;
 }
