@@ -21,7 +21,7 @@
         font-size: 10px;
         font-weight: bold;
         border-collapse: separate;
-        border-spacing: 5px;
+        border-spacing: 1px;
 
         tr {
             th {
@@ -31,6 +31,7 @@
             }
 
             td {
+                text-align: left;
                 color: #28689C;
                 padding: 2px 5px;
             }

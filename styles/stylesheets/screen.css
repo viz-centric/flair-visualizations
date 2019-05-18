@@ -203,7 +203,7 @@ svg#graphics {
   font-size: 10px;
   font-weight: bold;
   border-collapse: separate;
-  border-spacing: 5px;
+  border-spacing: 1px;
 }
 /* line 27, ../sass/partials/_tooltip.scss */
 .custom_tooltip table tr th {
@@ -213,6 +213,7 @@ svg#graphics {
 }
 /* line 33, ../sass/partials/_tooltip.scss */
 .custom_tooltip table tr td {
+  text-align: left;
   color: #28689C;
   padding: 2px 5px;
 }
