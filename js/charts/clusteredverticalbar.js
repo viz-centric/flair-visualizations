@@ -39,7 +39,8 @@ function clusteredverticalbar() {
         _print,
         broadcast,
         filterParameters,
-        isAnimationDisable = false;
+        isAnimationDisable = false,
+        _notification = false;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
     var _localXAxis,
@@ -228,7 +229,7 @@ function clusteredverticalbar() {
             var border = UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor)
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border, this);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border, _notification);
             }
         }
     }
@@ -239,7 +240,7 @@ function clusteredverticalbar() {
         return function (d, i) {
             if (tooltip) {
                 var border = UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor)
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border, this);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border, _notification);
             }
         }
     }
@@ -511,7 +512,7 @@ function clusteredverticalbar() {
                 .style('text-anchor', 'middle')
                 .style('font-weight', 'bold')
                 .style('fill', _xAxisColor)
-                .attr('visibility',UTIL.getVisibility( _showXaxisLabel))
+                .attr('visibility', UTIL.getVisibility(_showXaxisLabel))
                 .text(_displayName);
 
             if (isRotate) {
@@ -547,7 +548,7 @@ function clusteredverticalbar() {
                 .attr('transform', 'rotate(-90)')
                 .style('text-anchor', 'middle')
                 .style('font-weight', 'bold')
-                .attr('visibility',UTIL.getVisibility( _showYaxisLabel))
+                .attr('visibility', UTIL.getVisibility(_showYaxisLabel))
                 .text(function () {
                     return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
                 });
@@ -1240,6 +1241,13 @@ function clusteredverticalbar() {
             return isAnimationDisable;
         }
         isAnimationDisable = value;
+        return chart;
+    }
+    chart.notification = function (value) {
+        if (!arguments.length) {
+            return _notification;
+        }
+        _notification = value;
         return chart;
     }
 
