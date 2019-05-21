@@ -41,7 +41,8 @@ function stackedhorizontalbar() {
         _print,
         broadcast,
         filterParameters,
-        isAnimationDisable = false;
+        isAnimationDisable = false,
+        _notification = false;;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
     var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div;
@@ -226,7 +227,7 @@ function stackedhorizontalbar() {
             var border = UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor)
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border,_notification);
             }
         }
     }
@@ -237,7 +238,7 @@ function stackedhorizontalbar() {
         return function (d, i) {
             if (tooltip) {
                 var border = UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor)
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border,_notification);
             }
         }
     }
@@ -1202,6 +1203,13 @@ function stackedhorizontalbar() {
             return isAnimationDisable;
         }
         isAnimationDisable = value;
+        return chart;
+    }
+    chart.notification = function (value) {
+        if (!arguments.length) {
+            return _notification;
+        }
+        _notification = value;
         return chart;
     }
     return chart;

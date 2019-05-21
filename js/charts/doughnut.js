@@ -27,7 +27,8 @@ function doughnut() {
         _tooltip,
         _print,
         broadcast,
-        filterParameters;;
+        filterParameters,
+        _notification = false;
 
     /* These are the common variables that is shared across the different private/public
      * methods but is initialized/updated within the methods itself.
@@ -312,7 +313,7 @@ function doughnut() {
 
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d.data, me), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d.data, me), container, border,_notification);
             }
         }
     }
@@ -322,7 +323,8 @@ function doughnut() {
 
         return function (d, i) {
             if (tooltip) {
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d.data, me), container);
+                var border = d3.select(this).select('path').attr('fill')
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d.data, me), container,border,_notification);
             }
         }
     }
@@ -1160,7 +1162,13 @@ function doughnut() {
         filterParameters = value;
         return chart;
     }
-
+    chart.notification = function (value) {
+        if (!arguments.length) {
+            return _notification;
+        }
+        _notification = value;
+        return chart;
+    }
     return chart;
 }
 

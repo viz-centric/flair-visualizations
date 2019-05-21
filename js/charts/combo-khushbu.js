@@ -44,7 +44,8 @@ function combo() {
         _print,
         broadcast,
         filterParameters,
-        isAnimationDisable = false;
+        isAnimationDisable = false,
+        _notification = false;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
     var x0 = d3.scaleBand(), x1 = d3.scaleBand(), _xDimensionGrid = d3.scaleLinear(), y = d3.scaleLinear();
@@ -297,7 +298,7 @@ function combo() {
             var border = UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor)
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border,_notification);
             }
         }
     }
@@ -308,7 +309,7 @@ function combo() {
         return function (d, i) {
             if (tooltip) {
                 var border = UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor)
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border,_notification);
             }
         }
     }
@@ -466,6 +467,19 @@ function combo() {
                     return 'translate(' + margin.left + ', 0)';
                 }
             });
+
+        if (!_showLegend) {
+            _local_svg.select('.plot')
+                .attr('transform', function () {
+                    return 'translate(' + margin.left + ', ' + 0 + ')';
+                });
+        }
+        if (!_showXaxis) {
+            _local_svg.select('.plot')
+                .attr('transform', function () {
+                    return 'translate(' + 0 + ', ' + 0 + ')';
+                });
+        }
 
         var labelStack = [];
 
@@ -1764,7 +1778,13 @@ function combo() {
         isAnimationDisable = value;
         return chart;
     }
-
+    chart.notification = function (value) {
+        if (!arguments.length) {
+            return _notification;
+        }
+        _notification = value;
+        return chart;
+    }
     return chart;
 }
 

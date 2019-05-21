@@ -24,7 +24,8 @@ function boxplot() {
         displayColor = [],
         _print,
         broadcast,
-        filterParameters;;
+        filterParameters,
+        _notification = false;
 
     var x, y;
     var margin = {
@@ -202,7 +203,7 @@ function boxplot() {
             var border = d3.select(this).attr('fill')
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border,_notification);
             }
         }
     }
@@ -213,7 +214,7 @@ function boxplot() {
         return function (d, i) {
             if (tooltip) {
                 var border = d3.select(this).attr('fill')
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border,_notification);
             }
         }
     }
@@ -970,6 +971,13 @@ function boxplot() {
             return filterParameters;
         }
         filterParameters = value;
+        return chart;
+    }
+    chart.notification = function (value) {
+        if (!arguments.length) {
+            return _notification;
+        }
+        _notification = value;
         return chart;
     }
 

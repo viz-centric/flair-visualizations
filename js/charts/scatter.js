@@ -42,7 +42,8 @@ function scatter() {
         _fontSize,
         _print,
         broadcast,
-        filterParameters;;
+        filterParameters,
+        _notification = false;
 
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
@@ -238,7 +239,7 @@ function scatter() {
             var border = d3.select(this).attr('fill');
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border,_notification);
             }
         }
     }
@@ -249,7 +250,7 @@ function scatter() {
         return function (d, i) {
             if (tooltip) {
                 var border = d3.select(this).attr('fill');
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border,_notification);
             }
         }
     }
@@ -277,8 +278,8 @@ function scatter() {
                 width = +svg.attr('width'),
                 height = +svg.attr('height');
 
-           parentWidth = width - 2 * COMMON.PADDING - (_showXaxis == true ? margin.left : 0);
-             parentHeight = (height - 2 * COMMON.PADDING - (_showYaxis == true ? axisLabelSpace * 2 : 0));
+            parentWidth = width - 2 * COMMON.PADDING - (_showXaxis == true ? margin.left : 0);
+            parentHeight = (height - 2 * COMMON.PADDING - (_showYaxis == true ? axisLabelSpace * 2 : 0));
             plotWidth = parentWidth;
             plotHeight = parentHeight;
 
@@ -368,6 +369,19 @@ function scatter() {
                 }
             });
 
+        if (!_showLegend) {
+            _local_svg.select('.plot')
+                .attr('transform', function () {
+                    return 'translate(' + margin.left + ', ' + 0 + ')';
+                });
+        }
+        if (!_showXaxis) {
+            _local_svg.select('.plot')
+                .attr('transform', function () {
+                    return 'translate(' + 0 + ', ' + 0 + ')';
+                });
+        }
+
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
         var maxGDP = d3.max(data, function (d) {
@@ -392,13 +406,13 @@ function scatter() {
         var minx = d3.min(data, (d) => d[_measure[2]]);
 
         x.rangeRound([0, plotWidth])
-            .domain([minx, maxx+100]);
+            .domain([minx, maxx + 100]);
 
         var maxy = d3.max(data, (d) => d[_measure[0]]);
         var miny = d3.min(data, (d) => d[_measure[0]]);
 
         y.rangeRound([plotHeight - 40, 0])
-            .domain([miny, maxy+100]);
+            .domain([miny, maxy + 100]);
 
         var _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
@@ -468,7 +482,7 @@ function scatter() {
                 .style('text-anchor', 'middle')
                 .style('font-weight', 'bold')
                 .style('fill', _xAxisColor)
-                .attr('visibility',UTIL.getVisibility( _showXaxisLabel))
+                .attr('visibility', UTIL.getVisibility(_showXaxisLabel))
                 .text(_displayName);
 
             if (isRotate) {
@@ -504,8 +518,8 @@ function scatter() {
                 .attr('transform', 'rotate(-90)')
                 .style('text-anchor', 'middle')
                 .style('font-weight', 'bold')
-                 .style('fill', _yAxisColor)
-                .attr('visibility',UTIL.getVisibility( _showYaxisLabel))
+                .style('fill', _yAxisColor)
+                .attr('visibility', UTIL.getVisibility(_showYaxisLabel))
                 .text(function () {
                     return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
                 });
@@ -742,7 +756,7 @@ function scatter() {
                 return parseInt(d[_measure[2]]);
             })]).nice();
 
-        y.rangeRound([plotHeight - 40, 0])
+        y.rangeRound([plotHeight , 0])
             .domain([0, d3.max(data, function (d) {
                 return parseInt(d[_measure[0]]);
             })]).nice();
@@ -1157,6 +1171,13 @@ function scatter() {
             return filterParameters;
         }
         filterParameters = value;
+        return chart;
+    }
+    chart.notification = function (value) {
+        if (!arguments.length) {
+            return _notification;
+        }
+        _notification = value;
         return chart;
     }
     return chart;

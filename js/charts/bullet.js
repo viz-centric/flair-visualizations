@@ -29,7 +29,8 @@ function bullet() {
         _sort,
         _print,
         broadcast,
-        filterParameters;;
+        filterParameters,
+        _notification = false;
 
     var _local_svg, _Local_data, _originalData;
 
@@ -231,7 +232,7 @@ function bullet() {
 
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, valueColor);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, valueColor,_notification);
             }
         }
     }
@@ -241,7 +242,7 @@ function bullet() {
 
         return function (d, i) {
             if (tooltip) {
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, valueColor);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, valueColor,_notification);
             }
         }
     }
@@ -887,7 +888,13 @@ function bullet() {
         filterParameters = value;
         return chart;
     }
-
+    chart.notification = function (value) {
+        if (!arguments.length) {
+            return _notification;
+        }
+        _notification = value;
+        return chart;
+    }
     return chart;
 }
 

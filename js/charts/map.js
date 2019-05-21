@@ -15,7 +15,8 @@ function map() {
         _displayColor,
         _borderColor,
         _tooltip,
-        _print;
+        _print,
+        _notification = false;
 
     var _local_svg;
 
@@ -71,7 +72,7 @@ function map() {
 
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border,_notification);
             }
         }
     }
@@ -82,7 +83,7 @@ function map() {
         return function (d, i) {
             if (tooltip) {
                 var border = getFillColor(valueMapper[d.properties.name]);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border,_notification);
             }
         }
     }
@@ -264,7 +265,13 @@ function map() {
         _print = value;
         return chart;
     }
-
+    chart.notification = function (value) {
+        if (!arguments.length) {
+            return _notification;
+        }
+        _notification = value;
+        return chart;
+    }
     return chart;
 }
 module.exports = map;

@@ -32,7 +32,8 @@ function infographics() {
         _kpiIconColor,
         _kpiIconExpression,
         _tooltip,
-        _print;
+        _print,
+        _notification = false;
 
     /* These are the common variables that is shared across the different private/public
      * methods but is initialized/updated within the methods itself.
@@ -161,7 +162,7 @@ function infographics() {
 
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container,_chartBorderColor,_notification);
             }
         }
     }
@@ -171,7 +172,7 @@ function infographics() {
 
         return function (d, i) {
             if (tooltip) {
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container,_chartBorderColor,_notification);
             }
         }
     }
@@ -231,7 +232,7 @@ function infographics() {
                 .style('pointer-events', 'none');
 
             var tooltip = container.append('div')
-                .attr('class', 'tooltip');
+                .attr('class', 'custom_tooltip');
 
             if (_tooltip) {
                 _localTooltip = tooltip;
@@ -654,7 +655,13 @@ function infographics() {
         _print = value;
         return chart;
     }
-
+    chart.notification = function (value) {
+        if (!arguments.length) {
+            return _notification;
+        }
+        _notification = value;
+        return chart;
+    }
     return chart;
 }
 

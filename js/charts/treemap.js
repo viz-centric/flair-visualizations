@@ -36,7 +36,8 @@ function treemap() {
         fontSizeForDimension = [],
         _print,
         broadcast,
-        filterParameters;;
+        filterParameters,
+        _notification = false;
 
     /* These are the common variables that is shared across the different private/public 
      * methods but is initialized/updated within the methods itself.
@@ -271,7 +272,7 @@ function treemap() {
             var border = d3.select(this).attr('fill');
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border,_notification);
             }
         }
     }
@@ -282,7 +283,7 @@ function treemap() {
         return function (d, i) {
             if (tooltip) {
                 var border = d3.select(this).attr('fill');
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border,_notification);
             }
         }
     }
@@ -1084,6 +1085,13 @@ function treemap() {
             return filterParameters;
         }
         filterParameters = value;
+        return chart;
+    }
+    chart.notification = function (value) {
+        if (!arguments.length) {
+            return _notification;
+        }
+        _notification = value;
         return chart;
     }
     return chart;
