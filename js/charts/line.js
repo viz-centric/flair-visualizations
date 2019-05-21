@@ -41,7 +41,8 @@ function line() {
         _pointType = [],
         _print,
         broadcast,
-        filterParameters;;
+        filterParameters,
+        _notification = false;
 
     var margin = {
         top: 0,
@@ -231,6 +232,7 @@ function line() {
                 filterData.map(function (val) {
                     list.push(val[_dimension[0]])
                 })
+                list = list.filter(function (item, i, ar) { return ar.indexOf(item) === i; });
                 _filterList[_dimension[0]] = list
                 broadcast.filterSelection.filter = _filterList;
                 filterParameters.save(_filterList);
@@ -270,7 +272,7 @@ function line() {
             var border = UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor)
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border,_notification);
             }
         }
     }
@@ -280,7 +282,7 @@ function line() {
         return function (d, i) {
             if (tooltip) {
                 var border = UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor)
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border,_notification);
             }
         }
     }
@@ -428,6 +430,20 @@ function line() {
                     return 'translate(' + margin.left + ', 0)';
                 }
             });
+
+        if (!_showLegend) {
+            _local_svg.select('.plot')
+                .attr('transform', function () {
+                    return 'translate(' + margin.left + ', ' + 0 + ')';
+                });
+        }
+        if (!_showXaxis) {
+            _local_svg.select('.plot')
+                .attr('transform', function () {
+                    return 'translate(' + 0 + ', ' + 0 + ')';
+                });
+        }
+
         var labelStack = [];
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
@@ -1408,6 +1424,13 @@ function line() {
             return filterParameters;
         }
         filterParameters = value;
+        return chart;
+    }
+    chart.notification = function (value) {
+        if (!arguments.length) {
+            return _notification;
+        }
+        _notification = value;
         return chart;
     }
     return chart;

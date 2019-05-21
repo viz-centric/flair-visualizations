@@ -36,7 +36,8 @@ function heatmap() {
         _print,
         broadcast,
         filterParameters,
-        displayColor = [];
+        displayColor = [],
+        _notification = false;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [];
     var width, height, cellWidth, cellHeight, div;
@@ -101,7 +102,7 @@ function heatmap() {
             var border = d3.select(this).attr('fill');
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border,_notification);
             }
         }
     }
@@ -112,7 +113,7 @@ function heatmap() {
         return function (d, i) {
             if (tooltip) {
                 var border = getFillColor(d);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border,_notification);
             }
         }
     }
@@ -1048,6 +1049,13 @@ function heatmap() {
             return filterParameters;
         }
         filterParameters = value;
+        return chart;
+    }
+    chart.notification = function (value) {
+        if (!arguments.length) {
+            return _notification;
+        }
+        _notification = value;
         return chart;
     }
     return chart;

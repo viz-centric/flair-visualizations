@@ -27,7 +27,8 @@ function sankey() {
         _tooltip,
         _print,
         broadcast,
-        filterParameters;;
+        filterParameters,
+        _notification = false;
 
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [];
@@ -229,7 +230,7 @@ function sankey() {
             var border = d3.select(this).attr('fill')
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, element), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, element), container, border,_notification);
             }
         }
     }
@@ -240,7 +241,7 @@ function sankey() {
         return function (d, i) {
             if (tooltip) {
                 var border = d3.select(this).attr('fill')
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, element), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, element), container, border,_notification);
             }
         }
     }
@@ -1003,7 +1004,13 @@ function sankey() {
         filterParameters = value;
         return chart;
     }
-
+    chart.notification = function (value) {
+        if (!arguments.length) {
+            return _notification;
+        }
+        _notification = value;
+        return chart;
+    }
     return chart;
 }
 

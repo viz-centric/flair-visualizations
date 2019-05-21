@@ -232,5 +232,6 @@ svg#graphics {
 }
 /* line 10, ../sass/partials/_table.scss */
 .dataTables_length label {
+  /*setting up search box position  */
   width: auto !important;
 }

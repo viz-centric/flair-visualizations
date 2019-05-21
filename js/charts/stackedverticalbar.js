@@ -42,7 +42,8 @@ function stackedverticalbar() {
         _print,
         broadcast,
         filterParameters,
-        isAnimationDisable = false;
+        isAnimationDisable = false,
+        _notification = false;;
 
 
     var x = d3.scaleBand(), y = d3.scaleLinear();
@@ -240,7 +241,7 @@ function stackedverticalbar() {
             var border = UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor)
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border,_notification);
             }
         }
     }
@@ -251,7 +252,7 @@ function stackedverticalbar() {
         return function (d, i) {
             if (tooltip) {
                 var border = UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor)
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border,_notification);
             }
         }
     }
@@ -1236,6 +1237,13 @@ function stackedverticalbar() {
             return isAnimationDisable;
         }
         isAnimationDisable = value;
+        return chart;
+    }
+    chart.notification = function (value) {
+        if (!arguments.length) {
+            return _notification;
+        }
+        _notification = value;
         return chart;
     }
     return chart;
