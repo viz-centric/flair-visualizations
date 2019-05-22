@@ -33,11 +33,13 @@ function pivottable() {
         _iconFontWeight = [],
         _iconColor = [],
         _fontWeightForMeasure = [],
-        _print;
+        _print,
+        broadcast,
+        filterParameters;;
 
-    var _localData, filterData = [], _local_svg;
+    var _localData, filterData = [], _local_svg, _originalData, div, mapper;
 
-
+    var unpivotedDimension, nester, pivotedDimension, nestedData, pivotedData = [];
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
         this.measure(config.measure);
@@ -280,26 +282,21 @@ function pivottable() {
                 }
 
             });
-            d3.select('#' + _local_svg.attr('id'))
-                .datum(d)
-                .call(chart);
-
-            _local_svg.html('')
-
-            chart(_local_svg)
-            var confirm = _local_svg.select('div.confirm')
-                .style('visibility', 'visible');
+            chart.update(d);
+            if (broadcast) {
+                broadcast.updateWidget = {};
+                broadcast.filterSelection.id = null;
+                broadcast.$broadcast('flairbiApp:filter-input-refresh');
+                broadcast.$broadcast('flairbiApp:filter');
+                broadcast.$broadcast('flairbiApp:filter-add');
+                d3.select(this.parentNode)
+                    .style('visibility', 'hidden');
+            }
         }
     }
     var clearFilter = function (div) {
         return function () {
-            d3.select('#donut')
-                .datum(_localData)
-                .call(chart);
-
-            _local_svg.html('')
-
-            chart(_local_svg)
+            chart.update(_originalData);
         }
     }
     var readerTableChart = function (str, ctr, element) {
@@ -314,6 +311,152 @@ function pivottable() {
             filterData.push(obj);
         }
         $(str).toggleClass('selected')
+
+        var _filterDimension = {};
+        if (broadcast.filterSelection.id) {
+            _filterDimension = broadcast.filterSelection.filter;
+        } else {
+            broadcast.filterSelection.id = d3.select(div.node()).attr('id');
+        }
+        var dimension = _dimension[0];
+        if (_filterDimension[dimension]) {
+            var temp = _filterDimension[dimension];
+            if (temp.indexOf(str.textContent) < 0) {
+                temp.push(str.textContent);
+            } else {
+                temp.splice(temp.indexOf(str.textContent), 1);
+            }
+            _filterDimension[dimension] = temp;
+        } else {
+            _filterDimension[dimension] = [str.textContent]
+        }
+
+        var idWidget = broadcast.updateWidget[$(div).attr('id')];
+        broadcast.updateWidget = {};
+        broadcast.updateWidget[$(div).attr('id')] = idWidget;
+        broadcast.filterSelection.filter = _filterDimension;
+        var _filterParameters = filterParameters.get();
+        _filterParameters[dimension] = _filterDimension[dimension];
+        filterParameters.save(_filterParameters);
+    }
+
+    var getGeneratedPivotData = function (nestedData, depth, obj) {
+        nestedData.forEach(function (kv) {
+            var a = kv.key;
+            obj = (depth !== 0) ? (jQuery.extend(true, {}, obj) || {}) : {};
+            obj[unpivotedDimension[depth]] = a;
+
+            if (kv.value) {
+                kv.value.forEach(function (d) {
+                    obj[d.name] = d.value;
+                });
+                pivotedData.push(obj);
+            } else {
+                getGeneratedPivotData(kv.values, depth + 1, obj);
+            }
+        });
+    }
+
+    var createEntries = function (datum) {
+        var content = "";
+
+        unpivotedDimension.forEach(function (upd) {
+            var style = {
+                'text-align': getTextAlignment(upd, true),
+                'background-color': getCellColor(upd, true),
+                'font-style': getFontStyle(upd, true),
+                'font-weight': getFontWeight(upd, true),
+                'font-size': getFontSize(upd, true),
+                'color': getTextColor(upd, true)
+            };
+
+            style = JSON.stringify(style);
+            style = style.replace(/","/g, ';').replace(/["{}]/g, '');
+
+            content += "<td id=\"" + upd + "\" style=\"" + style + "\">" + datum[upd] + "</td>";
+        });
+
+        _measure.forEach(function (m, i) {
+            content = getGeneratedRecord(content, [m], 0, datum, i);
+        });
+
+        return content;
+    }
+
+    var getGeneratedRecord = function (content, parent, depth, datum, i) {
+        var temp = mapper.values();
+        if (typeof (temp[depth]) == 'object') {
+            temp[depth].forEach(function (item) {
+                parent.push(item);
+                content = getGeneratedRecord(content, parent, depth + 1, datum, i);
+            });
+        } else {
+            var style = {
+                'text-align': getTextAlignment(parent[0]),
+                'background-color': getCellColor(parent[0]),
+                'font-style': getFontStyle(parent[0]),
+                'font-weight': getFontWeight(parent[0]),
+                'font-size': getFontSize(parent[0]),
+                'color': getTextColor(parent[0])
+            };
+            style['color'] = UTIL.expressionEvaluator(_textColorExpressionForMeasure[i], datum[parent.join('_')], 'color');
+            style['background-color'] = UTIL.expressionEvaluator(_cellColorExpressionForMeasure[i], datum[parent.join('_')], 'color');
+            style = JSON.stringify(style);
+            style = style.replace(/","/g, ';').replace(/["{}]/g, '');
+
+            content += "<td id=\"" + _dimension[i] + "\"  onClick=\"chart.readerTableChart('" + datum[_dimension[i]] + "',this,_local_svg,'" + datum[parent.join('_')] + "')\"  style=\"" + style + "\">" + ((datum[parent.join('_')] !== undefined) ? getValueNumberFormat(parent[0])(datum[parent.join('_')]) : "-") + "</td>";
+        }
+
+        parent.pop();
+        return content;
+    }
+
+    var createHeaders = function (iterator, key, depth) {
+        var row = "<tr>",
+            content = "",
+            output = "";
+
+        iterator.forEach(function (item) {
+            var style = {
+                'text-align': getTextAlignment(key, true),
+                'background-color': getCellColor(key, true),
+                'font-style': getFontStyle(key, true),
+                'font-weight': getFontWeight(key, true),
+                'font-size': getFontSize(key, true),
+                'color': getTextColor(key, true)
+            };
+
+            style = JSON.stringify(style);
+            style = style.replace(/","/g, ';').replace(/["{}]/g, '');
+
+            content += "<th style=\"" + style + "\" colspan=\"" + getColspanValue(mapper, depth + 1) + "\">" + item + "</th>";
+        });
+
+        for (var i = 0; i < getCloneFactor(mapper, depth); i++) {
+            output += content;
+        }
+
+        if (depth == (pivotedDimension.length - 1)) {
+            var temp = "";
+
+            unpivotedDimension.forEach(function (upd) {
+                var style = {
+                    'text-align': getTextAlignment(upd, true),
+                    'background-color': '#f7f7f7',
+                    'font-weight': 'bold'
+                };
+
+                style = JSON.stringify(style);
+                style = style.replace(/","/g, ';').replace(/["{}]/g, '');
+
+                temp += "<th style=\"" + style + "\">" + upd + "</th>";
+            });
+
+            output = temp + output;
+        }
+
+        row += output + "</tr>";
+        return row;
     }
 
     function chart(selection) {
@@ -321,7 +464,7 @@ function pivottable() {
 
         selection.each(function (data) {
             _localData = data
-            var div = d3.select(this);
+            div = d3.select(this);
             var svg = d3.select(this),
                 width = parseInt(svg.style('width')),
                 height = parseInt(svg.style('height'));
@@ -330,8 +473,8 @@ function pivottable() {
 
             if (_print) {
                 svg
-                .attr('width', 0)
-                .attr('height', 0)
+                    .attr('width', 0)
+                    .attr('height', 0)
             }
             else {
                 svg
@@ -341,10 +484,10 @@ function pivottable() {
                     .style('overflow-x', 'auto');
             }
 
-            var nester = d3.nest(),
+            nester = d3.nest(),
                 pivotedDimension = getPivotedDimension();
 
-            var unpivotedDimension = getUnPivotedDimension();
+            unpivotedDimension = getUnPivotedDimension();
 
             unpivotedDimension.forEach(function (dim) {
                 nester = nester.key(function (d) {
@@ -394,28 +537,12 @@ function pivottable() {
                 return result;
             });
 
-            var nestedData = nester.entries(data),
+            nestedData = nester.entries(data),
                 pivotedData = [];
 
-            var getGeneratedPivotData = function (nestedData, depth, obj) {
-                nestedData.forEach(function (kv) {
-                    var a = kv.key;
-                    obj = (depth !== 0) ? (jQuery.extend(true, {}, obj) || {}) : {};
-                    obj[unpivotedDimension[depth]] = a;
-
-                    if (kv.value) {
-                        kv.value.forEach(function (d) {
-                            obj[d.name] = d.value;
-                        });
-                        pivotedData.push(obj);
-                    } else {
-                        getGeneratedPivotData(kv.values, depth + 1, obj);
-                    }
-                });
-            }
             getGeneratedPivotData(nestedData, 0);
 
-            var mapper = d3.map();
+            mapper = d3.map();
 
             pivotedDimension.forEach(function (pd) {
                 mapper.set(pd, getUniqueData(data, pd));
@@ -467,114 +594,12 @@ function pivottable() {
 
             thead += "</tr>";
 
-            var createHeaders = function (iterator, key, depth) {
-                var row = "<tr>",
-                    content = "",
-                    output = "";
-
-                iterator.forEach(function (item) {
-                    var style = {
-                        'text-align': getTextAlignment(key, true),
-                        'background-color': getCellColor(key, true),
-                        'font-style': getFontStyle(key, true),
-                        'font-weight': getFontWeight(key, true),
-                        'font-size': getFontSize(key, true),
-                        'color': getTextColor(key, true)
-                    };
-
-                    style = JSON.stringify(style);
-                    style = style.replace(/","/g, ';').replace(/["{}]/g, '');
-
-                    content += "<th style=\"" + style + "\" colspan=\"" + getColspanValue(mapper, depth + 1) + "\">" + item + "</th>";
-                });
-
-                for (var i = 0; i < getCloneFactor(mapper, depth); i++) {
-                    output += content;
-                }
-
-                if (depth == (pivotedDimension.length - 1)) {
-                    var temp = "";
-
-                    unpivotedDimension.forEach(function (upd) {
-                        var style = {
-                            'text-align': getTextAlignment(upd, true),
-                            'background-color': '#f7f7f7',
-                            'font-weight': 'bold'
-                        };
-
-                        style = JSON.stringify(style);
-                        style = style.replace(/","/g, ';').replace(/["{}]/g, '');
-
-                        temp += "<th style=\"" + style + "\">" + upd + "</th>";
-                    });
-
-                    output = temp + output;
-                }
-
-                row += output + "</tr>";
-                return row;
-            }
-
             mapper.entries().forEach(function (entry, index) {
                 thead += createHeaders(entry.value, entry.key, index);
             });
 
             thead += "</thead>";
 
-            var temp = mapper.values();
-
-            var getGeneratedRecord = function (content, parent, depth, datum, i) {
-                if (typeof (temp[depth]) == 'object') {
-                    temp[depth].forEach(function (item) {
-                        parent.push(item);
-                        content = getGeneratedRecord(content, parent, depth + 1, datum, i);
-                    });
-                } else {
-                    var style = {
-                        'text-align': getTextAlignment(parent[0]),
-                        'background-color': getCellColor(parent[0]),
-                        'font-style': getFontStyle(parent[0]),
-                        'font-weight': getFontWeight(parent[0]),
-                        'font-size': getFontSize(parent[0]),
-                        'color': getTextColor(parent[0])
-                    };
-                    style['color'] = UTIL.expressionEvaluator(_textColorExpressionForMeasure[i], datum[parent.join('_')], 'color');
-                    style['background-color'] = UTIL.expressionEvaluator(_cellColorExpressionForMeasure[i], datum[parent.join('_')], 'color');
-                    style = JSON.stringify(style);
-                    style = style.replace(/","/g, ';').replace(/["{}]/g, '');
-
-                    content += "<td id=\"" + _dimension[i] + "\"  onClick=\"chart.readerTableChart('" + datum[_dimension[i]] + "',this,_local_svg,'" + datum[parent.join('_')] + "')\"  style=\"" + style + "\">" + ((datum[parent.join('_')] !== undefined) ? getValueNumberFormat(parent[0])(datum[parent.join('_')]) : "-") + "</td>";
-                }
-
-                parent.pop();
-                return content;
-            }
-
-            var createEntries = function (datum) {
-                var content = "";
-
-                unpivotedDimension.forEach(function (upd) {
-                    var style = {
-                        'text-align': getTextAlignment(upd, true),
-                        'background-color': getCellColor(upd, true),
-                        'font-style': getFontStyle(upd, true),
-                        'font-weight': getFontWeight(upd, true),
-                        'font-size': getFontSize(upd, true),
-                        'color': getTextColor(upd, true)
-                    };
-
-                    style = JSON.stringify(style);
-                    style = style.replace(/","/g, ';').replace(/["{}]/g, '');
-
-                    content += "<td id=\"" + upd + "\" style=\"" + style + "\">" + datum[upd] + "</td>";
-                });
-
-                _measure.forEach(function (m, i) {
-                    content = getGeneratedRecord(content, [m], 0, datum, i);
-                });
-
-                return content;
-            }
 
             pivotedData.forEach(function (pd) {
                 tbody += "<tr>" + createEntries(pd) + "</tr>";
@@ -623,6 +648,85 @@ function pivottable() {
 
     chart._getHTML = function () {
         return _local_svg.node().outerHTML;
+    }
+
+    chart.update = function (data) {
+        _localData = data;
+        svg = _local_svg;
+        filterData = [];
+        div.selectAll('tbody').remove();
+        div.selectAll('thead').remove();
+
+        var table = div.select('#viz_pivot-table');
+
+        nestedData = nester.entries(data),
+            pivotedData = [];
+
+        getGeneratedPivotData(nestedData, 0);
+
+        mapper = d3.map();
+
+        pivotedDimension.forEach(function (pd) {
+            mapper.set(pd, getUniqueData(data, pd));
+        });
+
+        var thead = "<thead><tr>",
+            tbody = "<tbody>";
+
+        if (_dimension.length === unpivotedDimension.length) {
+            unpivotedDimension.forEach(function (upd, i) {
+                var style = {
+                    'text-align': getTextAlignment(upd, true),
+                    'background-color': '#f7f7f7',
+                    'font-weight': 'bold'
+                };
+
+                style = JSON.stringify(style);
+                style = style.replace(/","/g, ';').replace(/["{}]/g, '');
+
+                thead += "<th style=\"" + style + "\">" + upd + "</th>";
+            });
+        } else {
+            thead += "<th colspan=\"" + unpivotedDimension.length + "\" rowspan=\"" + pivotedDimension.length + "\"></th>";
+        }
+
+        _measure.forEach(function (m) {
+            var style = {
+                'text-align': getTextAlignment(m),
+                'background-color': '#f7f7f7',
+                'font-weight': 'bold'
+            };
+
+            style = JSON.stringify(style);
+            style = style.replace(/","/g, ';').replace(/["{}]/g, '');
+
+            thead += "<th colspan=\"" + getColspanValue(mapper, 0) + "\" style=\"" + style + "\">" + m + "</th>";
+        });
+
+        thead += "</tr>";
+
+        mapper.entries().forEach(function (entry, index) {
+            thead += createHeaders(entry.value, entry.key, index);
+        });
+
+        thead += "</thead>";
+
+
+        pivotedData.forEach(function (pd) {
+            tbody += "<tr>" + createEntries(pd) + "</tr>";
+        });
+
+        tbody += "</tbody></table>";
+
+        table.append('thead')
+            .html(thead);
+
+        table.append('tbody')
+            .html(tbody);
+
+        $($('#' + div.attr('id') + ' td')).on('click', function () {
+            readerTableChart.call(this.textContent, this, div)
+        })
     }
 
     chart.config = function (value) {
@@ -861,7 +965,21 @@ function pivottable() {
         _print = value;
         return chart;
     }
+    chart.broadcast = function (value) {
+        if (!arguments.length) {
+            return broadcast;
+        }
+        broadcast = value;
+        return chart;
+    }
 
+    chart.filterParameters = function (value) {
+        if (!arguments.length) {
+            return filterParameters;
+        }
+        filterParameters = value;
+        return chart;
+    }
     return chart;
 }
 
