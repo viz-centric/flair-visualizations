@@ -33,9 +33,11 @@ function table() {
         _iconFontWeight = [],
         _iconColor = [],
         _fontWeightForMeasure = [],
-        _print;
+        _print,
+        broadcast,
+        filterParameters;
 
-    var _localData, filterData = [], _originalData, _local_svg;
+    var _localData, filterData = [], _originalData, _local_svg, div;
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
@@ -153,28 +155,21 @@ function table() {
                 }
 
             });
-            d3.select('#' + _local_svg.attr('id'))
-                .datum(d)
-                .call(chart);
-
-            _local_svg.html('')
-
-            chart(_local_svg)
-            var confirm = _local_svg.select('div.confirm')
-                .style('visibility', 'visible');
+            chart.update(d);
+            if (broadcast) {
+                broadcast.updateWidget = {};
+                broadcast.filterSelection.id = null;
+                broadcast.$broadcast('flairbiApp:filter-input-refresh');
+                broadcast.$broadcast('flairbiApp:filter');
+                broadcast.$broadcast('flairbiApp:filter-add');
+                d3.select(this.parentNode)
+                    .style('visibility', 'hidden');
+            }
         }
     }
     var clearFilter = function () {
         return function () {
-            d3.select('#' + _local_svg.attr('id'))
-                .datum(_originalData)
-                .call(chart);
-
-            _local_svg.html('')
-
-            chart(_local_svg)
-            var confirm = div.select('div.confirm')
-                .style('visibility', 'hidden');
+            chart.update(_originalData);
         }
     }
     var readerTableChart = function (str, ctr, element) {
@@ -189,13 +184,137 @@ function table() {
             filterData.push(obj);
         }
         $(str).toggleClass('selected')
+
+        var _filterDimension = {};
+        if (broadcast.filterSelection.id) {
+            _filterDimension = broadcast.filterSelection.filter;
+        } else {
+            broadcast.filterSelection.id = d3.select(div.node()).attr('id');
+        }
+        var dimension = _dimension[0];
+        if (_filterDimension[dimension]) {
+            var temp = _filterDimension[dimension];
+            if (temp.indexOf(str.textContent) < 0) {
+                temp.push(str.textContent);
+            } else {
+                temp.splice(temp.indexOf(str.textContent), 1);
+            }
+            _filterDimension[dimension] = temp;
+        } else {
+            _filterDimension[dimension] = [str.textContent]
+        }
+
+        var idWidget = broadcast.updateWidget[$(div).attr('id')];
+        broadcast.updateWidget = {};
+        broadcast.updateWidget[$(div).attr('id')] = idWidget;
+        broadcast.filterSelection.filter = _filterDimension;
+        var _filterParameters = filterParameters.get();
+        _filterParameters[dimension] = _filterDimension[dimension];
+        filterParameters.save(_filterParameters);
+
+    }
+
+    var createHeader = function () {
+        var thead = "<thead><tr>";
+
+        _dimension.forEach(function (item, index) {
+            var title = _displayNameForDimension[index],
+                style = {
+                    'text-align': _textAlignmentForDimension[index],
+                    'background-color': '#f1f1f1',
+                    'font-weight': 'bold'
+                };
+
+            style = JSON.stringify(style);
+            style = style.replace(/","/g, ';').replace(/["{}]/g, '');
+
+            if (title != "") {
+                thead += "<th style=\"" + style + "\">" + title + "</th>";
+            } else {
+                thead += "<th style=\"" + style + "\">" + item + "</th>";
+            }
+        });
+
+        _measure.forEach(function (item, index) {
+            var title = _displayNameForMeasure[index],
+                style = {
+                    'text-align': _textAlignmentForMeasure[index],
+                    'background-color': '#f1f1f1',
+                    'font-weight': 'bold'
+                };
+
+            style = JSON.stringify(style);
+            style = style.replace(/","/g, ';').replace(/["{}]/g, '');
+
+            if (title != "") {
+                thead += "<th style=\"" + style + "\">" + title + "</th>";
+            } else {
+                thead += "<th style=\"" + style + "\">" + item + "</th>";
+            }
+        });
+
+        thead += "</tr></thead>";
+
+        return thead;
+
+    }
+
+    var createBody = function (data) {
+        var tbody = "<tbody>";
+        data.forEach(function (d) {
+            tbody += "<tr>";
+            _dimension.forEach(function (item, index) {
+
+                var style = {
+                    'text-align': _textAlignmentForDimension[index],
+                    'background-color': _cellColorForDimension[index],
+                    'font-style': _fontStyleForDimension[index],
+                    'font-weight': _fontWeightForDimension[index],
+                    'font-size': _fontSizeForDimension[index] + "px",
+                    'color': _textColorForDimension[index]
+                };
+
+                style = JSON.stringify(style);
+                style = style.replace(/","/g, ';').replace(/["{}]/g, '');
+                //    tbody += "<td onClick=\"readerTableChart('" + d[_dimension[index]] + "',this,_local_svg,'" + item + "')\" style=\"" + style + "\">" + d[_dimension[index]] + "</td>";
+                tbody += "<td id=\"" + item + "\"  style=\"" + style + "\">" + d[_dimension[index]] + "</td>";
+            });
+
+            _measure.forEach(function (item, index) {
+                var style = {
+                    'text-align': _textAlignmentForMeasure[index],
+                    'background-color': _cellColorForMeasure[index],
+                    'font-style': _fontStyleForMeasure[index],
+                    'font-weight': _fontWeightForMeasure[index],
+                    'font-size': _fontSizeForMeasure[index] + "px",
+                    'color': _textColorForMeasure[index]
+                };
+
+                if (_textColorExpressionForMeasure[index].length > 0) {
+                    style['color'] = UTIL.expressionEvaluator(_textColorExpressionForMeasure[index], d[_measure[index]], 'color');
+                }
+                if (_cellColorExpressionForMeasure[index].length > 0) {
+                    style['background-color'] = UTIL.expressionEvaluator(_cellColorExpressionForMeasure[index], d[_measure[index]], 'color');
+                }
+
+                style = JSON.stringify(style);
+                style = style.replace(/","/g, ';').replace(/["{}]/g, '');
+                tbody += "<td id=\"" + item + "\" style=\"" + style + "\">" + getIcon(index, d[_measure[index]]) + UTIL.getFormattedValue(d[_measure[index]], UTIL.getValueNumberFormat(index, _numberFormatForMeasure)) + "</td>";
+                //  tbody += "<td onClick=\"readerTableChart('" + d[_measure[index]] + "',this,_local_svg,'" + item + "')\" style=\"" + style + "\">" + getIcon(index, d[_measure[index]]) + UTIL.getFormattedValue(d[_measure[index]], UTIL.getValueNumberFormat(index, _numberFormatForMeasure)) + "</td>";
+
+            });
+            tbody += "</tr>";
+        });
+
+        tbody += "</tbody>";
+        return tbody
     }
     function chart(selection) {
         _local_svg = selection;
 
         selection.each(function (data) {
-            _localData = data
-            var div = d3.select(this);
+            _localData = _originalData = data
+            div = d3.select(this);
 
             var svg = d3.select(this),
                 width = +svg.attr('width'),
@@ -220,99 +339,14 @@ function table() {
                 .classed('table-condensed', true)
                 .classed('table-hover', true);
 
-            var thead = "<thead><tr>",
-                tbody = "<tbody>";
-
-            _dimension.forEach(function (item, index) {
-                var title = _displayNameForDimension[index],
-                    style = {
-                        'text-align': _textAlignmentForDimension[index],
-                        'background-color': '#f1f1f1',
-                        'font-weight': 'bold'
-                    };
-
-                style = JSON.stringify(style);
-                style = style.replace(/","/g, ';').replace(/["{}]/g, '');
-
-                if (title != "") {
-                    thead += "<th style=\"" + style + "\">" + title + "</th>";
-                } else {
-                    thead += "<th style=\"" + style + "\">" + item + "</th>";
-                }
-            });
-
-            _measure.forEach(function (item, index) {
-                var title = _displayNameForMeasure[index],
-                    style = {
-                        'text-align': _textAlignmentForMeasure[index],
-                        'background-color': '#f1f1f1',
-                        'font-weight': 'bold'
-                    };
-
-                style = JSON.stringify(style);
-                style = style.replace(/","/g, ';').replace(/["{}]/g, '');
-
-                if (title != "") {
-                    thead += "<th style=\"" + style + "\">" + title + "</th>";
-                } else {
-                    thead += "<th style=\"" + style + "\">" + item + "</th>";
-                }
-            });
-
-            thead += "</tr></thead>";
+            var thead = createHeader();
 
             table.append('thead')
                 .html(thead);
 
-            data.forEach(function (d) {
-                tbody += "<tr>";
-                _dimension.forEach(function (item, index) {
+            var tbody = createBody(data);
 
-                    var style = {
-                        'text-align': _textAlignmentForDimension[index],
-                        'background-color': _cellColorForDimension[index],
-                        'font-style': _fontStyleForDimension[index],
-                        'font-weight': _fontWeightForDimension[index],
-                        'font-size': _fontSizeForDimension[index] + "px",
-                        'color': _textColorForDimension[index]
-                    };
-                    
-                    style = JSON.stringify(style);
-                    style = style.replace(/["{}]/g, '').replace(/,/g, ';');
-                    //    tbody += "<td onClick=\"readerTableChart('" + d[_dimension[index]] + "',this,_local_svg,'" + item + "')\" style=\"" + style + "\">" + d[_dimension[index]] + "</td>";
-                    tbody += "<td id=\"" + item + "\"  style=\"" + style + "\">" + d[_dimension[index]] + "</td>";
-                });
-
-                _measure.forEach(function (item, index) {
-                    var style = {
-                        'text-align': _textAlignmentForMeasure[index],
-                        'background-color': _cellColorForMeasure[index],
-                        'font-style': _fontStyleForMeasure[index],
-                        'font-weight': _fontWeightForMeasure[index],
-                        'font-size': _fontSizeForMeasure[index] + "px",
-                        'color': _textColorForMeasure[index]
-                    };
-
-                    if (_textColorExpressionForMeasure[index].length>0){
-                        style['color'] = UTIL.expressionEvaluator(_textColorExpressionForMeasure[index], d[_measure[index]], 'color');
-                    }
-                    if (_cellColorExpressionForMeasure[index].length>0){
-                        style['background-color'] = UTIL.expressionEvaluator(_cellColorExpressionForMeasure[index], d[_measure[index]], 'color');
-                    }
-                    
-                    style = JSON.stringify(style);
-                    style = style.replace(/["{}]/g, '').replace(/,/g, ';');
-                    tbody += "<td id=\"" + item + "\" style=\"" + style + "\">" + getIcon(index, d[_measure[index]]) + UTIL.getFormattedValue(d[_measure[index]], UTIL.getValueNumberFormat(index, _numberFormatForMeasure)) + "</td>";
-                    //  tbody += "<td onClick=\"readerTableChart('" + d[_measure[index]] + "',this,_local_svg,'" + item + "')\" style=\"" + style + "\">" + getIcon(index, d[_measure[index]]) + UTIL.getFormattedValue(d[_measure[index]], UTIL.getValueNumberFormat(index, _numberFormatForMeasure)) + "</td>";
-
-                });
-                tbody += "</tr>";
-            });
-
-            tbody += "</tbody>";
-            table.append('tbody').html(tbody)
-
-            //   svg.append('table')
+            table.append('tbody').html(tbody);
 
             if (!_print) {
 
@@ -363,6 +397,29 @@ function table() {
 
     chart._getHTML = function () {
         return _local_svg.node().outerHTML;
+    }
+
+    chart.update = function (data) {
+        _localData = data;
+        svg = _local_svg;
+        filterData = [];
+        div.selectAll('tbody').remove();
+        div.selectAll('thead').remove();
+
+        var table = div.select('#viz_table');
+
+        var thead = createHeader();
+
+        table.append('thead')
+            .html(thead);
+
+        var tbody = createBody(data);
+
+        table.append('tbody').html(tbody);
+
+        $($('#' + div.attr('id') + ' td')).on('click', function () {
+            readerTableChart.call(this.textContent, this, div)
+        })
     }
 
     chart.config = function (value) {
@@ -588,6 +645,22 @@ function table() {
             return _print;
         }
         _print = value;
+        return chart;
+    }
+
+    chart.broadcast = function (value) {
+        if (!arguments.length) {
+            return broadcast;
+        }
+        broadcast = value;
+        return chart;
+    }
+
+    chart.filterParameters = function (value) {
+        if (!arguments.length) {
+            return filterParameters;
+        }
+        filterParameters = value;
         return chart;
     }
 
