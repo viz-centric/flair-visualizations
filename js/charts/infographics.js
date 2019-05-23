@@ -162,7 +162,7 @@ function infographics() {
 
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container,_chartBorderColor,_notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, _chartBorderColor, _notification);
             }
         }
     }
@@ -172,7 +172,7 @@ function infographics() {
 
         return function (d, i) {
             if (tooltip) {
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container,_chartBorderColor,_notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, _chartBorderColor, _notification);
             }
         }
     }
@@ -220,7 +220,7 @@ function infographics() {
 
             var graphics = container.append('svg')
                 .attr('id', 'graphics')
-                .attr("width",parentWidth)
+                .attr("width", parentWidth)
                 .attr("height", parentWidth)
                 .style("position", 'absolute');
 
@@ -365,13 +365,6 @@ function infographics() {
                         }
                     });
 
-                points.on('mouseover', _handleMouseOverFn.call(chart, _localTooltip, infographics))
-                    .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, infographics))
-                    .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, infographics))
-                    .on('click', function (d, i) {
-
-                    });
-
                 kpi.transition()
                     .ease(d3.easeQuadIn)
                     .duration(COMMON.DURATION)
@@ -410,6 +403,14 @@ function infographics() {
 
                 _localDiv = graphics
 
+            }
+            if (!_print || _notification) {
+                points.on('mouseover', _handleMouseOverFn.call(chart, _localTooltip, infographics))
+                    .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, infographics))
+                    .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, infographics))
+                    .on('click', function (d, i) {
+
+                    });
             }
         });
     }

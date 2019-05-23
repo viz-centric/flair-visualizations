@@ -977,6 +977,34 @@ function combo() {
                     return UTIL.getTruncatedTick(d3.select(this).text(), barWidth, tickLength);
                 });
         }
+        else {
+            rect = element.append('rect')
+                .attr('width', x1.bandwidth())
+                .style('fill', function (d, i) {
+                    return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                })
+                .style('stroke', function (d, i) {
+                    return UTIL.getBorderColor(_measure.indexOf(d['tag']), _borderColor);
+                })
+                .style('stroke-width', 1)
+                .attr('x', function (d, i) {
+                    return x1(measuresBar[i]);
+                })
+                .attr('y', function (d, i) {
+                    if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
+                        return 0;
+                    } else if (d['data'][measuresBar[i]] > 0) {
+                        return y(d['data'][measuresBar[i]]);
+                    }
+
+                    return y(0);
+                })
+                .attr('height', function (d, i) {
+                    if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) return 0;
+                    return Math.abs(y(0) - y(d['data'][measuresBar[i]]));
+                })
+
+        }
         if (!_print || _notification) {
             rect.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
@@ -1044,34 +1072,7 @@ function combo() {
                 })
 
         }
-        else {
-            element.append('rect')
-                .attr('width', x1.bandwidth())
-                .style('fill', function (d, i) {
-                    return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
-                })
-                .style('stroke', function (d, i) {
-                    return UTIL.getBorderColor(_measure.indexOf(d['tag']), _borderColor);
-                })
-                .style('stroke-width', 1)
-                .attr('x', function (d, i) {
-                    return x1(measuresBar[i]);
-                })
-                .attr('y', function (d, i) {
-                    if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
-                        return 0;
-                    } else if (d['data'][measuresBar[i]] > 0) {
-                        return y(d['data'][measuresBar[i]]);
-                    }
 
-                    return y(0);
-                })
-                .attr('height', function (d, i) {
-                    if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) return 0;
-                    return Math.abs(y(0) - y(d['data'][measuresBar[i]]));
-                })
-
-        }
 
     }
     chart._legendInteraction = function (event, data, plot) {
