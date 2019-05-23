@@ -189,15 +189,23 @@ function scatter() {
                 broadcast.updateWidget = {};
                 broadcast.updateWidget[scope.parentElement.id] = idWidget;
 
-                var _filterList = {}, list = []
+                var _filterDimension = {};
+                if (broadcast.filterSelection.id) {
+                    _filterDimension = broadcast.filterSelection.filter;
+                } else {
+                    broadcast.filterSelection.id = $(div).attr('id');
+                }
+                var dimension = _dimension[0];
 
-                filterData.map(function (val) {
-                    list.push(val[_dimension[0]])
-                })
-                list = list.filter(function (item, i, ar) { return ar.indexOf(item) === i; });
-                _filterList[_dimension[0]] = list
-                broadcast.filterSelection.filter = _filterList;
-                filterParameters.save(_filterList);
+                _filterDimension[dimension] = filterData.map(function (d) {
+                    return d[_dimension[0]];
+                });
+
+
+                broadcast.filterSelection.filter = _filterDimension;
+                var _filterParameters = filterParameters.get();
+                _filterParameters[dimension] = _filterDimension[dimension];
+                filterParameters.save(_filterParameters);
             }
         }
     }
@@ -239,7 +247,7 @@ function scatter() {
             var border = d3.select(this).attr('fill');
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border,_notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border, _notification);
             }
         }
     }
@@ -250,7 +258,7 @@ function scatter() {
         return function (d, i) {
             if (tooltip) {
                 var border = d3.select(this).attr('fill');
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border,_notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border, _notification);
             }
         }
     }
@@ -550,62 +558,6 @@ function scatter() {
             .style('fill-opacity', 1)
 
         if (!_print) {
-            dataCircle.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
-                .on('click', function (d) {
-                    filter = false;
-                    var confirm = d3.select(div).select('.confirm')
-                        .style('visibility', 'visible');
-                    var rect = d3.select(this);
-                    if (rect.classed('selected')) {
-                        rect.classed('selected', false);
-                    }
-                    else {
-                        rect.classed('selected', true);
-                    }
-                    if (_localLabelStack.indexOf(d[_dimension[0]]) == -1) {
-                        _localLabelStack.push(d[_dimension[0]]);
-                    } else {
-                        _localLabelStack.splice(_localLabelStack.indexOf(d[_dimension[0]]), 1);
-                    }
-
-                    var _filter =
-                        _Local_data.filter(function (val) {
-                            if (_localLabelStack.indexOf(val[_dimension[0]]) == -1) {
-                                return val
-                            }
-                        });
-
-                    filterData = _filter;
-
-                    var _filterDimension = {};
-                    if (broadcast.filterSelection.id) {
-                        _filterDimension = broadcast.filterSelection.filter;
-                    } else {
-                        broadcast.filterSelection.id = $(div).attr('id');
-                    }
-                    var dimension = _dimension[0];
-                    if (_filterDimension[dimension]) {
-                        var temp = _filterDimension[dimension];
-                        if (temp.indexOf(d[_dimension[0]]) < 0) {
-                            temp.push(d[_dimension[0]]);
-                        } else {
-                            temp.splice(temp.indexOf(d[_dimension[0]]), 1);
-                        }
-                        _filterDimension[dimension] = temp;
-                    } else {
-                        _filterDimension[dimension] = [d[_dimension[0]]];
-                    }
-
-                    var idWidget = broadcast.updateWidget[$(div).attr('id')];
-                    broadcast.updateWidget = {};
-                    broadcast.updateWidget[$(div).attr('id')] = idWidget;
-                    broadcast.filterSelection.filter = _filterDimension;
-                    var _filterParameters = filterParameters.get();
-                    _filterParameters[dimension] = _filterDimension[dimension];
-                    filterParameters.save(_filterParameters);
-                })
 
             var confirm = $(me).parent().find('div.confirm')
                 .css('visibility', 'hidden');
@@ -656,6 +608,67 @@ function scatter() {
                 .on('end', onLassoEnd(lasso, me));
 
             _local_svg.call(lasso);
+        }
+        if (!_print || _notification) {
+            dataCircle.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+                .on('click', function (d) {
+                    if (!_print) {
+                        filter = false;
+                        var confirm = d3.select(div).select('.confirm')
+                            .style('visibility', 'visible');
+                        var rect = d3.select(this);
+                        if (rect.classed('selected')) {
+                            rect.classed('selected', false);
+                        }
+                        else {
+                            rect.classed('selected', true);
+                        }
+                        if (_localLabelStack.indexOf(d[_dimension[0]]) == -1) {
+                            _localLabelStack.push(d[_dimension[0]]);
+                        } else {
+                            _localLabelStack.splice(_localLabelStack.indexOf(d[_dimension[0]]), 1);
+                        }
+
+                        var _filter =
+                            _Local_data.filter(function (val) {
+                                if (_localLabelStack.indexOf(val[_dimension[0]]) == -1) {
+                                    return val
+                                }
+                            });
+
+                        filterData = _filter;
+
+                        var _filterDimension = {};
+                        if (broadcast.filterSelection.id) {
+                            _filterDimension = broadcast.filterSelection.filter;
+                        } else {
+                            broadcast.filterSelection.id = $(div).attr('id');
+                        }
+                        var dimension = _dimension[0];
+                        if (_filterDimension[dimension]) {
+                            var temp = _filterDimension[dimension];
+                            if (temp.indexOf(d[_dimension[0]]) < 0) {
+                                temp.push(d[_dimension[0]]);
+                            } else {
+                                temp.splice(temp.indexOf(d[_dimension[0]]), 1);
+                            }
+                            _filterDimension[dimension] = temp;
+                        } else {
+                            _filterDimension[dimension] = [d[_dimension[0]]];
+                        }
+
+                        var idWidget = broadcast.updateWidget[$(div).attr('id')];
+                        broadcast.updateWidget = {};
+                        broadcast.updateWidget[$(div).attr('id')] = idWidget;
+                        broadcast.filterSelection.filter = _filterDimension;
+                        var _filterParameters = filterParameters.get();
+                        _filterParameters[dimension] = _filterDimension[dimension];
+                        filterParameters.save(_filterParameters);
+                    }
+
+                })
         }
     }
 
@@ -756,7 +769,7 @@ function scatter() {
                 return parseInt(d[_measure[2]]);
             })]).nice();
 
-        y.rangeRound([plotHeight , 0])
+        y.rangeRound([plotHeight, 0])
             .domain([0, d3.max(data, function (d) {
                 return parseInt(d[_measure[0]]);
             })]).nice();

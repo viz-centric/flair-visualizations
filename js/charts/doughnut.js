@@ -277,14 +277,23 @@ function doughnut() {
                 broadcast.updateWidget = {};
                 broadcast.updateWidget[scope.parentElement.id] = idWidget;
 
-                var _filterList = {}, list = []
+                var _filterDimension = {};
+                if (broadcast.filterSelection.id) {
+                    _filterDimension = broadcast.filterSelection.filter;
+                } else {
+                    broadcast.filterSelection.id = $(div).attr('id');
+                }
+                var dimension = _dimension[0];
 
-                filterData.map(function (val) {
-                    list.push(val[_dimension[0]])
-                })
-                _filterList[_dimension[0]] = list
-                broadcast.filterSelection.filter = _filterList;
-                filterParameters.save(_filterList);
+                _filterDimension[dimension] = filterData.map(function (d) {
+                    return d[_dimension[0]];
+                });
+
+
+                broadcast.filterSelection.filter = _filterDimension;
+                var _filterParameters = filterParameters.get();
+                _filterParameters[dimension] = _filterDimension[dimension];
+                filterParameters.save(_filterParameters);
             }
         }
     }
@@ -313,7 +322,7 @@ function doughnut() {
 
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d.data, me), container, border,_notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d.data, me), container, border, _notification);
             }
         }
     }
@@ -324,7 +333,7 @@ function doughnut() {
         return function (d, i) {
             if (tooltip) {
                 var border = d3.select(this).select('path').attr('fill')
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d.data, me), container,border,_notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d.data, me), container, border, _notification);
             }
         }
     }

@@ -272,7 +272,7 @@ function treemap() {
             var border = d3.select(this).attr('fill');
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border,_notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border, _notification);
             }
         }
     }
@@ -283,7 +283,7 @@ function treemap() {
         return function (d, i) {
             if (tooltip) {
                 var border = d3.select(this).attr('fill');
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border,_notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border, _notification);
             }
         }
     }
@@ -389,59 +389,56 @@ function treemap() {
             var confirm = $(scope).parent().find('div.confirm')
                 .css('visibility', 'visible');
 
-            var _filter = [];
+            var _filter = {};
             if (data.length > 0) {
+
                 data.forEach(function (d) {
-                    if (d.children != undefined) {
-                        for (var index = 0; index < d.data.values.length; index++) {
-
-                            var isExist = _filter.filter(function (val) {
-                                if (val[_dimension[1]] == d.data.values[index].key) {
-                                    return val
-                                }
-                            })
-                            if (isExist.length == 0) {
-                                var searchObj = _localData.find(o => o[_dimension[1]].toString() === d.data.values[index].key);
-
-                                var isExist = _filter.filter(function (val) {
-                                    if (val[_dimension[0]] == searchObj[_dimension[0]] && val[_dimension[1]].toString() == searchObj[_dimension[1]].toString()) {
-                                        return val
+                    if (d.data.key) {
+                        if (_dimension.length == 2) {
+                            if (d.children) {
+                                if (_filter[_dimension[0]]) {
+                                    var temp = _filter[_dimension[0]];
+                                    if (temp.indexOf(d.data.key) < 0) {
+                                        temp.push(d.data.key);
                                     }
-                                })
-                                if (isExist.length == 0) {
-                                    _filter.push(searchObj);
+                                    _filter[_dimension[0]] = temp;
+                                } else {
+                                    _filter[_dimension[0]] = [d.data.key];
+                                }
+                            } else {
+                                if (_filter[_dimension[1]]) {
+                                    var temp = _filter[_dimension[1]];
+                                    if (temp.indexOf(d.data.key) < 0) {
+                                        temp.push(d.data.key);
+                                    }
+                                    _filter[_dimension[1]] = temp;
+                                } else {
+                                    _filter[_dimension[1]] = [d.data.key];
                                 }
                             }
-                        }
-                    }
-                    else {
-                        var isExist = filterData.filter(function (val) {
-                            if (val[_dimension[0]] == d[_dimension[0]]) {
-                                return val
+                        } else {
+
+                            if (_filter[_dimension[0]]) {
+                                var temp = _filter[_dimension[0]];
+                                if (temp.indexOf(d.data.key) < 0) {
+                                    temp.push(d.data.key);
+                                }
+                                _filter[_dimension[0]] = temp;
+                            } else {
+                                _filter[_dimension[0]] = [d.data.key];
                             }
-                        })
-                        if (isExist.length == 0) {
-                            filterData.push(_filter[0]);
+
                         }
                     }
                 })
-                if (_filter.length > 0) {
-                    filterData = _filter;
-                }
+
                 if (broadcast) {
                     var idWidget = broadcast.updateWidget[scope.parentElement.id];
                     broadcast.updateWidget = {};
                     broadcast.updateWidget[scope.parentElement.id] = idWidget;
 
-                    var _filterList = {}, list = []
-
-                    filterData.map(function (val) {
-                        list.push(val[_dimension[0]])
-                    })
-                    list = list.filter(function (item, i, ar) { return ar.indexOf(item) === i; });
-                    _filterList[_dimension[0]] = list
-                    broadcast.filterSelection.filter = _filterList;
-                    filterParameters.save(_filterList);
+                    broadcast.filterSelection.filter = _filter;
+                    filterParameters.save(_filter);
                 }
             }
             else {
@@ -451,19 +448,19 @@ function treemap() {
     }
     var applyFilter = function () {
         return function () {
-            if (filterData.length > 0) {
-                //Viz renders twice issue
-                // chart.update(filterData);
-                if (broadcast) {
-                    broadcast.updateWidget = {};
-                    broadcast.filterSelection.id = null;
-                    broadcast.$broadcast('flairbiApp:filter-input-refresh');
-                    broadcast.$broadcast('flairbiApp:filter');
-                    broadcast.$broadcast('flairbiApp:filter-add');
-                    d3.select(this.parentNode)
-                        .style('visibility', 'hidden');
-                }
+
+            //Viz renders twice issue
+            // chart.update(filterData);
+            if (broadcast) {
+                broadcast.updateWidget = {};
+                broadcast.filterSelection.id = null;
+                broadcast.$broadcast('flairbiApp:filter-input-refresh');
+                broadcast.$broadcast('flairbiApp:filter');
+                broadcast.$broadcast('flairbiApp:filter-add');
+                d3.select(this.parentNode)
+                    .style('visibility', 'hidden');
             }
+
         }
     }
 
@@ -505,105 +502,68 @@ function treemap() {
                     filter = false;
                     var confirm = d3.select(div).select('.confirm')
                         .style('visibility', 'visible');
-                    var _filter = _localData.filter(function (d1) {
-                        return d.data.key === d1[_dimension[1]]
-                    })
-                    var rect = d3.select(this);
+
+
+                    var rect = d3.select(this)
+
                     if (rect.classed('selected')) {
                         rect.classed('selected', false);
-                        filterData.map(function (val, i) {
-                            if (val[_dimension[0]] == d[_dimension[0]]) {
-                                filterData.splice(i, 1)
-                            }
-                        })
                     } else {
                         rect.classed('selected', true);
-                        if (d.children != undefined) {
-                            for (var index = 0; index < d.data.values.length; index++) {
-
-                                var isExist = filterData.filter(function (val) {
-                                    if (val[_dimension[1]] == d.data.key) {
-                                        return val
-                                    }
-                                })
-                                if (isExist.length == 0) {
-                                    var searchObj = _localData.find(o => o[_dimension[1]] === d.data.values[index].key);
-
-
-                                    var isExist = filterData.filter(function (val) {
-                                        if (val[_dimension[0]] == searchObj[_dimension[0]] && val[_dimension[1]] == searchObj[_dimension[1]]) {
-                                            return val
-                                        }
-                                    })
-                                    if (isExist.length == 0) {
-                                        filterData.push(searchObj);
-                                    }
-                                }
-                            }
-                        }
-                        else {
-                            var isExist = filterData.filter(function (val) {
-                                if (val[_dimension[0]] == d[_dimension[0]]) {
-                                    return val
-                                }
-                            })
-                            if (isExist.length == 0) {
-                                filterData.push(_filter[0]);
-                            }
-                        }
-
                     }
-                    var confirm = d3.select(div).select('.confirm')
-                        .style('visibility', 'visible');
-                    var _filter = _Local_data.filter(function (d1) {
-                        return d.data[_dimension[0]] === d1[_dimension[0]]
-                    })
-                    var rect = d3.select(this);
-                    if (rect.classed('selected')) {
-                        rect.classed('selected', false);
-                        filterData.map(function (val, i) {
-                            if (val[_dimension[0]] == d.data[_dimension[0]]) {
-                                filterData.splice(i, 1)
-                            }
-                        })
-                    } else {
-                        rect.classed('selected', true);
-                        var isExist = filterData.filter(function (val) {
-                            if (val[_dimension[0]] == d.data[_dimension[0]]) {
-                                return val
-                            }
-                        })
-                        if (isExist.length == 0) {
-                            filterData.push(_filter[0]);
-                        }
-                    }
-
-                    var _filterDimension = {};
+                    var filterList = {};
                     if (broadcast.filterSelection.id) {
-                        _filterDimension = broadcast.filterSelection.filter;
+                        filterList = broadcast.filterSelection.filter;
                     } else {
                         broadcast.filterSelection.id = $(div).attr('id');
                     }
-                    var dimension = _dimension[0];
-                    if (_filterDimension[dimension]) {
-                        var temp = _filterDimension[dimension];
-                        if (temp.indexOf(d.data[_dimension[0]]) < 0) {
-                            temp.push(d.data[_dimension[0]]);
+                    if (_dimension.length == 2) {
+                        if (d.children) {
+                            if (filterList[_dimension[0]]) {
+                                var temp = filterList[_dimension[0]];
+                                if (temp.indexOf(d.data.key) < 0) {
+                                    temp.push(d.data.key);
+                                } else {
+                                    temp.splice(temp.indexOf(d.data.key), 1);
+                                }
+                                filterList[_dimension[0]] = temp;
+                            } else {
+                                filterList[_dimension[0]] = [d.data.key];
+                            }
                         } else {
-                            temp.splice(temp.indexOf(d.data[_dimension[0]]), 1);
+                            if (filterList[_dimension[1]]) {
+                                var temp = filterList[_dimension[1]];
+                                if (temp.indexOf(d.data.key) < 0) {
+                                    temp.push(d.data.key);
+                                } else {
+                                    temp.splice(temp.indexOf(d.data.key), 1);
+                                }
+                                filterList[_dimension[1]] = temp;
+                            } else {
+                                filterList[_dimension[1]] = [d.data.key];
+                            }
                         }
-                        _filterDimension[dimension] = temp;
                     } else {
-                        _filterDimension[dimension] = [d.data[_dimension[0]]];
+                        if (filterList[_dimension[0]]) {
+                            var temp = filterList[_dimension[0]];
+                            if (temp.indexOf(d.data.key) < 0) {
+                                temp.push(d.data.key);
+                            } else {
+                                temp.splice(temp.indexOf(d.data.key), 1);
+                            }
+                            filterList[_dimension[0]] = temp;
+                        } else {
+                            filterList[_dimension[0]] = [d.data.key];
+                        }
                     }
 
                     var idWidget = broadcast.updateWidget[$(div).attr('id')];
                     broadcast.updateWidget = {};
                     broadcast.updateWidget[$(div).attr('id')] = idWidget;
-                    broadcast.filterSelection.filter = _filterDimension;
+                    broadcast.filterSelection.filter = filterList;
                     var _filterParameters = filterParameters.get();
-                    _filterParameters[dimension] = _filterDimension[dimension];
-                    filterParameters.save(_filterParameters);
+
+                    filterParameters.save(filterList);
                 })
         }
 
@@ -668,7 +628,7 @@ function treemap() {
 
         selection.each(function (data) {
 
-            var div = d3.select(this).node().parentNode;
+            div = d3.select(this).node().parentNode;
 
             var svg = d3.select(this),
                 width = +svg.attr('width') - 2 * COMMON.PADDING,

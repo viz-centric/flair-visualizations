@@ -255,9 +255,24 @@ function combo() {
                 filterData.map(function (val) {
                     list.push(val[_dimension[0]])
                 })
-                _filterList[_dimension[0]] = list
-                broadcast.filterSelection.filter = _filterList;
-                filterParameters.save(_filterList);
+
+                var _filterDimension = {};
+                if (broadcast.filterSelection.id) {
+                    _filterDimension = broadcast.filterSelection.filter;
+                } else {
+                    broadcast.filterSelection.id = $(div).attr('id');
+                }
+                var dimension = _dimension[0];
+
+                _filterDimension[dimension] = filterData.map(function (d) {
+                    return d[_dimension[0]];
+                });
+
+
+                broadcast.filterSelection.filter = _filterDimension;
+                var _filterParameters = filterParameters.get();
+                _filterParameters[dimension] = _filterDimension[dimension];
+                filterParameters.save(_filterParameters);
             }
         }
     }
@@ -298,7 +313,7 @@ function combo() {
             var border = UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor)
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border,_notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border, _notification);
             }
         }
     }
@@ -309,7 +324,7 @@ function combo() {
         return function (d, i) {
             if (tooltip) {
                 var border = UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor)
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border,_notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border, _notification);
             }
         }
     }
@@ -672,7 +687,11 @@ function combo() {
             .style('fill', function (d, i) {
                 return _textColor[_measure.indexOf(d['tag'])];
             });
-
+        if (!_print || _notification) {
+            point.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+        }
         if (!_print) {
             area.transition()
                 .duration(COMMON.DURATION)
@@ -704,9 +723,7 @@ function combo() {
                     return function (t) { return i(t); };
                 });
 
-            point.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+
         }
         else {
             line
@@ -868,8 +885,9 @@ function combo() {
     }
     var drawViz = function (element, keys) {
         var me = this;
+        var rect;
         if (!_print) {
-            element.append('rect')
+            rect = element.append('rect')
                 .attr('width', x1.bandwidth())
                 .style('fill', function (d, i) {
                     return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
@@ -890,73 +908,9 @@ function combo() {
 
                     return y(0);
                 })
-                .attr('height', 0)
-                .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
-                .on('click', function (d) {
-                    if ($("#myonoffswitch").prop('checked') == false) {
-                        $('#Modal_' + $(div).attr('id') + ' .measure').val(d.measure);
-                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
-                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
-                        $('#Modal_' + $(div).attr('id')).modal('toggle');
-                    }
-                    else {
-                        filter = false;
-                        var confirm = d3.select(div).select('.confirm')
-                            .style('visibility', 'visible');
-                        var _filter = _Local_data.filter(function (d1) {
-                            return d.data[_dimension[0]] === d1[_dimension[0]]
-                        })
-                        var rect = d3.select(this);
-                        if (rect.classed('selected')) {
-                            rect.classed('selected', false);
-                            filterData.map(function (val, i) {
-                                if (val[_dimension[0]] == d[_dimension[0]]) {
-                                    filterData.splice(i, 1)
-                                }
-                            })
-                        } else {
-                            rect.classed('selected', true);
-                            var isExist = filterData.filter(function (val) {
-                                if (val[_dimension[0]] == d[_dimension[0]]) {
-                                    return val
-                                }
-                            })
-                            if (isExist.length == 0) {
-                                filterData.push(_filter[0]);
-                            }
-                        }
+                .attr('height', 0);
 
-                        var _filterDimension = {};
-                        if (broadcast.filterSelection.id) {
-                            _filterDimension = broadcast.filterSelection.filter;
-                        } else {
-                            broadcast.filterSelection.id = $(div).attr('id');
-                        }
-                        var dimension = _dimension[0];
-                        if (_filterDimension[dimension]) {
-                            var temp = _filterDimension[dimension];
-                            if (temp.indexOf(d[_dimension[0]]) < 0) {
-                                temp.push(d[_dimension[0]]);
-                            } else {
-                                temp.splice(temp.indexOf(d[_dimension[0]]), 1);
-                            }
-                            _filterDimension[dimension] = temp;
-                        } else {
-                            _filterDimension[dimension] = [d[_dimension[0]]];
-                        }
-
-                        var idWidget = broadcast.updateWidget[$(div).attr('id')];
-                        broadcast.updateWidget = {};
-                        broadcast.updateWidget[$(div).attr('id')] = idWidget;
-                        broadcast.filterSelection.filter = _filterDimension;
-                        var _filterParameters = filterParameters.get();
-                        _filterParameters[dimension] = _filterDimension[dimension];
-                        filterParameters.save(_filterParameters);
-                    }
-                })
-                .transition()
+            rect.transition()
                 .duration(COMMON.DURATION)
                 .attr('x', function (d, i) {
                     return x1(measuresBar[i]);
@@ -1000,6 +954,9 @@ function combo() {
                 })
                 .style('text-anchor', 'middle')
                 .attr('visibility', function (d, i) {
+                    if (_notification) {
+                        return 'hidden';
+                    }
                     return UTIL.getVisibility(_showValues[i]);
                 })
                 .style('font-style', function (d, i) {
@@ -1021,7 +978,7 @@ function combo() {
                 });
         }
         else {
-            element.append('rect')
+            rect = element.append('rect')
                 .attr('width', x1.bandwidth())
                 .style('fill', function (d, i) {
                     return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
@@ -1048,6 +1005,74 @@ function combo() {
                 })
 
         }
+        if (!_print || _notification) {
+            rect.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+                .on('click', function (d) {
+                    if (!_print) {
+                        if ($("#myonoffswitch").prop('checked') == false) {
+                            $('#Modal_' + $(div).attr('id') + ' .measure').val(d.measure);
+                            $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
+                            $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
+                            $('#Modal_' + $(div).attr('id')).modal('toggle');
+                        }
+                        else {
+                            filter = false;
+                            var confirm = d3.select(div).select('.confirm')
+                                .style('visibility', 'visible');
+                            var _filter = _Local_data.filter(function (d1) {
+                                return d.data[_dimension[0]] === d1[_dimension[0]]
+                            })
+                            var rect = d3.select(this);
+                            if (rect.classed('selected')) {
+                                rect.classed('selected', false);
+                                filterData.map(function (val, i) {
+                                    if (val[_dimension[0]] == d[_dimension[0]]) {
+                                        filterData.splice(i, 1)
+                                    }
+                                })
+                            } else {
+                                rect.classed('selected', true);
+                                var isExist = filterData.filter(function (val) {
+                                    if (val[_dimension[0]] == d[_dimension[0]]) {
+                                        return val
+                                    }
+                                })
+                                if (isExist.length == 0) {
+                                    filterData.push(_filter[0]);
+                                }
+                            }
+
+                            var _filterDimension = {};
+                            if (broadcast.filterSelection.id) {
+                                _filterDimension = broadcast.filterSelection.filter;
+                            } else {
+                                broadcast.filterSelection.id = $(div).attr('id');
+                            }
+                            var dimension = _dimension[0];
+                            if (_filterDimension[dimension]) {
+                                _filterDimension[dimension] = filterData.map(function (d) {
+                                    return d[_dimension[0]];
+                                });
+                            } else {
+                                _filterDimension[dimension] = [d[_dimension[0]]];
+                            }
+
+                            var idWidget = broadcast.updateWidget[$(div).attr('id')];
+                            broadcast.updateWidget = {};
+                            broadcast.updateWidget[$(div).attr('id')] = idWidget;
+                            broadcast.filterSelection.filter = _filterDimension;
+                            var _filterParameters = filterParameters.get();
+                            _filterParameters[dimension] = _filterDimension[dimension];
+                            filterParameters.save(_filterParameters);
+                        }
+                    }
+
+                })
+
+        }
+
 
     }
     chart._legendInteraction = function (event, data, plot) {

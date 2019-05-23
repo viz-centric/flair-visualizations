@@ -186,9 +186,24 @@ function stackedhorizontalbar() {
                 filterData.map(function (val) {
                     list.push(val[_dimension[0]])
                 })
-                _filterList[_dimension[0]] = list
-                broadcast.filterSelection.filter = _filterList;
-                filterParameters.save(_filterList);
+
+                var _filterDimension = {};
+                if (broadcast.filterSelection.id) {
+                    _filterDimension = broadcast.filterSelection.filter;
+                } else {
+                    broadcast.filterSelection.id = $(div).attr('id');
+                }
+                var dimension = _dimension[0];
+
+                _filterDimension[dimension] = filterData.map(function (d) {
+                    return d[_dimension[0]];
+                });
+
+
+                broadcast.filterSelection.filter = _filterDimension;
+                var _filterParameters = filterParameters.get();
+                _filterParameters[dimension] = _filterDimension[dimension];
+                filterParameters.save(_filterParameters);
             }
         }
     }
@@ -227,7 +242,7 @@ function stackedhorizontalbar() {
             var border = UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor)
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border,_notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border, _notification);
             }
         }
     }
@@ -238,7 +253,7 @@ function stackedhorizontalbar() {
         return function (d, i) {
             if (tooltip) {
                 var border = UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor)
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border,_notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border, _notification);
             }
         }
     }
@@ -368,8 +383,9 @@ function stackedhorizontalbar() {
 
     var drawViz = function (element) {
         var me = this;
+        var rect;
         if (!_print) {
-            element.append('rect')
+            rect = element.append('rect')
                 .style('fill', function (d, i) {
                     return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
                 })
@@ -387,71 +403,8 @@ function stackedhorizontalbar() {
                 })
                 .attr("height", x.bandwidth())
                 .style('stroke-width', 2)
-                .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
-                .on('click', function (d) {
-                    if ($("#myonoffswitch").prop('checked') == false) {
-                        $('#Modal_' + $(div).attr('id') + ' .measure').val(d.key);
-                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
-                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
-                        $('#Modal_' + $(div).attr('id')).modal('toggle');
-                    }
-                    else {
-                        filter = false;
-                        var confirm = d3.select(div).select('.confirm')
-                            .style('visibility', 'visible');
-                        var _filter = _Local_data.filter(function (d1) {
-                            return d.data[_dimension[0]] === d1[_dimension[0]]
-                        })
-                        var rect = d3.select(this);
-                        if (rect.classed('selected')) {
-                            rect.classed('selected', false);
-                            filterData.map(function (val, i) {
-                                if (val[_dimension[0]] == d[_dimension[0]]) {
-                                    filterData.splice(i, 1)
-                                }
-                            })
-                        } else {
-                            rect.classed('selected', true);
-                            var isExist = filterData.filter(function (val) {
-                                if (val[_dimension[0]] == d[_dimension[0]]) {
-                                    return val
-                                }
-                            })
-                            if (isExist.length == 0) {
-                                filterData.push(_filter[0]);
-                            }
-                        }
-                        var _filterDimension = {};
-                        if (broadcast.filterSelection.id) {
-                            _filterDimension = broadcast.filterSelection.filter;
-                        } else {
-                            broadcast.filterSelection.id = $(div).attr('id');
-                        }
-                        var dimension = _dimension[0];
-                        if (_filterDimension[dimension]) {
-                            var temp = _filterDimension[dimension];
-                            if (temp.indexOf(d.data[_dimension[0]]) < 0) {
-                                temp.push(d.data[_dimension[0]]);
-                            } else {
-                                temp.splice(temp.indexOf(d.data[_dimension[0]]), 1);
-                            }
-                            _filterDimension[dimension] = temp;
-                        } else {
-                            _filterDimension[dimension] = [d.data[_dimension[0]]];
-                        }
 
-                        var idWidget = broadcast.updateWidget[$(div).attr('id')];
-                        broadcast.updateWidget = {};
-                        broadcast.updateWidget[$(div).attr('id')] = idWidget;
-                        broadcast.filterSelection.filter = _filterDimension;
-                        var _filterParameters = filterParameters.get();
-                        _filterParameters[dimension] = _filterDimension[dimension];
-                        filterParameters.save(_filterParameters);
-                    }
-                })
-                .transition()
+            rect.transition()
                 .duration(COMMON.DURATION)
                 .attr("y", function (d) {
                     return x(d.data[_dimension[0]]);
@@ -466,7 +419,7 @@ function stackedhorizontalbar() {
                 .on('end', setValueOnPoints);
         }
         else {
-            element.append('rect')
+            rect = element.append('rect')
                 .style('fill', function (d, i) {
                     return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
                 })
@@ -485,6 +438,72 @@ function stackedhorizontalbar() {
                 .attr("height", x.bandwidth())
                 .style('stroke-width', 2)
             setValueOnPoints()
+        }
+
+        if (!_print || _notification) {
+            rect.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+                .on('click', function (d) {
+                    if (!_print) {
+                        if ($("#myonoffswitch").prop('checked') == false) {
+                            $('#Modal_' + $(div).attr('id') + ' .measure').val(d.key);
+                            $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
+                            $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
+                            $('#Modal_' + $(div).attr('id')).modal('toggle');
+                        }
+                        else {
+                            filter = false;
+                            var confirm = d3.select(div).select('.confirm')
+                                .style('visibility', 'visible');
+                            var _filter = _Local_data.filter(function (d1) {
+                                return d.data[_dimension[0]] === d1[_dimension[0]]
+                            })
+                            var rect = d3.select(this);
+                            if (rect.classed('selected')) {
+                                rect.classed('selected', false);
+                                filterData.map(function (val, i) {
+                                    if (val[_dimension[0]] == d[_dimension[0]]) {
+                                        filterData.splice(i, 1)
+                                    }
+                                })
+                            } else {
+                                rect.classed('selected', true);
+                                var isExist = filterData.filter(function (val) {
+                                    if (val[_dimension[0]] == d[_dimension[0]]) {
+                                        return val
+                                    }
+                                })
+                                if (isExist.length == 0) {
+                                    filterData.push(_filter[0]);
+                                }
+                            }
+                            var _filterDimension = {};
+                            if (broadcast.filterSelection.id) {
+                                _filterDimension = broadcast.filterSelection.filter;
+                            } else {
+                                broadcast.filterSelection.id = $(div).attr('id');
+                            }
+                            var dimension = _dimension[0];
+                            if (_filterDimension[dimension]) {
+                                _filterDimension[dimension] = filterData.map(function (d) {
+                                    return d[_dimension[0]];
+                                });
+                            } else {
+                                _filterDimension[dimension] = [d.data[_dimension[0]]];
+                            }
+
+                            var idWidget = broadcast.updateWidget[$(div).attr('id')];
+                            broadcast.updateWidget = {};
+                            broadcast.updateWidget[$(div).attr('id')] = idWidget;
+                            broadcast.filterSelection.filter = _filterDimension;
+                            var _filterParameters = filterParameters.get();
+                            _filterParameters[dimension] = _filterDimension[dimension];
+                            filterParameters.save(_filterParameters);
+                        }
+                    }
+
+                })
         }
 
         function setValueOnPoints() {
@@ -509,7 +528,9 @@ function stackedhorizontalbar() {
                     var rect = d3.select(this.previousElementSibling).node(),
                         rectWidth = rect.getAttribute('width'),
                         rectHeight = rect.getAttribute('height');
-
+                    if (_notification) {
+                        return 'hidden';
+                    }
                     if (!_print) {
                         if (this.getAttribute('visibility') == 'hidden') return 'hidden';
 
