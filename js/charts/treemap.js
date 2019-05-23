@@ -272,7 +272,7 @@ function treemap() {
             var border = d3.select(this).attr('fill');
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border,_notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border, _notification);
             }
         }
     }
@@ -283,7 +283,7 @@ function treemap() {
         return function (d, i) {
             if (tooltip) {
                 var border = d3.select(this).attr('fill');
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border,_notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border, _notification);
             }
         }
     }
@@ -505,71 +505,64 @@ function treemap() {
                     filter = false;
                     var confirm = d3.select(div).select('.confirm')
                         .style('visibility', 'visible');
-                    var _filter = _localData.filter(function (d1) {
-                        return d.data.key === d1[_dimension[1]]
-                    })
-                    var rect = d3.select(this);
-                    if (rect.classed('selected')) {
-                        rect.classed('selected', false);
-                        filterData.map(function (val, i) {
-                            if (val[_dimension[0]] == d[_dimension[0]]) {
-                                filterData.splice(i, 1)
-                            }
+
+                    if (_dimension.length == 2) {
+                        var _filter = _localData.filter(function (d1) {
+                            return d.data.key === d1[_dimension[1]]
                         })
-                    } else {
-                        rect.classed('selected', true);
-                        if (d.children != undefined) {
-                            for (var index = 0; index < d.data.values.length; index++) {
-
-                                var isExist = filterData.filter(function (val) {
-                                    if (val[_dimension[1]] == d.data.key) {
-                                        return val
-                                    }
-                                })
-                                if (isExist.length == 0) {
-                                    var searchObj = _localData.find(o => o[_dimension[1]] === d.data.values[index].key);
-
+                        var rect = d3.select(this);
+                        if (rect.classed('selected')) {
+                            rect.classed('selected', false);
+                            filterData.map(function (val, i) {
+                                if (val[_dimension[0]] == d[_dimension[0]]) {
+                                    filterData.splice(i, 1)
+                                }
+                            })
+                        } else {
+                            rect.classed('selected', true);
+                            if (d.children != undefined) {
+                                for (var index = 0; index < d.data.values.length; index++) {
 
                                     var isExist = filterData.filter(function (val) {
-                                        if (val[_dimension[0]] == searchObj[_dimension[0]] && val[_dimension[1]] == searchObj[_dimension[1]]) {
+                                        if (val[_dimension[1]] == d.data.key) {
                                             return val
                                         }
                                     })
                                     if (isExist.length == 0) {
-                                        filterData.push(searchObj);
+                                        var searchObj = _localData.find(o => o[_dimension[1]] === d.data.values[index].key);
+
+
+                                        var isExist = filterData.filter(function (val) {
+                                            if (val[_dimension[0]] == searchObj[_dimension[0]] && val[_dimension[1]] == searchObj[_dimension[1]]) {
+                                                return val
+                                            }
+                                        })
+                                        if (isExist.length == 0) {
+                                            filterData.push(searchObj);
+                                        }
                                     }
                                 }
                             }
-                        }
-                        else {
-                            var isExist = filterData.filter(function (val) {
-                                if (val[_dimension[0]] == d[_dimension[0]]) {
-                                    return val
+                            else {
+                                var isExist = filterData.filter(function (val) {
+                                    if (val[_dimension[0]] == d[_dimension[0]]) {
+                                        return val
+                                    }
+                                })
+                                if (isExist.length == 0) {
+                                    filterData.push(_filter[0]);
                                 }
-                            })
-                            if (isExist.length == 0) {
-                                filterData.push(_filter[0]);
                             }
-                        }
 
+                        }
                     }
-                    var confirm = d3.select(div).select('.confirm')
-                        .style('visibility', 'visible');
-                    var _filter = _Local_data.filter(function (d1) {
-                        return d.data[_dimension[0]] === d1[_dimension[0]]
-                    })
-                    var rect = d3.select(this);
-                    if (rect.classed('selected')) {
-                        rect.classed('selected', false);
-                        filterData.map(function (val, i) {
-                            if (val[_dimension[0]] == d.data[_dimension[0]]) {
-                                filterData.splice(i, 1)
-                            }
+
+                    else {
+                        var _filter = _localData.filter(function (d1) {
+                            return d.data.key === d1[_dimension[0]]
                         })
-                    } else {
-                        rect.classed('selected', true);
                         var isExist = filterData.filter(function (val) {
-                            if (val[_dimension[0]] == d.data[_dimension[0]]) {
+                            if (val[_dimension[0]] == d[_dimension[0]]) {
                                 return val
                             }
                         })
@@ -577,6 +570,7 @@ function treemap() {
                             filterData.push(_filter[0]);
                         }
                     }
+
 
                     var _filterDimension = {};
                     if (broadcast.filterSelection.id) {
@@ -594,7 +588,7 @@ function treemap() {
                         }
                         _filterDimension[dimension] = temp;
                     } else {
-                        _filterDimension[dimension] = [d.data[_dimension[0]]];
+                        _filterDimension[dimension] = [d.data.key];
                     }
 
                     var idWidget = broadcast.updateWidget[$(div).attr('id')];
@@ -668,7 +662,7 @@ function treemap() {
 
         selection.each(function (data) {
 
-            var div = d3.select(this).node().parentNode;
+            div = d3.select(this).node().parentNode;
 
             var svg = d3.select(this),
                 width = +svg.attr('width') - 2 * COMMON.PADDING,

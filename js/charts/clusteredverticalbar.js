@@ -188,9 +188,24 @@ function clusteredverticalbar() {
                 filterData.map(function (val) {
                     list.push(val[_dimension[0]])
                 })
-                _filterList[_dimension[0]] = list
-                broadcast.filterSelection.filter = _filterList;
-                filterParameters.save(_filterList);
+
+                var _filterDimension = {};
+                if (broadcast.filterSelection.id) {
+                    _filterDimension = broadcast.filterSelection.filter;
+                } else {
+                    broadcast.filterSelection.id = $(div).attr('id');
+                }
+                var dimension = _dimension[0];
+
+                _filterDimension[dimension] = filterData.map(function (d) {
+                    return d[_dimension[0]];
+                });
+
+
+                broadcast.filterSelection.filter = _filterDimension;
+                var _filterParameters = filterParameters.get();
+                _filterParameters[dimension] = _filterDimension[dimension];
+                filterParameters.save(_filterParameters);
             }
         }
     }
@@ -700,7 +715,7 @@ function clusteredverticalbar() {
                     return x1(d.measure);;
                 })
         }
-        if (_print == false || _notification == true) {
+        if (!_print || _notification) {
             rect.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
@@ -748,13 +763,9 @@ function clusteredverticalbar() {
                         }
                         var dimension = _dimension[0];
                         if (_filterDimension[dimension]) {
-                            var temp = _filterDimension[dimension];
-                            if (temp.indexOf(d[dimension]) < 0) {
-                                temp.push(d[dimension]);
-                            } else {
-                                temp.splice(temp.indexOf(d[dimension]), 1);
-                            }
-                            _filterDimension[dimension] = temp;
+                            _filterDimension[dimension] = filterData.map(function (d) {
+                                return d[_dimension[0]];
+                            });
                         } else {
                             _filterDimension[dimension] = [d[dimension]];
                         }
