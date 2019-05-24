@@ -27,7 +27,7 @@ function treemap() {
         fontWeightForMes,
         fontSizeForMes,
         numberFormat,
-
+        colorSet,
         showLabelForDimension = [],
         labelColorForDimension = [],
         displayColor = [],
@@ -69,6 +69,7 @@ function treemap() {
         this.showLabel(config.showLabel);
         this.colorPattern(config.colorPattern);
         this.showValues(config.showValues);
+        this.colorSet(config.colorSet);
         this.valueTextColour(config.valueTextColour);
         this.fontStyleForMes(config.fontStyleForMes);
         this.fontWeightForMes(config.fontWeightForMes);
@@ -117,19 +118,7 @@ function treemap() {
             }
         } else if (colorPattern == 'unique_color') {
 
-            var defaultColors = ['#4897D8',
-                '#ED5752',
-                '#5BC8AC',
-                '#20948B',
-                '#9A9EAB',
-                '#755248',
-                '#FA6E59',
-                '#CF3721',
-                '#31A9B8',
-                '#EFEFEF',
-                '#34675C',
-                '#AF4425'
-            ]
+            var defaultColors = colorSet;
             return defaultColors[index % (defaultColors.length)];
             // return d3.schemeCategory20c[index % (d3.schemeCategory20c.length)];
         } else if (colorPattern == 'gradient_color') {
@@ -1052,6 +1041,13 @@ function treemap() {
             return _notification;
         }
         _notification = value;
+        return chart;
+    }
+    chart.colorSet = function (value) {
+        if (!arguments.length) {
+            return colorSet;
+        }
+        colorSet = value;
         return chart;
     }
     return chart;

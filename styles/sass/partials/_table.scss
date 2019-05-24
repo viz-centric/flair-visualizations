@@ -12,3 +12,9 @@
     width: auto !important;
   }
 }
+#viz_pivot-table_wrapper .table th {
+  font-weight: bold;
+  border-bottom: 0px;
+  border-left: 1px solid #d3d4d4;
+  border-right: 1px solid #d3d4d4;
+}

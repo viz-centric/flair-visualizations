@@ -191,7 +191,7 @@ function table() {
         } else {
             broadcast.filterSelection.id = d3.select(div.node()).attr('id');
         }
-        var dimension = _dimension[0];
+        var dimension = str.id;
         if (_filterDimension[dimension]) {
             var temp = _filterDimension[dimension];
             if (temp.indexOf(str.textContent) < 0) {

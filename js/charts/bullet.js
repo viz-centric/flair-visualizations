@@ -164,7 +164,7 @@ function bullet() {
             if (data.length > 0) {
                 data.forEach(function (d) {
                     var obj = new Object();
-                    obj[dimension] = d.title;
+                    obj[dimension[0]] = d.title;
                     obj[measures[0]] = d.measures.toString();
                     obj[measures[1]] = d.markers.toString();
 
@@ -187,9 +187,20 @@ function bullet() {
                 filterData.map(function (val) {
                     list.push(val[dimension[0]])
                 })
-                _filterList[dimension[0]] = list
-                broadcast.filterSelection.filter = _filterList;
-                filterParameters.save(_filterList);
+                var _filterDimension = {};
+                if (broadcast.filterSelection.id) {
+                    _filterDimension = broadcast.filterSelection.filter;
+                } else {
+                    broadcast.filterSelection.id = $(div).attr('id');
+                }
+                _filterDimension[dimension] = filterData.map(function (d) {
+                    return d[dimension[0]];
+                });
+
+                broadcast.filterSelection.filter = _filterDimension;
+                var _filterParameters = filterParameters.get();
+                _filterParameters[dimension] = _filterDimension[dimension];
+                filterParameters.save(_filterParameters);
             }
         }
     }
@@ -232,7 +243,7 @@ function bullet() {
 
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, valueColor,_notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, valueColor, _notification);
             }
         }
     }
@@ -242,7 +253,7 @@ function bullet() {
 
         return function (d, i) {
             if (tooltip) {
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, valueColor,_notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, valueColor, _notification);
             }
         }
     }
@@ -521,6 +532,33 @@ function bullet() {
 
                             filterData.push(obj)
                         }
+
+                        var _filterDimension = {};
+                        if (broadcast.filterSelection.id) {
+                            _filterDimension = broadcast.filterSelection.filter;
+                        } else {
+                            broadcast.filterSelection.id = $(div).attr('id');
+                        }
+                        var _dimension = dimension[0];
+                        if (_filterDimension[_dimension]) {
+                            var temp = _filterDimension[_dimension];
+                            if (temp.indexOf(d.title) < 0) {
+                                temp.push(d.title);
+                            } else {
+                                temp.splice(temp.indexOf(d.title), 1);
+                            }
+                            _filterDimension[_dimension] = temp;
+                        } else {
+                            _filterDimension[_dimension] = [d.title];
+                        }
+
+                        var idWidget = broadcast.updateWidget[$(div).attr('id')];
+                        broadcast.updateWidget = {};
+                        broadcast.updateWidget[$(div).attr('id')] = idWidget;
+                        broadcast.filterSelection.filter = _filterDimension;
+                        var _filterParameters = filterParameters.get();
+                        _filterParameters[_dimension] = _filterDimension[_dimension];
+                        filterParameters.save(_filterParameters);
                     })
 
 
@@ -636,7 +674,6 @@ function bullet() {
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
             .on('click', function (d) {
-                filter = false;
                 var confirm = d3.select(div).select('.confirm')
                     .style('visibility', 'visible');
 
@@ -665,17 +702,17 @@ function bullet() {
                 } else {
                     broadcast.filterSelection.id = $(div).attr('id');
                 }
-                var dimension = _dimension[0];
-                if (_filterDimension[dimension]) {
-                    var temp = _filterDimension[dimension];
+                var _dimension = dimension[0];
+                if (_filterDimension[_dimension]) {
+                    var temp = _filterDimension[_dimension];
                     if (temp.indexOf(d.title) < 0) {
                         temp.push(d.title);
                     } else {
                         temp.splice(temp.indexOf(d.title), 1);
                     }
-                    _filterDimension[dimension] = temp;
+                    _filterDimension[_dimension] = temp;
                 } else {
-                    _filterDimension[dimension] = [d.title];
+                    _filterDimension[_dimension] = [d.title];
                 }
 
                 var idWidget = broadcast.updateWidget[$(div).attr('id')];
@@ -683,7 +720,7 @@ function bullet() {
                 broadcast.updateWidget[$(div).attr('id')] = idWidget;
                 broadcast.filterSelection.filter = _filterDimension;
                 var _filterParameters = filterParameters.get();
-                _filterParameters[dimension] = _filterDimension[dimension];
+                _filterParameters[_dimension] = _filterDimension[_dimension];
                 filterParameters.save(_filterParameters);
             })
             .call(bullet);

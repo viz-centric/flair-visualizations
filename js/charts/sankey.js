@@ -147,28 +147,18 @@ function sankey() {
                 .css('visibility', 'visible');
 
             var _filter = [];
+            var _filterList = {};
             if (data.length > 0) {
 
                 data.forEach(function (d) {
-                    if (d.nodeType == dimension[0]) {
-                        _Local_data.map(function (val) {
-                            if (dimension[0] == d.nodeType && val[dimension[0]] == d.name) {
-                                var searchObj = _filter.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
-                                if (searchObj == undefined) {
-                                    _filter.push(val)
-                                }
-                            }
-                        })
-                    }
-                    else {
-                        _Local_data.map(function (val) {
-                            if (dimension[1] == d.nodeType && val[dimension[1]] == d.name) {
-                                var searchObj = _filter.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
-                                if (searchObj == undefined) {
-                                    _filter.push(val)
-                                }
-                            }
-                        })
+                    if (_filterList[d.nodeType]) {
+                        var temp = _filterList[d.nodeType];
+                        if (temp.indexOf(d.name) < 0) {
+                            temp.push(d.name);
+                        }
+                        _filterList[d.nodeType] = temp;
+                    } else {
+                        _filterList[d.nodeType] = [d.name];
                     }
                 });
             }
@@ -176,41 +166,43 @@ function sankey() {
                 filterData = []
             }
             if (_filter.length > 0) {
-                filterData = _filter;
+                filterData = _filterList;
             }
             if (broadcast) {
                 var idWidget = broadcast.updateWidget[scope.parentElement.id];
                 broadcast.updateWidget = {};
                 broadcast.updateWidget[scope.parentElement.id] = idWidget;
+                var _filterDimension = {};
+                if (broadcast.filterSelection.id) {
+                    _filterDimension = broadcast.filterSelection.filter;
+                } else {
+                    broadcast.filterSelection.id = $(div).attr('id');
+                }
 
-                var _filterList = {}, list = []
+                _filterDimension = _filterList
 
-                filterData.map(function (val) {
-                    list.push(val[dimension[0]])
-                })
-
-                list = list.filter(function (item, i, ar) { return ar.indexOf(item) === i; });
-                _filterList[dimension[0]] = list
-                broadcast.filterSelection.filter = _filterList;
-                filterParameters.save(_filterList);
+                broadcast.filterSelection.filter = _filterDimension;
+                var _filterParameters = filterParameters.get();
+                _filterParameters = _filterDimension;
+                filterParameters.save(_filterParameters);
             }
         }
     }
 
     var applyFilter = function () {
         return function () {
-            if (filterData.length > 0) {
-                //Viz renders twice issue
-                // chart.update(filterData);
-                if (broadcast) {
-                    broadcast.updateWidget = {};
-                    broadcast.filterSelection.id = null;
-                    broadcast.$broadcast('flairbiApp:filter-input-refresh');
-                    broadcast.$broadcast('flairbiApp:filter');
-                    broadcast.$broadcast('flairbiApp:filter-add');
-                    d3.select(this.parentNode)
-                        .style('visibility', 'hidden');
-                }
+
+            //Viz renders twice issue
+            // chart.update(filterData);
+            if (broadcast) {
+                broadcast.updateWidget = {};
+                broadcast.filterSelection.id = null;
+                broadcast.$broadcast('flairbiApp:filter-input-refresh');
+                broadcast.$broadcast('flairbiApp:filter');
+                broadcast.$broadcast('flairbiApp:filter-add');
+                d3.select(this.parentNode)
+                    .style('visibility', 'hidden');
+
             }
         }
     }
@@ -230,7 +222,7 @@ function sankey() {
             var border = d3.select(this).attr('fill')
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, element), container, border,_notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, element), container, border, _notification);
             }
         }
     }
@@ -241,7 +233,7 @@ function sankey() {
         return function (d, i) {
             if (tooltip) {
                 var border = d3.select(this).attr('fill')
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, element), container, border,_notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, element), container, border, _notification);
             }
         }
     }
@@ -500,7 +492,7 @@ function sankey() {
                                 }
                             })
                         }
-                    
+
                         var _filter = _Local_data.filter(function (d1) {
                             return d.data[_dimension[0]] === d1[_dimension[0]]
                         })
