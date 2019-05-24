@@ -102,7 +102,7 @@ function heatmap() {
             var border = d3.select(this).attr('fill');
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border,_notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border, _notification);
             }
         }
     }
@@ -113,7 +113,7 @@ function heatmap() {
         return function (d, i) {
             if (tooltip) {
                 var border = getFillColor(d);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border,_notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border, _notification);
             }
         }
     }
@@ -317,27 +317,40 @@ function heatmap() {
                 filterData.map(function (val) {
                     list.push(val[_dimension[0]])
                 })
-                _filterList[_dimension[0]] = list
-                broadcast.filterSelection.filter = _filterList;
-                filterParameters.save(_filterList);
+
+                var _filterDimension = {};
+                if (broadcast.filterSelection.id) {
+                    _filterDimension = broadcast.filterSelection.filter;
+                } else {
+                    broadcast.filterSelection.id = $(div).attr('id');
+                }
+                var dimension = _dimension[0];
+
+                _filterDimension[dimension] = filterData.map(function (d) {
+                    return d[_dimension[0]];
+                });
+
+                broadcast.filterSelection.filter = _filterDimension;
+                var _filterParameters = filterParameters.get();
+                _filterParameters[dimension] = _filterDimension[dimension];
+                filterParameters.save(_filterParameters);
             }
         }
     }
 
     var applyFilter = function () {
         return function () {
-            if (filterData.length > 0) {
-                //Viz renders twice issue
-                // chart.update(filterData);
-                if (broadcast) {
-                    broadcast.updateWidget = {};
-                    broadcast.filterSelection.id = null;
-                    broadcast.$broadcast('flairbiApp:filter-input-refresh');
-                    broadcast.$broadcast('flairbiApp:filter');
-                    broadcast.$broadcast('flairbiApp:filter-add');
-                    d3.select(this.parentNode)
-                        .style('visibility', 'hidden');
-                }
+            //Viz renders twice issue
+            // chart.update(filterData);
+            if (broadcast) {
+                broadcast.updateWidget = {};
+                broadcast.filterSelection.id = null;
+                broadcast.$broadcast('flairbiApp:filter-input-refresh');
+                broadcast.$broadcast('flairbiApp:filter');
+                broadcast.$broadcast('flairbiApp:filter-add');
+                d3.select(this.parentNode)
+                    .style('visibility', 'hidden');
+
             }
         }
     }
@@ -509,25 +522,15 @@ function heatmap() {
                     var _filter = _localData.filter(function (d1) {
                         return d.y === d1[_dimension[0]]
                     })
+
                     var rect = d3.select(this).select('rect');
+
                     if (rect.classed('selected')) {
                         rect.classed('selected', false);
-                        filterData.map(function (val, i) {
-                            if (val[_dimension[0]] == d[_dimension[0]]) {
-                                filterData.splice(i, 1)
-                            }
-                        })
                     } else {
                         rect.classed('selected', true);
-                        var isExist = filterData.filter(function (val) {
-                            if (val[_dimension[0]] == d[_dimension[0]]) {
-                                return val
-                            }
-                        })
-                        if (isExist.length == 0) {
-                            filterData.push(_filter[0]);
-                        }
                     }
+
                     var _filterDimension = {};
                     if (broadcast.filterSelection.id) {
                         _filterDimension = broadcast.filterSelection.filter;
@@ -537,14 +540,14 @@ function heatmap() {
                     var dimension = _dimension[0];
                     if (_filterDimension[dimension]) {
                         var temp = _filterDimension[dimension];
-                        if (temp.indexOf(d[_dimension[0]]) < 0) {
-                            temp.push(d[_dimension[0]]);
+                        if (temp.indexOf(d.y) < 0) {
+                            temp.push(d.y);
                         } else {
-                            temp.splice(temp.indexOf(d[_dimension[0]]), 1);
+                            temp.splice(temp.indexOf(d.y), 1);
                         }
                         _filterDimension[dimension] = temp;
                     } else {
-                        _filterDimension[dimension] = [d[_dimension[0]]];
+                        _filterDimension[dimension] = [d.y];
                     }
 
                     var idWidget = broadcast.updateWidget[$(div).attr('id')];
