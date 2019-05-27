@@ -154,8 +154,8 @@ function clusteredverticalbar() {
 
             lasso.notSelectedItems().selectAll('rect');
 
-            var confirm = $(scope).parent().find('div.confirm')
-                .css('visibility', 'visible');
+            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
+                .style('visibility', 'visible')
 
             var _filter = [];
             if (data.length > 0) {
@@ -179,9 +179,9 @@ function clusteredverticalbar() {
             }
 
             if (broadcast) {
-                var idWidget = broadcast.updateWidget[scope.parentElement.id];
+                var idWidget = broadcast.updateWidget[scope.node().parentNode.id];
                 broadcast.updateWidget = {};
-                broadcast.updateWidget[scope.parentElement.id] = idWidget;
+                broadcast.updateWidget[scope.node().parentNode.id] = idWidget;
 
                 var _filterList = {}, list = []
 
@@ -200,7 +200,6 @@ function clusteredverticalbar() {
                 _filterDimension[dimension] = filterData.map(function (d) {
                     return d[_dimension[0]];
                 });
-
 
                 broadcast.filterSelection.filter = _filterDimension;
                 var _filterParameters = filterParameters.get();
@@ -383,7 +382,7 @@ function clusteredverticalbar() {
     }
 
     var drawPlot = function (data) {
-        var me = this;
+        var me = _local_svg;
         _Local_data = data;
         filterData = [];
 
@@ -573,7 +572,7 @@ function clusteredverticalbar() {
 
         if (!_print) {
 
-            var confirm = $(me).parent().find('div.confirm')
+            var confirm = $(_local_svg).parent().find('div.confirm')
                 .css('visibility', 'hidden');
 
             _local_svg.attr('class', 'chartSvg_' + $(div).attr('id'));
@@ -624,7 +623,7 @@ function clusteredverticalbar() {
                             UTIL.toggleSortSelection(me, 'descending', drawPlot, _local_svg, keys, _Local_data);
                             break;
                         case 'reset': {
-                            $(me).parent().find('.sort_selection,.arrow-down').css('visibility', 'hidden');
+                            $(_local_svg).parent().find('.sort_selection,.arrow-down').css('visibility', 'hidden');
                             _local_svg.select('.plot').remove()
                             drawPlot.call(me, _originalData);
 
@@ -648,9 +647,9 @@ function clusteredverticalbar() {
                 .items(cluster)
                 .targetArea(_local_svg);
 
-            lasso.on('start', onLassoStart(lasso, me))
-                .on('draw', onLassoDraw(lasso, me))
-                .on('end', onLassoEnd(lasso, me));
+            lasso.on('start', onLassoStart(lasso, _local_svg))
+                .on('draw', onLassoDraw(lasso, _local_svg))
+                .on('end', onLassoEnd(lasso, _local_svg));
 
             _local_svg.call(lasso);
         }
@@ -660,27 +659,6 @@ function clusteredverticalbar() {
         var rect;
         if (!_print) {
             rect = element.append('rect')
-                .attr("x", function (d) {
-                    return 0;
-                })
-                .attr("y", function (d) {
-                    return y(d[d.measure]);
-                })
-                .attr('class', 'bar')
-                .attr("width", x1.bandwidth())
-                .attr("height", function (d) {
-                    return 0;
-                })
-                .style('fill', function (d, i) {
-                    return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
-                })
-                .style('stroke', function (d, i) {
-                    return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
-                })
-                .style('stroke-width', 2);
-
-            rect.transition()
-                .duration(COMMON.DURATION)
                 .attr("height", function (d, i) {
                     return plotHeight - y(d[d.measure]);
                 })
@@ -691,6 +669,19 @@ function clusteredverticalbar() {
                 .attr("x", function (d, i) {
                     return x1(d.measure);;
                 })
+                .attr('class', 'bar')
+                .style('fill', function (d, i) {
+                    return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                })
+                .style('stroke', function (d, i) {
+                    return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
+                })
+                .style('opacity', 0)
+                .style('stroke-width', 2);
+
+            rect.transition()
+                .duration(COMMON.DURATION)
+                .style('opacity', 1)
 
 
         }
@@ -786,7 +777,7 @@ function clusteredverticalbar() {
                 return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat));
             })
             .attr("y", function (d, i) {
-                return y(d[d.measure]);
+                return y(d[d.measure]) + _fontSize[i];
             })
             .attr("x", function (d) {
                 return x1(d.measure) + (x1.bandwidth() / 2);
@@ -810,17 +801,31 @@ function clusteredverticalbar() {
             .style('fill', function (d, i) {
                 return _textColor[i];
             })
-            .text(function (d, i) {
-                if (!print) {
-                    var barWidth = (1 - x0.padding()) * plotWidth / (_Local_data.length - 1);
-                    barWidth = (1 - x1.padding()) * barWidth / keys.length;
-                    return UTIL.getTruncatedTick(d3.select(this).text(), barWidth, tickLength);
+            .attr('visibility', function (d, i) {
+                var rect = d3.select(this.previousElementSibling).node(),
+                    rectWidth = rect.getAttribute('width'),
+                    rectHeight = rect.getAttribute('height');
+                if (_notification) {
+                    return 'hidden';
                 }
-                else {
-                    return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat));
-                }
+                if (!_print) {
+                    if (this.getAttribute('visibility') == 'hidden') return 'hidden';
 
-            });
+                    if (rectHeight <= ((offsetX / 2) + parseFloat(d3.select(this).style('font-size').replace('px', '')))) {
+                        return 'hidden';
+                    }
+
+                    if (this.getComputedTextLength() > parseFloat(rectWidth)) {
+                        d3.select(this).style('font-size', '9px')
+                        d3.select(this).attr('y', y(d[d.measure]) + 9);
+                        if (this.getComputedTextLength() > parseFloat(rectWidth)) {
+                            return 'hidden';
+                        }
+                    }
+                }
+                return 'visible';
+            })
+
     }
     chart._legendInteraction = function (event, data, plot) {
         if (_print) {
@@ -936,13 +941,6 @@ function clusteredverticalbar() {
             });
 
         clusteredverticalbar.select('rect')
-            .attr('class', 'bar')
-            .attr("width", x1.bandwidth())
-            .attr("height", function (d) {
-                return 0;
-            })
-            .transition()
-            .duration(DURATION)
             .attr("height", function (d, i) {
                 return plotHeight - y(d[d.measure]);
             })
@@ -953,6 +951,18 @@ function clusteredverticalbar() {
             .attr("x", function (d, i) {
                 return x1(d.measure);;
             })
+            .attr('class', 'bar')
+            .style('fill', function (d, i) {
+                return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+            })
+            .style('stroke', function (d, i) {
+                return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
+            })
+            .style('opacity', 1)
+            .style('stroke-width', 2)
+            .transition()
+            .duration(DURATION)
+            .style('opacity', 1)
 
         var newBars = clusteredverticalbar.enter().append('g')
             .attr('class', 'clusteredverticalbar');
@@ -964,7 +974,7 @@ function clusteredverticalbar() {
                 return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat));
             })
             .attr("y", function (d, i) {
-                return y(d[d.measure]);
+                return y(d[d.measure]) + _fontSize[i];
             })
             .attr("x", function (d) {
                 return x1(d.measure) + (x1.bandwidth() / 2);
@@ -973,16 +983,45 @@ function clusteredverticalbar() {
                 return COMMON.OFFSET;
             })
             .style('text-anchor', 'middle')
-            .text(function (d, i) {
-                if (!print) {
-                    var barWidth = (1 - x0.padding()) * plotWidth / (_Local_data.length - 1);
-                    barWidth = (1 - x1.padding()) * barWidth / keys.length;
-                    return UTIL.getTruncatedTick(d3.select(this).text(), barWidth, tickLength);
+            .attr('visibility', function (d, i) {
+                return UTIL.getVisibility(_showValues[i]);
+            })
+            .style('font-style', function (d, i) {
+                return _fontStyle[i];
+            })
+            .style('font-weight', function (d, i) {
+                return _fontWeight[i];
+            })
+            .style('font-size', function (d, i) {
+                return _fontSize[i] + 'px';
+            })
+            .style('fill', function (d, i) {
+                return _textColor[i];
+            })
+            .attr('visibility', function (d, i) {
+                var rect = d3.select(this.previousElementSibling).node(),
+                    rectWidth = rect.getAttribute('width'),
+                    rectHeight = rect.getAttribute('height');
+                if (_notification) {
+                    return 'hidden';
                 }
-                else {
-                    return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat));
+                if (!_print) {
+                    if (this.getAttribute('visibility') == 'hidden') return 'hidden';
+
+                    if (rectHeight <= ((offsetX / 2) + parseFloat(d3.select(this).style('font-size').replace('px', '')))) {
+                        return 'hidden';
+                    }
+
+                    if (this.getComputedTextLength() > parseFloat(rectWidth)) {
+                        d3.select(this).style('font-size', '9px')
+                        d3.select(this).attr('y', y(d[d.measure]) + 9);
+                        if (this.getComputedTextLength() > parseFloat(rectWidth)) {
+                            return 'hidden';
+                        }
+                    }
                 }
-            });
+                return 'visible';
+            })
 
         plot.selectAll('g.cluster')
             .attr('transform', function (d) {
@@ -1059,9 +1098,9 @@ function clusteredverticalbar() {
             .items(cluster)
             .targetArea(_local_svg);
 
-        lasso.on('start', onLassoStart(lasso, div))
-            .on('draw', onLassoDraw(lasso, div))
-            .on('end', onLassoEnd(lasso, div));
+        lasso.on('start', onLassoStart(lasso, _local_svg))
+            .on('draw', onLassoDraw(lasso, _local_svg))
+            .on('end', onLassoEnd(lasso, _local_svg));
 
         _local_svg.call(lasso);
 

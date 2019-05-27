@@ -561,7 +561,7 @@ function donut() {
 
                 lasso.on('start', onLassoStart(lasso, me))
                     .on('draw', onLassoDraw(lasso, chart))
-                    .on('end', onLassoEnd(lasso, me));
+                    .on('end', onLassoEnd(lasso, _local_svg));
 
                 d3.select('.confirm')
                     .on('click', applyFilter());

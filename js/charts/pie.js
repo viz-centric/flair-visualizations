@@ -33,7 +33,7 @@ function pie() {
     /* These are the common variables that is shared across the different private/public
      * methods but is initialized/updated within the methods itself.
      */
-    var _localSVG,
+    var _local_svg,
         _localTotal = 0,
         _localTransitionTime = 500,
         _localTransitionMap = d3.map(),
@@ -231,8 +231,8 @@ function pie() {
 
             lasso.notSelectedItems().selectAll('path');
 
-            var confirm = $(scope).parent().find('div.confirm')
-                .css('visibility', 'visible');
+            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
+                .style('visibility', 'visible')
 
             var _filter = [];
             if (data.length > 0) {
@@ -251,9 +251,9 @@ function pie() {
                 filterData = _filter;
             }
             if (broadcast) {
-                var idWidget = broadcast.updateWidget[scope.parentElement.id];
+                var idWidget = broadcast.updateWidget[scope.node().parentNode.id];
                 broadcast.updateWidget = {};
-                broadcast.updateWidget[scope.parentElement.id] = idWidget;
+                broadcast.updateWidget[scope.node().parentNode.id] = idWidget;
 
                 var _filterDimension = {};
                 if (broadcast.filterSelection.id) {
@@ -444,7 +444,7 @@ function pie() {
     }
 
     function chart(selection) {
-        _localSVG = selection;
+        _local_svg = selection;
 
         selection.each(function (data) {
             var svg = d3.select(this),
@@ -762,7 +762,7 @@ function pie() {
                         filterParameters.save(_filterParameters);
                     });
 
-                _localSVG.select('g.lasso').remove()
+                _local_svg.select('g.lasso').remove()
 
                 d3.select(div).select('.filterData')
                     .on('click', applyFilter());
@@ -770,20 +770,20 @@ function pie() {
                 d3.select(div).select('.removeFilter')
                     .on('click', clearFilter(div));
 
-                _localSVG.select('g.lasso').remove()
+                _local_svg.select('g.lasso').remove()
 
                 var lasso = d3Lasso.lasso()
                     .hoverSelect(true)
                     .closePathSelect(true)
                     .closePathDistance(100)
                     .items(pieArcGroup)
-                    .targetArea(_localSVG);
+                    .targetArea(_local_svg);
 
-                lasso.on('start', onLassoStart(lasso, me))
-                    .on('draw', onLassoDraw(lasso, me))
-                    .on('end', onLassoEnd(lasso, me));
+                lasso.on('start', onLassoStart(lasso, _local_svg))
+                    .on('draw', onLassoDraw(lasso, _local_svg))
+                    .on('end', onLassoEnd(lasso, _local_svg));
 
-                _localSVG.call(lasso);
+                _local_svg.call(lasso);
             }
         });
     }
@@ -822,11 +822,11 @@ function pie() {
     }
 
     chart._getHTML = function () {
-        return _localSVG.node().outerHTML;
+        return _local_svg.node().outerHTML;
     }
 
     chart.update = function (data) {
-        var svg = _localSVG,
+        var svg = _local_svg,
             width = +svg.attr('width'),
             height = +svg.attr('height'),
             parentWidth = width - 2 * COMMON.PADDING,
@@ -1050,20 +1050,20 @@ function pie() {
                         .remove();
                 });
 
-            _localSVG.select('g.lasso').remove()
+            _local_svg.select('g.lasso').remove()
 
             var lasso = d3Lasso.lasso()
                 .hoverSelect(true)
                 .closePathSelect(true)
                 .closePathDistance(100)
                 .items(pieArcGroup)
-                .targetArea(_localSVG);
+                .targetArea(_local_svg);
 
-            lasso.on('start', onLassoStart(lasso, div))
-                .on('draw', onLassoDraw(lasso, div))
-                .on('end', onLassoEnd(lasso, div));
+            lasso.on('start', onLassoStart(lasso, _local_svg))
+                .on('draw', onLassoDraw(lasso, _local_svg))
+                .on('end', onLassoEnd(lasso, _local_svg));
 
-            _localSVG.call(lasso);
+            _local_svg.call(lasso);
         }
     }
 

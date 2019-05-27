@@ -220,8 +220,8 @@ function combo() {
 
             lasso.notSelectedItems().selectAll('rect');
 
-            var confirm = $(scope).parent().find('div.confirm')
-                .css('visibility', 'visible');
+            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
+                .style('visibility', 'visible')
 
             var _filter = [];
             var keys = UTIL.getMeasureList(data[0].data, _dimension);
@@ -246,9 +246,9 @@ function combo() {
                 filterData = _filter;
             }
             if (broadcast) {
-                var idWidget = broadcast.updateWidget[scope.parentElement.id];
+                var idWidget = broadcast.updateWidget[scope.node().parentNode.id];
                 broadcast.updateWidget = {};
-                broadcast.updateWidget[scope.parentElement.id] = idWidget;
+                broadcast.updateWidget[scope.node().parentNode.id] = idWidget;
 
                 var _filterList = {}, list = []
 
@@ -875,9 +875,9 @@ function combo() {
                 .items(bar)
                 .targetArea(_local_svg);
 
-            lasso.on('start', onLassoStart(lasso, me))
-                .on('draw', onLassoDraw(lasso, me))
-                .on('end', onLassoEnd(lasso, me));
+            lasso.on('start', onLassoStart(lasso, _local_svg))
+                .on('draw', onLassoDraw(lasso, _local_svg))
+                .on('end', onLassoEnd(lasso, _local_svg));
 
             _local_svg.call(lasso);
         }
@@ -1497,9 +1497,9 @@ function combo() {
             .items(bar)
             .targetArea(_local_svg);
 
-        lasso.on('start', onLassoStart(lasso, div))
-            .on('draw', onLassoDraw(lasso, div))
-            .on('end', onLassoEnd(lasso, div));
+        lasso.on('start', onLassoStart(lasso, _local_svg))
+            .on('draw', onLassoDraw(lasso, _local_svg))
+            .on('end', onLassoEnd(lasso, _local_svg));
 
         _local_svg.call(lasso);
     }
