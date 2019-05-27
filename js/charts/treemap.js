@@ -375,8 +375,8 @@ function treemap() {
 
             lasso.notSelectedItems().selectAll('rect');
 
-            var confirm = $(scope).parent().find('div.confirm')
-                .css('visibility', 'visible');
+            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
+                .style('visibility', 'visible')
 
             var _filter = {};
             if (data.length > 0) {
@@ -422,9 +422,9 @@ function treemap() {
                 })
 
                 if (broadcast) {
-                    var idWidget = broadcast.updateWidget[scope.parentElement.id];
+                    var idWidget = broadcast.updateWidget[scope.node().parentNode.id];
                     broadcast.updateWidget = {};
-                    broadcast.updateWidget[scope.parentElement.id] = idWidget;
+                    broadcast.updateWidget[scope.node().parentNode.id] = idWidget;
 
                     broadcast.filterSelection.filter = _filter;
                     filterParameters.save(_filter);
@@ -491,7 +491,6 @@ function treemap() {
                     filter = false;
                     var confirm = d3.select(div).select('.confirm')
                         .style('visibility', 'visible');
-
 
                     var rect = d3.select(this)
 
@@ -711,9 +710,9 @@ function treemap() {
                     .items(cell)
                     .targetArea(_local_svg);
 
-                lasso.on('start', onLassoStart(lasso, me))
-                    .on('draw', onLassoDraw(lasso, me))
-                    .on('end', onLassoEnd(lasso, me));
+                lasso.on('start', onLassoStart(lasso, _local_svg))
+                    .on('draw', onLassoDraw(lasso, _local_svg))
+                    .on('end', onLassoEnd(lasso, _local_svg));
 
                 _local_svg.call(lasso);
             }
@@ -850,9 +849,9 @@ function treemap() {
             .items(cell)
             .targetArea(_local_svg);
 
-        lasso.on('start', onLassoStart(lasso, div))
-            .on('draw', onLassoDraw(lasso, div))
-            .on('end', onLassoEnd(lasso, div));
+        lasso.on('start', onLassoStart(lasso, _local_svg))
+            .on('draw', onLassoDraw(lasso, _local_svg))
+            .on('end', onLassoEnd(lasso, _local_svg));
 
         _local_svg.call(lasso);
 

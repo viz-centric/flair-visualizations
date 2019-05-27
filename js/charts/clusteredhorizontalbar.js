@@ -154,8 +154,8 @@ function clusteredhorizontalbar() {
 
             lasso.notSelectedItems().selectAll('rect');
 
-            var confirm = $(scope).parent().find('div.confirm')
-                .css('visibility', 'visible');
+            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
+                .style('visibility', 'visible')
 
             var _filter = [];
             if (data.length > 0) {
@@ -176,9 +176,9 @@ function clusteredhorizontalbar() {
                 filterData = _filter;
             }
             if (broadcast) {
-                var idWidget = broadcast.updateWidget[scope.parentElement.id];
+                var idWidget = broadcast.updateWidget[scope.node().parentNode.id];
                 broadcast.updateWidget = {};
-                broadcast.updateWidget[scope.parentElement.id] = idWidget;
+                broadcast.updateWidget[scope.node().parentNode.id] = idWidget;
 
                 var _filterList = {}, list = []
 
@@ -628,9 +628,9 @@ function clusteredhorizontalbar() {
                 .items(cluster)
                 .targetArea(_local_svg);
 
-            lasso.on('start', onLassoStart(lasso, me))
-                .on('draw', onLassoDraw(lasso, me))
-                .on('end', onLassoEnd(lasso, me));
+            lasso.on('start', onLassoStart(lasso, _local_svg))
+                .on('draw', onLassoDraw(lasso, _local_svg))
+                .on('end', onLassoEnd(lasso, _local_svg));
 
             _local_svg.call(lasso);
         }
@@ -648,7 +648,7 @@ function clusteredhorizontalbar() {
                 .attr("x", 1)
                 .attr("height", x1.bandwidth())
                 .attr("width", function (d) {
-                    return 0;
+                    return y(d[d.measure]);
                 })
                 .style('fill', function (d, i) {
                     return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
@@ -657,17 +657,12 @@ function clusteredhorizontalbar() {
                     return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
                 })
                 .style('stroke-width', 2)
+                .style('opacity', 0)
 
             rect.transition()
                 .duration(COMMON.DURATION)
-                .attr("y", function (d) {
-                    return x1(d.measure);
-                })
-                .attr("x", 1)
-                .attr("height", x1.bandwidth())
-                .attr("width", function (d) {
-                    return y(d[d.measure]);
-                })
+                .style('opacity', 1)
+
         }
         else {
             rect = element.append('rect')
@@ -757,17 +752,23 @@ function clusteredhorizontalbar() {
                 return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat));
             })
             .attr('x', function (d, i) {
-                return y(d[d.measure]);
+                return y(d[d.measure]) - _fontSize[i];
             })
             .attr('y', function (d, i) {
-                return x1(d['measure']) + (x1.bandwidth() / 2);
+                return x1(d['measure']) + (x1.bandwidth());
             })
             .attr('dx', function (d, i) {
-                return offsetX / 8;
+                return -offsetX;
+            })
+            .attr('dy', function (d, i) {
+                return offsetX / 4;
             })
             .style('text-anchor', 'middle')
             .attr('visibility', function (d, i) {
                 return UTIL.getVisibility(_showValues[i]);
+            })
+            .style('font-size', function (d, i) {
+                return _fontSize[i] + 'px';
             })
             .attr('visibility', function (d, i) {
                 var rect = d3.select(this.previousElementSibling).node(),
@@ -779,11 +780,13 @@ function clusteredhorizontalbar() {
                 if (!_print) {
                     if (this.getAttribute('visibility') == 'hidden') return 'hidden';
 
-                    if ((this.getComputedTextLength() + (offsetX / 2)) > parseFloat(plotWidth - rectWidth)) {
-                        return 'hidden';
-                    }
-
                     if (parseInt(rectHeight) < parseInt(_fontSize[i])) {
+                        d3.select(this).style('font-size', parseInt(rectHeight) - 2 + 'px')
+                        d3.select(this).attr('x', function (d, i) {
+                            return y(d[d.measure]) - parseInt(rectHeight) - 2;
+                        })
+                    }
+                    if ((this.getComputedTextLength()) > parseFloat(rectWidth)) {
                         return 'hidden';
                     }
                 }
@@ -793,9 +796,6 @@ function clusteredhorizontalbar() {
             })
             .style('font-weight', function (d, i) {
                 return _fontWeight[i];
-            })
-            .style('font-size', function (d, i) {
-                return _fontSize[i] + 'px';
             })
             .style('fill', function (d, i) {
                 return _textColor[i];
@@ -940,33 +940,48 @@ function clusteredhorizontalbar() {
                 return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat));
             })
             .attr('x', function (d, i) {
-                return y(d[d.measure]) + 20;
+                return y(d[d.measure]) - _fontSize[i];
             })
             .attr('y', function (d, i) {
-                return x1(d['measure']);
+                return x1(d['measure']) + (x1.bandwidth());
             })
-            .attr('dy', function (d, i) {
-                return x1.bandwidth() / 2 + d3.select(this).style('font-size').replace('px', '') / 2.5;
+            .attr('dx', function (d, i) {
+                return -offsetX;
             })
+            .style('text-anchor', 'middle')
             .attr('visibility', function (d, i) {
                 return UTIL.getVisibility(_showValues[i]);
+            })
+            .style('font-size', function (d, i) {
+                return _fontSize[i] + 'px';
             })
             .attr('visibility', function (d, i) {
                 var rect = d3.select(this.previousElementSibling).node(),
                     rectWidth = rect.getAttribute('width'),
                     rectHeight = rect.getAttribute('height');
-
-                if (this.getAttribute('visibility') == 'hidden') return 'hidden';
-
-                if ((this.getComputedTextLength() + (offsetX / 2)) > parseFloat(plotWidth - rectWidth)) {
+                if (_notification) {
                     return 'hidden';
                 }
+                if (!_print) {
+                    if (this.getAttribute('visibility') == 'hidden') return 'hidden';
 
-                if (parseInt(rectHeight) < parseInt(_fontSize[i])) {
-                    return 'hidden';
+                    if (parseInt(rectHeight) < parseInt(_fontSize[i])) {
+                        d3.select(this).style('font-size', parseInt(rectHeight) - 2 + 'px')
+                    }
+                    if ((this.getComputedTextLength()) > parseFloat(rectWidth)) {
+                        return 'hidden';
+                    }
                 }
-                return 'visible';
             })
+            .style('font-style', function (d, i) {
+                return _fontStyle[i];
+            })
+            .style('font-weight', function (d, i) {
+                return _fontWeight[i];
+            })
+            .style('fill', function (d, i) {
+                return _textColor[i];
+            });
 
         var newBars = clusteredhorizontalbar.enter().append('g')
             .attr('class', 'clusteredhorizontalbar');
@@ -1115,9 +1130,9 @@ function clusteredhorizontalbar() {
             .items(cluster)
             .targetArea(_local_svg);
 
-        lasso.on('start', onLassoStart(lasso, div))
-            .on('draw', onLassoDraw(lasso, div))
-            .on('end', onLassoEnd(lasso, div));
+        lasso.on('start', onLassoStart(lasso, _local_svg))
+            .on('draw', onLassoDraw(lasso, _local_svg))
+            .on('end', onLassoEnd(lasso, _local_svg));
 
         _local_svg.call(lasso);
 

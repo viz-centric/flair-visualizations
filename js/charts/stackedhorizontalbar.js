@@ -151,8 +151,8 @@ function stackedhorizontalbar() {
 
             lasso.notSelectedItems().selectAll('rect');
 
-            var confirm = $(scope).parent().find('div.confirm')
-                .css('visibility', 'visible');
+            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
+                .style('visibility', 'visible')
 
             var _filter = [];
             var keys = UTIL.getMeasureList(data[0].data, _dimension);
@@ -177,9 +177,9 @@ function stackedhorizontalbar() {
                 filterData = _filter;
             }
             if (broadcast) {
-                var idWidget = broadcast.updateWidget[scope.parentElement.id];
+                var idWidget = broadcast.updateWidget[scope.node().parentNode.id];
                 broadcast.updateWidget = {};
-                broadcast.updateWidget[scope.parentElement.id] = idWidget;
+                broadcast.updateWidget[scope.node().parentNode.id] = idWidget;
 
                 var _filterList = {}, list = []
 
@@ -399,24 +399,16 @@ function stackedhorizontalbar() {
                     return (d[0] < d[1]) ? (y(d[0]) + 1) : (y(d[1]) + 1);
                 })
                 .attr("width", function (d) {
-                    return 0;
+                    return Math.abs(y(d[1]) - y(d[0]));
                 })
                 .attr("height", x.bandwidth())
+                .style('opacity', 0)
                 .style('stroke-width', 2)
 
             rect.transition()
                 .duration(COMMON.DURATION)
-                .attr("y", function (d) {
-                    return x(d.data[_dimension[0]]);
-                })
-                .attr("x", function (d) {
-                    return (d[0] < d[1]) ? (y(d[0]) + 1) : (y(d[1]) + 1);
-                })
-                .attr("width", function (d) {
-                    return Math.abs(y(d[1]) - y(d[0]));
-                })
-                .attr("height", x.bandwidth())
-                .on('end', setValueOnPoints);
+                .style('opacity', 1)
+
         }
         else {
             rect = element.append('rect')
@@ -437,7 +429,7 @@ function stackedhorizontalbar() {
                 })
                 .attr("height", x.bandwidth())
                 .style('stroke-width', 2)
-            setValueOnPoints()
+
         }
 
         if (!_print || _notification) {
@@ -506,58 +498,58 @@ function stackedhorizontalbar() {
                 })
         }
 
-        function setValueOnPoints() {
-            element.append('text')
-                .text(function (d, i) {
-                    return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat));
-                })
-                .attr('x', function (d, i) {
-                    return y(d[1]) - 20;
-                })
-                .attr('y', function (d, i) {
-                    return x(d.data[_dimension[0]]) + x.bandwidth() / 2;
-                })
-                .attr('dy', function (d, i) {
-                    return offsetX / 4;
-                })
-                .style('text-anchor', 'middle')
-                .attr('visibility', function (d, i) {
-                    return UTIL.getVisibility(_showValues[_measure.indexOf(d.key)]);
-                })
-                .attr('visibility', function (d, i) {
-                    var rect = d3.select(this.previousElementSibling).node(),
-                        rectWidth = rect.getAttribute('width'),
-                        rectHeight = rect.getAttribute('height');
-                    if (_notification) {
+
+        element.append('text')
+            .text(function (d, i) {
+                return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat));
+            })
+            .attr('x', function (d, i) {
+                return y(d[1]) - 20;
+            })
+            .attr('y', function (d, i) {
+                return x(d.data[_dimension[0]]) + x.bandwidth() / 2;
+            })
+            .attr('dy', function (d, i) {
+                return offsetX / 4;
+            })
+            .style('text-anchor', 'middle')
+            .attr('visibility', function (d, i) {
+                return UTIL.getVisibility(_showValues[_measure.indexOf(d.key)]);
+            })
+            .style('font-size', function (d, i) {
+                return _fontSize[_measure.indexOf(d.key)] + 'px';
+            })
+            .attr('visibility', function (d, i) {
+                var rect = d3.select(this.previousElementSibling).node(),
+                    rectWidth = rect.getAttribute('width'),
+                    rectHeight = rect.getAttribute('height');
+                if (_notification) {
+                    return 'hidden';
+                }
+                if (!_print) {
+                    if (this.getAttribute('visibility') == 'hidden') return 'hidden';
+
+                    if (parseInt(rectHeight) < parseInt(_fontSize[i])) {
+                        d3.select(this).style('font-size', parseInt(rectHeight) - 2 + 'px')
+                        d3.select(this).attr('x', function (d, i) {
+                            return y(d[1]) - 20;
+                        })
+                    }
+                    if ((this.getComputedTextLength()) > parseFloat(rectWidth)) {
                         return 'hidden';
                     }
-                    if (!_print) {
-                        if (this.getAttribute('visibility') == 'hidden') return 'hidden';
+                }
+            })
+            .style('font-style', function (d, i) {
+                return _fontStyle[_measure.indexOf(d.key)];
+            })
+            .style('font-weight', function (d, i) {
+                return _fontWeight[_measure.indexOf(d.key)];
+            })
+            .style('fill', function (d, i) {
+                return _textColor[_measure.indexOf(d.key)];
+            });
 
-                        if (rectHeight <= parseFloat(d3.select(this).style('font-size').replace('px', ''))) {
-                            return 'hidden';
-                        }
-
-                        if ((this.getComputedTextLength() + (offsetX / 4)) > parseFloat(rectWidth)) {
-                            return 'hidden';
-                        }
-                    }
-
-                    return 'visible';
-                })
-                .style('font-style', function (d, i) {
-                    return _fontStyle[_measure.indexOf(d.key)];
-                })
-                .style('font-weight', function (d, i) {
-                    return _fontWeight[_measure.indexOf(d.key)];
-                })
-                .style('font-size', function (d, i) {
-                    return _fontSize[_measure.indexOf(d.key)] + 'px';
-                })
-                .style('fill', function (d, i) {
-                    return _textColor[_measure.indexOf(d.key)];
-                });
-        }
     }
     var drawPlot = function (data) {
         var me = this;
@@ -796,9 +788,9 @@ function stackedhorizontalbar() {
                 .items(stackedhorizontalbar)
                 .targetArea(_local_svg);
 
-            lasso.on('start', onLassoStart(lasso, me))
-                .on('draw', onLassoDraw(lasso, me))
-                .on('end', onLassoEnd(lasso, me));
+            lasso.on('start', onLassoStart(lasso, _local_svg))
+                .on('draw', onLassoDraw(lasso, _local_svg))
+                .on('end', onLassoEnd(lasso, _local_svg));
 
             _local_svg.call(lasso);
         }
@@ -1011,9 +1003,9 @@ function stackedhorizontalbar() {
             .items(stackedhorizontalbar)
             .targetArea(_local_svg);
 
-        lasso.on('start', onLassoStart(lasso, div))
-            .on('draw', onLassoDraw(lasso, div))
-            .on('end', onLassoEnd(lasso, div));
+        lasso.on('start', onLassoStart(lasso, _local_svg))
+            .on('draw', onLassoDraw(lasso, _local_svg))
+            .on('end', onLassoEnd(lasso, _local_svg));
 
         _local_svg.call(lasso);
     }
