@@ -615,7 +615,7 @@ function treemap() {
         _local_svg = selection;
 
         selection.each(function (data) {
-
+            data = UTIL.sortingData(data, _dimension[0])
             div = d3.select(this).node().parentNode;
 
             var svg = d3.select(this),
@@ -728,6 +728,7 @@ function treemap() {
     }
 
     chart.update = function (data) {
+        data = UTIL.sortingData(data, _dimension[0])
         _Local_data = data;
         filterData = [];
 

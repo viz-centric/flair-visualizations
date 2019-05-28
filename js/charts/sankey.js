@@ -327,6 +327,7 @@ function sankey() {
         _local_svg = selection;
 
         selection.each(function (data) {
+            data = UTIL.sortingData(data, dimension[0])
             _Local_data = _originalData = data;
 
             div = d3.select(this).node().parentNode;

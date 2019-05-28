@@ -293,6 +293,7 @@ function stackedhorizontalbar() {
         _local_svg = selection;
 
         selection.each(function (data) {
+            data = UTIL.sortingData(data, _dimension[0])
             _originalData = data;
             div = d3.select(this).node().parentNode;
             var svg = d3.select(this),
@@ -847,6 +848,7 @@ function stackedhorizontalbar() {
     }
 
     chart.update = function (data) {
+        data = UTIL.sortingData(data, _dimension[0])
         var DURATION = COMMON.DURATION;
         if (isAnimationDisable) {
             DURATION = 0;

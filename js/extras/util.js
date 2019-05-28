@@ -697,6 +697,14 @@ function util() {
             keys.splice(keys.indexOf(_dimension[0]), 1);
             return keys;
         },
+        sortingData: function (data, key) {
+            data.sort(function (a, b) {
+                var textA = a[key].toUpperCase();
+                var textB = b[key].toUpperCase();
+                return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+            });
+            return data;
+        },
         getExpressionConfig: function (expression, args) {
             var config = [],
                 temp,

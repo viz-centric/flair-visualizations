@@ -313,6 +313,7 @@ function table() {
         _local_svg = selection;
 
         selection.each(function (data) {
+            data = UTIL.sortingData(data, _dimension[0])
             _localData = _originalData = data
             div = d3.select(this);
 
@@ -400,6 +401,7 @@ function table() {
     }
 
     chart.update = function (data) {
+        data = UTIL.sortingData(data, _dimension[0])
         _localData = data;
         svg = _local_svg;
         filterData = [];

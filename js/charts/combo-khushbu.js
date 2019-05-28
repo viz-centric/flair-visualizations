@@ -362,6 +362,7 @@ function combo() {
         _local_svg = selection;
 
         selection.each(function (data) {
+            data = UTIL.sortingData(data, _dimension[0])
             _originalData = data;
             div = d3.select(this).node().parentNode;
 
@@ -1155,7 +1156,7 @@ function combo() {
     }
 
     chart.update = function (data) {
-
+        data = UTIL.sortingData(data, _dimension[0])
         _Local_data = data;
         svg = _local_svg;
 

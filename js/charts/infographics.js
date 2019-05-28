@@ -200,6 +200,7 @@ function infographics() {
         _localDiv = selection;
 
         selection.each(function (data) {
+            data = UTIL.sortingData(data, _dimension[0])
             var infographics = d3.select(this),
                 width = parseInt(infographics.style('width')),
                 height = parseInt(infographics.style('height')),
@@ -425,6 +426,7 @@ function infographics() {
     }
 
     chart.update = function (data) {
+        data = UTIL.sortingData(data, _dimension[0])
         var div = _localDiv;
 
         /* store the data in local variable */

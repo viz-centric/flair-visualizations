@@ -279,6 +279,7 @@ function scatter() {
     function chart(selection) {
         _local_svg = selection;
         selection.each(function (data) {
+            data = UTIL.sortingData(data, _dimension[0])
             _Local_data = _originalData = data;
             div = d3.select(this).node().parentNode;
 
@@ -739,7 +740,7 @@ function scatter() {
     }
 
     chart.update = function (data) {
-
+        data = UTIL.sortingData(data, _dimension[0])
         _Local_data = data,
             filterData = [];
         var plot = _local_svg.select('.plot')
