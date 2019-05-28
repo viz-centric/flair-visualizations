@@ -331,6 +331,7 @@ function line() {
         _local_svg = selection;
 
         selection.each(function (data) {
+            data = UTIL.sortingData(data, _dimension[0])
             _originalData = data;
             div = d3.select(this).node().parentNode;
 
@@ -942,7 +943,7 @@ function line() {
     }
 
     chart.update = function (data) {
-
+        data = UTIL.sortingData(data, _dimension[0])
         chart._Local_data = data;
         filterData = [];
 

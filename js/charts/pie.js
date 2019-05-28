@@ -447,6 +447,7 @@ function pie() {
         _local_svg = selection;
 
         selection.each(function (data) {
+            data = UTIL.sortingData(data, _dimension[0])
             var svg = d3.select(this),
                 width = +svg.attr('width'),
                 height = +svg.attr('height'),
@@ -826,6 +827,7 @@ function pie() {
     }
 
     chart.update = function (data) {
+        data = UTIL.sortingData(data, _dimension[0])
         var svg = _local_svg,
             width = +svg.attr('width'),
             height = +svg.attr('height'),

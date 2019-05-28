@@ -378,6 +378,7 @@ function bullet() {
         _local_svg = selection;
 
         selection.each(function (data) {
+            data = UTIL.sortingData(data, dimension[0])
             _originalData = _Local_data = data;
             div = d3.select(this).node().parentNode;
 
@@ -597,6 +598,7 @@ function bullet() {
     }
 
     chart.update = function (data) {
+        data = UTIL.sortingData(data, dimension[0])
         _Local_data = data;
         filterData = [];
         var svg = _local_svg;
