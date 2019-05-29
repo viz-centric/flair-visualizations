@@ -224,8 +224,9 @@ function combo() {
                 .style('visibility', 'visible')
 
             var _filter = [];
-            var keys = UTIL.getMeasureList(data[0].data, _dimension);
+
             if (data.length > 0) {
+                var keys = UTIL.getMeasureList(data[0].data, _dimension);
                 data.forEach(function (d) {
                     var obj = new Object();
                     var temp = d.data[_dimension[0]];
