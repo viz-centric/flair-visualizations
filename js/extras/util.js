@@ -55,6 +55,8 @@ function util() {
             var pt = d3.mouse(container.node()),
                 x = pt[0] + 20,
                 y = pt[1];
+            d3.getEvent = () => require("d3-selection").event;
+
             if (notification) {
                 this
                     .style("left", d3.event.pageX - 50 + "px")
@@ -699,8 +701,8 @@ function util() {
         },
         sortingData: function (data, key) {
             data.sort(function (a, b) {
-                var textA = a[key].toUpperCase();
-                var textB = b[key].toUpperCase();
+                var textA = a[key];
+                var textB = b[key];
                 return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
             });
             return data;

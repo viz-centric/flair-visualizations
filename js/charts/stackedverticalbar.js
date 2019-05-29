@@ -442,7 +442,6 @@ function stackedverticalbar() {
                 })
                 .style('opacity', 1)
                 .style('stroke-width', 2)
-            setValueOnPoints()
         }
 
         if (!_print || _notification) {
