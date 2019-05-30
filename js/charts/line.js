@@ -332,7 +332,7 @@ function line() {
 
         selection.each(function (data) {
             data = UTIL.sortingData(data, _dimension[0])
-            _originalData = data;
+            _Local_data = _originalData = data;
             div = d3.select(this).node().parentNode;
 
             var svg = d3.select(this),
@@ -417,10 +417,6 @@ function line() {
                 plotHeight = parentHeight;
             }
 
-            if (_tooltip) {
-                tooltip = d3.select(this.parentNode).select('.custom_tooltip');
-            }
-
             drawPlot.call(this, data);
         });
 
@@ -428,8 +424,9 @@ function line() {
 
     var drawPlot = function (data) {
         var me = this;
-        _Local_data = data;
-
+        if (_tooltip) {
+            tooltip = d3.select(div).select('.custom_tooltip');
+        }
         var plot = container.append('g')
             .attr('class', 'line-plot')
             .classed('plot', true)
@@ -848,10 +845,10 @@ function line() {
                     var order = d3.select(this).attr('class')
                     switch (order) {
                         case 'ascending':
-                            UTIL.toggleSortSelection(me, 'ascending', drawPlot, _local_svg, keys, _Local_data);
+                            UTIL.toggleSortSelection('ascending', drawPlot, _local_svg, keys, _Local_data);
                             break;
                         case 'descending':
-                            UTIL.toggleSortSelection(me, 'descending', drawPlot, _local_svg, keys, _Local_data);
+                            UTIL.toggleSortSelection('descending', drawPlot, _local_svg, keys, _Local_data);
                             break;
                         case 'reset': {
                             $(me).parent().find('.sort_selection,.arrow-down').css('visibility', 'hidden');
@@ -938,13 +935,13 @@ function line() {
     }
 
     var _legendClick = function (data) {
-        var _filter = UTIL.getFilterData(_localLabelStack, data, _originalData)
+        var _filter = UTIL.getFilterData(_localLabelStack, data, _Local_data)
         drawPlot.call(this, _filter);
     }
 
     chart.update = function (data) {
         data = UTIL.sortingData(data, _dimension[0])
-        chart._Local_data = data;
+        _Local_data = data;
         filterData = [];
 
         var plot = _local_svg.select('.plot')

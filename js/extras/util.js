@@ -601,13 +601,14 @@ function util() {
 
             return sortedData;
         },
-        toggleSortSelection: function (scope, sortType, callback, _local_svg, _measure, _Local_data) {
+        toggleSortSelection: function (sortType, callback, _local_svg, _measure, _Local_data) {
             var me = this;
             var _onRadioButtonClick = function (event) {
                 $(this).closest('.sort_selection').parent().find('.plot').remove();
-                callback.call(scope, me.sortData(_Local_data, event.data.measure, sortType));
-                $(scope).parent().find('.sort_selection').css('visibility', 'hidden');
-                $(scope).parent().find('.arrow-down').css('visibility', 'hidden');
+                callback.call(_local_svg, me.sortData(_Local_data, event.data.measure, sortType));
+                var container = _local_svg.node().parentNode;
+                $(container).find('.sort_selection').css('visibility', 'hidden');
+                $(container).find('.arrow-down').css('visibility', 'hidden');
             }
 
             //  d3.event.stopPropagation();
