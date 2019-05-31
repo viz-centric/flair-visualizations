@@ -366,8 +366,8 @@ function pivottable() {
                 'background-color': getCellColor(upd, true),
                 'font-style': getFontStyle(upd, true),
                 'font-weight': getFontWeight(upd, true),
-                'font-size': getFontSize(upd, true),
-                'color': getTextColor(upd, true)
+                'font-size': getFontSize(upd, true) + 'px',
+                'color': getTextColor(upd, true),
             };
 
             style = JSON.stringify(style);
@@ -396,11 +396,17 @@ function pivottable() {
                 'background-color': getCellColor(parent[0]),
                 'font-style': getFontStyle(parent[0]),
                 'font-weight': getFontWeight(parent[0]),
-                'font-size': getFontSize(parent[0]),
-                'color': getTextColor(parent[0])
+                'font-size': getFontSize(parent[0]) + 'px',
+                'color': getTextColor(parent[0]),
             };
-            style['color'] = UTIL.expressionEvaluator(_textColorExpressionForMeasure[i], datum[parent.join('_')], 'color');
-            style['background-color'] = UTIL.expressionEvaluator(_cellColorExpressionForMeasure[i], datum[parent.join('_')], 'color');
+
+            if (_textColorExpressionForMeasure[i].length > 0) {
+                style['color'] = UTIL.expressionEvaluator(_textColorExpressionForMeasure[i], datum[parent.join('_')], 'color');
+            }
+            if (_cellColorExpressionForMeasure[i].length > 0) {
+                style['background-color'] = UTIL.expressionEvaluator(_cellColorExpressionForMeasure[i], datum[parent.join('_')], 'color');
+            }
+
             style = JSON.stringify(style);
             style = style.replace(/","/g, ';').replace(/["{}]/g, '');
 
@@ -423,7 +429,7 @@ function pivottable() {
                 'font-style': getFontStyle(key, true),
                 'font-weight': getFontWeight(key, true),
                 'font-size': getFontSize(key, true),
-                'color': getTextColor(key, true)
+                'color': getTextColor(key, true) + 'px',
             };
 
             style = JSON.stringify(style);
@@ -443,7 +449,7 @@ function pivottable() {
                 var style = {
                     'text-align': getTextAlignment(upd, true),
                     'background-color': '#f7f7f7',
-                    'font-weight': 'bold'
+                    'font-weight': 'bold',
                 };
 
                 style = JSON.stringify(style);
@@ -568,7 +574,7 @@ function pivottable() {
                     var style = {
                         'text-align': getTextAlignment(upd, true),
                         'background-color': '#f7f7f7',
-                        'font-weight': 'bold'
+                        'font-weight': 'bold',
                     };
 
                     style = JSON.stringify(style);
@@ -584,7 +590,7 @@ function pivottable() {
                 var style = {
                     'text-align': getTextAlignment(m),
                     'background-color': '#f7f7f7',
-                    'font-weight': 'bold'
+                    'font-weight': 'bold',
                 };
 
                 style = JSON.stringify(style);

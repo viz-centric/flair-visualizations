@@ -360,6 +360,7 @@ function scatter() {
 
     var drawPlot = function (data) {
         var me = this;
+        color = null;
         color = COMMON.COLORSCALE;
         _local_total = d3.sum(data.map(function (d) { return d[_measure[0]]; }));
 

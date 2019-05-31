@@ -31,6 +31,7 @@ function kpi() {
         _kpiIconFontWeight = [],
         _kpiIconColor = [],
         _kpiIconExpression = [],
+        _FontsizeForDisplayName = [],
         _print;
 
     /* These are the common variables that is shared across the different private/public
@@ -64,6 +65,7 @@ function kpi() {
         this.kpiIconFontWeight(config.kpiIconFontWeight);
         this.kpiIconColor(config.kpiIconColor);
         this.kpiIconExpression(config.kpiIconExpression);
+        this.FontsizeForDisplayName(config.FontSizeforDisplayName);
     }
 
     /**
@@ -95,7 +97,7 @@ function kpi() {
         var style = {
             'font-style': _kpiFontStyle[index] || COMMON.DEFAULT_FONTSTYLE,
             'font-weight': _kpiFontWeight[index] || COMMON.DEFAULT_FONTWEIGHT,
-            'font-size': _kpiFontSize[index] || COMMON.DEFAULT_FONTSIZE,
+            'font-size': _kpiFontSize[index] + 'px' || COMMON.DEFAULT_FONTSIZE,
             'color': _kpiColor[index] || COMMON.DEFAULT_COLOR
         };
 
@@ -113,7 +115,7 @@ function kpi() {
         var iconStyle = {
             'font-weight': _kpiIconFontWeight[index] || COMMON.DEFAULT_FONTWEIGHT,
             'color': _kpiIconColor[index] || COMMON.DEFAULT_COLOR,
-            'font-size': _kpiFontSize[index] || COMMON.DEFAULT_FONTSIZE
+            'font-size': _kpiFontSize[index]+'px' || COMMON.DEFAULT_FONTSIZE
         };
 
         if (_kpiIconExpression[index].length) {
@@ -175,7 +177,7 @@ function kpi() {
                     .classed('child', true)
                     .html(_getKpiDisplayName(i))
                     .style('font-size', function (d, i1) {
-                        return _localLabelFontSize[i] + 'em';
+                        return _FontsizeForDisplayName[i] + 'px';
                     })
                     .style('padding-left', '5px')
                     .style('text-align', function (d, i1) {
@@ -516,6 +518,13 @@ function kpi() {
             return _print;
         }
         _print = value;
+        return chart;
+    }
+    chart.FontsizeForDisplayName = function (value) {
+        if (!arguments.length) {
+            return _FontsizeForDisplayName;
+        }
+        _FontsizeForDisplayName = value;
         return chart;
     }
 
