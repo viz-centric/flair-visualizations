@@ -894,19 +894,12 @@ function stackedhorizontalbar() {
         stackedhorizontalbar.exit().remove();
 
         stackedhorizontalbar.select('rect')
-            .attr("y", function (d) {
-                return x(d.data[_dimension[0]]);
+            .style('fill', function (d, i) {
+                return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
             })
-            .attr("x", function (d) {
-                return (d[0] < d[1]) ? (y(d[0]) + 1) : (y(d[1]) + 1);
+            .style('stroke', function (d, i) {
+                return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
             })
-            .attr("width", 0)
-            .classed('selected', false)
-            .classed('possible', false)
-            .attr("height", x.bandwidth())
-            .style('stroke-width', 2)
-            .transition()
-            .duration(DURATION)
             .attr("y", function (d) {
                 return x(d.data[_dimension[0]]);
             })
@@ -917,6 +910,11 @@ function stackedhorizontalbar() {
                 return Math.abs(y(d[1]) - y(d[0]));
             })
             .attr("height", x.bandwidth())
+            .style('opacity', 0)
+            .style('stroke-width', 2)
+            .transition()
+            .duration(DURATION)
+            .style('opacity', 1)
 
         stackedhorizontalbar.select('text')
             .text(function (d, i) {
@@ -929,26 +927,38 @@ function stackedhorizontalbar() {
                 return x(d.data[_dimension[0]]) + x.bandwidth() / 2;
             })
             .attr('dy', function (d, i) {
-                return offsetX / 2;
+                return offsetX / 4;
             })
             .style('text-anchor', 'middle')
             .attr('visibility', function (d, i) {
                 return UTIL.getVisibility(_showValues[_measure.indexOf(d.key)]);
             })
+            .style('font-size', function (d, i) {
+                return _fontSize[_measure.indexOf(d.key)] + 'px';
+            })
             .attr('visibility', function (d, i) {
-                if (this.getAttribute('visibility') == 'hidden') return 'hidden';
                 var rect = d3.select(this.previousElementSibling).node(),
                     rectWidth = rect.getAttribute('width'),
                     rectHeight = rect.getAttribute('height');
+                if (_notification) {
+                    return 'hidden';
+                }
+                if (!_print) {
+                    if (this.getAttribute('visibility') == 'hidden') return 'hidden';
 
-                if (rectHeight <= parseFloat(d3.select(this).style('font-size').replace('px', ''))) {
-                    return 'hidden';
+                    if (parseInt(rectHeight) < parseInt(_fontSize[i])) {
+                        d3.select(this).style('font-size', parseInt(rectHeight) - 2 + 'px')
+                        d3.select(this).attr('x', function (d, i) {
+                            return y(d[1]) - 20;
+                        })
+                    }
+                    if ((this.getComputedTextLength()) > parseFloat(rectWidth)) {
+                        return 'hidden';
+                    }
                 }
-                if ((this.getComputedTextLength() + (offsetX / 4)) > parseFloat(rectWidth)) {
-                    return 'hidden';
-                }
-                return 'visible';
             })
+
+
 
         var newBars = stackedhorizontalbar.enter().append('g')
             .attr('class', 'stackedhorizontalbar');

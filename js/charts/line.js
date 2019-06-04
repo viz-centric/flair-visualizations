@@ -354,12 +354,9 @@ function line() {
             d3.select(div).append('div')
                 .attr('class', 'arrow-down');
 
-            container = svg.append('g')
-                .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
-
             var legendWidth = 0,
-                legendHeight = 0,
-                legendBreakCount;
+                legendHeight = 0;
+            legendBreakCount;
 
             plotWidth = parentWidth;
             plotHeight = parentHeight;

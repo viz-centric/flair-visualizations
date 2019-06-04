@@ -764,7 +764,7 @@ function clusteredhorizontalbar() {
                 return -offsetX;
             })
             .attr('dy', function (d, i) {
-                return offsetX / 4;
+                return -offsetX / 4;
             })
             .style('text-anchor', 'middle')
             .attr('visibility', function (d, i) {
@@ -920,15 +920,6 @@ function clusteredhorizontalbar() {
             });
 
         clusteredhorizontalbar.select('rect')
-            .attr("x", 1)
-            .attr("y", function (d) {
-                return x1(d.measure);
-            })
-            .attr("height", x1.bandwidth())
-            .attr("width", 0)
-            .attr('class', '')
-            .transition()
-            .duration(DURATION)
             .attr("y", function (d) {
                 return x1(d.measure);
             })
@@ -937,6 +928,18 @@ function clusteredhorizontalbar() {
             .attr("width", function (d) {
                 return y(d[d.measure]);
             })
+            .style('fill', function (d, i) {
+                return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+            })
+            .style('stroke', function (d, i) {
+                return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
+            })
+            .style('stroke-width', 2)
+            .style('opacity', 0)
+            .attr('class', '')
+            .transition()
+            .duration(DURATION)
+            .style('opacity', 1)
 
         clusteredhorizontalbar.select('text')
             .text(function (d, i) {
@@ -950,6 +953,9 @@ function clusteredhorizontalbar() {
             })
             .attr('dx', function (d, i) {
                 return -offsetX;
+            })
+            .attr('dy', function (d, i) {
+                return -offsetX / 4;
             })
             .style('text-anchor', 'middle')
             .attr('visibility', function (d, i) {
@@ -970,117 +976,22 @@ function clusteredhorizontalbar() {
 
                     if (parseInt(rectHeight) < parseInt(_fontSize[i])) {
                         d3.select(this).style('font-size', parseInt(rectHeight) - 2 + 'px')
+                        d3.select(this).attr('x', function (d, i) {
+                            return y(d[d.measure]) - parseInt(rectHeight) - 2;
+                        })
                     }
                     if ((this.getComputedTextLength()) > parseFloat(rectWidth)) {
                         return 'hidden';
                     }
                 }
             })
-            .style('font-style', function (d, i) {
-                return _fontStyle[i];
-            })
-            .style('font-weight', function (d, i) {
-                return _fontWeight[i];
-            })
-            .style('fill', function (d, i) {
-                return _textColor[i];
-            });
+
 
         var newBars = clusteredhorizontalbar.enter().append('g')
             .attr('class', 'clusteredhorizontalbar');
 
-        //drawViz(newBars);
-        var rect = newBars.append('rect')
-            .attr("y", function (d) {
-                return x1(d.measure);
-            })
-            .attr("x", 1)
-            .attr("height", x1.bandwidth())
-            .attr("width", function (d) {
-                return 0;
-            })
-            .style('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
-            })
-            .style('stroke', function (d, i) {
-                return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
-            })
-            .style('stroke-width', 2)
-            .on('mouseover', _handleMouseOverFn.call(chart, tooltip, svg))
-            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg))
-            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg))
-            .on('click', function (d) {
-                if ($("#myonoffswitch").prop('checked') == false) {
-                    $('#Modal_' + $(div).attr('id') + ' .measure').val(d.measure);
-                    $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
-                    $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
-                    $('#Modal_' + $(div).attr('id')).modal('toggle');
-                }
-                else {
-                    filter = false;
-                    var confirm = d3.select(div).select('.confirm')
-                        .style('visibility', 'visible');
-                    var _filter = _Local_data.filter(function (d1) {
-                        return d[_dimension[0]] === d1[_dimension[0]]
-                    })
-                    var rect = d3.select(this);
-                    if (rect.classed('selected')) {
-                        rect.classed('selected', false);
-                        filterData.map(function (val, i) {
-                            if (val[_dimension[0]] == d[_dimension[0]]) {
-                                filterData.splice(i, 1)
-                            }
-                        })
-                    } else {
-                        rect.classed('selected', true);
-                        var isExist = filterData.filter(function (val) {
-                            if (val[_dimension[0]] == d[_dimension[0]]) {
-                                return val
-                            }
-                        })
-                        if (isExist.length == 0) {
-                            filterData.push(_filter[0]);
-                        }
-                    }
-                    var _filterDimension = {};
-                    if (broadcast.filterSelection.id) {
-                        _filterDimension = broadcast.filterSelection.filter;
-                    } else {
-                        broadcast.filterSelection.id = $(div).attr('id');
-                    }
-                    var dimension = _dimension[0];
-                    if (_filterDimension[dimension]) {
-                        var temp = _filterDimension[dimension];
-                        if (temp.indexOf(d[dimension]) < 0) {
-                            temp.push(d[dimension]);
-                        } else {
-                            temp.splice(temp.indexOf(d[dimension]), 1);
-                        }
-                        _filterDimension[dimension] = temp;
-                    } else {
-                        _filterDimension[dimension] = [d[dimension]];
-                    }
-
-                    var idWidget = broadcast.updateWidget[$(div).attr('id')];
-                    broadcast.updateWidget = {};
-                    broadcast.updateWidget[$(div).attr('id')] = idWidget;
-                    broadcast.filterSelection.filter = _filterDimension;
-                    var _filterParameters = filterParameters.get();
-                    _filterParameters[dimension] = _filterDimension[dimension];
-                    filterParameters.save(_filterParameters);
-                }
-            })
-            .transition()
-            .duration(COMMON.DURATION)
-            .attr("y", function (d) {
-                return x1(d.measure);
-            })
-            .attr("x", 1)
-            .attr("height", x1.bandwidth())
-            .attr("width", function (d) {
-                return y(d[d.measure]);
-            })
-
+        drawViz(newBars);
+        
         plot.selectAll('g.cluster')
             .attr('transform', function (d) {
                 return 'translate(0, ' + x0(d[_dimension[0]]) + ')';
