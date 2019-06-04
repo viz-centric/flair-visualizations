@@ -634,16 +634,19 @@ function doughnut() {
                         .delay(_delayFn(200))
                         .on('start', function () {
                             d3.select(this).attr('startOffset', function (d) {
-                                var length = doughnutArcPath.nodes()[d.index].getTotalLength();
-                                return 50 * (length - 2 * outerRadius) / length + '%';
+                                var length = doughnutArcPath.nodes()[d.index].getTotalLength(),
+                                    diff = d.endAngle - d.startAngle,
+                                    x = 2 * (outerRadius - (outerRadius * 0.8)) + diff * (outerRadius * 0.8);
+
+                                return 50 * (length - x) / length + "%";
                             })
                                 .text(_labelFn())
                                 .filter(function (d, i) {
-                                    /* length of arc = angle in radians * radius */
                                     var diff = d.endAngle - d.startAngle;
-                                    return outerRadius * diff < this.getComputedTextLength();
+                                    return outerRadius * diff - 5 < this.getComputedTextLength();
                                 })
                                 .remove();
+
                         });
                 }
                 else {
@@ -1008,7 +1011,7 @@ function doughnut() {
             .remove();
 
         if (_valueAsArc) {
-            doughnutArcGroup.selectAll('text').remove()
+
             doughnutLabel = doughnutArcGroup.append('text')
                 .attr('dy', function (d, i) {
                     if (_valuePosition == 'inside') {
@@ -1028,27 +1031,20 @@ function doughnut() {
                 .transition()
                 .delay(_delayFn(200))
                 .on('start', function () {
-
                     d3.select(this).attr('startOffset', function (d) {
+                        var length = doughnutArcPath.nodes()[d.index]==undefined?10:doughnutArcPath.nodes()[d.index].getTotalLength(),
+                            diff = d.endAngle - d.startAngle,
+                            x = 2 * (outerRadius - (outerRadius * 0.8)) + diff * (outerRadius * 0.8);
 
-                        if (doughnutArcPath.nodes()[d.index] != undefined) {
-                            var length = doughnutArcPath.nodes()[d.index].getTotalLength();
-                            if (length == 0) {
-                                return 10 + '%';
-                            }
-                            else {
-                                return 50 * (length - 2 * outerRadius) / length + '%';
-                            }
-                        }
-                        return 10 + '%';
+                        return 50 * (length - x) / length + "%";
                     })
                         .text(_labelFn())
                         .filter(function (d, i) {
-                            /* length of arc = angle in radians * radius */
                             var diff = d.endAngle - d.startAngle;
-                            return outerRadius * diff < this.getComputedTextLength();
+                            return outerRadius * diff - 5 < this.getComputedTextLength();
                         })
                         .remove();
+
                 });
         }
 

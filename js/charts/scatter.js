@@ -244,7 +244,7 @@ function scatter() {
                 .style('cursor', 'pointer')
                 .style('fill-opacity', .5);
 
-            var border = d3.select(this).attr('fill');
+            var border = d3.select(this).style('fill');
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
                 UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border, _notification);
@@ -257,7 +257,7 @@ function scatter() {
 
         return function (d, i) {
             if (tooltip) {
-                var border = d3.select(this).attr('fill');
+                var border = d3.select(this).style('fill');
                 UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border, _notification);
             }
         }
@@ -296,66 +296,75 @@ function scatter() {
                 .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
             drawPlot.call(this, data);
-
-            var legendWidth = 0,
-                legendHeight = 0,
-                legendBreakCount;
-
-            if (_showLegend) {
-                var clusteredverticalbarLegend = LEGEND.bind(chart);
-
-                var result = clusteredverticalbarLegend(color.domain(), container, {
-                    width: parentWidth,
-                    height: parentHeight,
-                    legendBreakCount: legendBreakCount
-                });
-
-                legendWidth = result.legendWidth;
-                legendHeight = result.legendHeight;
-                legendBreakCount = result.legendBreakCount;
-
-                switch (_legendPosition) {
-                    case 'top':
-                        plotHeight = parentHeight - legendHeight - axisLabelSpace;
-                        break;
-                    case 'bottom':
-                        plotHeight = parentHeight - legendHeight - axisLabelSpace * 2;
-                        break;
-                    case 'right':
-                    case 'left':
-                        plotWidth = parentWidth - legendWidth;
-                        break;
-                }
-
-                if ((_legendPosition == 'top') || (_legendPosition == 'bottom')) {
-                    plotWidth = parentWidth;
-                    plotHeight = parentHeight - 3 * axisLabelSpace;
-                    legendSpace = 20;
-                } else if ((_legendPosition == 'left') || (_legendPosition == 'right')) {
-                    var legend = _local_svg.selectAll('.item');
-                    legendSpace = legend.node().parentNode.getBBox().width;
-                    plotWidth = (parentWidth - legendSpace) - margin.left + axisLabelSpace;
-                    plotHeight = parentHeight;
-
-                    legend.attr('transform', function (d, i) {
-                        if (_legendPosition == 'left') {
-                            return 'translate(0, ' + i * 20 + ')';
-
-                        }
-                        else if (_legendPosition == 'right') {
-                            return 'translate(' + (parentWidth - legendSpace + axisLabelSpace + 10) + ', ' + i * 20 + ')';
-                        }
-                    });
-                }
-            }
-            else {
-                legendSpace = 0;
-                plotWidth = parentWidth;
-                plotHeight = parentHeight;
-            }
+            drawLegend.call(this, data);
 
         });
 
+    }
+
+    var drawLegend = function (data) {
+        var legendWidth = 0,
+            legendHeight = 0;
+
+        var list = [];
+
+        data.map(function (val) {
+            list.push(val[_dimension[0]])
+        })
+        list = list.filter(function (item, i, ar) { return ar.indexOf(item) === i; });
+        if (_showLegend) {
+            _local_svg.select('.legend').remove();
+            var clusteredverticalbarLegend = LEGEND.bind(chart);
+
+            var result = clusteredverticalbarLegend(list, container, {
+                width: parentWidth,
+                height: parentHeight,
+                legendBreakCount: legendBreakCount
+            });
+
+            legendWidth = result.legendWidth;
+            legendHeight = result.legendHeight;
+            legendBreakCount = result.legendBreakCount;
+
+            switch (_legendPosition) {
+                case 'top':
+                    plotHeight = parentHeight - legendHeight - axisLabelSpace;
+                    break;
+                case 'bottom':
+                    plotHeight = parentHeight - legendHeight - axisLabelSpace * 2;
+                    break;
+                case 'right':
+                case 'left':
+                    plotWidth = parentWidth - legendWidth;
+                    break;
+            }
+
+            if ((_legendPosition == 'top') || (_legendPosition == 'bottom')) {
+                plotWidth = parentWidth;
+                plotHeight = parentHeight - 3 * axisLabelSpace;
+                legendSpace = 20;
+            } else if ((_legendPosition == 'left') || (_legendPosition == 'right')) {
+                var legend = _local_svg.selectAll('.item');
+                legendSpace = legend.node().parentNode.getBBox().width;
+                plotWidth = (parentWidth - legendSpace) - margin.left + axisLabelSpace;
+                plotHeight = parentHeight;
+
+                legend.attr('transform', function (d, i) {
+                    if (_legendPosition == 'left') {
+                        return 'translate(0, ' + i * 20 + ')';
+
+                    }
+                    else if (_legendPosition == 'right') {
+                        return 'translate(' + (parentWidth - legendSpace + axisLabelSpace + 10) + ', ' + i * 20 + ')';
+                    }
+                });
+            }
+        }
+        else {
+            legendSpace = 0;
+            plotWidth = parentWidth;
+            plotHeight = parentHeight;
+        }
     }
 
     var drawPlot = function (data) {
@@ -416,13 +425,13 @@ function scatter() {
         var minx = d3.min(data, (d) => d[_measure[2]]);
 
         x.rangeRound([0, plotWidth])
-            .domain([minx, maxx + 100]);
+            .domain([minx, maxx]);
 
         var maxy = d3.max(data, (d) => d[_measure[0]]);
         var miny = d3.min(data, (d) => d[_measure[0]]);
 
         y.rangeRound([plotHeight - 40, 0])
-            .domain([miny, maxy + 100]);
+            .domain([miny, maxy]);
 
         var _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
@@ -551,7 +560,7 @@ function scatter() {
             .attr("r", function (d) {
                 return rScale(parseInt(d[_measure[1]]));
             })
-            .attr("fill", function (d) {
+            .style("fill", function (d) {
                 return color(d[_dimension[0]]);
             })
             .attr("stroke", function (d) {
@@ -742,6 +751,7 @@ function scatter() {
 
     chart.update = function (data) {
         data = UTIL.sortingData(data, _dimension[0])
+        drawLegend.call(this, data)
         _Local_data = data,
             filterData = [];
         var plot = _local_svg.select('.plot')
@@ -771,10 +781,9 @@ function scatter() {
                 return parseInt(d[_measure[2]]);
             })]).nice();
 
-        y.rangeRound([plotHeight, 0])
-            .domain([0, d3.max(data, function (d) {
-                return parseInt(d[_measure[0]]);
-            })]).nice();
+        y.domain([0, d3.max(data, function (d) {
+            return parseInt(d[_measure[0]]);
+        })]).nice();
 
         var circle = plot.selectAll('circle')
             .data(data)
@@ -791,7 +800,7 @@ function scatter() {
             .attr("r", function (d) {
                 return rScale(parseInt(d[_measure[1]]));
             })
-            .attr("fill", function (d) {
+            .style("fill", function (d) {
                 return color(d[_dimension[0]]);
             })
             .attr("stroke", function (d) {
@@ -811,7 +820,7 @@ function scatter() {
             .attr("r", function (d) {
                 return rScale(parseInt(d[_measure[1]]));
             })
-            .attr("fill", function (d) {
+            .style("fill", function (d) {
                 return color(d[_dimension[0]]);
             })
             .attr("stroke", function (d) {

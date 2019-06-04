@@ -614,8 +614,8 @@ function pie() {
             if (_valueAsArc) {
                 pieLabel = pieArcGroup.append('text')
                     .attr('dy', function (d, i) {
-                        if (_valuePosition == 'inside') {
-                            return 10;
+                        if (_valuePosition == "border") {
+                            return 3 * 5;
                         } else {
                             return -5;
                         }
@@ -635,13 +635,12 @@ function pie() {
                         .on('start', function () {
                             d3.select(this).attr('startOffset', function (d) {
                                 var length = pieArcPath.nodes()[d.index].getTotalLength();
-                                return 50 * (length - 2 * outerRadius) / length + '%';
+                                return 50 * (length - 2 * outerRadius) / length + "%";
                             })
                                 .text(_labelFn())
                                 .filter(function (d, i) {
-                                    /* length of arc = angle in radians * radius */
                                     var diff = d.endAngle - d.startAngle;
-                                    return outerRadius * diff < this.getComputedTextLength();
+                                    return outerRadius * diff - 5 < this.getComputedTextLength();
                                 })
                                 .remove();
                         });
@@ -1031,23 +1030,16 @@ function pie() {
                 .delay(_delayFn(2000))
                 .on('start', function () {
                     d3.select(this).attr('startOffset', function (d) {
-
-                        if (pieArcPath.nodes()[d.index] != undefined) {
-                            var length = pieArcPath.nodes()[d.index].getTotalLength();
-                            if (length == 0) {
-                                return 10 + '%';
-                            }
-                            else {
-                                return 50 * (length - 2 * outerRadius) / length + '%';
-                            }
+                        var length = 50;
+                        if (pieArcPath.nodes()[d.index]) {
+                            length = pieArcPath.nodes()[d.index].getTotalLength();
                         }
-                        return 10 + '%';
+                        return 50 * (length - 2 * outerRadius) / length + "%";
                     })
                         .text(_labelFn())
                         .filter(function (d, i) {
-                            /* length of arc = angle in radians * radius */
                             var diff = d.endAngle - d.startAngle;
-                            return outerRadius * diff < this.getComputedTextLength();
+                            return outerRadius * diff - 5 < this.getComputedTextLength();
                         })
                         .remove();
                 });
