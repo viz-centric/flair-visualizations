@@ -27,17 +27,17 @@ function legend() {
             .attr('transform', function (d, i) {
                 var translate = [0, 0];
 
-                switch (me.legendPosition()) {
-                    case 'top':
+                switch (me.legendPosition().toUpperCase()) {
+                    case 'TOP':
                         translate = [i * Math.floor(extraParams.width / data.measureConfig.length), 0];
                         break;
-                    case 'bottom':
+                    case 'BOTTOM':
                         translate = [i * Math.floor(extraParams.width / data.measureConfig.length), (extraParams.height - COMMON.PADDING)];
                         break;
-                    case 'right':
+                    case 'RIGHT':
                         translate = [((4 / 5) * extraParams.width)+10, i * 20];
                         break;
-                    case 'left':
+                    case 'LEFT':
                         translate = [0, i * 20];
                 }
                 return 'translate(' + translate.toString() + ')';
@@ -107,9 +107,9 @@ function legend() {
             })
             .text(function (d,i) {
                 if (me.print() == false) {
-                    if ((me.legendPosition() == 'top') || (me.legendPosition() == 'bottom')) {
+                    if ((me.legendPosition().toUpperCase() == 'TOP') || (me.legendPosition().toUpperCase() == 'BOTTOM')) {
                         return UTIL.getTruncatedLabel(this, measure.measureName[i], Math.floor(extraParams.width / data.measureConfig.length) - 5);
-                    } else if ((me.legendPosition() == 'left') || (me.legendPosition() == 'right')) {
+                    } else if ((me.legendPosition().toUpperCase() == 'LEFT') || (me.legendPosition().toUpperCase() == 'RIGHT')) {
                         return UTIL.getTruncatedLabel(this, measure.measureName[i], extraParams.width / 5);
                     }
                 }
@@ -122,7 +122,7 @@ function legend() {
 
         var legendBreak = 0,
             legendBreakCount = 0;
-        if (me.legendPosition() == 'top' && me.print() == false) {
+        if (me.legendPosition().toUpperCase() == 'TOP' && me.print() == false) {
             legendItem.attr('transform', function (d, i) {
                 var count = i,
                     widthSum = 0
@@ -144,7 +144,7 @@ function legend() {
                     }
                     return 'translate(' + widthSum + ', ' + legendBreakCount * 20 + ')';
                 }
-                return 'translate(' + widthSum + ', ' + (me.legendPosition() == 'top' ? 0 : extraParams.height) + ')';
+                return 'translate(' + widthSum + ', ' + (me.legendPosition().toUpperCase() == 'TOP' ? 0 : extraParams.height) + ')';
             });
             extraParams.height = extraParams.height - (20 * legendBreakCount);
         }

@@ -446,6 +446,9 @@ function doughnut() {
 
         selection.each(function (data) {
             data = UTIL.sortingData(data, _dimension[0])
+            if (_tooltip) {
+               tooltip = d3.select(div).select('.custom_tooltip');
+            }
             var svg = d3.select(this),
                 width = +svg.attr('width'),
                 height = +svg.attr('height'),
@@ -492,13 +495,13 @@ function doughnut() {
                 legendWidth = result.legendWidth;
                 legendHeight = result.legendHeight;
 
-                switch (_legendPosition) {
-                    case 'top':
-                    case 'bottom':
+                switch (_legendPosition.toUpperCase()) {
+                    case 'TOP':
+                    case 'BOTTOM':
                         plotHeight = plotHeight - legendHeight;
                         break;
-                    case 'right':
-                    case 'left':
+                    case 'RIGHT':
+                    case 'LEFT':
                         plotWidth = plotWidth - legendWidth;
                         break;
                 }
@@ -528,15 +531,15 @@ function doughnut() {
                 .attr('transform', function () {
                     var translate = [0, 0];
 
-                    switch (_legendPosition) {
-                        case 'top':
+                    switch (_legendPosition.toUpperCase()) {
+                        case 'TOP':
                             translate = [(plotWidth / 2), legendHeight + (plotHeight / 2)];
                             break;
-                        case 'bottom':
-                        case 'right':
+                        case 'BOTTOM':
+                        case 'RIGHT':
                             translate = [(plotWidth / 2), (plotHeight / 2)];
                             break;
-                        case 'left':
+                        case 'LEFT':
                             translate = [legendWidth + (plotWidth / 2), (plotHeight / 2)]
                     }
 
@@ -832,6 +835,9 @@ function doughnut() {
 
     chart.update = function (data) {
         data = UTIL.sortingData(data, _dimension[0])
+        if (_tooltip) {
+           tooltip = d3.select(div).select('.custom_tooltip');
+        }
         var svg = _local_svg,
             width = +svg.attr('width'),
             height = +svg.attr('height'),
@@ -1032,7 +1038,7 @@ function doughnut() {
                 .delay(_delayFn(200))
                 .on('start', function () {
                     d3.select(this).attr('startOffset', function (d) {
-                        var length = doughnutArcPath.nodes()[d.index]==undefined?10:doughnutArcPath.nodes()[d.index].getTotalLength(),
+                        var length = doughnutArcPath.nodes()[d.index] == undefined ? 10 : doughnutArcPath.nodes()[d.index].getTotalLength(),
                             diff = d.endAngle - d.startAngle,
                             x = 2 * (outerRadius - (outerRadius * 0.8)) + diff * (outerRadius * 0.8);
 

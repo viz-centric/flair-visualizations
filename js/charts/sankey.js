@@ -341,7 +341,7 @@ function sankey() {
             var svg = d3.select(this);
 
             if (_tooltip) {
-                tooltip = d3.select(this.parentNode).select('.custom_tooltip');
+               tooltip = d3.select(div).select('.custom_tooltip');
             }
             var me = this;
             svg.selectAll('g').remove();

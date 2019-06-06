@@ -326,35 +326,35 @@ function scatter() {
             legendHeight = result.legendHeight;
             legendBreakCount = result.legendBreakCount;
 
-            switch (_legendPosition) {
-                case 'top':
+            switch (_legendPosition.toUpperCase()) {
+                case 'TOP':
                     plotHeight = parentHeight - legendHeight - axisLabelSpace;
                     break;
-                case 'bottom':
+                case 'BOTTOM':
                     plotHeight = parentHeight - legendHeight - axisLabelSpace * 2;
                     break;
-                case 'right':
-                case 'left':
+                case 'RIGHT':
+                case 'LEFT':
                     plotWidth = parentWidth - legendWidth;
                     break;
             }
 
-            if ((_legendPosition == 'top') || (_legendPosition == 'bottom')) {
+            if ((_legendPosition.toUpperCase() == 'TOP') || (_legendPosition.toUpperCase() == 'BOTTOM')) {
                 plotWidth = parentWidth;
                 plotHeight = parentHeight - 3 * axisLabelSpace;
                 legendSpace = 20;
-            } else if ((_legendPosition == 'left') || (_legendPosition == 'right')) {
+            } else if ((_legendPosition.toUpperCase() == 'LEFT') || (_legendPosition.toUpperCase() == 'RIGHT')) {
                 var legend = _local_svg.selectAll('.item');
                 legendSpace = legend.node().parentNode.getBBox().width;
                 plotWidth = (parentWidth - legendSpace) - margin.left + axisLabelSpace;
                 plotHeight = parentHeight;
 
                 legend.attr('transform', function (d, i) {
-                    if (_legendPosition == 'left') {
+                    if (_legendPosition.toUpperCase() == 'LEFT') {
                         return 'translate(0, ' + i * 20 + ')';
 
                     }
-                    else if (_legendPosition == 'right') {
+                    else if (_legendPosition.toUpperCase() == 'RIGHT') {
                         return 'translate(' + (parentWidth - legendSpace + axisLabelSpace + 10) + ', ' + i * 20 + ')';
                     }
                 });
@@ -377,13 +377,13 @@ function scatter() {
             .attr('class', 'scatter-plot')
             .classed('plot', true)
             .attr('transform', function () {
-                if (_legendPosition == 'top') {
+                if (_legendPosition.toUpperCase() == 'TOP') {
                     return 'translate(' + margin.left + ', ' + legendSpace * 2 + ')';
-                } else if (_legendPosition == 'bottom') {
+                } else if (_legendPosition.toUpperCase() == 'BOTTOM') {
                     return 'translate(' + margin.left + ', 0)';
-                } else if (_legendPosition == 'left') {
+                } else if (_legendPosition.toUpperCase() == 'LEFT') {
                     return 'translate(' + (legendSpace + margin.left + axisLabelSpace) + ', 0)';
-                } else if (_legendPosition == 'right') {
+                } else if (_legendPosition.toUpperCase() == 'RIGHT') {
                     return 'translate(' + margin.left + ', 0)';
                 }
             });
@@ -405,12 +405,12 @@ function scatter() {
 
         var maxGDP = d3.max(data, function (d) {
             return d3.max(keys, function (key) {
-                return parseInt(d[key]);
+                return parseFloat(d[key]);
             });
         })
         var minGDP = d3.min(data, function (d) {
             return d3.min(keys, function (key) {
-                return parseInt(d[key]);
+                return parseFloat(d[key]);
             });
         })
 
@@ -465,7 +465,7 @@ function scatter() {
             .call(_localYGrid);
 
         if (_tooltip) {
-            tooltip = d3.select(this.parentNode).select('.custom_tooltip');
+           tooltip = d3.select(div).select('.custom_tooltip');
         }
 
         var xAxisGroup,
@@ -750,7 +750,10 @@ function scatter() {
     }
 
     chart.update = function (data) {
-        data = UTIL.sortingData(data, _dimension[0])
+        data = UTIL.sortingData(data, _dimension[0]);
+        if (_tooltip) {
+           tooltip = d3.select(div).select('.custom_tooltip');
+        }
         drawLegend.call(this, data)
         _Local_data = data,
             filterData = [];
@@ -760,12 +763,12 @@ function scatter() {
 
         var maxGDP = d3.max(data, function (d) {
             return d3.max(keys, function (key) {
-                return parseInt(d[key]);
+                return parseFloat(d[key]);
             });
         })
         var minGDP = d3.min(data, function (d) {
             return d3.min(keys, function (key) {
-                return parseInt(d[key]);
+                return parseFloat(d[key]);
             });
         })
 

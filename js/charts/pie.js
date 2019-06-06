@@ -494,13 +494,13 @@ function pie() {
                 legendWidth = result.legendWidth;
                 legendHeight = result.legendHeight;
 
-                switch (_legendPosition) {
-                    case 'top':
-                    case 'bottom':
+                switch (_legendPosition.toUpperCase()) {
+                    case 'TOP':
+                    case 'BOTTOM':
                         plotHeight = plotHeight - legendHeight;
                         break;
-                    case 'right':
-                    case 'left':
+                    case 'RIGHT':
+                    case 'LEFT':
                         plotWidth = plotWidth - legendWidth;
                         break;
                 }
@@ -528,15 +528,15 @@ function pie() {
                 .classed('plot', true)
                 .attr('transform', function () {
                     var translate = [0, 0];
-                    switch (_legendPosition) {
-                        case 'top':
+                    switch (_legendPosition.toUpperCase()) {
+                        case 'TOP':
                             translate = [(plotWidth / 2), legendHeight + (plotHeight / 2)];
                             break;
-                        case 'bottom':
-                        case 'right':
+                        case 'BOTTOM':
+                        case 'RIGHT':
                             translate = [(plotWidth / 2), (plotHeight / 2)];
                             break;
-                        case 'left':
+                        case 'LEFT':
                             translate = [legendWidth + (plotWidth / 2), (plotHeight / 2)]
                     }
 
@@ -827,6 +827,9 @@ function pie() {
 
     chart.update = function (data) {
         data = UTIL.sortingData(data, _dimension[0])
+        if (_tooltip) {
+           tooltip = d3.select(div).select('.custom_tooltip');
+        }
         var svg = _local_svg,
             width = +svg.attr('width'),
             height = +svg.attr('height'),

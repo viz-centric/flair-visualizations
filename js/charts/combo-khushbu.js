@@ -364,6 +364,7 @@ function combo() {
 
         selection.each(function (data) {
             data = UTIL.sortingData(data, _dimension[0])
+            
             _Local_data = _originalData = data;
             div = d3.select(this).node().parentNode;
 
@@ -405,35 +406,35 @@ function combo() {
                 legendHeight = result.legendHeight;
                 legendBreakCount = result.legendBreakCount;
 
-                switch (_legendPosition) {
-                    case 'top':
+                switch (_legendPosition.toUpperCase()) {
+                    case 'TOP':
                         plotHeight = parentHeight - legendHeight - axisLabelSpace;
                         break;
-                    case 'bottom':
+                    case 'BOTTOM':
                         plotHeight = parentHeight - legendHeight - axisLabelSpace * 2;
                         break;
-                    case 'right':
-                    case 'left':
+                    case 'RIGHT':
+                    case 'LEFT':
                         plotWidth = parentWidth - legendWidth;
                         break;
                 }
 
-                if ((_legendPosition == 'top') || (_legendPosition == 'bottom')) {
+                if ((_legendPosition.toUpperCase() == 'TOP') || (_legendPosition.toUpperCase() == 'BOTTOM')) {
                     plotWidth = parentWidth;
                     plotHeight = parentHeight - 3 * axisLabelSpace;
                     legendSpace = 20;
-                } else if ((_legendPosition == 'left') || (_legendPosition == 'right')) {
+                } else if ((_legendPosition.toUpperCase() == 'LEFT') || (_legendPosition.toUpperCase() == 'RIGHT')) {
                     var legend = _local_svg.selectAll('.item');
                     legendSpace = legend.node().parentNode.getBBox().width;
                     plotWidth = (parentWidth - legendSpace) - margin.left + axisLabelSpace;
                     plotHeight = parentHeight;
 
                     legend.attr('transform', function (d, i) {
-                        if (_legendPosition == 'left') {
+                        if (_legendPosition.toUpperCase() == 'LEFT') {
                             return 'translate(0, ' + i * 20 + ')';
 
                         }
-                        else if (_legendPosition == 'right') {
+                        else if (_legendPosition.toUpperCase() == 'RIGHT') {
                             return 'translate(' + (parentWidth - legendSpace + axisLabelSpace + 10) + ', ' + i * 20 + ')';
                         }
                     });
@@ -470,13 +471,13 @@ function combo() {
             .attr('class', 'combo-plot')
             .classed('plot', true)
             .attr('transform', function () {
-                if (_legendPosition == 'top') {
+                if (_legendPosition.toUpperCase() == 'TOP') {
                     return 'translate(' + margin.left + ', ' + parseInt(legendSpace * 2 + (20 * parseInt(legendBreakCount))) + ')';
-                } else if (_legendPosition == 'bottom') {
+                } else if (_legendPosition.toUpperCase() == 'BOTTOM') {
                     return 'translate(' + margin.left + ', 0)';
-                } else if (_legendPosition == 'left') {
+                } else if (_legendPosition.toUpperCase() == 'LEFT') {
                     return 'translate(' + (legendSpace + margin.left + axisLabelSpace) + ', 0)';
-                } else if (_legendPosition == 'right') {
+                } else if (_legendPosition.toUpperCase() == 'RIGHT') {
                     return 'translate(' + margin.left + ', 0)';
                 }
             });
@@ -507,7 +508,7 @@ function combo() {
         y.range([plotHeight, 0])
             .domain([0, d3.max(data, function (d) {
                 return d3.max(keys, function (key) {
-                    return parseInt(d[key]);
+                    return parseFloat(d[key]);
                 });
             })]).nice();
 
@@ -1153,7 +1154,10 @@ function combo() {
     }
 
     chart.update = function (data) {
-        data = UTIL.sortingData(data, _dimension[0])
+        data = UTIL.sortingData(data, _dimension[0]);
+        if (_tooltip) {
+           tooltip = d3.select(div).select('.custom_tooltip');
+        }
         _Local_data = data;
         svg = _local_svg;
 
@@ -1180,7 +1184,7 @@ function combo() {
             .rangeRound([0, x0.bandwidth()])
         y.domain([0, d3.max(data, function (d) {
             return d3.max(keys, function (key) {
-                return parseInt(d[key]);
+                return parseFloat(d[key]);
             });
         })]).nice();
 
@@ -1306,7 +1310,7 @@ function combo() {
             });
 
         var clusterLine = chartploat.selectAll('.cluster_line')
-            .data(keys.filter(function (m) { return labelStack.indexOf(m) == -1; }))
+            .data(measuresLine.filter(function (m) { return labelStack.indexOf(m) == -1; }))
 
         var lineText = clusterLine.selectAll('text')
             .data(function (d, i) {
