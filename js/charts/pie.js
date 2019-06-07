@@ -45,7 +45,7 @@ function pie() {
         _localData,
         _originalData;
 
-    var filter = false, filterData = [], div;
+    var filter = false, filterData = [], div, plotWidth, plotHeight;
 
     /* These are the common private functions that is shared across the different private/public
      * methods but is initialized beforehand.
@@ -305,7 +305,7 @@ function pie() {
 
         return function (d, i) {
             d3.select(this).style('cursor', 'pointer');
-            var border = d3.select(this).attr('fill')
+            var border = d3.select(this).style('fill')
             var arcGroup = container.selectAll('g.arc')
                 .filter(function (d1) {
                     return d1.data[_dimension[0]] === d.data[_dimension[0]];
@@ -334,8 +334,7 @@ function pie() {
 
         return function (d, i) {
             if (tooltip) {
-                var border = d3.select(this).attr('fill')
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d.data, me), container, border, _notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d.data, me), container, COMMON.COLORSCALE(d.data[_dimension[0]]), _notification);
             }
         }
     }
@@ -467,9 +466,9 @@ function pie() {
             /* applying sort operation to the data */
             // UTIL.sorter(data, _measure, _sort);
 
-            // data.sort(function (a, b) {
-            //     return d3.ascending(a[_dimension[0]], b[_dimension[0]]);
-            // });
+            data.sort(function (a, b) {
+                return d3.ascending(a[_dimension[0]], b[_dimension[0]]);
+            });
 
             /* extracting measure values only from the data */
             _localSortedMeasureValue = data.map(function (d) { return +d[_measure[0]]; })
@@ -479,9 +478,9 @@ function pie() {
                 .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
             var legendWidth = 0,
-                legendHeight = 0,
-                plotWidth = parentWidth,
-                plotHeight = parentHeight;
+                legendHeight = 0;
+            plotWidth = parentWidth;
+            plotHeight = parentHeight;
 
             if (_legend) {
                 _localLegend = LEGEND.bind(chart);
@@ -528,6 +527,7 @@ function pie() {
                 .classed('plot', true)
                 .attr('transform', function () {
                     var translate = [0, 0];
+
                     switch (_legendPosition.toUpperCase()) {
                         case 'TOP':
                             translate = [(plotWidth / 2), legendHeight + (plotHeight / 2)];
@@ -583,9 +583,6 @@ function pie() {
                 .attr('id', function (d, i) {
                     return 'arc-path-' + i;
                 })
-                .attr('fill', function (d) {
-                    return COMMON.COLORSCALE(d.data[_dimension[0]]);
-                })
                 .style('fill', function (d) {
                     return COMMON.COLORSCALE(d.data[_dimension[0]]);
                 })
@@ -594,60 +591,60 @@ function pie() {
                 })
 
             if (!_print) {
-                pieArcPath.transition()
-                    .duration(_durationFn())
-                    .delay(_delayFn())
-                    .attrTween('d', function (d) {
-                        var i = d3.interpolate(d.startAngle + 0.1, d.endAngle);
-                        return function (t) {
-                            d.endAngle = i(t);
-                            return _arc(d)
-                        }
+                // Interaction only when print disabled
+                pieArcPath.on('mouseover', _handleMouseOverFn.call(chart, _localTooltip, svg))
+                    .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, svg))
+                    .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, svg))
+                    .on('click', function (d, i) {
+
                     });
             }
-            else {
-                pieArcPath
-                    .attr('d', _arc);
-            }
+
+            pieArcPath.transition()
+                .duration(_durationFn())
+                .delay(_delayFn())
+                .attrTween('d', function (d) {
+                    var i = d3.interpolate(d.startAngle + 0.1, d.endAngle);
+                    return function (t) {
+                        d.endAngle = i(t);
+                        return _arc(d)
+                    }
+                });
+
             var pieLabel;
 
             if (_valueAsArc) {
                 pieLabel = pieArcGroup.append('text')
                     .attr('dy', function (d, i) {
-                        if (_valuePosition == "border") {
-                            return 3 * 5;
+                        if (_valuePosition == 'inside') {
+                            return 10;
                         } else {
                             return -5;
                         }
                     })
 
-                var textPath = pieLabel.append('textPath')
+                pieLabel.append('textPath')
                     .attr('xlink:href', function (d, i) {
                         return '#arc-path-' + i;
                     })
                     .attr('text-anchor', function () {
                         return 'middle';
                     })
-
-                if (!_print) {
-                    textPath.transition()
-                        .delay(_delayFn(200))
-                        .on('start', function () {
-                            d3.select(this).attr('startOffset', function (d) {
-                                var length = pieArcPath.nodes()[d.index].getTotalLength();
-                                return 50 * (length - 2 * outerRadius) / length + "%";
+                    .transition()
+                    .delay(_delayFn(200))
+                    .on('start', function () {
+                        d3.select(this).attr('startOffset', function (d) {
+                            var length = pieArcPath.nodes()[d.index].getTotalLength();
+                            return 50 * (length - 2 * outerRadius) / length + '%';
+                        })
+                            .text(_labelFn())
+                            .filter(function (d, i) {
+                                /* length of arc = angle in radians * radius */
+                                var diff = d.endAngle - d.startAngle;
+                                return outerRadius * diff < this.getComputedTextLength();
                             })
-                                .text(_labelFn())
-                                .filter(function (d, i) {
-                                    var diff = d.endAngle - d.startAngle;
-                                    return outerRadius * diff - 5 < this.getComputedTextLength();
-                                })
-                                .remove();
-                        });
-                }
-                else {
-                    textPath.text(_labelFn())
-                }
+                            .remove();
+                    });
             } else {
                 var pieArcTextGroup = plot.selectAll('.arc-text')
                     .data(_pie(data))
@@ -688,23 +685,17 @@ function pie() {
                                     ? 'start' : 'middle';
                         }
                     })
-
-                if (!_print) {
-                    pieLabel.transition()
-                        .delay(_delayFn(200))
-                        .on('start', function () {
-                            d3.select(this).text(_labelFn())
-                                .filter(function (d) {
-                                    /* length of arc = angle in radians * radius */
-                                    var diff = d.endAngle - d.startAngle;
-                                    return outerRadius * diff < this.getComputedTextLength();
-                                })
-                                .remove();
-                        });
-                }
-                else {
-                    pieLabel.text(_labelFn())
-                }
+                    .transition()
+                    .delay(_delayFn(200))
+                    .on('start', function () {
+                        d3.select(this).text(_labelFn())
+                            .filter(function (d) {
+                                /* length of arc = angle in radians * radius */
+                                var diff = d.endAngle - d.startAngle;
+                                return outerRadius * diff < this.getComputedTextLength();
+                            })
+                            .remove();
+                    });
             }
 
             if (!_print) {
@@ -828,8 +819,9 @@ function pie() {
     chart.update = function (data) {
         data = UTIL.sortingData(data, _dimension[0])
         if (_tooltip) {
-           tooltip = d3.select(div).select('.custom_tooltip');
+            tooltip = d3.select(div).select('.custom_tooltip');
         }
+
         var svg = _local_svg,
             width = +svg.attr('width'),
             height = +svg.attr('height'),
@@ -839,7 +831,8 @@ function pie() {
 
         /* store the data in local variable */
         _localData = data;
-        filterData = [];
+
+        var outerRadius = Math.min(plotWidth, plotHeight) / 2.25;
 
         data.sort(function (a, b) {
             return d3.ascending(a[_dimension[0]], b[_dimension[0]]);
@@ -851,8 +844,6 @@ function pie() {
 
         var prevData = svg.selectAll('g.arc')
             .data().map(function (d) { return d.data });
-
-        svg.selectAll('.arc path').classed('selected', false)
 
         if (prevData.length == 0) {
             prevData = filteredData;
@@ -870,8 +861,6 @@ function pie() {
                 labelStack: _localLabelStack
             });
         }
-
-        var outerRadius = Math.min(parentWidth, parentHeight) / 2.25;
 
         var pieMask = svg.select('#arc-mask-group')
             .selectAll('g.arc-mask')
@@ -938,55 +927,6 @@ function pie() {
                 this._current = d;
             })
 
-        if (!_print) {
-            pieArcPath.on('mouseover', _handleMouseOverFn.call(chart, _localTooltip, svg))
-                .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, svg))
-                .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, svg))
-                .on('click', function (d, i) {
-                    var confirm = d3.select(div).select('.confirm')
-                        .style('visibility', 'visible');
-                    filter = false;
-
-                    var point = d3.select(this);
-                    if (point.classed('selected')) {
-                        point.classed('selected', false);
-                    } else {
-                        point.classed('selected', true);
-                    }
-                    var obj = new Object();
-                    obj[chart.dimension()] = d.data[_dimension[0]]
-                    obj[chart.measure()] = d.data[_measure[0]]
-                    filterData.push(obj)
-
-                    var _filterDimension = {};
-                    if (broadcast.filterSelection.id) {
-                        _filterDimension = broadcast.filterSelection.filter;
-                    } else {
-                        broadcast.filterSelection.id = $(div).attr('id');
-                    }
-                    var dimension = _dimension[0];
-                    if (_filterDimension[dimension]) {
-                        var temp = _filterDimension[dimension];
-                        if (temp.indexOf(d.data[_dimension[0]]) < 0) {
-                            temp.push(d.data[_dimension[0]]);
-                        } else {
-                            temp.splice(temp.indexOf(d.data[_dimension[0]]), 1);
-                        }
-                        _filterDimension[dimension] = temp;
-                    } else {
-                        _filterDimension[dimension] = [d.data[_dimension[0]]];
-                    }
-
-                    var idWidget = broadcast.updateWidget[$(div).attr('id')];
-                    broadcast.updateWidget = {};
-                    broadcast.updateWidget[$(div).attr('id')] = idWidget;
-                    broadcast.filterSelection.filter = _filterDimension;
-                    var _filterParameters = filterParameters.get();
-                    _filterParameters[dimension] = _filterDimension[dimension];
-                    filterParameters.save(_filterParameters);
-                });
-        }
-
         pieArcGroup = svg.selectAll('g.arc')
             .data(_pie(newFilteredData), _localKey);
 
@@ -1011,7 +951,6 @@ function pie() {
             .remove();
 
         if (_valueAsArc) {
-            pieArcGroup.selectAll('text').remove()
             var pieLabel = pieArcGroup.append('text')
                 .attr('dy', function (d, i) {
                     if (_valuePosition == 'inside') {
@@ -1028,41 +967,42 @@ function pie() {
                 .attr('text-anchor', function () {
                     return 'middle';
                 })
-                .text(_labelFn())
                 .transition()
-                .delay(_delayFn(2000))
+                .delay(_delayFn(200))
                 .on('start', function () {
                     d3.select(this).attr('startOffset', function (d) {
-                        var length = 50;
+                        var length = 1
                         if (pieArcPath.nodes()[d.index]) {
                             length = pieArcPath.nodes()[d.index].getTotalLength();
                         }
-                        return 50 * (length - 2 * outerRadius) / length + "%";
+                        return 50 * (length - 2 * outerRadius) / length + '%';
                     })
                         .text(_labelFn())
                         .filter(function (d, i) {
+                            /* length of arc = angle in radians * radius */
                             var diff = d.endAngle - d.startAngle;
-                            return outerRadius * diff - 5 < this.getComputedTextLength();
+                            return outerRadius * diff < this.getComputedTextLength();
                         })
                         .remove();
                 });
-
-            _local_svg.select('g.lasso').remove()
-
-            var lasso = d3Lasso.lasso()
-                .hoverSelect(true)
-                .closePathSelect(true)
-                .closePathDistance(100)
-                .items(pieArcGroup)
-                .targetArea(_local_svg);
-
-            lasso.on('start', onLassoStart(lasso, _local_svg))
-                .on('draw', onLassoDraw(lasso, _local_svg))
-                .on('end', onLassoEnd(lasso, _local_svg));
-
-            _local_svg.call(lasso);
         }
+
+        _local_svg.select('g.lasso').remove()
+
+        var lasso = d3Lasso.lasso()
+            .hoverSelect(true)
+            .closePathSelect(true)
+            .closePathDistance(100)
+            .items(pieArcGroup)
+            .targetArea(_local_svg);
+
+        lasso.on('start', onLassoStart(lasso, _local_svg))
+            .on('draw', onLassoDraw(lasso, _local_svg))
+            .on('end', onLassoEnd(lasso, _local_svg));
+
+        _local_svg.call(lasso);
     }
+
 
     chart.config = function (value) {
         if (!arguments.length) {
