@@ -400,7 +400,7 @@ function bullet() {
                 .attr('class', 'plot')
 
             if (_tooltip) {
-                tooltip = d3.select(this.parentNode).select('.custom_tooltip');
+               tooltip = d3.select(div).select('.custom_tooltip');
             }
 
             data = data.map(function (item) {
@@ -598,7 +598,10 @@ function bullet() {
     }
 
     chart.update = function (data) {
-        data = UTIL.sortingData(data, dimension[0])
+        data = UTIL.sortingData(data, dimension[0]);
+        if (_tooltip) {
+           tooltip = d3.select(div).select('.custom_tooltip');
+        }
         _Local_data = data;
         filterData = [];
         var svg = _local_svg;

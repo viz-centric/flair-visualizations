@@ -609,15 +609,15 @@ function combo() {
                 legendHeight = result.legendHeight;
                 legendBreakCount = result.legendBreakCount;
 
-                switch (_legendPosition) {
-                    case 'top':
-                    case 'bottom':
+                switch (_legendPosition.toUpperCase()) {
+                    case 'TOP':
+                    case 'BOTTOM':
                         plotHeight = plotHeight - legendHeight - (_xAxis ? (COMMON.AXIS_THICKNESS / 1.5) : 0);
                         break;
-                    case 'right':
+                    case 'RIGHT':
                         plotWidth = plotWidth - legendWidth - (COMMON.AXIS_THICKNESS / 2)
                         break;
-                    case 'left':
+                    case 'LEFT':
                         plotWidth = plotWidth - legendWidth;
                         break;
                 }
@@ -715,13 +715,13 @@ function combo() {
             .attr('class', 'combo-plot')
             .classed('plot', true)
             .attr('transform', function () {
-                if (_legendPosition == 'top') {
+                if (_legendPosition.toUpperCase() == 'TOP') {
                     return 'translate(' + margin.left + ', ' + parseInt(legendSpace * 2 + (20 * parseInt(legendBreakCount))) + ')';
-                } else if (_legendPosition == 'bottom') {
+                } else if (_legendPosition.toUpperCase() == 'BOTTOM') {
                     return 'translate(' + margin.left + ', 0)';
-                } else if (_legendPosition == 'left') {
+                } else if (_legendPosition.toUpperCase() == 'LEFT') {
                     return 'translate(' + (legendSpace + margin.left + axisLabelSpace) + ', 0)';
-                } else if (_legendPosition == 'right') {
+                } else if (_legendPosition.toUpperCase() == 'RIGHT') {
                     return 'translate(' + margin.left + ', 0)';
                 }
             });
@@ -746,7 +746,7 @@ function combo() {
 
         y.domain([0, d3.max(data, function (d) {
             return d3.max(keys, function (key) {
-                return parseInt(d[key]);
+                return parseFloat(d[key]);
             });
         })]).nice();
 

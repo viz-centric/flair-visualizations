@@ -426,7 +426,10 @@ function infographics() {
     }
 
     chart.update = function (data) {
-        data = UTIL.sortingData(data, _dimension[0])
+        data = UTIL.sortingData(data, _dimension[0]);
+        if (_tooltip) {
+           tooltip = d3.select(div).select('.custom_tooltip');
+        }
         var div = _localDiv;
 
         /* store the data in local variable */

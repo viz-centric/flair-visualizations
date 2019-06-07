@@ -260,7 +260,8 @@ function boxplot() {
         _local_svg = selection;
 
         selection.each(function (data) {
-            data = UTIL.sortingData(data, _dimension[0])
+            data = UTIL.sortingData(data, _dimension[0]);
+           
             _Local_data = _originalData = data;
             div = d3.select(this).node().parentNode;
 
@@ -285,7 +286,7 @@ function boxplot() {
             var barWidth = Math.floor(gWidth / data.length / 2);
             var me = this;
             if (_tooltip) {
-                tooltip = d3.select(this.parentNode).select('.custom_tooltip');
+               tooltip = d3.select(div).select('.custom_tooltip');
             }
 
             x = d3
@@ -637,7 +638,10 @@ function boxplot() {
     }
 
     chart.update = function (data) {
-        data = UTIL.sortingData(data, _dimension[0])
+        data = UTIL.sortingData(data, _dimension[0]);
+        if (_tooltip) {
+           tooltip = d3.select(div).select('.custom_tooltip');
+        }
         _Local_data = data,
             filterData = [];
 
@@ -651,11 +655,6 @@ function boxplot() {
             gHeight = height - margin.top - margin.bottom;
 
         var barWidth = Math.floor(gWidth / data.length / 2);
-
-        if (_tooltip) {
-            tooltip = d3.select(this.parentNode).select('.custom_tooltip');
-        }
-
         x = d3
             .scalePoint()
             .domain(xLabels)

@@ -61,7 +61,7 @@ function util() {
                 this
                     .style("left", d3.event.pageX - 50 + "px")
                     .style("top", d3.event.pageY - 70 + "px")
-                    .style('border', 'solid 2px' + borderColor)
+                    .style('border', 'solid 2px')
                     .style('border-color', borderColor)
                     .style("display", "inline-block")
                     .html(data);
@@ -69,7 +69,7 @@ function util() {
             else {
                 this.style('Top', y + 'px')
                     .style('Left', x + 'px')
-                    .style('border', 'solid 2px' + borderColor)
+                    .style('border', 'solid 2px')
                     .style('border-color', borderColor)
                     .html(data);
 

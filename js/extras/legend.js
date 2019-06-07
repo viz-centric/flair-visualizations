@@ -30,17 +30,17 @@ function legend() {
             .attr('transform', function (d, i) {
                 var translate = [0, 0];
 
-                switch (me.legendPosition()) {
-                    case 'top':
+                switch (me.legendPosition().toUpperCase()) {
+                    case 'TOP':
                         translate = [i * Math.floor(extraParams.width / data.length), 0];
                         break;
-                    case 'bottom':
+                    case 'BOTTOM':
                         translate = [i * Math.floor(extraParams.width / data.length), (extraParams.height - COMMON.PADDING)];
                         break;
-                    case 'right':
+                    case 'RIGHT':
                         translate = [(4 / 5) * extraParams.width, i * 20];
                         break;
-                    case 'left':
+                    case 'LEFT':
                         translate = [0, i * 20];
                 }
 
@@ -118,9 +118,9 @@ function legend() {
                 })
                 .text(function (d) {
                     if (me.print() == false) {
-                        if ((me.legendPosition() == 'top') || (me.legendPosition() == 'bottom')) {
+                        if ((me.legendPosition().toUpperCase() == 'TOP') || (me.legendPosition().toUpperCase() == 'BOTTOM')) {
                             return UTIL.getTruncatedLabel(this, d[me.dimension()], Math.floor(extraParams.width / data.length) - 10);
-                        } else if ((me.legendPosition() == 'left') || (me.legendPosition() == 'right')) {
+                        } else if ((me.legendPosition().toUpperCase() == 'LEFT') || (me.legendPosition().toUpperCase() == 'RIGHT')) {
                             return UTIL.getTruncatedLabel(this, d[me.dimension()], extraParams.width / 5);
                         }
                     }
@@ -140,14 +140,14 @@ function legend() {
         legendItem.attr('transform', function (d, i) {
             var translate = [0, 0];
 
-            switch (me.legendPosition()) {
-                case 'top':
+            switch (me.legendPosition().toUpperCase()) {
+                case 'TOP':
                     translate = [i * Math.floor(extraParams.width / data.length), 0];
                     break;
-                case 'bottom':
+                case 'BOTTOM':
                     translate = [i * Math.floor(extraParams.width / data.length), (extraParams.height - COMMON.PADDING)];
                     break;
-                case 'right':
+                case 'RIGHT':
                     /* For pie and doughnut chart vertically center the legend items */
                     if (me._getName() == 'pie' || me._getName() == 'doughnut') {
                         translate = [(4 / 5) * extraParams.width, ((extraParams.height / 2) - (legendHeight / 2) + i * 20)];
@@ -155,7 +155,7 @@ function legend() {
                         translate = [(extraParams.width - legendWidth), i * 20];
                     }
                     break;
-                case 'left':
+                case 'LEFT':
                     /* For pie and doughnut chart vertically center the legend items */
                     if (me._getName() == 'pie' || me._getName() == 'doughnut') {
                         translate = [0, ((extraParams.height / 2) - (legendHeight / 2) + i * 20)];
@@ -168,8 +168,8 @@ function legend() {
         });
 
         return {
-            legendWidth: legendWidth,
-            legendHeight: legendHeight
+            legendWidth: legend.node().getBBox().width,
+            legendHeight: height
         }
     }
 }

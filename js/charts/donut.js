@@ -341,20 +341,20 @@ function donut() {
                 legendWidth = result.legendWidth;
                 legendHeight = result.legendHeight;
 
-                switch (_legendPosition) {
-                    case 'top':
-                    case 'bottom':
+                switch (_legendPosition.toUpperCase()) {
+                    case 'TOP':
+                    case 'BOTTOM':
                         plotHeight = parentHeight - legendHeight;
                         break;
-                    case 'right':
-                    case 'left':
+                    case 'RIGHT':
+                    case 'LEFT':
                         plotWidth = parentWidth - legendWidth;
                         break;
                 }
             }
 
             if (_tooltip) {
-                tooltip = d3.select(this.parentNode).select('.custom_tooltip');
+               tooltip = d3.select(div).select('.custom_tooltip');
             }
 
             chart.drawPlot = function (data) {
@@ -382,15 +382,15 @@ function donut() {
                     .attr('transform', function () {
                         var translate = [0, 0];
 
-                        switch (_legendPosition) {
-                            case 'top':
+                        switch (_legendPosition.toUpperCase()) {
+                            case 'TOP':
                                 translate = [(plotWidth / 2), legendHeight + (plotHeight / 2)];
                                 break;
-                            case 'bottom':
-                            case 'right':
+                            case 'BOTTOM':
+                            case 'RIGHT':
                                 translate = [(plotWidth / 2), (plotHeight / 2)];
                                 break;
-                            case 'left':
+                            case 'LEFT':
                                 translate = [legendWidth + (plotWidth / 2), (plotHeight / 2)]
                         }
 

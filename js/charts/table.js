@@ -318,8 +318,8 @@ function table() {
             div = d3.select(this);
 
             var svg = d3.select(this),
-                width = +svg.attr('width'),
-                height = +svg.attr('height');
+                width = parseInt(svg.style('width')),
+                height = parseInt(svg.style('height'));
 
             var id = svg.attr('id');
 
@@ -405,6 +405,11 @@ function table() {
         _localData = data;
         svg = _local_svg;
         filterData = [];
+
+        var width = parseInt(svg.style('width')),
+            height = parseInt(svg.style('height'));
+
+        var id = svg.attr('id');
         div.selectAll('tbody').remove();
         div.selectAll('thead').remove();
 
@@ -422,6 +427,46 @@ function table() {
         $($('#' + div.attr('id') + ' td')).on('click', function () {
             readerTableChart.call(this.textContent, this, div)
         })
+
+        if (!_print) {
+
+            var _filter = UTIL.createFilterElement()
+            $('#' + id).append(_filter)
+
+            $('#' + div.attr('id')).find('#viz_table').dataTable({
+                scrollY: height - 100,
+                scrollX: true,
+                scrollCollapse: true,
+                ordering: true,
+                info: true,
+                'dom': 'Rlfrtip',
+                // colReorder: {
+                //     allowReorder: false
+                // },
+                pagingType: "full_numbers",
+                aLengthMenu: [[2, 5, 10, 15, 20, 25, -1], [2, 5, 10, 15, 20, 25, "All"]],
+                iDisplayLength: 20,
+                bDestroy: true,
+                //   dom: '<"table-header">rt<"table-footer"lp>',
+                //  "sDom": "Rlfrtip",
+                fnDrawCallback: function (oSettings) {
+                    if (oSettings._iDisplayLength > oSettings.fnRecordsDisplay()) {
+                        // $(oSettings.nTableWrapper).find('.dataTables_paginate').hide();
+                        // $(oSettings.nTableWrapper).find('.dataTables_info').hide();
+                    }
+                }
+            });
+            $("#viz_table_paginate").css('display', 'blobk')
+            $($('#' + div.attr('id') + ' td')).on('click', function () {
+                readerTableChart.call(this.textContent, this, div)
+            })
+
+            div.select('.filterData')
+                .on('click', applyFilter());
+
+            div.select('.removeFilter')
+                .on('click', clearFilter());
+        }
     }
 
     chart.config = function (value) {

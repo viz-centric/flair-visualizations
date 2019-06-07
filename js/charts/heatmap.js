@@ -173,7 +173,14 @@ function heatmap() {
                     result = c.color;
                     return true;
                 }
-            } else {
+            }
+            else if (c.hasOwnProperty('above')) {
+                if (val > c.above) {
+                    result = c.color;
+                    return true;
+                }
+            }
+            else {
                 result = c.color;
                 return true;
             }
@@ -187,14 +194,14 @@ function heatmap() {
 
         var offset;
 
-        switch (iconProp) {
-            case 'left':
+        switch (iconProp.toUpperCase()) {
+            case 'LEFT':
                 offset = 0 + padding;
                 break;
-            case 'center':
+            case 'CENTER':
                 offset = width / 2 - 2 * padding;
                 break;
-            case 'right':
+            case 'RIGHT':
                 offset = width - 5 * padding;
                 break;
         }
@@ -207,14 +214,14 @@ function heatmap() {
 
         var offset;
 
-        switch (valPosition) {
-            case 'left':
+        switch (valPosition.toUpperCase()) {
+            case 'LEFT':
                 offset = 0 + padding;
                 break;
-            case 'center':
+            case 'CENTER':
                 offset = width / 2;
                 break;
-            case 'right':
+            case 'RIGHT':
                 offset = width - padding;
                 break;
         }
@@ -226,14 +233,14 @@ function heatmap() {
 
         var anchor;
 
-        switch (valPosition) {
-            case 'left':
+        switch (valPosition.toUpperCase()) {
+            case 'LEFT':
                 anchor = 'start';
                 break;
-            case 'center':
+            case 'CENTER':
                 anchor = 'middle';
                 break;
-            case 'right':
+            case 'RIGHT':
                 anchor = 'end';
                 break;
         }
@@ -454,7 +461,7 @@ function heatmap() {
 
             data = transformData(data);
             if (_tooltip) {
-                tooltip = d3.select(this.parentNode).select('.custom_tooltip');
+                tooltip = d3.select(div).select('.custom_tooltip');
             }
 
             var cell = plot.selectAll(".node")
@@ -636,7 +643,10 @@ function heatmap() {
     }
 
     chart.update = function (data) {
-        data = UTIL.sortingData(data, _dimension[0])
+        data = UTIL.sortingData(data, _dimension[0]);
+        if (_tooltip) {
+            tooltip = d3.select(div).select('.custom_tooltip');
+        }
         _Local_data = data;
         filterData = [];
 

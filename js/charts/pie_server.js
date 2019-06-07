@@ -368,12 +368,12 @@ function pie() {
                 legendHeight = result.legendHeight;
 
                 switch(_legendPosition) {
-                    case 'top':
-                    case 'bottom':
+                    case 'TOP':
+                    case 'BOTTOM':
                         plotHeight = plotHeight - legendHeight;
                         break;
-                    case 'right':
-                    case 'left':
+                    case 'RIGHT':
+                    case 'LEFT':
                         plotWidth = plotWidth - legendWidth;
                         break;
                 }
@@ -402,14 +402,14 @@ function pie() {
                     var translate = [0, 0];
 
                     switch(_legendPosition) {
-                        case 'top':
+                        case 'TOP':
                             translate = [(plotWidth / 2), legendHeight + (plotHeight / 2)];
                             break;
-                        case 'bottom':
-                        case 'right':
+                        case 'BOTTOM':
+                        case 'RIGHT':
                             translate = [(plotWidth / 2), (plotHeight / 2)];
                             break;
-                        case 'left':
+                        case 'LEFT':
                             translate = [legendWidth + (plotWidth / 2), (plotHeight / 2)]
                     }
 

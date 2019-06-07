@@ -633,7 +633,7 @@ function treemap() {
                 .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
             if (_tooltip) {
-                tooltip = d3.select(this.parentNode).select('.custom_tooltip');
+               tooltip = d3.select(div).select('.custom_tooltip');
             }
 
             treemap = d3.treemap()
