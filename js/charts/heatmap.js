@@ -195,14 +195,14 @@ function heatmap() {
         var offset;
 
         switch (iconProp.toUpperCase()) {
-            case 'LEFT':
+            case 'CENTER':
                 offset = 0 + padding;
                 break;
-            case 'CENTER':
+            case 'RIGHT':
                 offset = width / 2 - 2 * padding;
                 break;
-            case 'RIGHT':
-                offset = width - 5 * padding;
+            case 'LEFT':
+                offset = -(width / 2) + (3 * padding);
                 break;
         }
 
@@ -222,7 +222,7 @@ function heatmap() {
                 offset = width / 2;
                 break;
             case 'RIGHT':
-                offset = width - padding;
+                offset = width - 5 * padding;
                 break;
         }
 
@@ -637,7 +637,7 @@ function heatmap() {
             .attr('width', cellWidth - 1)
             .attr('height', cellHeight - 1)
             .html(function (d) {
-                return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + '"></i>';
+                return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + ';font-size:' + fontSizeForMeasure[_measure.indexOf(d.x)] + 'px;"></i>';
             });
 
     }
@@ -649,7 +649,7 @@ function heatmap() {
         }
         _Local_data = data;
         filterData = [];
-
+        var svg = _local_svg;
         var yElement = d3.set(data.map(function (item) { return item[_dimension[0]]; })).values();
         var xElement = d3.map();
 
@@ -660,7 +660,7 @@ function heatmap() {
         cellWidth = parseInt((width - margin.left - margin.right) / _measure.length),
             cellHeight = parseInt((height - margin.top - margin.bottom) / data.length);
         var offset = 6;
-        var plot = _local_svg.select('.plot');
+        var plot = svg.select('.plot');
 
         plot.selectAll('.dimLabel').remove()
 
@@ -706,36 +706,17 @@ function heatmap() {
 
         cell = plot.selectAll('.node');
 
-        if (!_print) {
-            cell.select('rect')
-                .attr('rx', '3px')
-                .attr('ry', '3px')
-                .attr('class', 'bordered')
-                .style('stroke', '#ffffff')
-                .style('stroke-width', '2px')
-                .attr('width', cellWidth - 1)
-                .attr('height', cellHeight - 1)
-                .transition()
-                .ease(d3.easeQuadIn)
-                .duration(COMMON.DURATION)
-                .styleTween('fill', function (d) {
-                    return d3.interpolateRgb('transparent', getFillColor(d));
-                });
-
-        }
-        else {
-            cell.select('rect')
-                .attr('rx', '3px')
-                .attr('ry', '3px')
-                .attr('class', 'bordered')
-                .style('stroke', '#ffffff')
-                .style('stroke-width', '2px')
-                .attr('width', cellWidth - 1)
-                .attr('height', cellHeight - 1)
-                .style('fill', function (d) {
-                    return d3.interpolateRgb('transparent', getFillColor(d));
-                })
-        }
+        cell.select('rect')
+            .attr('rx', '3px')
+            .attr('ry', '3px')
+            .attr('class', 'bordered')
+            .style('stroke', '#ffffff')
+            .style('stroke-width', '2px')
+            .attr('width', cellWidth - 1)
+            .attr('height', cellHeight - 1)
+            .style('fill', function (d) {
+                return d3.interpolateRgb('transparent', getFillColor(d));
+            })
 
         cell.select('text')
             .attr('x', function (d) {
@@ -780,35 +761,20 @@ function heatmap() {
                 return fontSizeForMeasure[_measure.indexOf(d.x)];
             });
 
-        cell.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
-            .on('click', function (d) {
-                filter = false;
-                var confirm = d3.select(div).select('.confirm')
-                    .style('visibility', 'visible');
-                var _filter = _localData.filter(function (d1) {
-                    return d.y === d1[_dimension[0]]
-                })
-                var rect = d3.select(this).select('rect');
-                if (rect.classed('selected')) {
-                    rect.classed('selected', false);
-                    filterData.map(function (val, i) {
-                        if (val[_dimension[0]] == d[_dimension[0]]) {
-                            filterData.splice(i, 1)
-                        }
-                    })
-                } else {
-                    rect.classed('selected', true);
-                    var isExist = filterData.filter(function (val) {
-                        if (val[_dimension[0]] == d[_dimension[0]]) {
-                            return val
-                        }
-                    })
-                    if (isExist.length == 0) {
-                        filterData.push(_filter[0]);
-                    }
-                }
+        cell.select('foreignObject')
+            .attr('x', function (d) {
+                return getIconPosition(d, cellWidth);
+            })
+            .attr('y', function (d) {
+                return cellHeight / 2;;
+            })
+            .attr('visibility', function (d) {
+                return UTIL.getVisibility(showIcon[_measure.indexOf(d.x)]);
+            })
+            .attr('width', cellWidth - 1)
+            .attr('height', cellHeight - 1)
+            .html(function (d) {
+                return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + ';font-size:' + fontSizeForMeasure[_measure.indexOf(d.x)] + 'px;"></i>';
             });
 
         newCell.append('rect')
@@ -868,6 +834,24 @@ function heatmap() {
             .style('font-size', function (d) {
                 return fontSizeForMeasure[_measure.indexOf(d.x)];
             });
+
+        newCell.append('foreignObject')
+            .attr('x', function (d) {
+                return getIconPosition(d, cellWidth);
+            })
+            .attr('y', function (d) {
+                return cellHeight / 2;;
+            })
+            .attr('visibility', function (d) {
+                return UTIL.getVisibility(showIcon[_measure.indexOf(d.x)]);
+            })
+            .attr('width', cellWidth - 1)
+            .attr('height', cellHeight - 1)
+            .html(function (d) {
+                return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + ';font-size:' + fontSizeForMeasure[_measure.indexOf(d.x)] + 'px;"></i>';
+            });
+
+        //   drawViz(newCell)
 
         plot.selectAll('.node')
             .attr('transform', function (d) {
