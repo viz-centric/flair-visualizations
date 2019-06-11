@@ -376,7 +376,7 @@ function clusteredhorizontalbar() {
             }
 
             if (_tooltip) {
-               tooltip = d3.select(div).select('.custom_tooltip');
+                tooltip = d3.select(div).select('.custom_tooltip');
             }
 
             drawPlot.call(this, data);
@@ -427,12 +427,10 @@ function clusteredhorizontalbar() {
         x1.padding(0.2)
             .domain(keys).rangeRound([0, x0.bandwidth()]);
 
+        var range = UTIL.getMinMax(data, keys);
+
         y.rangeRound([0, plotWidth])
-            .domain([0, d3.max(data, function (d) {
-                return d3.max(keys, function (key) {
-                    return parseFloat(d[key]);
-                });
-            })]).nice();
+            .domain([range[0], range[1]]);
 
         _localYGrid = d3.axisBottom()
             .tickFormat('')
@@ -648,10 +646,20 @@ function clusteredhorizontalbar() {
                 .attr("y", function (d) {
                     return x1(d.measure);
                 })
-                .attr("x", 1)
+                .attr('x', function (d, i) {
+                    if ((d[d.measure] === null) || (isNaN(d[d.measure]))) {
+                        return 0;
+                    } else if (d[d.measure] < 0) {
+                        return y(d[d.measure]) + 1; // 1 is the stroke offset
+                    }
+
+                    return y(0) + 1;
+                })
                 .attr("height", x1.bandwidth())
                 .attr("width", function (d) {
-                    return y(d[d.measure]);
+                    if ((d[d.measure] === null) || (isNaN(d[d.measure]))) return 0;
+                    return Math.abs(y(0) - y(d[d.measure]));
+
                 })
                 .style('fill', function (d, i) {
                     return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
@@ -679,10 +687,20 @@ function clusteredhorizontalbar() {
                 .attr("y", function (d) {
                     return x1(d.measure);
                 })
-                .attr("x", 1)
+                .attr('x', function (d, i) {
+                    if ((d[d.measure] === null) || (isNaN(d[d.measure]))) {
+                        return 0;
+                    } else if (d[d.measure] < 0) {
+                        return y(d[d.measure]) + 1; // 1 is the stroke offset
+                    }
+
+                    return y(0) + 1;
+                })
                 .attr("height", x1.bandwidth())
                 .attr("width", function (d) {
-                    return y(d[d.measure]);
+                    if ((d[d.measure] === null) || (isNaN(d[d.measure]))) return 0;
+                    return Math.abs(y(0) - y(d[d.measure]));
+
                 })
         }
         if (!_print || _notification) {
@@ -873,7 +891,7 @@ function clusteredhorizontalbar() {
     chart.update = function (data) {
         data = UTIL.sortingData(data, _dimension[0]);
         if (_tooltip) {
-           tooltip = d3.select(div).select('.custom_tooltip');
+            tooltip = d3.select(div).select('.custom_tooltip');
         }
         var DURATION = COMMON.DURATION;
         var svg = _local_svg;
@@ -887,11 +905,9 @@ function clusteredhorizontalbar() {
 
         x0.domain(data.map(function (d) { return d[_dimension[0]]; }));
         x1.domain(keys).rangeRound([0, x0.bandwidth()]);
-        y.domain([0, d3.max(data, function (d) {
-            return d3.max(keys, function (key) {
-                return parseFloat(d[key]);
-            });
-        })]).nice();
+        var range = UTIL.getMinMax(data, keys);
+
+        y.domain([range[0], range[1]]);
 
         var plot = svg.select('.plot')
         var cluster = plot.selectAll("g.cluster")
@@ -926,10 +942,20 @@ function clusteredhorizontalbar() {
             .attr("y", function (d) {
                 return x1(d.measure);
             })
-            .attr("x", 1)
+            .attr('x', function (d, i) {
+                if ((d[d.measure] === null) || (isNaN(d[d.measure]))) {
+                    return 0;
+                } else if (d[d.measure] < 0) {
+                    return y(d[d.measure]) + 1; // 1 is the stroke offset
+                }
+
+                return y(0) + 1;
+            })
             .attr("height", x1.bandwidth())
             .attr("width", function (d) {
-                return y(d[d.measure]);
+                if ((d[d.measure] === null) || (isNaN(d[d.measure]))) return 0;
+                return Math.abs(y(0) - y(d[d.measure]));
+
             })
             .style('fill', function (d, i) {
                 return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
@@ -994,7 +1020,7 @@ function clusteredhorizontalbar() {
             .attr('class', 'clusteredhorizontalbar');
 
         drawViz(newBars);
-        
+
         plot.selectAll('g.cluster')
             .attr('transform', function (d) {
                 return 'translate(0, ' + x0(d[_dimension[0]]) + ')';

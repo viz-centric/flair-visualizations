@@ -721,7 +721,7 @@ function scatter() {
             .filter(function (d) {
                 return d[_dimension[0]] === data;
             })
-        circle.style('fill', circle.attr('fill'));
+        circle.style('fill', circle.attr('stroke'));
     }
 
     var _legendClick = function (data) {
