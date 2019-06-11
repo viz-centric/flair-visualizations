@@ -909,6 +909,27 @@ function util() {
         convertToNumber: function (str) {
             return parseFloat(str.replace(/,/g, ''));
         },
+        getMinMax: function (data, keys) {
+
+            var max = d3.max(data, function (d) {
+                return d3.max(keys, function (key) {
+                    return parseFloat(d[key]);
+                });
+            })
+
+            var min = d3.min(data, function (d) {
+                return d3.min(keys, function (key) {
+                    return parseFloat(d[key]);
+                });
+            })
+            if (min > 0) {
+                min = 0;
+            }
+            if (max < 0 && min < 0) {
+                max = 0;
+            }
+            return [min, max];
+        }
     }
 
     return publicMethods;

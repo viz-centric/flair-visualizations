@@ -42,7 +42,7 @@ function clusteredverticalbar() {
         isAnimationDisable = false,
         _notification = false;
 
-    var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
+    var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1, yScale = d3.scaleLinear();
     var _localXAxis,
         _localYAxis,
         _localXGrid,
@@ -421,12 +421,10 @@ function clusteredverticalbar() {
         x1.padding([0.2])
             .domain(keys).rangeRound([0, x0.bandwidth()]);
 
+        var range = UTIL.getMinMax(data, keys);
+
         y.rangeRound([plotHeight, 0])
-            .domain([0, d3.max(data, function (d) {
-                return d3.max(keys, function (key) {
-                    return parseFloat(d[key]);
-                });
-            })]).nice();
+            .domain([range[0], range[1]]);
 
         var _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
@@ -541,8 +539,11 @@ function clusteredverticalbar() {
                 .tickSize(0)
                 .tickPadding(8)
                 .tickFormat(function (d) {
-                    return UTIL.shortScale(2)(d);
-                });
+                    if ((plotHeight / y.ticks().length) < 11) {
+                        return '';
+                    }
+                    return UTIL.getTruncatedTick(UTIL.shortScale(2)(d), margin.left - 8, tickLength);
+                })
 
             yAxisGroup = plot.append('g')
                 .attr('class', 'y axis')
@@ -658,10 +659,17 @@ function clusteredverticalbar() {
         if (!_print) {
             rect = element.append('rect')
                 .attr("height", function (d, i) {
-                    return plotHeight - y(d[d.measure]);
+                    if ((d[d.measure] === null) || (isNaN(d[d.measure]))) return 0;
+                    return Math.abs(y(0) - y(d[d.measure]));
                 })
                 .attr("y", function (d, i) {
-                    return y(d[d.measure]);
+                    if ((d[d.measure] === null) || (isNaN(d[d.measure]))) {
+                        return plotHeight;
+                    } else if (d[d.measure] > 0) {
+                        return y(d[d.measure]);
+                    }
+
+                    return y(0);
                 })
                 .attr("width", x1.bandwidth())
                 .attr("x", function (d, i) {
@@ -694,10 +702,17 @@ function clusteredverticalbar() {
                 })
                 .style('stroke-width', 2)
                 .attr("height", function (d, i) {
-                    return plotHeight - y(d[d.measure]);
+                    if ((d[d.measure] === null) || (isNaN(d[d.measure]))) return 0;
+                    return Math.abs(y(0) - y(d[d.measure]));
                 })
                 .attr("y", function (d, i) {
-                    return y(d[d.measure]);
+                    if ((d[d.measure] === null) || (isNaN(d[d.measure]))) {
+                        return plotHeight;
+                    } else if (d[d.measure] > 0) {
+                        return y(d[d.measure]);
+                    }
+
+                    return y(0);
                 })
                 .attr("width", x1.bandwidth())
                 .attr("x", function (d, i) {
@@ -887,7 +902,7 @@ function clusteredverticalbar() {
     chart.update = function (data) {
         data = UTIL.sortingData(data, _dimension[0])
         if (_tooltip) {
-           tooltip = d3.select(div).select('.custom_tooltip');
+            tooltip = d3.select(div).select('.custom_tooltip');
         }
         var DURATION = COMMON.DURATION;
         if (isAnimationDisable) {
@@ -906,11 +921,10 @@ function clusteredverticalbar() {
 
         x0.domain(data.map(function (d) { return d[_dimension[0]]; }));
         x1.domain(keys).rangeRound([0, x0.bandwidth()]);
-        y.domain([0, d3.max(data, function (d) {
-            return d3.max(keys, function (key) {
-                return parseFloat(d[key]);
-            });
-        })]).nice();
+
+        var range = UTIL.getMinMax(data, keys);
+
+        y.domain([range[0], range[1]]);
 
         var plot = _local_svg.select('.plot')
         var cluster = plot.selectAll("g.cluster")
@@ -943,10 +957,17 @@ function clusteredverticalbar() {
 
         clusteredverticalbar.select('rect')
             .attr("height", function (d, i) {
-                return plotHeight - y(d[d.measure]);
+                if ((d[d.measure] === null) || (isNaN(d[d.measure]))) return 0;
+                return Math.abs(y(0) - y(d[d.measure]));
             })
             .attr("y", function (d, i) {
-                return y(d[d.measure]);
+                if ((d[d.measure] === null) || (isNaN(d[d.measure]))) {
+                    return plotHeight;
+                } else if (d[d.measure] > 0) {
+                    return y(d[d.measure]);
+                }
+
+                return y(0);
             })
             .attr("width", x1.bandwidth())
             .attr("x", function (d, i) {
@@ -1061,6 +1082,7 @@ function clusteredverticalbar() {
         }
 
         if (_showYaxis) {
+
             yAxisGroup = plot.select('.y.axis')
                 .transition()
                 .duration(COMMON.DURATION)
