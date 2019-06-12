@@ -244,9 +244,14 @@ function infographics() {
                 return d[_dimension[0]];
             });
 
+            var keys = UTIL.getMeasureList(data[0], _dimension);
+            var range = UTIL.getMinMax(data, keys);
+
             /* Minimum and Maximum value of the measures */
-            _localMin = d3.min(data, function (d) { return d[_measure[0]]; });
-            _localMax = d3.max(data, function (d) { return d[_measure[0]]; });
+            // _localMin = d3.min(data, function (d) { return d[_measure[0]]; });
+            // _localMax = d3.max(data, function (d) { return d[_measure[0]]; });
+            _localMin = range[0];
+            _localMax = range[1];
 
             _x.domain(_localXLabels)
                 .range([0, parentWidth]);
@@ -428,7 +433,7 @@ function infographics() {
     chart.update = function (data) {
         data = UTIL.sortingData(data, _dimension[0]);
         if (_tooltip) {
-           tooltip = d3.select(div).select('.custom_tooltip');
+            tooltip = d3.select(div).select('.custom_tooltip');
         }
         var div = _localDiv;
 

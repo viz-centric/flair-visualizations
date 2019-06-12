@@ -9,6 +9,8 @@ function common() {
         DEFAULT_FONTSIZE: '60px',
         DEFAULT_FONTWEIGHT: 200,
         DEFAULT_COLOR: '#DC1C50',
+        NEGATIVE_DISPLAY_COLOR: '#DC143C',
+        NEGATIVE_BORDER_COLOR: '#DC143C',
         LEGEND_COLOR: '#6B6A5D',
         HIGHLIGHTER: '#DCDCDC',
         BORDER_RADIUS: 5,

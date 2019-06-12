@@ -96,6 +96,13 @@ svg.sankey .link {
   stroke-opacity: 0.2;
 }
 
+/* line 91, ../sass/partials/_common.scss */
+.base_line line {
+  stroke: #787878 !important;
+  stroke-opacity: 0.8 !important;
+  stroke-width: 2 !important;
+}
+
 /* line 2, ../sass/partials/_grid.scss */
 .grid path {
   stroke: #ededed;
@@ -155,13 +162,7 @@ svg#graphics {
   height: 100%;
 }
 
-/* line 1, ../sass/partials/_kpi.scss */
-#kpi {
-  border: 1px solid #999;
-  width: 1260px;
-  height: 540px;
-}
-/* line 7, ../sass/partials/_kpi.scss */
+/* line 3, ../sass/partials/_kpi.scss */
 #kpi .container .measure {
   display: -webkit-box;
   display: -moz-box;
@@ -170,7 +171,7 @@ svg#graphics {
   display: flex;
   height: 50%;
 }
-/* line 16, ../sass/partials/_kpi.scss */
+/* line 12, ../sass/partials/_kpi.scss */
 #kpi .container .measure .parent .child {
   padding: 3px;
   line-height: 80%;
@@ -211,9 +212,8 @@ svg#graphics {
   text-align: left;
   color: #6f6f6f;
   padding: 2px 5px;
-  word-break: break-word;
 }
-/* line 35, ../sass/partials/_tooltip.scss */
+/* line 34, ../sass/partials/_tooltip.scss */
 .custom_tooltip table tr td {
   text-align: left;
   color: #28689c;
