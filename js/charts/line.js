@@ -459,12 +459,19 @@ function line() {
             .padding([0.5])
             .domain(data.map(function (d) { return d[_dimension[0]]; }));
 
+        var range = UTIL.getMinMax(data, keys);
+
         y.rangeRound([plotHeight, 0])
-            .domain([0, d3.max(data, function (d) {
-                return d3.max(keys, function (key) {
-                    return parseFloat(d[key]);
-                });
-            })]).nice();
+            .domain([range[0], range[1]]);
+
+        var _yTicks = y.ticks(),
+            yDiff = _yTicks[1] - _yTicks[0];
+
+        if ((_yTicks[_yTicks.length - 1] + yDiff) > range[1] + (yDiff / 2)) {
+            y.domain([range[0], (_yTicks[_yTicks.length - 1] + yDiff)])
+        } else {
+            y.domain([range[0], (_yTicks[_yTicks.length - 1] + 2 * yDiff)])
+        }
 
         var _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
@@ -476,7 +483,13 @@ function line() {
             .tickSize(-plotHeight);
 
         _localYGrid = d3.axisLeft()
-            .tickFormat('')
+            .tickFormat(function (d) {
+                if (d == 0) {
+                    _local_svg.selectAll('g.base_line').classed('base_line', false);
+                    d3.select(this.parentNode).classed('base_line', true);
+                    d3.select(this.parentNode).select('line').style('stroke', '#787878');
+                }
+            })
             .tickSize(-plotWidth);
 
         _localXGrid.scale(x);
@@ -550,7 +563,7 @@ function line() {
             })
             .attr('class', 'line')
             .attr('stroke-dasharray', 'none')
-            .style('fill', 'none')
+            .style('fill', 'pink')
             .attr('stroke', function (d, i) {
                 return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
             })
@@ -939,7 +952,7 @@ function line() {
     chart.update = function (data) {
         data = UTIL.sortingData(data, _dimension[0]);
         if (_tooltip) {
-           tooltip = d3.select(div).select('.custom_tooltip');
+            tooltip = d3.select(div).select('.custom_tooltip');
         }
         _Local_data = data;
         filterData = [];
@@ -957,11 +970,20 @@ function line() {
         x.domain(data.map(function (d) {
             return d[_dimension[0]];
         }));
-        y.domain([0, d3.max(data, function (d) {
-            return d3.max(keys, function (key) {
-                return parseFloat(d[key]);
-            });
-        })]).nice();
+
+        var range = UTIL.getMinMax(data, keys);
+
+        y.rangeRound([plotHeight, 0])
+            .domain([range[0], range[1]]);
+
+        var _yTicks = y.ticks(),
+            yDiff = _yTicks[1] - _yTicks[0];
+
+        if ((_yTicks[_yTicks.length - 1] + yDiff) > range[1] + (yDiff / 2)) {
+            y.domain([range[0], (_yTicks[_yTicks.length - 1] + yDiff)])
+        } else {
+            y.domain([range[0], (_yTicks[_yTicks.length - 1] + 2 * yDiff)])
+        }
 
         var areaGenerator = d3.area()
             .curve(d3.curveLinear)

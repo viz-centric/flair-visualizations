@@ -364,7 +364,7 @@ function combo() {
 
         selection.each(function (data) {
             data = UTIL.sortingData(data, _dimension[0])
-            
+
             _Local_data = _originalData = data;
             div = d3.select(this).node().parentNode;
 
@@ -505,12 +505,10 @@ function combo() {
             .rangeRound([0, x0.bandwidth()])
             .padding([0.2]);
 
-        y.range([plotHeight, 0])
-            .domain([0, d3.max(data, function (d) {
-                return d3.max(keys, function (key) {
-                    return parseFloat(d[key]);
-                });
-            })]).nice();
+        var range = UTIL.getMinMax(data, keys);
+
+        y.rangeRound([plotHeight, 0])
+            .domain([range[0], range[1]]);
 
         var _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
@@ -525,7 +523,13 @@ function combo() {
             .tickSize(-plotHeight);
 
         _localYGrid = d3.axisLeft()
-            .tickFormat('')
+            .tickFormat(function (d) {
+                if (d == 0) {
+                    _local_svg.selectAll('g.base_line').classed('base_line', false);
+                    d3.select(this.parentNode).classed('base_line', true);
+                    d3.select(this.parentNode).select('line').style('stroke', '#787878');
+                }
+            })
             .tickSize(-plotWidth);
 
         _localXGrid.scale(_xDimensionGrid);
@@ -626,7 +630,6 @@ function combo() {
             .attr('stroke-linejoin', 'round')
             .attr('stroke-linecap', 'round')
             .attr('stroke-width', 1)
-
 
         var point = clusterLine.selectAll('point')
             .data(function (d, i) {
@@ -927,6 +930,8 @@ function combo() {
                     if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) return 0;
                     return Math.abs(y(0) - y(d['data'][measuresBar[i]]));
                 })
+
+
                 .attr('width', x1.bandwidth())
 
             var text = element.append('text')
@@ -935,6 +940,9 @@ function combo() {
                 })
                 .attr('x', function (d, i) {
                     return x1(measuresBar[i]);
+                })
+                .attr('dy', function (d, i) {
+                    return COMMON.OFFSET;
                 })
                 .attr('y', function (d, i) {
                     if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
@@ -947,9 +955,6 @@ function combo() {
                 })
                 .attr('dx', function (d, i) {
                     return x1.bandwidth() / 2;
-                })
-                .attr('dy', function (d, i) {
-                    return -offsetY;
                 })
                 .style('text-anchor', 'middle')
                 .attr('visibility', function (d, i) {
@@ -1156,7 +1161,7 @@ function combo() {
     chart.update = function (data) {
         data = UTIL.sortingData(data, _dimension[0]);
         if (_tooltip) {
-           tooltip = d3.select(div).select('.custom_tooltip');
+            tooltip = d3.select(div).select('.custom_tooltip');
         }
         _Local_data = data;
         svg = _local_svg;

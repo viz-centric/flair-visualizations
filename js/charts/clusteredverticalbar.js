@@ -265,10 +265,20 @@ function clusteredverticalbar() {
         return function (d, i) {
             d3.select(this).style('cursor', 'default')
                 .style('fill', function (d1, i) {
-                    return UTIL.getDisplayColor(_measure.indexOf(d1.measure), _displayColor);
+                    if (d1[d1.measure] < 0) {
+                        return UTIL.getDisplayColor(_measure.indexOf(d1.measure), _displayColor);
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d1.measure), _displayColor);
+                    }
                 })
                 .style('stroke', function (d1, i) {
-                    return UTIL.getBorderColor(_measure.indexOf(d1.measure), _borderColor);
+                    if (d1[d1.measure] < 0) {
+                        return UTIL.getBorderColor(_measure.indexOf(d1.measure), _borderColor);
+                    }
+                    else {
+                        return UTIL.getBorderColor(_measure.indexOf(d1.measure), _borderColor);
+                    }
                 });
 
             if (tooltip) {
@@ -439,7 +449,13 @@ function clusteredverticalbar() {
             .tickSize(-plotHeight);
 
         _localYGrid = d3.axisLeft()
-            .tickFormat('')
+            .tickFormat(function (d) {
+                if (d == 0) {
+                    _local_svg.selectAll('g.base_line').classed('base_line', false);
+                    d3.select(this.parentNode).classed('base_line', true);
+                    d3.select(this.parentNode).select('line').style('stroke', '#787878');
+                }
+            })
             .tickSize(-plotWidth);
 
         _localXGrid.scale(_xDimensionGrid);
@@ -677,10 +693,20 @@ function clusteredverticalbar() {
                 })
                 .attr('class', 'bar')
                 .style('fill', function (d, i) {
-                    return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                    if (d[d.measure] < 0) {
+                        return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                    }
                 })
                 .style('stroke', function (d, i) {
-                    return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
+                    if (d[d.measure] < 0) {
+                        return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
+                    }
+                    else {
+                        return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
+                    }
                 })
                 .style('opacity', 0)
                 .style('stroke-width', 2);
@@ -695,10 +721,20 @@ function clusteredverticalbar() {
             rect = element.append('rect')
                 .attr('class', 'bar')
                 .style('fill', function (d, i) {
-                    return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                    if (d[d.measure] < 0) {
+                        return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                    }
                 })
                 .style('stroke', function (d, i) {
-                    return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
+                    if (d[d.measure] < 0) {
+                        return UTIL.getBorderColor(_measure.indexOf(d1.measure), _borderColor);
+                    }
+                    else {
+                        return UTIL.getBorderColor(_measure.indexOf(d1.measure), _borderColor);
+                    }
                 })
                 .style('stroke-width', 2)
                 .attr("height", function (d, i) {
@@ -789,8 +825,14 @@ function clusteredverticalbar() {
             .text(function (d, i) {
                 return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat));
             })
-            .attr("y", function (d, i) {
-                return y(d[d.measure]) + _fontSize[i];
+            .attr('y', function (d, i) {
+                if ((d[d['measure']] === null) || (isNaN(d[d['measure']]))) {
+                    return plotHeight;
+                } else if (d[d['measure']] > 0) {
+                    return y(d[d['measure']]);
+                }
+
+                return y(0);
             })
             .attr("x", function (d) {
                 return x1(d.measure) + (x1.bandwidth() / 2);
@@ -882,7 +924,12 @@ function clusteredverticalbar() {
             })
             .select('rect')
             .style('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                if (d[d.measure] < 0) {
+                    return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                }
+                else {
+                    return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                }
             });
     }
 
@@ -975,10 +1022,20 @@ function clusteredverticalbar() {
             })
             .attr('class', 'bar')
             .style('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                if (d[d.measure] < 0) {
+                    return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                }
+                else {
+                    return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                }
             })
             .style('stroke', function (d, i) {
-                return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
+                if (d[d.measure] < 0) {
+                    return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
+                }
+                else {
+                    return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
+                }
             })
             .style('opacity', 1)
             .style('stroke-width', 2)
@@ -995,8 +1052,14 @@ function clusteredverticalbar() {
             .text(function (d, i) {
                 return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat));
             })
-            .attr("y", function (d, i) {
-                return y(d[d.measure]) + _fontSize[i];
+            .attr('y', function (d, i) {
+                if ((d[d['measure']] === null) || (isNaN(d[d['measure']]))) {
+                    return plotHeight;
+                } else if (d[d['measure']] > 0) {
+                    return y(d[d['measure']]);
+                }
+
+                return y(0);
             })
             .attr("x", function (d) {
                 return x1(d.measure) + (x1.bandwidth() / 2);
