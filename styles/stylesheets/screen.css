@@ -183,7 +183,6 @@ svg#graphics {
 .custom_tooltip {
   visibility: hidden;
   position: absolute;
-  max-width: 250px;
   opacity: 1;
   background-color: white;
   -webkit-border-radius: 1px;
@@ -200,25 +199,24 @@ svg#graphics {
   -moz-transition-timing-function: ease;
   -webkit-transition-timing-function: ease;
 }
-/* line 21, ../sass/partials/_tooltip.scss */
+/* line 20, ../sass/partials/_tooltip.scss */
 .custom_tooltip table {
   font-size: 10px;
   font-weight: bold;
   border-collapse: separate;
   border-spacing: 1px;
 }
-/* line 28, ../sass/partials/_tooltip.scss */
+/* line 27, ../sass/partials/_tooltip.scss */
 .custom_tooltip table tr th {
   text-align: left;
   color: #6f6f6f;
   padding: 2px 5px;
 }
-/* line 34, ../sass/partials/_tooltip.scss */
+/* line 33, ../sass/partials/_tooltip.scss */
 .custom_tooltip table tr td {
   text-align: left;
   color: #28689c;
   padding: 2px 5px;
-  word-break: break-word;
 }
 
 /* line 1, ../sass/partials/_table.scss */

@@ -269,7 +269,9 @@ function infographics() {
             _area.x(function (d) {
                 return _x(d[_dimension[0]]);
             })
-                .y0(parentHeight)
+                .y0(function (d, i) {
+                    return _y(0);
+                })
                 .y1(function (d) {
                     return _y(d[_measure[0]]);
                 });
