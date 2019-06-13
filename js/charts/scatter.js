@@ -287,8 +287,8 @@ function scatter() {
                 width = +svg.attr('width'),
                 height = +svg.attr('height');
 
-            parentWidth = width - 2 * COMMON.PADDING - (_showXaxis == true ? margin.left : 0);
-            parentHeight = (height - 2 * COMMON.PADDING - (_showYaxis == true ? axisLabelSpace * 2 : 0));
+            parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
+            parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
             plotWidth = parentWidth;
             plotHeight = parentHeight;
 
