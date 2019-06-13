@@ -898,7 +898,7 @@ function combo() {
 
      //   UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis, _showYaxis, _showXaxis);
         _local_svg.select('g.sort').remove();
-        UTIL.sortingView(container, parentHeight, parentWidth + margin.left, legendBreakCount, axisLabelSpace, offsetX);
+        UTIL.sortingView(container, parentHeight, parentWidth + (_showYaxis == true ? margin.left : 0), legendBreakCount, axisLabelSpace, offsetX);
 
         _local_svg.select('g.sort').selectAll('text')
             .on('click', function () {

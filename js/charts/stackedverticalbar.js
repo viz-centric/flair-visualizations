@@ -311,6 +311,68 @@ function stackedverticalbar() {
         ticks.select('text')
             .style('fill', color);
     }
+
+    var drawLegend = function () {
+        var legendWidth = 0,
+            legendHeight = 0;
+
+        plotWidth = parentWidth;
+        plotHeight = parentHeight;
+        _local_svg.select('.legend').remove();
+        if (_showLegend) {
+            var stackedverticalbarLegend = LEGEND.bind(chart);
+
+            var result = stackedverticalbarLegend(_legendData, container, {
+                width: parentWidth,
+                height: parentHeight,
+                legendBreakCount: legendBreakCount
+            });
+
+            legendWidth = result.legendWidth;
+            legendHeight = result.legendHeight;
+            legendBreakCount = result.legendBreakCount;
+
+            switch (_legendPosition.toUpperCase()) {
+                case 'TOP':
+                    plotHeight = parentHeight - legendHeight - axisLabelSpace;
+                    break;
+                case 'BOTTOM':
+                    plotHeight = parentHeight - legendHeight - axisLabelSpace * 2;
+                    break;
+                case 'RIGHT':
+                case 'LEFT':
+                    plotWidth = parentWidth - legendWidth;
+                    break;
+            }
+
+            if ((_legendPosition.toUpperCase() == 'TOP') || (_legendPosition.toUpperCase() == 'BOTTOM')) {
+                plotWidth = parentWidth;
+                plotHeight = parentHeight - 3 * axisLabelSpace;
+                legendSpace = 20;
+            } else if ((_legendPosition.toUpperCase() == 'LEFT') || (_legendPosition.toUpperCase() == 'RIGHT')) {
+                var legend = _local_svg.selectAll('.item');
+                legendSpace = legend.node().parentNode.getBBox().width;
+                plotWidth = (parentWidth - legendSpace) - margin.left + axisLabelSpace;
+                plotHeight = parentHeight;
+
+                legend.attr('transform', function (d, i) {
+                    if (_legendPosition.toUpperCase() == 'LEFT') {
+                        return 'translate(0, ' + i * 20 + ')';
+
+                    }
+                    else if (_legendPosition.toUpperCase() == 'RIGHT') {
+                        return 'translate(' + (parentWidth - legendSpace + axisLabelSpace + 10) + ', ' + i * 20 + ')';
+                    }
+                });
+            }
+        }
+        else {
+            legendSpace = 0;
+            parentHeight = parentHeight - axisLabelSpace;
+            plotWidth = parentWidth;
+            plotHeight = parentHeight;
+        }
+    }
     function chart(selection) {
         _local_svg = selection;
 
@@ -323,8 +385,8 @@ function stackedverticalbar() {
                 width = +svg.attr('width'),
                 height = +svg.attr('height');
 
-            parentWidth = width - 2 * COMMON.PADDING - (_showXaxis == true ? margin.left : 0);
-            parentHeight = (height - 2 * COMMON.PADDING - (_showYaxis == true ? axisLabelSpace * 2 : 0));
+            parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
+            parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
 
             container = svg.append('g')
                 .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
@@ -338,67 +400,7 @@ function stackedverticalbar() {
             d3.select(div).append('div')
                 .attr('class', 'arrow-down');
 
-            var legendWidth = 0,
-                legendHeight = 0;
-
-            plotWidth = parentWidth;
-            plotHeight = parentHeight;
-
-            if (_showLegend) {
-                var stackedverticalbarLegend = LEGEND.bind(chart);
-
-                var result = stackedverticalbarLegend(_legendData, container, {
-                    width: parentWidth,
-                    height: parentHeight,
-                    legendBreakCount: legendBreakCount
-                });
-
-                legendWidth = result.legendWidth;
-                legendHeight = result.legendHeight;
-                legendBreakCount = result.legendBreakCount;
-
-                switch (_legendPosition.toUpperCase()) {
-                    case 'TOP':
-                        plotHeight = parentHeight - legendHeight - axisLabelSpace;
-                        break;
-                    case 'BOTTOM':
-                        plotHeight = parentHeight - legendHeight - axisLabelSpace * 2;
-                        break;
-                    case 'RIGHT':
-                    case 'LEFT':
-                        plotWidth = parentWidth - legendWidth;
-                        break;
-                }
-
-                if ((_legendPosition.toUpperCase() == 'TOP') || (_legendPosition.toUpperCase() == 'BOTTOM')) {
-                    plotWidth = parentWidth;
-                    plotHeight = parentHeight - 3 * axisLabelSpace;
-                    legendSpace = 20;
-                } else if ((_legendPosition.toUpperCase() == 'LEFT') || (_legendPosition.toUpperCase() == 'RIGHT')) {
-                    var legend = _local_svg.selectAll('.item');
-                    legendSpace = legend.node().parentNode.getBBox().width;
-                    plotWidth = (parentWidth - legendSpace) - margin.left + axisLabelSpace;
-                    plotHeight = parentHeight;
-
-                    legend.attr('transform', function (d, i) {
-                        if (_legendPosition.toUpperCase() == 'LEFT') {
-                            return 'translate(0, ' + i * 20 + ')';
-
-                        }
-                        else if (_legendPosition.toUpperCase() == 'RIGHT') {
-                            return 'translate(' + (parentWidth - legendSpace + axisLabelSpace + 10) + ', ' + i * 20 + ')';
-                        }
-                    });
-                }
-            }
-            else {
-                legendSpace = 0;
-                plotWidth = parentWidth;
-                plotHeight = parentHeight;
-            }
-
-
-
+            drawLegend.call(this)
             drawPlot.call(this, data);
         });
     }
@@ -602,32 +604,13 @@ function stackedverticalbar() {
         if (_tooltip) {
             tooltip = d3.select(div).select('.custom_tooltip');
         }
+
         var plot = container.append('g')
             .attr('class', 'stackedverticalbar-plot')
             .classed('plot', true)
             .attr('transform', function () {
-                if (_legendPosition.toUpperCase() == 'TOP') {
-                    return 'translate(' + margin.left + ', ' + parseInt(legendSpace * 2 + (20 * parseInt(legendBreakCount))) + ')';
-                } else if (_legendPosition.toUpperCase() == 'BOTTOM') {
-                    return 'translate(' + margin.left + ', 0)';
-                } else if (_legendPosition.toUpperCase() == 'LEFT') {
-                    return 'translate(' + (legendSpace + margin.left + axisLabelSpace) + ', 0)';
-                } else if (_legendPosition.toUpperCase() == 'RIGHT') {
-                    return 'translate(' + margin.left + ', 0)';
-                }
+                return UTIL.setPlotPosition(_legendPosition, _showXaxis, _showYaxis, _showLegend, margin.left, legendSpace, legendBreakCount, axisLabelSpace, _local_svg);
             });
-        if (!_showLegend) {
-            _local_svg.select('.plot')
-                .attr('transform', function () {
-                    return 'translate(' + margin.left + ', ' + 0 + ')';
-                });
-        }
-        if (!_showXaxis) {
-            _local_svg.select('.plot')
-                .attr('transform', function () {
-                    return 'translate(' + 0 + ', ' + 0 + ')';
-                });
-        }
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
@@ -751,86 +734,83 @@ function stackedverticalbar() {
 
         var isRotate = false;
 
-        if (_showXaxis) {
-            _localXAxis = d3.axisBottom(x)
-                .tickSize(0)
-                .tickFormat(function (d) {
-                    if (isRotate == false) {
-                        isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
-                    }
-                    return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
-                })
-                .tickPadding(10);
 
-            xAxisGroup = plot.append('g')
-                .attr('class', 'x axis')
-                .attr('visibility', function () {
-                    return 'visible';
-                })
-                .attr('transform', 'translate(0, ' + plotHeight + ')')
-                .call(_localXAxis);
+        _localXAxis = d3.axisBottom(x)
+            .tickSize(0)
+            .tickFormat(function (d) {
+                if (isRotate == false) {
+                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                }
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+            })
+            .tickPadding(10);
 
-            xAxisGroup.append('g')
-                .attr('class', 'label')
-                .attr('transform', function () {
-                    return 'translate(' + (plotWidth / 2) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
-                })
-                .append('text')
-                .style('text-anchor', 'middle')
-                .style('font-weight', 'bold')
-                .style('fill', _xAxisColor)
-                .attr('visibility', UTIL.getVisibility(_showXaxisLabel))
-                .text(_displayName);
+        xAxisGroup = plot.append('g')
+            .attr('class', 'x axis')
+            .attr('visibility', function () {
+                return 'visible';
+            })
+            .attr('transform', 'translate(0, ' + plotHeight + ')')
+            .attr('visibility', UTIL.getVisibility(_showXaxis))
+            .call(_localXAxis);
 
-            if (isRotate) {
-                _local_svg.selectAll('.x .tick text')
-                    .attr("transform", "rotate(-15)");
-            }
+        xAxisGroup.append('g')
+            .attr('class', 'label')
+            .attr('transform', function () {
+                return 'translate(' + (plotWidth / 2) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
+            })
+            .append('text')
+            .style('text-anchor', 'middle')
+            .style('font-weight', 'bold')
+            .style('fill', _xAxisColor)
+            .attr('visibility', UTIL.getVisibility(_showXaxisLabel))
+            .text(_displayName);
 
-            _setAxisColor(xAxisGroup, _xAxisColor);
-
+        if (isRotate) {
+            _local_svg.selectAll('.x .tick text')
+                .attr("transform", "rotate(-15)");
         }
 
-        if (_showYaxis) {
-            _localYAxis = d3.axisLeft(y)
-                .tickSize(0)
-                .tickPadding(8)
-                .tickFormat(function (d) {
-                    return UTIL.shortScale(2)(d);
-                });
+        _setAxisColor(xAxisGroup, _xAxisColor);
 
-            yAxisGroup = plot.append('g')
-                .attr('class', 'y axis')
-                .attr('visibility', function () {
-                    return 'visible';
-                })
-                .call(_localYAxis);
+        _localYAxis = d3.axisLeft(y)
+            .tickSize(0)
+            .tickPadding(8)
+            .tickFormat(function (d) {
+                return UTIL.shortScale(2)(d);
+            });
 
-            yAxisGroup.append('g')
-                .attr('class', 'label')
-                .attr('transform', function () {
-                    return 'translate(' + (-COMMON.AXIS_THICKNESS / 1.15) + ', ' + (plotHeight / 2) + ')';
-                })
-                .append('text')
-                .attr('transform', 'rotate(-90)')
-                .style('text-anchor', 'middle')
-                .style('font-weight', 'bold')
-                .style('fill', _yAxisColor)
-                .attr('visibility', UTIL.getVisibility(_showYaxisLabel))
-                .text(function () {
-                    return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
-                });
+        yAxisGroup = plot.append('g')
+            .attr('class', 'y axis')
+            .attr('visibility', function () {
+                return 'visible';
+            })
+            .attr('visibility', UTIL.getVisibility(_showYaxis))
+            .call(_localYAxis);
 
-            _setAxisColor(yAxisGroup, _yAxisColor);
-        }
+        yAxisGroup.append('g')
+            .attr('class', 'label')
+            .attr('transform', function () {
+                return 'translate(' + (-COMMON.AXIS_THICKNESS / 1.15) + ', ' + (plotHeight / 2) + ')';
+            })
+            .append('text')
+            .attr('transform', 'rotate(-90)')
+            .style('text-anchor', 'middle')
+            .style('font-weight', 'bold')
+            .style('fill', _yAxisColor)
+            .attr('visibility', UTIL.getVisibility(_showYaxisLabel))
+            .text(function () {
+                return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+            });
 
+        _setAxisColor(yAxisGroup, _yAxisColor);
 
         if (!_print) {
             var confirm = $(me).parent().find('div.confirm')
                 .css('visibility', 'hidden');
 
             _local_svg.select('g.sort').remove();
-            UTIL.sortingView(container, parentHeight, parentWidth + margin.left, legendBreakCount, axisLabelSpace, offsetX);
+            UTIL.sortingView(container, parentHeight, parentWidth + (_showYaxis == true ? margin.left : 0), legendBreakCount, axisLabelSpace, offsetX);
 
             _local_svg.select('g.sort').selectAll('text')
                 .on('click', function () {
@@ -966,6 +946,21 @@ function stackedverticalbar() {
     }
 
     chart.update = function (data) {
+
+        var svg = _local_svg,
+            width = +svg.attr('width'),
+            height = +svg.attr('height');
+
+        parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
+        parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
+
+        drawLegend.call(this);
+
+        var plot = _local_svg.select('.plot')
+            .attr('transform', function () {
+                return UTIL.setPlotPosition(_legendPosition, _showXaxis, _showYaxis, _showLegend, margin.left, legendSpace, legendBreakCount, axisLabelSpace, _local_svg);
+            });
+
         data = UTIL.sortingData(data, _dimension[0]);
         var labelStack = [];
         if (_tooltip) {
@@ -1033,7 +1028,6 @@ function stackedverticalbar() {
             return d[_dimension[0]];
         });
 
-        var plot = _local_svg.select('.plot')
 
         var stack = _local_svg.select('g.stack').selectAll('g.stackedverticalbar-group')
             .data(d3.stack()
@@ -1169,32 +1163,31 @@ function stackedverticalbar() {
                 return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
             })
 
-        if (_showXaxis) {
-            xAxisGroup = plot.select('.x.axis')
-                .transition()
-                .duration(COMMON.DURATION)
-                .call(_localXAxis);
+        xAxisGroup = plot.select('.x.axis')
+            .transition()
+            .duration(COMMON.DURATION)
+            .attr('visibility', UTIL.getVisibility(_showXaxis))
+            .call(_localXAxis);
 
-            _setAxisColor(xAxisGroup, _xAxisColor);
+        _setAxisColor(xAxisGroup, _xAxisColor);
 
-            if (isRotate) {
-                _local_svg.selectAll('.x .tick text')
-                    .attr("transform", "rotate(-15)");
-            }
-            else {
-                _local_svg.selectAll('.x .tick text')
-                    .attr("transform", "rotate(0)");
-            }
+        if (isRotate) {
+            _local_svg.selectAll('.x .tick text')
+                .attr("transform", "rotate(-15)");
+        }
+        else {
+            _local_svg.selectAll('.x .tick text')
+                .attr("transform", "rotate(0)");
         }
 
-        if (_showYaxis) {
-            yAxisGroup = plot.select('.y.axis')
-                .transition()
-                .duration(COMMON.DURATION)
-                .call(_localYAxis);
+        yAxisGroup = plot.select('.y.axis')
+            .transition()
+            .duration(COMMON.DURATION)
+            .attr('visibility', UTIL.getVisibility(_showYaxis))
+            .call(_localYAxis);
 
-            _setAxisColor(yAxisGroup, _yAxisColor);
-        }
+        _setAxisColor(yAxisGroup, _yAxisColor);
+
 
         /* Update Axes Grid */
         _localXGrid.scale(x);

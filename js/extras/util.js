@@ -929,6 +929,32 @@ function util() {
                 max = 0;
             }
             return [min, max];
+        },
+        setPlotPosition: function (_legendPosition, _showXaxis, _showYaxis, _showLegend, margin, legendSpace, legendBreakCount, axisLabelSpace, _local_svg) {
+            var position = 'translate(' + (_showYaxis == true ? margin : 0) + ', ' + parseInt(legendSpace * 2 + (20 * parseInt(legendBreakCount))) + ')';
+            if (_legendPosition.toUpperCase() == 'TOP') {
+                position = 'translate(' + (_showYaxis == true ? margin : 0) + ', ' + parseInt(legendSpace * 2 + (20 * parseInt(legendBreakCount))) + ')';
+            } else if (_legendPosition.toUpperCase() == 'BOTTOM') {
+                position = 'translate(' + margin + ', 0)';
+            } else if (_legendPosition.toUpperCase() == 'LEFT') {
+                position = 'translate(' + (legendSpace + margin + axisLabelSpace) + ', 0)';
+            } else if (_legendPosition.toUpperCase() == 'RIGHT') {
+                position = 'translate(' + margin + ', 0)';
+            }
+
+            if (!_showLegend) {
+                _local_svg.select('.plot')
+                    .attr('transform', function () {
+                        position = 'translate(' + margin + ', ' + 0 + ')';
+                    });
+            }
+            if (!_showXaxis && !_showLegend) {
+                _local_svg.select('.plot')
+                    .attr('transform', function () {
+                        position = 'translate(' + 0 + ', ' + 0 + ')';
+                    });
+            }
+            return position;
         }
     }
 
