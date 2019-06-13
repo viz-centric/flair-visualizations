@@ -233,6 +233,8 @@ function line() {
                     list.push(val[_dimension[0]])
                 })
 
+                list = list.filter(function (item, i, ar) { return ar.indexOf(item) === i; });
+
                 var _filterDimension = {};
                 if (broadcast.filterSelection.id) {
                     _filterDimension = broadcast.filterSelection.filter;
@@ -241,9 +243,7 @@ function line() {
                 }
                 var dimension = _dimension[0];
 
-                _filterDimension[dimension] = filterData.map(function (d) {
-                    return d[_dimension[0]];
-                });
+                _filterDimension[dimension] = list;
 
                 broadcast.filterSelection.filter = _filterDimension;
                 var _filterParameters = filterParameters.get();
@@ -515,7 +515,9 @@ function line() {
             .x(function (d, i) {
                 return x(d['data'][_dimension[0]]) + x.bandwidth() / 2;
             })
-            .y0(plotHeight)
+            .y0(function (d, i) {
+                return y(0);
+            })
             .y1(function (d) {
                 return y(d['data'][d['tag']]);
             });
@@ -563,7 +565,7 @@ function line() {
             })
             .attr('class', 'line')
             .attr('stroke-dasharray', 'none')
-            .style('fill', 'pink')
+            .style('fill', 'none')
             .attr('stroke', function (d, i) {
                 return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
             })
@@ -990,7 +992,9 @@ function line() {
             .x(function (d, i) {
                 return x(d['data'][_dimension[0]]) + x.bandwidth() / 2;
             })
-            .y0(plotHeight)
+            .y0(function (d, i) {
+                return y(0);
+            })
             .y1(function (d) {
                 return y(d['data'][d['tag']]);
             });

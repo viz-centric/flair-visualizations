@@ -1,7 +1,6 @@
 .custom_tooltip {
   visibility: hidden;
   position: absolute;
-  max-width: 250px;
   opacity: 1;
   background-color: white;
   -webkit-border-radius: 1px;
@@ -35,7 +34,6 @@
         text-align: left;
         color: #28689c;
         padding: 2px 5px;
-        word-break: break-word;
       }
     }
   }
