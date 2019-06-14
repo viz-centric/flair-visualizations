@@ -1,10 +1,11 @@
 .grid {
-	path {
-    	stroke: #ededed;
-    }
+  path {
+    stroke: #ededed;
+  }
 
-    line {
-    	stroke: #ededed;
-    	shape-rendering: crispEdges;
-    }
+  line {
+    stroke: #787878 !important;
+    stroke-opacity: 0.5 !important;
+    shape-rendering: crispEdges;
+  }
 }

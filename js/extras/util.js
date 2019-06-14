@@ -955,6 +955,27 @@ function util() {
                     });
             }
             return position;
+        },
+        setAxisColor: function (_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg) {
+
+            _local_svg.select('g.x_axis path')
+                .style('stroke', _xAxisColor);
+
+            _local_svg.selectAll('g.x_axis .tick')
+                .attr('visibility', this.getVisibility(_showXaxis));
+
+            _local_svg.selectAll('g.x_axis .tick text')
+                .style('fill', _xAxisColor);
+
+            _local_svg.select('g.y_axis path')
+                .style('stroke', _yAxisColor);
+
+            _local_svg.selectAll('g.y_axis .tick')
+                .attr('visibility', this.getVisibility(_showYaxis));
+
+            _local_svg.selectAll('g.y_axis .tick text')
+                .style('fill', _yAxisColor);
+
         }
     }
 

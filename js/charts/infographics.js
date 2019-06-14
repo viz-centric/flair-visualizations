@@ -93,11 +93,11 @@ function infographics() {
         var style = {
             'font-style': _kpiFontStyle || COMMON.DEFAULT_FONTSTYLE,
             'font-weight': _kpiFontWeight || COMMON.DEFAULT_FONTWEIGHT,
-            'font-size': _kpiFontSize || COMMON.DEFAULT_FONTSIZE,
+            'font-size': _kpiFontSize || COMMON.DEFAULT_FONTSIZE + 'px',
             'color': _kpiColor || COMMON.DEFAULT_COLOR
         };
 
-        if (_kpiColorExpression) {
+        if (_kpiColorExpression[0]) {
             style['color'] = UTIL.expressionEvaluator(_kpiColorExpression, endValue, 'color');
         }
 
@@ -111,14 +111,29 @@ function infographics() {
         var iconStyle = {
             'font-weight': _kpiIconFontWeight || COMMON.DEFAULT_FONTWEIGHT,
             'color': _kpiIconColor || COMMON.DEFAULT_COLOR,
-            'font-size': _kpiFontSize || COMMON.DEFAULT_FONTSIZE
+            'font-size': _kpiFontSize || COMMON.DEFAULT_FONTSIZE + 'px'
         };
 
         if (_kpiIconExpression) {
             _kpiIcon = UTIL.expressionEvaluator(_kpiIconExpression, endValue, 'icon');
             iconStyle['color'] = UTIL.expressionEvaluator(_kpiIconExpression, endValue, 'color');
         }
-
+        if (iconStyle.color[0] == undefined || iconStyle.color[0]==null){
+            if (endValue > 0) {
+                iconStyle['color'] = COMMON.POSITIVE_KPI_COLOR;
+            }
+            else {
+                iconStyle['color'] =  COMMON.NEGATIVE_KPI_COLOR;
+            }
+        }
+            if (_kpiIcon[0] == null || _kpiIcon[0] == undefined) {
+                if (endValue > 0) {
+                    _kpiIcon = 'fa fa-arrow-up';
+                }
+                else {
+                    _kpiIcon = 'fa fa-arrow-down';
+                }
+            }
         iconStyle = JSON.stringify(iconStyle);
         iconStyle = iconStyle.replace(/["{}]/g, '').replace(/,/g, ';');
 
@@ -321,13 +336,19 @@ function infographics() {
 
             var parent = measure.append('div')
                 .classed('parent', true)
+                .style('background-color', function (d, i1) {
+                    return _kpiBackgroundColor || 'transparent';
+                })
+                .style('border-radius', function (d, i1) {
+                    return COMMON.BORDER_RADIUS + 'px';
+                })
                 .style('display', 'table');
 
             parent.append('div')
                 .attr('id', 'kpi-label')
                 .classed('child', true)
                 .html(_getKpiDisplayName())
-                .style('font-size', '1.2em')
+                .style('font-size', _kpiFontSize + 'px')
                 .style('padding-left', '5px')
                 .style('display', 'table-cell')
                 .style('vertical-align', 'middle');
@@ -336,12 +357,9 @@ function infographics() {
             var kpi = parent.append('div')
                 .attr('id', 'kpi-measure')
                 .classed('child', true)
-                .style('font-size', _kpiFontSize)
+                .style('font-size', _kpiFontSize + 'px')
                 .style('border-radius', function (d, i1) {
                     return COMMON.BORDER_RADIUS + 'px';
-                })
-                .style('background-color', function (d, i1) {
-                    return _kpiBackgroundColor || 'transparent';
                 })
                 .style('padding', function (d, i1) {
                     return (_kpiFontStyle == 'oblique')
@@ -366,7 +384,7 @@ function infographics() {
                 area.transition()
                     .duration(COMMON.DURATION)
                     .styleTween('opacity', function () {
-                        var interpolator = d3.interpolateNumber(0, 1);
+                        var interpolator = d3.interpolateNumber(0, .5);
 
                         return function (t) {
                             return interpolator(t);
@@ -389,7 +407,7 @@ function infographics() {
                     });
             }
             else {
-                area.style('opacity', 1)
+                area.style('opacity', .5)
                 kpi.html(_getKpi(_localTotal, _localTotal))
 
                 var kpiData = graphics.append('text')
