@@ -118,8 +118,9 @@ function table() {
         var iconStyle = {
             'font-weight': _iconFontWeight[index] || COMMON.DEFAULT_FONTWEIGHT,
             'color': _iconColor[index] || COMMON.DEFAULT_COLOR,
-            'font-size': _fontSizeForMeasure[index] || COMMON.DEFAULT_FONTSIZE,
-            'text-align': getIconPosition(index)
+            'font-size': _fontSizeForMeasure[index] || COMMON.DEFAULT_FONTSIZE + 'px',
+            'text-align': getIconPosition(index),
+            'padding-right': '15px'
         };
 
         if (_iconExpressionForMeasure[index].length) {

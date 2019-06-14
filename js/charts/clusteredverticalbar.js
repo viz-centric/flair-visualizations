@@ -266,18 +266,18 @@ function clusteredverticalbar() {
             d3.select(this).style('cursor', 'default')
                 .style('fill', function (d1, i) {
                     if (d1[d1.measure] < 0) {
-                        return UTIL.getDisplayColor(_measure.indexOf(d1.measure), _displayColor);
+                        return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
                     }
                     else {
-                        return UTIL.getDisplayColor(_measure.indexOf(d1.measure), _displayColor);
+                        return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
                     }
                 })
                 .style('stroke', function (d1, i) {
                     if (d1[d1.measure] < 0) {
-                        return UTIL.getBorderColor(_measure.indexOf(d1.measure), _borderColor);
+                        return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
                     }
                     else {
-                        return UTIL.getBorderColor(_measure.indexOf(d1.measure), _borderColor);
+                        return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
                     }
                 });
 
@@ -286,45 +286,7 @@ function clusteredverticalbar() {
             }
         }
     }
-    var _setAxisColor = function (axis, color) {
-        var path = axis.select('path'),
-            ticks = axis.selectAll('.tick');
 
-        path.style('stroke', color);
-
-        ticks.select('line')
-            .style('stroke', color);
-
-        ticks.select('text')
-            .style('fill', color);
-    }
-
-    var setPlotPosition = function () {
-        var position = 'translate(' + (_showYaxis == true ? margin.left : 0) + ', ' + parseInt(legendSpace * 2 + (20 * parseInt(legendBreakCount))) + ')';
-        if (_legendPosition.toUpperCase() == 'TOP') {
-            position = 'translate(' + (_showYaxis == true ? margin.left : 0) + ', ' + parseInt(legendSpace * 2 + (20 * parseInt(legendBreakCount))) + ')';
-        } else if (_legendPosition.toUpperCase() == 'BOTTOM') {
-            position = 'translate(' + margin.left + ', 0)';
-        } else if (_legendPosition.toUpperCase() == 'LEFT') {
-            position = 'translate(' + (legendSpace + margin.left + axisLabelSpace) + ', 0)';
-        } else if (_legendPosition.toUpperCase() == 'RIGHT') {
-            position = 'translate(' + margin.left + ', 0)';
-        }
-
-        if (!_showLegend) {
-            _local_svg.select('.plot')
-                .attr('transform', function () {
-                    position = 'translate(' + margin.left + ', ' + 0 + ')';
-                });
-        }
-        if (!_showXaxis && !_showLegend) {
-            _local_svg.select('.plot')
-                .attr('transform', function () {
-                    position = 'translate(' + 0 + ', ' + 0 + ')';
-                });
-        }
-        return position;
-    }
     function chart(selection) {
         _local_svg = selection;
 
@@ -414,7 +376,7 @@ function clusteredverticalbar() {
         }
         else {
             legendSpace = 0;
-            parentHeight = parentHeight - axisLabelSpace;
+            parentHeight = parentHeight - (_notification == true ? 0 : axisLabelSpace);
             plotWidth = parentWidth;
             plotHeight = parentHeight;
         }
@@ -532,12 +494,9 @@ function clusteredverticalbar() {
             .tickPadding(10);
 
         xAxisGroup = plot.append('g')
-            .attr('class', 'x axis')
-            .attr('visibility', function () {
-                return 'visible';
-            })
+            .attr('class', 'x_axis')
             .attr('transform', 'translate(0, ' + plotHeight + ')')
-            .attr('visibility', UTIL.getVisibility(_showXaxis))
+            .attr('visibility', 'visible')
             .call(_localXAxis);
 
         xAxisGroup.append('g')
@@ -557,8 +516,6 @@ function clusteredverticalbar() {
                 .attr("transform", "rotate(-15)");
         }
 
-        _setAxisColor(xAxisGroup, _xAxisColor);
-
         _localYAxis = d3.axisLeft(y)
             .tickSize(0)
             .tickPadding(8)
@@ -570,11 +527,8 @@ function clusteredverticalbar() {
             })
 
         yAxisGroup = plot.append('g')
-            .attr('class', 'y axis')
-            .attr('visibility', function () {
-                return 'visible';
-            })
-            .attr('visibility', UTIL.getVisibility(_showYaxis))
+            .attr('class', 'y_axis')
+            .attr('visibility', 'visible')
             .call(_localYAxis);
 
         yAxisGroup.append('g')
@@ -586,12 +540,13 @@ function clusteredverticalbar() {
             .attr('transform', 'rotate(-90)')
             .style('text-anchor', 'middle')
             .style('font-weight', 'bold')
+            .style('fill', _yAxisColor)
             .attr('visibility', UTIL.getVisibility(_showYaxisLabel))
             .text(function () {
                 return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
             });
 
-        _setAxisColor(yAxisGroup, _yAxisColor);
+        UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
 
         if (!_print) {
 
@@ -738,10 +693,10 @@ function clusteredverticalbar() {
                 })
                 .style('stroke', function (d, i) {
                     if (d[d.measure] < 0) {
-                        return UTIL.getBorderColor(_measure.indexOf(d1.measure), _borderColor);
+                        return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
                     }
                     else {
-                        return UTIL.getBorderColor(_measure.indexOf(d1.measure), _borderColor);
+                        return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
                     }
                 })
                 .style('stroke-width', 2)
@@ -1159,8 +1114,6 @@ function clusteredverticalbar() {
             .attr('visibility', UTIL.getVisibility(_showXaxis))
             .call(_localXAxis);
 
-        _setAxisColor(xAxisGroup, _xAxisColor);
-
         if (isRotate) {
             _local_svg.selectAll('.x .tick text')
                 .attr("transform", "rotate(-15)");
@@ -1177,8 +1130,7 @@ function clusteredverticalbar() {
             .attr('visibility', UTIL.getVisibility(_showYaxis))
             .call(_localYAxis);
 
-        _setAxisColor(yAxisGroup, _yAxisColor);
-
+        UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
 
         /* Update Axes Grid */
         _localXGrid.ticks(_localXLabels.length);
