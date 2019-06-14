@@ -114,15 +114,22 @@ function kpi() {
 
         var iconStyle = {
             'font-weight': _kpiIconFontWeight[index] || COMMON.DEFAULT_FONTWEIGHT,
-            'color': _kpiIconColor[index] || COMMON.DEFAULT_COLOR,
-            'font-size': _kpiFontSize[index]+'px' || COMMON.DEFAULT_FONTSIZE
+            'color': _kpiIconColor[index] || (endValue > 0 ? COMMON.POSITIVE_KPI_COLOR : COMMON.NEGATIVE_KPI_COLOR),
+            'font-size': _kpiFontSize[index] + 'px' || COMMON.DEFAULT_FONTSIZE
         };
 
         if (_kpiIconExpression[index].length) {
             _kpiIcon[index] = UTIL.expressionEvaluator(_kpiIconExpression[index], endValue, 'icon');
             iconStyle['color'] = UTIL.expressionEvaluator(_kpiIconExpression[index], endValue, 'color');
         }
-
+        if (_kpiIcon[index] == null || _kpiIcon[index] == undefined) {
+            if (endValue > 0) {
+                _kpiIcon[index] = 'fa fa-arrow-up';
+            }
+            else {
+                _kpiIcon[index] = 'fa fa-arrow-down';
+            }
+        }
         iconStyle = JSON.stringify(iconStyle);
         iconStyle = iconStyle.replace(/["{}]/g, '').replace(/,/g, ';');
 

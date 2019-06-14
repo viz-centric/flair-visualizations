@@ -109,7 +109,8 @@ svg.sankey .link {
 }
 /* line 6, ../sass/partials/_grid.scss */
 .grid line {
-  stroke: #ededed;
+  stroke: #787878 !important;
+  stroke-opacity: 0.5 !important;
   shape-rendering: crispEdges;
 }
 

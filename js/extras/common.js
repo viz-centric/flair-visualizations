@@ -11,6 +11,8 @@ function common() {
         DEFAULT_COLOR: '#DC1C50',
         NEGATIVE_DISPLAY_COLOR: '#DC143C',
         NEGATIVE_BORDER_COLOR: '#DC143C',
+        POSITIVE_KPI_COLOR: '#009933',
+        NEGATIVE_KPI_COLOR: '#ff0000',
         LEGEND_COLOR: '#6B6A5D',
         HIGHLIGHTER: '#DCDCDC',
         BORDER_RADIUS: 5,
@@ -29,7 +31,7 @@ function common() {
                 '#F1F3CE',
                 '#34675C',
                 '#AF4425'
-                ])
+            ])
     }
 }
 
