@@ -411,6 +411,9 @@ function table() {
             height = parseInt(svg.style('height'));
 
         var id = svg.attr('id');
+        div.select("#viz_table").html('');
+//        div.selectAll("#viz_table_length,#viz_table_filter,#viz_table_info,#viz_table_paginate").html('')
+
         div.selectAll('tbody').remove();
         div.selectAll('thead').remove();
 

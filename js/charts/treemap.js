@@ -304,11 +304,20 @@ function treemap() {
                     + "</tr>";
             }
             else {
-                output += "<table><tr>" +
-                    "<tr><th>" + _dimension[0] + "</th><th>" + datum.parent.data.key + "</th></tr>" +
-                    "<tr> <th>" + _dimension[1] + ": </th>"
-                    + "<td>" + datum.data.key + "</td>"
-                    + "</tr>";
+                if (datum.parent.depth == 0) {
+                    output += "<table><tr>" +
+                        "<tr><th>" + _dimension[0] + "</th><th>" + datum.data.key + "</th></tr>" +
+                        "<tr> <th>" + _measure[0] + ": </th>"
+                        + "<td>" + datum.data.value + "</td>"
+                        + "</tr>";
+                }
+                else {
+                    output += "<table><tr>" +
+                        "<tr><th>" + _dimension[0] + "</th><th>" + datum.parent.data.key + "</th></tr>" +
+                        "<tr> <th>" + _dimension[1] + ": </th>"
+                        + "<td>" + datum.data.key + "</td>"
+                        + "</tr>";
+                }
             }
 
             if (datum.data.values != undefined) {
@@ -633,7 +642,7 @@ function treemap() {
                 .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
             if (_tooltip) {
-               tooltip = d3.select(div).select('.custom_tooltip');
+                tooltip = d3.select(div).select('.custom_tooltip');
             }
 
             treemap = d3.treemap()

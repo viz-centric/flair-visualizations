@@ -210,6 +210,9 @@ function kpi() {
                             ? '3px 8px'
                             : '3px 0px';
                     })
+                    .style('display', function (d, i1) {
+                        return 'contents';
+                    })
                     .style('line-height', 1)
 
                 if (!_print) {

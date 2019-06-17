@@ -889,29 +889,15 @@ function combo() {
 
                     return y(0);
                 })
-                .attr('height', 0);
-
-            rect.transition()
-                .duration(COMMON.DURATION)
-                .attr('x', function (d, i) {
-                    return x1(measuresBar[i]);
-                })
-                .attr('y', function (d, i) {
-                    if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
-                        return 0;
-                    } else if (d['data'][measuresBar[i]] > 0) {
-                        return y(d['data'][measuresBar[i]]);
-                    }
-
-                    return y(0);
-                })
                 .attr('height', function (d, i) {
                     if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) return 0;
                     return Math.abs(y(0) - y(d['data'][measuresBar[i]]));
                 })
+                .style('opacity', 1);
 
-
-                .attr('width', x1.bandwidth())
+            rect.transition()
+                .duration(COMMON.DURATION)
+                .style('opacity', 1)
 
             var text = element.append('text')
                 .text(function (d, i) {
@@ -1181,11 +1167,11 @@ function combo() {
         x0.domain(xLabels)
         x1.domain(measuresBar)
             .rangeRound([0, x0.bandwidth()])
-        y.domain([0, d3.max(data, function (d) {
-            return d3.max(keys, function (key) {
-                return parseFloat(d[key]);
-            });
-        })]).nice();
+
+        var range = UTIL.getMinMax(data, keys);
+
+        y.rangeRound([plotHeight, 0])
+            .domain([range[0], range[1]]);
 
         var _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
@@ -1241,37 +1227,31 @@ function combo() {
 
         bar.select('rect')
             .attr('width', x1.bandwidth())
+            .style('fill', function (d, i) {
+                return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+            })
+            .style('stroke', function (d, i) {
+                return UTIL.getBorderColor(_measure.indexOf(d['tag']), _borderColor);
+            })
             .style('stroke-width', 1)
             .attr('x', function (d, i) {
-                return x1(measuresBar[measuresBar.indexOf(d.tag)]);
+                return x1(measuresBar[i]);
             })
             .attr('y', function (d, i) {
-                if ((d["data"][d.tag] === null) || (isNaN(d["data"][d.tag]))) {
+                if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
                     return 0;
-                } else if (d["data"][d.tag] > 0) {
-                    return y(d["data"][d.tag]);
+                } else if (d['data'][measuresBar[i]] > 0) {
+                    return y(d['data'][measuresBar[i]]);
                 }
-                return y(0);
-            })
-            .attr('height', 0)
-            .classed('selected', false)
-            .classed('possible', false)
-            .transition()
-            .duration(DURATION)
-            .attr('x', function (d, i) {
-                return x1(measuresBar[measuresBar.indexOf(d.tag)]);
-            })
-            .attr('y', function (d, i) {
-                if ((d["data"][d.tag] === null) || (isNaN(d["data"][d.tag]))) {
-                    return 0;
-                } else if (d["data"][d.tag] > 0) {
-                    return y(d["data"][d.tag]);
-                }
+
                 return y(0);
             })
             .attr('height', function (d, i) {
-                return Math.abs(y(0) - y(d["data"][d.tag]));
+                if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) return 0;
+                return Math.abs(y(0) - y(d['data'][measuresBar[i]]));
             })
+            .classed('selected', false)
+            .classed('possible', false)
 
         bar.select('text')
             .text(function (d, i) {

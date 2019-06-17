@@ -607,15 +607,15 @@ function stackedhorizontalbar() {
         y.rangeRound([0, plotWidth])
             .domain([range[0], range[1]]);
 
-        var _yTicks = y.ticks(),
-            yDiff = _yTicks[1] - _yTicks[0],
-            correctionVal = 15;
+        // var _yTicks = y.ticks(),
+        //     yDiff = _yTicks[1] - _yTicks[0],
+        //     correctionVal = 15;
 
-        if ((_yTicks[_yTicks.length - 1] + yDiff) > range[1] + correctionVal) {
-            y.domain([range[0], (_yTicks[_yTicks.length - 1] + yDiff)])
-        } else {
-            y.domain([range[0], (_yTicks[_yTicks.length - 1] + 2 * yDiff)])
-        }
+        // if ((_yTicks[_yTicks.length - 1] + yDiff) > range[1] + correctionVal) {
+        //     y.domain([range[0], (_yTicks[_yTicks.length - 1] + yDiff)])
+        // } else {
+        //     y.domain([range[0], (_yTicks[_yTicks.length - 1] + 2 * yDiff)])
+        // }
 
         var posTotal,
             negTotal;
@@ -640,10 +640,10 @@ function stackedhorizontalbar() {
             d3.max(data, function (d) { return d.posTotal; })
         ]).nice();
 
-        var _yTicks = y.ticks(),
-            yDiff = _yTicks[1] - _yTicks[0];
+        // var _yTicks = y.ticks(),
+        //     yDiff = _yTicks[1] - _yTicks[0];
 
-        y.domain([range[0], (_yTicks[_yTicks.length - 1] + yDiff)])
+        // y.domain([range[0], (_yTicks[_yTicks.length - 1] + yDiff)])
 
         data.map(function (val) {
             delete val['negTotal'];
@@ -941,15 +941,15 @@ function stackedhorizontalbar() {
 
         y.domain([range[0], range[1]]);
 
-        var _yTicks = y.ticks(),
-            yDiff = _yTicks[1] - _yTicks[0],
-            correctionVal = 15;
+        // var _yTicks = y.ticks(),
+        //     yDiff = _yTicks[1] - _yTicks[0],
+        //     correctionVal = 15;
 
-        if ((_yTicks[_yTicks.length - 1] + yDiff) > range[1] + correctionVal) {
-            y.domain([range[0], (_yTicks[_yTicks.length - 1] + yDiff)])
-        } else {
-            y.domain([range[0], (_yTicks[_yTicks.length - 1] + 2 * yDiff)])
-        }
+        // if ((_yTicks[_yTicks.length - 1] + yDiff) > range[1] + correctionVal) {
+        //     y.domain([range[0], (_yTicks[_yTicks.length - 1] + yDiff)])
+        // } else {
+        //     y.domain([range[0], (_yTicks[_yTicks.length - 1] + 2 * yDiff)])
+        // }
 
         var posTotal,
             negTotal;
@@ -974,10 +974,10 @@ function stackedhorizontalbar() {
             d3.max(data, function (d) { return d.posTotal; })
         ]).nice();
 
-        var _yTicks = y.ticks(),
-            yDiff = _yTicks[1] - _yTicks[0];
+        // var _yTicks = y.ticks(),
+        //     yDiff = _yTicks[1] - _yTicks[0];
 
-        y.domain([range[0], (_yTicks[_yTicks.length - 1] + yDiff)]);
+        // y.domain([range[0], (_yTicks[_yTicks.length - 1] + yDiff)]);
 
         data.map(function (val) {
             delete val['negTotal'];
