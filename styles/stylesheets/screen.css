@@ -123,16 +123,17 @@ svg.sankey .link {
 /* line 6, ../sass/partials/_infographics.scss */
 #infographics .container {
   position: relative;
+  padding: 0px;
 }
 
-/* line 11, ../sass/partials/_infographics.scss */
+/* line 12, ../sass/partials/_infographics.scss */
 #info {
   position: absolute;
   width: 100%;
   height: 100%;
   pointer-events: none;
 }
-/* line 17, ../sass/partials/_infographics.scss */
+/* line 18, ../sass/partials/_infographics.scss */
 #info .measure {
   display: -webkit-box;
   display: -moz-box;
@@ -142,21 +143,21 @@ svg.sankey .link {
   height: 100%;
   align-items: center;
 }
-/* line 27, ../sass/partials/_infographics.scss */
+/* line 28, ../sass/partials/_infographics.scss */
 #info .measure .parent .child {
   padding: 3px;
   line-height: 80%;
   color: #636464;
   text-align: left;
 }
-/* line 35, ../sass/partials/_infographics.scss */
+/* line 36, ../sass/partials/_infographics.scss */
 #info .measure .parent {
   display: table;
   height: auto;
   width: auto;
 }
 
-/* line 43, ../sass/partials/_infographics.scss */
+/* line 44, ../sass/partials/_infographics.scss */
 svg#graphics {
   position: absolute;
   width: 100%;

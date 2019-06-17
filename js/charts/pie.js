@@ -447,6 +447,12 @@ function pie() {
 
         selection.each(function (data) {
             data = UTIL.sortingData(data, _dimension[0])
+            /* store the data in local variable */
+            _localData = _originalData = data;
+
+            data.map(function (d) {
+                d[_measure[0]] = Math.abs(d[_measure[0]]);
+            })
             var svg = d3.select(this),
                 width = +svg.attr('width'),
                 height = +svg.attr('height'),
@@ -460,8 +466,6 @@ function pie() {
             /* total sum of the measure values */
             _localTotal = d3.sum(data.map(function (d) { return d[_measure[0]]; }));
 
-            /* store the data in local variable */
-            _localData = _originalData = data;
 
             /* applying sort operation to the data */
             // UTIL.sorter(data, _measure, _sort);
@@ -613,90 +617,93 @@ function pie() {
 
             var pieLabel;
 
-            if (_valueAsArc) {
-                pieLabel = pieArcGroup.append('text')
-                    .attr('dy', function (d, i) {
-                        if (_valuePosition == 'inside') {
-                            return 10;
-                        } else {
-                            return -5;
-                        }
-                    })
 
-                pieLabel.append('textPath')
-                    .attr('xlink:href', function (d, i) {
-                        return '#arc-path-' + i;
-                    })
-                    .attr('text-anchor', function () {
-                        return 'middle';
-                    })
-                    .transition()
-                    .delay(_delayFn(200))
-                    .on('start', function () {
-                        d3.select(this).attr('startOffset', function (d) {
-                            var length = pieArcPath.nodes()[d.index].getTotalLength();
-                            return 50 * (length - 2 * outerRadius) / length + '%';
-                        })
-                            .text(_labelFn())
-                            .filter(function (d, i) {
-                                /* length of arc = angle in radians * radius */
-                                var diff = d.endAngle - d.startAngle;
-                                return outerRadius * diff < this.getComputedTextLength();
-                            })
-                            .remove();
-                    });
-            } else {
-                var pieArcTextGroup = plot.selectAll('.arc-text')
-                    .data(_pie(data))
-                    .enter().append('g')
-                    .attr('id', function (d, i) {
-                        return 'arc-text-group-' + i;
-                    })
-                    .classed('arc-text', true);
+            /*remove for now*/
 
-                pieLabel = pieArcTextGroup.append('text')
-                    .attr('transform', function (d) {
-                        var centroid = _labelArc.centroid(d),
-                            x = centroid[0],
-                            y = centroid[1],
-                            h = _pythagorousTheorem(x, y);
+            // if (_valueAsArc) {
+            //     pieLabel = pieArcGroup.append('text')
+            //         .attr('dy', function (d, i) {
+            //             if (_valuePosition == 'inside') {
+            //                 return 10;
+            //             } else {
+            //                 return -5;
+            //             }
+            //         })
 
-                        if (_valuePosition == 'inside') {
-                            return 'translate('
-                                + outerRadius * (x / h) * 0.85
-                                + ', '
-                                + outerRadius * (y / h) * 0.85
-                                + ')';
-                        } else {
-                            return 'translate('
-                                + outerRadius * (x / h) * 1.05
-                                + ', '
-                                + outerRadius * (y / h) * 1.05
-                                + ')';
-                        }
-                    })
-                    .attr('dy', '0.35em')
-                    .attr('text-anchor', function (d) {
-                        if (_valuePosition == 'inside') {
-                            return 'middle';
-                        } else {
-                            return (d.endAngle + d.startAngle) / 2 > Math.PI
-                                ? 'end' : (d.endAngle + d.startAngle) / 2 < Math.PI
-                                    ? 'start' : 'middle';
-                        }
-                    })
-                    .transition()
-                    .delay(_delayFn(200))
-                    .on('start', function () {
-                        d3.select(this).text(_labelFn())
-                            .filter(function (d) {
-                                /* length of arc = angle in radians * radius */
-                                var diff = d.endAngle - d.startAngle;
-                                return outerRadius * diff < this.getComputedTextLength();
-                            })
-                            .remove();
-                    });
-            }
+            //     pieLabel.append('textPath')
+            //         .attr('xlink:href', function (d, i) {
+            //             return '#arc-path-' + i;
+            //         })
+            //         .attr('text-anchor', function () {
+            //             return 'middle';
+            //         })
+            //         .transition()
+            //         .delay(_delayFn(200))
+            //         .on('start', function () {
+            //             d3.select(this).attr('startOffset', function (d) {
+            //                 var length = pieArcPath.nodes()[d.index].getTotalLength();
+            //                 return 50 * (length - 2 * outerRadius) / length + '%';
+            //             })
+            //                 .text(_labelFn())
+            //                 .filter(function (d, i) {
+            //                     /* length of arc = angle in radians * radius */
+            //                     var diff = d.endAngle - d.startAngle;
+            //                     return outerRadius * diff < this.getComputedTextLength();
+            //                 })
+            //                 .remove();
+            //         });
+            // } else {
+            //     var pieArcTextGroup = plot.selectAll('.arc-text')
+            //         .data(_pie(data))
+            //         .enter().append('g')
+            //         .attr('id', function (d, i) {
+            //             return 'arc-text-group-' + i;
+            //         })
+            //         .classed('arc-text', true);
+
+            //     pieLabel = pieArcTextGroup.append('text')
+            //         .attr('transform', function (d) {
+            //             var centroid = _labelArc.centroid(d),
+            //                 x = centroid[0],
+            //                 y = centroid[1],
+            //                 h = _pythagorousTheorem(x, y);
+
+            //             if (_valuePosition == 'inside') {
+            //                 return 'translate('
+            //                     + outerRadius * (x / h) * 0.85
+            //                     + ', '
+            //                     + outerRadius * (y / h) * 0.85
+            //                     + ')';
+            //             } else {
+            //                 return 'translate('
+            //                     + outerRadius * (x / h) * 1.05
+            //                     + ', '
+            //                     + outerRadius * (y / h) * 1.05
+            //                     + ')';
+            //             }
+            //         })
+            //         .attr('dy', '0.35em')
+            //         .attr('text-anchor', function (d) {
+            //             if (_valuePosition == 'inside') {
+            //                 return 'middle';
+            //             } else {
+            //                 return (d.endAngle + d.startAngle) / 2 > Math.PI
+            //                     ? 'end' : (d.endAngle + d.startAngle) / 2 < Math.PI
+            //                         ? 'start' : 'middle';
+            //             }
+            //         })
+            //         .transition()
+            //         .delay(_delayFn(200))
+            //         .on('start', function () {
+            //             d3.select(this).text(_labelFn())
+            //                 .filter(function (d) {
+            //                     /* length of arc = angle in radians * radius */
+            //                     var diff = d.endAngle - d.startAngle;
+            //                     return outerRadius * diff < this.getComputedTextLength();
+            //                 })
+            //                 .remove();
+            //         });
+            // }
 
             if (!_print) {
 
@@ -818,6 +825,12 @@ function pie() {
 
     chart.update = function (data) {
         data = UTIL.sortingData(data, _dimension[0])
+
+        /* store the data in local variable */
+        _localData = data;
+        data.map(function (d) {
+            d[_measure[0]] = Math.abs(d[_measure[0]]);
+        })
         if (_tooltip) {
             tooltip = d3.select(div).select('.custom_tooltip');
         }
@@ -828,9 +841,6 @@ function pie() {
             parentWidth = width - 2 * COMMON.PADDING,
             parentHeight = height - 2 * COMMON.PADDING,
             filteredData;
-
-        /* store the data in local variable */
-        _localData = data;
 
         var outerRadius = Math.min(plotWidth, plotHeight) / 2.25;
 
@@ -950,42 +960,42 @@ function pie() {
             .duration(0)
             .remove();
 
-        if (_valueAsArc) {
-            var pieLabel = pieArcGroup.append('text')
-                .attr('dy', function (d, i) {
-                    if (_valuePosition == 'inside') {
-                        return 10;
-                    } else {
-                        return -5;
-                    }
-                })
+        // if (_valueAsArc) {
+        //     var pieLabel = pieArcGroup.append('text')
+        //         .attr('dy', function (d, i) {
+        //             if (_valuePosition == 'inside') {
+        //                 return 10;
+        //             } else {
+        //                 return -5;
+        //             }
+        //         })
 
-            pieLabel.append('textPath')
-                .attr('xlink:href', function (d, i) {
-                    return '#arc-path-' + i;
-                })
-                .attr('text-anchor', function () {
-                    return 'middle';
-                })
-                .transition()
-                .delay(_delayFn(200))
-                .on('start', function () {
-                    d3.select(this).attr('startOffset', function (d) {
-                        var length = 1
-                        if (pieArcPath.nodes()[d.index]) {
-                            length = pieArcPath.nodes()[d.index].getTotalLength();
-                        }
-                        return 50 * (length - 2 * outerRadius) / length + '%';
-                    })
-                        .text(_labelFn())
-                        .filter(function (d, i) {
-                            /* length of arc = angle in radians * radius */
-                            var diff = d.endAngle - d.startAngle;
-                            return outerRadius * diff < this.getComputedTextLength();
-                        })
-                        .remove();
-                });
-        }
+        //     pieLabel.append('textPath')
+        //         .attr('xlink:href', function (d, i) {
+        //             return '#arc-path-' + i;
+        //         })
+        //         .attr('text-anchor', function () {
+        //             return 'middle';
+        //         })
+        //         .transition()
+        //         .delay(_delayFn(200))
+        //         .on('start', function () {
+        //             d3.select(this).attr('startOffset', function (d) {
+        //                 var length = 1
+        //                 if (pieArcPath.nodes()[d.index]) {
+        //                     length = pieArcPath.nodes()[d.index].getTotalLength();
+        //                 }
+        //                 return 50 * (length - 2 * outerRadius) / length + '%';
+        //             })
+        //                 .text(_labelFn())
+        //                 .filter(function (d, i) {
+        //                     /* length of arc = angle in radians * radius */
+        //                     var diff = d.endAngle - d.startAngle;
+        //                     return outerRadius * diff < this.getComputedTextLength();
+        //                 })
+        //                 .remove();
+        //         });
+        // }
 
         _local_svg.select('g.lasso').remove()
 

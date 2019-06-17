@@ -118,22 +118,22 @@ function infographics() {
             _kpiIcon = UTIL.expressionEvaluator(_kpiIconExpression, endValue, 'icon');
             iconStyle['color'] = UTIL.expressionEvaluator(_kpiIconExpression, endValue, 'color');
         }
-        if (iconStyle.color[0] == undefined || iconStyle.color[0]==null){
+        if (iconStyle.color[0] == undefined || iconStyle.color[0] == null) {
             if (endValue > 0) {
                 iconStyle['color'] = COMMON.POSITIVE_KPI_COLOR;
             }
             else {
-                iconStyle['color'] =  COMMON.NEGATIVE_KPI_COLOR;
+                iconStyle['color'] = COMMON.NEGATIVE_KPI_COLOR;
             }
         }
-            if (_kpiIcon[0] == null || _kpiIcon[0] == undefined) {
-                if (endValue > 0) {
-                    _kpiIcon = 'fa fa-arrow-up';
-                }
-                else {
-                    _kpiIcon = 'fa fa-arrow-down';
-                }
+        if (_kpiIcon[0] == null || _kpiIcon[0] == undefined) {
+            if (endValue > 0) {
+                _kpiIcon = 'fa fa-arrow-up';
             }
+            else {
+                _kpiIcon = 'fa fa-arrow-down';
+            }
+        }
         iconStyle = JSON.stringify(iconStyle);
         iconStyle = iconStyle.replace(/["{}]/g, '').replace(/,/g, ';');
 
@@ -219,8 +219,8 @@ function infographics() {
             var infographics = d3.select(this),
                 width = parseInt(infographics.style('width')),
                 height = parseInt(infographics.style('height')),
-                parentWidth = width - 2 * COMMON.MARGIN,
-                parentHeight = height - 2 * COMMON.MARGIN;
+                parentWidth = width - 2 * COMMON.PADDING,
+                parentHeight = height - 2 * COMMON.PADDING;
 
             /* total sum of the measure values */
             _localTotal = d3.sum(data.map(function (d) { return d[_measure[0]]; }));
@@ -230,14 +230,15 @@ function infographics() {
 
             var container = infographics.append('div')
                 .classed('container', true)
-                .attr('width', parentWidth)
-                .attr('height', parentHeight)
-                .style('margin', COMMON.MARGIN);
+                .style('width', parentWidth + 'px')
+                .style('height', parentHeight + 'px')
+                .style('margin', COMMON.PADDING)
+                .style('padding', '0px');
 
             var graphics = container.append('svg')
                 .attr('id', 'graphics')
                 .attr("width", parentWidth)
-                .attr("height", parentWidth)
+                .attr("height", parentHeight)
                 .style("position", 'absolute');
 
             var info = container.append('div')
@@ -292,6 +293,7 @@ function infographics() {
                 });
 
             var plot = graphics.append('g')
+                .attr('transform', 'translate(' + 0 + ', ' + COMMON.PADDING + ')')
                 .attr('id', 'infographics-plot');
 
             var line = plot.append('path')
@@ -347,7 +349,7 @@ function infographics() {
             parent.append('div')
                 .attr('id', 'kpi-label')
                 .classed('child', true)
-                .html(_getKpiDisplayName())
+                .html(_getKpiDisplayName() + "&nbsp;")
                 .style('font-size', _kpiFontSize + 'px')
                 .style('padding-left', '5px')
                 .style('display', 'table-cell')
@@ -451,6 +453,13 @@ function infographics() {
     }
 
     chart.update = function (data) {
+
+        var infographics = _localDiv,
+            width = parseInt(infographics.style('width')),
+            height = parseInt(infographics.style('height')),
+            parentWidth = width - 2 * COMMON.PADDING,
+            parentHeight = height - 2 * COMMON.PADDING;
+
         data = UTIL.sortingData(data, _dimension[0]);
         if (_tooltip) {
             tooltip = d3.select(div).select('.custom_tooltip');
@@ -463,18 +472,26 @@ function infographics() {
         /* total sum of the measure values */
         _localTotal = d3.sum(data.map(function (d) { return d[_measure[0]]; }));
 
+        /* Minimum and Maximum value of the measures */
+        // _localMin = d3.min(data, function (d) { return d[_measure[0]]; });
+        // _localMax = d3.max(data, function (d) { return d[_measure[0]]; });
+        var keys = UTIL.getMeasureList(data[0], _dimension);
+        var range = UTIL.getMinMax(data, keys);
+
+        _localMin = range[0];
+        _localMax = range[1];
+
         /* Label values for the dimension */
         _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
         });
 
-        /* Minimum and Maximum value of the measures */
-        _localMin = d3.min(data, function (d) { return d[_measure[0]]; });
-        _localMax = d3.max(data, function (d) { return d[_measure[0]]; });
-
         /* Update the axes scales */
-        _x.domain(_localXLabels);
-        _y.domain([_localMin, _localMax]);
+        _x.domain(_localXLabels)
+            .range([0, parentWidth]);
+
+        _y.domain([_localMin, _localMax])
+            .range([parentHeight, 0]);
 
         var plot = div.select('#infographics-plot')
             .data([data]);
