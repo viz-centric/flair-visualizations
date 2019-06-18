@@ -102,7 +102,7 @@ function stackedhorizontalbar() {
             + "<td>" + datum.data[_dimension[0]] + "</td>"
             + "</tr><tr>"
             + "<th>" + datum.key + ": </th>"
-            + "<td>" + datum.data[datum.key] + "</td>"
+            + "<td>" + UTIL.getFormattedValue(datum.data[datum.key], UTIL.getValueNumberFormat(_measure.indexOf(datum.key), _numberFormat,datum.data[datum.key])) + " </td>"
             + "</tr></table>";
 
         return output;
@@ -533,7 +533,7 @@ function stackedhorizontalbar() {
 
         element.append('text')
             .text(function (d, i) {
-                return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat));
+                return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat,d.data[d.key]));
             })
             .attr('x', function (d, i) {
                 return y(d[1]) - 20;
@@ -595,7 +595,7 @@ function stackedhorizontalbar() {
             .attr('transform', function () {
                 return UTIL.setPlotPosition(_legendPosition, _showXaxis, _showYaxis, _showLegend, margin.left, legendSpace, legendBreakCount, axisLabelSpace, _local_svg);
             });
-       
+
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
         x.rangeRound([0, plotHeight])
@@ -1044,7 +1044,7 @@ function stackedhorizontalbar() {
 
         stackedhorizontalbar.select('text')
             .text(function (d, i) {
-                return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat));
+                return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat,d.data[d.key]));
             })
             .attr('x', function (d, i) {
                 return y(d[1]) - 20;

@@ -70,7 +70,7 @@ function sankey() {
                 + "<td>" + datum.target.name + "</td>"
                 + "</tr><tr>"
                 + "<th>" + measure[0] + ": </th>"
-                + "<td>" + datum.value + "</td>"
+                + "<td>" + Math.round(datum.value * 100) / 100 + "</td>"
                 + "</tr>"
                 + "</table>";
         }
@@ -341,7 +341,7 @@ function sankey() {
             var svg = d3.select(this);
 
             if (_tooltip) {
-               tooltip = d3.select(div).select('.custom_tooltip');
+                tooltip = d3.select(div).select('.custom_tooltip');
             }
             var me = this;
             svg.selectAll('g').remove();

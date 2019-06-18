@@ -23,9 +23,10 @@ function gauge() {
         targetDisplayColor,
         targetTextColor,
         targetNumberFormat,
-        _print;
+        _print,
+        _tooltip;
 
-    var _local_svg;
+    var _local_svg, tooltip;
 
     var emptyArc, fillArc, targetArc, arc, _arc, svg, _measure, target;
     var ringInset, ringWidth;
@@ -54,6 +55,19 @@ function gauge() {
         return deg * Math.PI / 180;
     }
 
+    var _buildTooltipData = function (datum, chart, value, key) {
+        var output = "";
+
+        output += "<table><tr>"
+            + "<th>" + key + ": </th>"
+
+            + "<th>" + value + " </th>"
+
+            + "</tr></table>";
+
+        return output;
+    }
+
     var degToRad_circle = function (deg) {
         return deg * Math.PI / 360;
     }
@@ -64,6 +78,45 @@ function gauge() {
 
     var percToRad = function (perc) {
         return degToRad(percToDeg(perc));
+    }
+
+    var _handleMouseOverFn = function (tooltip, container, key, value) {
+
+        var me = this;
+        return function (d, i) {
+            d3.select(this).style('cursor', 'pointer')
+                .style('fill', COMMON.HIGHLIGHTER);
+            var border = d3.select(this).style('stroke')
+            if (tooltip) {
+                UTIL.showTooltip(tooltip);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, key, value), container, border);
+            }
+        }
+    }
+
+    var _handleMouseMoveFn = function (tooltip, container, key, value) {
+        var me = this;
+
+        return function (d, i) {
+            if (tooltip) {
+                var border = d3.select(this).style('stroke')
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, key, value), container, border);
+            }
+        }
+    }
+
+    var _handleMouseOutFn = function (tooltip, container) {
+        var me = this;
+
+        return function (d, i) {
+            d3.select(this).style('cursor', 'default')
+                .style('fill', function (d1, i) {
+                    return d3.select(this).style('stroke')
+                })
+            if (tooltip) {
+                UTIL.hideTooltip(tooltip);
+            }
+        }
     }
 
     var getTxCenter = function (width, height) {
@@ -83,10 +136,14 @@ function gauge() {
                 width = +svg.attr('width'),
                 height = +svg.attr('height');
 
-            _local_svg.selectAll('g').remove();
+            svg.selectAll('g').remove();
 
-            _local_svg.attr('width', width)
+            svg.attr('width', width)
                 .attr('height', height)
+
+            if (_tooltip) {
+                tooltip = d3.select(div).select('.custom_tooltip');
+            }
 
             var radius;
             var degree = 90;
@@ -111,7 +168,7 @@ function gauge() {
                 .outerRadius(radius - ringInset)
                 .startAngle(degToRad(-degree))
 
-            var plot = _local_svg
+            var plot = svg
                 .append("g")
                 .attr("transform", getTxCenter(width, height))
 
@@ -129,6 +186,7 @@ function gauge() {
                 })
                 .attr("class", "fillArc")
                 .style("fill", displayColor)
+                .style("stroke", displayColor)
                 .attr("d", arc);
 
             targetArc = plot.append("path")
@@ -137,6 +195,7 @@ function gauge() {
                 })
                 .attr("class", "targetArc")
                 .style("fill", targetDisplayColor)
+                .style("stroke", targetDisplayColor)
                 .attr("d", arc);
 
             _measure = plot.append("text")
@@ -202,51 +261,42 @@ function gauge() {
     chart.update = function (value) {
 
         var maxVal = Math.max(value[0][measures[0]], value[0][measures[1]]);
-        var _measurePi, targetPi
-        if (gaugeType == 'radial') {
-            _measurePi = degToRad_circle(Math.floor(value[0][measures[0]] * 360 / maxVal));
-            targetPi = degToRad_circle(Math.floor(value[0][measures[1]] * 360 / maxVal));
-        }
-        else {
-            _measurePi = degToRad_circle(Math.floor(value[0][measures[0]] * 180 / maxVal));
-            targetPi = degToRad_circle(Math.floor(value[0][measures[1]] * 180 / maxVal));
-        }
+
+        var _measurePi = degToRad(Math.floor(value[0][measures[0]] * 180 / maxVal - 90));
+        var targetPi = degToRad(Math.floor(value[0][measures[1]] * 180 / maxVal - 90));
+
+        _measure.transition()
+            .text(displayName + " " + value[0][measures[0]])
+
+        target.transition()
+            .text(targetDisplayName + " " + value[0][measures[1]])
+
 
         if (!_print) {
-            _measure
-                .text(displayName + " " + value[0][measures[0]])
-                .text(function () {
-                    return UTIL.getTruncatedLabel(this, displayName + " " +  UTIL.getFormattedValue(value[0][measures[0]], UTIL.getNumberFormatter(numberFormat), ringInset*2));
-                })
-
-            target
-                .text(targetDisplayName + " " + value[0][measures[1]])
-                .text(function () {
-                    return UTIL.getTruncatedLabel(this, targetDisplayName + " " + UTIL.getFormattedValue(value[0][measures[1]], UTIL.getNumberFormatter(targetNumberFormat), ringInset*2));
-                })
 
             fillArc.transition()
-                .duration(COMMON.DURATION)
+                .duration(1000)
                 .styleTween("fill", function () {
                     return d3.interpolate(displayColor);
                 })
                 .call(arcTween, _measurePi)
 
             targetArc.transition()
-                .duration(COMMON.DURATION)
+                .duration(1000)
                 .styleTween("fill", function () {
                     return d3.interpolate(targetDisplayColor);
                 })
                 .call(arcTween, targetPi);
+
+            fillArc.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg, value[0][measures[0]], displayName))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, value[0][measures[0]], displayName))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, value[0][measures[0]], displayName))
+
+            targetArc.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg, value[0][measures[1]], targetDisplayName))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, value[0][measures[1]], targetDisplayName))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, value[0][measures[1]], targetDisplayName))
         }
         else {
-
-            _measure
-                .text(displayName + " " + value[0][measures[0]])
-
-            target
-                .text(targetDisplayName + " " + value[0][measures[1]])
-
             fillArc
                 .style("fill", function () {
                     return displayColor;
@@ -265,6 +315,7 @@ function gauge() {
                 })
                 .attr("d", arc)
         }
+
 
     }
 
@@ -424,6 +475,13 @@ function gauge() {
             return _print;
         }
         _print = value;
+        return chart;
+    }
+    chart.tooltip = function (value) {
+        if (!arguments.length) {
+            return _tooltip;
+        }
+        _tooltip = value;
         return chart;
     }
 

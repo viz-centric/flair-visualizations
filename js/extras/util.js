@@ -322,7 +322,7 @@ function util() {
 
             switch (si) {
                 case "actual":
-                    result = d3.format('');
+                    result = d3.format('.2f');
                     break;
                 case "percent":
                     result = d3.format('.0%');
@@ -445,7 +445,7 @@ function util() {
 
             switch (si) {
                 case "Actual":
-                    result = d3.format('');
+                    result = d3.format('.2f');
                     break;
                 case "Percent":
                     result = d3.format('.0%');
@@ -646,7 +646,7 @@ function util() {
 
         },
 
-        getValueNumberFormat: function (index, _measureProp) {
+        getValueNumberFormat: function (index, _measureProp, value) {
             var si = _measureProp[index],
                 siMapper = {
                     "K": "1e3",
@@ -656,8 +656,14 @@ function util() {
             var result;
             switch (si) {
                 case "Actual":
-                    result = d3.format('');
-                    break;
+                    {
+                        if (value % 1 == 0)
+                            result = d3.format('');
+                        else
+                            result = d3.format('.2f');
+                        break;
+                    }
+
                 case "Percent":
                     result = d3.format('.0%');
                     break;

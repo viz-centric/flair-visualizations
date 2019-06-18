@@ -156,7 +156,7 @@ function infographics() {
             + "<td>" + datum[chart.dimension()] + "</td>"
             + "</tr><tr>"
             + "<th>" + chart.measure() + ": </th>"
-            + "<td>" + datum[chart.measure()] + "</td>"
+            + "<td>" + Math.round(datum[chart.measure()] * 100) / 100 + "</td>"
             + "</tr></table>";
 
         return output;

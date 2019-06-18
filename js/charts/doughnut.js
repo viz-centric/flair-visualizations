@@ -28,6 +28,12 @@ function doughnut() {
         _print,
         broadcast,
         filterParameters,
+        _measureDisplayName,
+        _showLabel,
+        _fontSize,
+        _fontStyle,
+        _fontWeight,
+        _fontColor,
         _notification = false;
 
     /* These are the common variables that is shared across the different private/public
@@ -69,6 +75,12 @@ function doughnut() {
         this.valueAsArc(config.valueAsArc);
         this.valuePosition(config.valuePosition);
         this.tooltip(config.tooltip);
+        this.showLabel(config.showLabel);
+        this.fontSize(config.fontSize);
+        this.fontStyle(config.fontStyle);
+        this.fontWeight(config.fontWeight);
+        this.fontColor(config.fontColor);
+        this.measureDisplayName(config.measureDisplayName);
     }
 
     /**
@@ -180,7 +192,7 @@ function doughnut() {
             + "<td>" + datum[chart.dimension()] + "</td>"
             + "</tr><tr>"
             + "<th>" + chart.measure() + ": </th>"
-            + "<td>" + datum[chart.measure()] + "</td>"
+            + "<td>" + Math.round(datum[chart.measure()] * 100) / 100 + "</td>"
             + "</tr></table>";
 
         return output;
@@ -549,6 +561,32 @@ function doughnut() {
             _localKey = function (d) {
                 return d.data[_dimension[0]];
             }
+
+            var centerText = plot.append('text')
+                .attr('id', 'measure-value')
+                .style('text-anchor', 'middle')
+                .style('fill', _fontColor)
+                .style('font-size', _fontSize + 'px')
+                .style('font-weight', _fontWeight)
+                .style('font-style', _fontStyle)
+                .attr('visibility', _showLabel == true ? 'visible' : 'hidden')
+                .append("tspan")
+                .text(function () {
+                    return UTIL.getTruncatedLabel(
+                        this,
+                        _measureDisplayName,
+                        outerRadius * 0.8)
+                })
+                .attr("x", 0)
+                .append("tspan")
+                .text(function () {
+                    return UTIL.getTruncatedLabel(
+                        this,
+                        _localTotal,
+                        outerRadius * 0.8)
+                })
+                .attr("x", 0)
+                .attr("dy", _fontSize + 5);
 
             var doughnutMask = plot.append('g')
                 .attr('id', 'arc-mask-group')
@@ -1144,6 +1182,52 @@ function doughnut() {
             return _valuePosition;
         }
         _valuePosition = value;
+        return chart;
+    }
+
+    chart.measureDisplayName = function (value) {
+        if (!arguments.length) {
+            return _measureDisplayName;
+        }
+        _measureDisplayName = value;
+        return chart;
+    }
+
+    chart.showLabel = function (value) {
+        if (!arguments.length) {
+            return _showLabel;
+        }
+        _showLabel = value;
+        return chart;
+    }
+
+    chart.fontSize = function (value) {
+        if (!arguments.length) {
+            return _fontSize;
+        }
+        _fontSize = value;
+        return chart;
+    }
+
+    chart.fontStyle = function (value) {
+        if (!arguments.length) {
+            return _fontStyle;
+        }
+        _fontStyle = value;
+        return chart;
+    }
+    chart.fontWeight = function (value) {
+        if (!arguments.length) {
+            return _fontWeight;
+        }
+        _fontWeight = value;
+        return chart;
+    }
+    chart.fontColor = function (value) {
+        if (!arguments.length) {
+            return _fontColor;
+        }
+        _fontColor = value;
         return chart;
     }
 

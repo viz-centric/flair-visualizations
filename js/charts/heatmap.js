@@ -87,7 +87,7 @@ function heatmap() {
             + "<td>" + datum.y + "</td>"
             + "</tr><tr>"
             + "<th>" + datum.x + ": </th>"
-            + "<td>" + datum.val + "</td>"
+            + "<td>" + Math.round(datum.val * 100) / 100 + "</td>"
             + "</tr></table>";
 
         return output;

@@ -96,10 +96,10 @@ function bullet() {
             + "<td>" + datum.title + "</td>"
             + "</tr><tr>"
             + "<th>" + 'Value' + ": </th>"
-            + "<td>" + measure + "</td>"
+            + "<td>" +  Math.round(measure * 100) / 100  + "</td>"
             + "</tr><tr>"
             + "<th>" + "Target" + ": </th>"
-            + "<td>" + target + "</td>"
+            + "<td>" + Math.round(target * 100) / 100 + "</td>"
             + "</tr>"
             + "</table>";
 
