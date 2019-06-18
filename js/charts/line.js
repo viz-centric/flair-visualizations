@@ -153,7 +153,8 @@ function line() {
             + "<td>" + datum.data[_dimension[0]] + "</td>"
             + "</tr><tr>"
             + "<th>" + datum.tag + ": </th>"
-            + "<td>" + datum.data[datum.tag] + "</td>"
+            // + "<td>" + datum.data[datum.tag] + "</td>"
+            + "<td>" + UTIL.getFormattedValue(datum.data[datum.tag], UTIL.getValueNumberFormat(_measure.indexOf(datum.tag), _numberFormat, datum.data[datum.tag])) + " </td>"
             + "</tr></table>";
 
         return output;
@@ -579,21 +580,21 @@ function line() {
 
         var text = clusterLine.selectAll('text')
             .data(function (d, i) {
-                return data.map(function (d) { return { "index": i, "data": d }; });
+                return data.map(function (datum) { return { "tag": d, "data": datum }; });
             })
             .enter().append('text')
             .attr('x', function (d, i) {
                 return x(d['data'][_dimension[0]]);
             })
             .attr('y', function (d, i) {
-                return y(d['data'][_measure[d['index']]]);
+                return y(d.data[d.tag]);
             })
             .attr('dy', function (d, i) {
                 return -2 * offsetY;
             })
             .style('text-anchor', 'middle')
             .text(function (d, i) {
-                return UTIL.getFormattedValue(d['data'][_measure[d['index']]], UTIL.getValueNumberFormat(d["index"], _numberFormat));
+                return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(_measure.indexOf(d.tag), _numberFormat, d.data[d.tag]));
             })
             .text(function (d, i) {
                 if (!_print) {
@@ -601,26 +602,26 @@ function line() {
                     return UTIL.getTruncatedLabel(this, d3.select(this).text(), width);
                 }
                 else {
-                    return UTIL.getFormattedValue(d['data'][_measure[d['index']]], UTIL.getValueNumberFormat(d["index"], _numberFormat));
+                    return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(_measure.indexOf(d.tag), _numberFormat, d.data[d.tag]));
                 }
             })
             .attr('visibility', function (d, i) {
                 if (_notification) {
                     return 'hidden';
                 }
-                return UTIL.getVisibility(_showValues[d['index']]);
+                return UTIL.getVisibility(_showValues[_measure.indexOf(d.tag)]);
             })
             .style('font-style', function (d, i) {
-                return _fontStyle[d['index']];
+                return _fontStyle[_measure.indexOf(d.tag)];
             })
             .style('font-weight', function (d, i) {
-                return _fontWeight[d['index']];
+                return _fontWeight[_measure.indexOf(d.tag)];
             })
             .style('font-size', function (d, i) {
-                return _fontSize[d['index']];
+                return _fontSize[_measure.indexOf(d.tag)];
             })
             .style('fill', function (d, i) {
-                return _textColor[d['index']];
+                return _textColor[_measure.indexOf(d.tag)];
             });
 
         if (!_print || _notification) {
@@ -1100,7 +1101,7 @@ function line() {
 
         var lineText = clusterLine.selectAll('text')
             .data(function (d, i) {
-                return data.map(function (d) { return { "index": i, "data": d }; });
+                return data.map(function (datum) { return { "tag": d, "data": datum }; });
             })
 
         lineText.exit().remove();
@@ -1110,33 +1111,41 @@ function line() {
                 return x(d['data'][_dimension[0]]);
             })
             .attr('y', function (d, i) {
-                return y(d['data'][_measure[d['index']]]);
+                return y(d.data[d.tag]);
             })
             .attr('dy', function (d, i) {
                 return -2 * offsetY;
             })
             .style('text-anchor', 'middle')
             .text(function (d, i) {
-                return UTIL.getFormattedValue(d['data'][_measure[d['index']]], UTIL.getValueNumberFormat(d["index"], _numberFormat));
+                return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(_measure.indexOf(d.tag), _numberFormat, d.data[d.tag]));
             })
             .text(function (d, i) {
-                var width = (1 - x.padding()) * plotWidth / (_localXLabels.length - 1);
-                return UTIL.getTruncatedLabel(this, d3.select(this).text(), width);
+                if (!_print) {
+                    var width = (1 - x.padding()) * plotWidth / (_localXLabels.length - 1);
+                    return UTIL.getTruncatedLabel(this, d3.select(this).text(), width);
+                }
+                else {
+                    return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(_measure.indexOf(d.tag), _numberFormat, d.data[d.tag]));
+                }
             })
             .attr('visibility', function (d, i) {
-                return UTIL.getVisibility(_showValues[d['index']]);
+                if (_notification) {
+                    return 'hidden';
+                }
+                return UTIL.getVisibility(_showValues[_measure.indexOf(d.tag)]);
             })
             .style('font-style', function (d, i) {
-                return _fontStyle[d['index']];
+                return _fontStyle[_measure.indexOf(d.tag)];
             })
             .style('font-weight', function (d, i) {
-                return _fontWeight[d['index']];
+                return _fontWeight[_measure.indexOf(d.tag)];
             })
             .style('font-size', function (d, i) {
-                return _fontSize[d['index']];
+                return _fontSize[_measure.indexOf(d.tag)];
             })
             .style('fill', function (d, i) {
-                return _textColor[d['index']];
+                return _textColor[_measure.indexOf(d.tag)];
             });
 
         lineText
@@ -1144,15 +1153,42 @@ function line() {
                 return x(d['data'][_dimension[0]]);
             })
             .attr('y', function (d, i) {
-                return y(d['data'][_measure[d['index']]]);
+                return y(d.data[d.tag]);
+            })
+            .attr('dy', function (d, i) {
+                return -2 * offsetY;
+            })
+            .style('text-anchor', 'middle')
+            .text(function (d, i) {
+                return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(_measure.indexOf(d.tag), _numberFormat, d.data[d.tag]));
             })
             .text(function (d, i) {
-                return UTIL.getFormattedValue(d['data'][_measure[d['index']]], UTIL.getValueNumberFormat(d["index"], _numberFormat));
+                if (!_print) {
+                    var width = (1 - x.padding()) * plotWidth / (_localXLabels.length - 1);
+                    return UTIL.getTruncatedLabel(this, d3.select(this).text(), width);
+                }
+                else {
+                    return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(_measure.indexOf(d.tag), _numberFormat, d.data[d.tag]));
+                }
             })
-            .text(function (d, i) {
-                var width = (1 - x.padding()) * plotWidth / (_localXLabels.length - 1);
-                return UTIL.getTruncatedLabel(this, d3.select(this).text(), width);
+            .attr('visibility', function (d, i) {
+                if (_notification) {
+                    return 'hidden';
+                }
+                return UTIL.getVisibility(_showValues[_measure.indexOf(d.tag)]);
             })
+            .style('font-style', function (d, i) {
+                return _fontStyle[_measure.indexOf(d.tag)];
+            })
+            .style('font-weight', function (d, i) {
+                return _fontWeight[_measure.indexOf(d.tag)];
+            })
+            .style('font-size', function (d, i) {
+                return _fontSize[_measure.indexOf(d.tag)];
+            })
+            .style('fill', function (d, i) {
+                return _textColor[_measure.indexOf(d.tag)];
+            });
 
         var xAxisGroup,
             yAxisGroup;

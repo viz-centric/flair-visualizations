@@ -107,7 +107,7 @@ function stackedverticalbar() {
             + "<td>" + datum.data[chart.dimension()] + "</td>"
             + "</tr><tr>"
             + "<th>" + datum.key + ": </th>"
-            + "<td>" + datum.data[datum.key] + "</td>"
+            + "<td>" + UTIL.getFormattedValue(datum.data[datum.key], UTIL.getValueNumberFormat(_measure.indexOf(datum.key), _numberFormat,datum.data[datum.key])) + " </td>"
             + "</tr></table>";
 
         return output;
@@ -545,7 +545,7 @@ function stackedverticalbar() {
 
         element.append('text')
             .text(function (d, i) {
-                return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat));
+                return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat,d.data[d.key]));
             })
             .attr('x', function (d, i) {
                 return x(d.data[_dimension[0]]) + x.bandwidth() / 2;
@@ -1087,7 +1087,7 @@ function stackedverticalbar() {
 
         stackedverticalbar.select('text')
             .text(function (d, i) {
-                return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat));
+                return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat,d.data[d.key]));
             })
             .attr('x', function (d, i) {
                 return x(d.data[_dimension[0]]) + x.bandwidth() / 2;

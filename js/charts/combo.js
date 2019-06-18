@@ -171,7 +171,8 @@ function combo() {
             + "<td>" + dimension + "</td>"
             + "</tr><tr>"
             + "<th>" + measure + ": </th>"
-            + "<td>" + measurevalue + "</td>"
+            // + "<td>" + measurevalue + "</td>"
+            + "<td>" + UTIL.getFormattedValue(measurevalue, UTIL.getValueNumberFormat(_measure.indexOf(measure), _numberFormat, measurevalue)) + " </td>"
             + "</tr></table>";
 
         return output;
@@ -655,7 +656,7 @@ function combo() {
             })
             .style('text-anchor', 'middle')
             .text(function (d, i) {
-                return UTIL.getFormattedValue(d['data'][d['tag']], UTIL.getValueNumberFormat(_measure.indexOf(d['tag']), _numberFormat));
+                return UTIL.getFormattedValue(d['data'][d['tag']], UTIL.getValueNumberFormat(_measure.indexOf(d['tag']), _numberFormat, d['data'][d['tag']]));
             })
             .text(function (d, i) {
                 var width = (1 - x1.padding()) * plotWidth / (_localXLabels.length - 1);
@@ -901,7 +902,7 @@ function combo() {
 
             var text = element.append('text')
                 .text(function (d, i) {
-                    return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(i, _numberFormat));
+                    return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(i, _numberFormat, d.data[d.tag]));
                 })
                 .attr('x', function (d, i) {
                     return x1(measuresBar[i]);
@@ -1255,7 +1256,7 @@ function combo() {
 
         bar.select('text')
             .text(function (d, i) {
-                return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(i, _numberFormat));
+                return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(i, _numberFormat, d.data[d.tag]));
             })
             .attr('x', function (d, i) {
                 return x1(measuresBar[i]);
@@ -1312,7 +1313,7 @@ function combo() {
             })
             .style('text-anchor', 'middle')
             .text(function (d, i) {
-                return UTIL.getFormattedValue(d['data'][d['tag']], UTIL.getValueNumberFormat(_measure.indexOf(d['tag']), _numberFormat));
+                return UTIL.getFormattedValue(d['data'][d['tag']], UTIL.getValueNumberFormat(_measure.indexOf(d['tag']), _numberFormat, d['data'][d['tag']]));
             })
             .text(function (d, i) {
                 var width = (1 - x1.padding()) * plotWidth / (_localXLabels.length - 1);
@@ -1346,7 +1347,7 @@ function combo() {
             })
             .style('text-anchor', 'middle')
             .text(function (d, i) {
-                return UTIL.getFormattedValue(d['data'][d['tag']], UTIL.getValueNumberFormat(_measure.indexOf(d['tag']), _numberFormat));
+                return UTIL.getFormattedValue(d['data'][d['tag']], UTIL.getValueNumberFormat(_measure.indexOf(d['tag']), _numberFormat, d['data'][d['tag']]));
             })
             .text(function (d, i) {
                 var width = (1 - x1.padding()) * plotWidth / (_localXLabels.length - 1);

@@ -308,14 +308,14 @@ function treemap() {
                     output += "<table><tr>" +
                         "<tr><th>" + _dimension[0] + "</th><th>" + datum.data.key + "</th></tr>" +
                         "<tr> <th>" + _measure[0] + ": </th>"
-                        + "<td>" + datum.data.value + "</td>"
+                        + "<td>" + Math.round(datum.data.value * 100) / 100 + "</td>"
                         + "</tr>";
                 }
                 else {
                     output += "<table><tr>" +
                         "<tr><th>" + _dimension[0] + "</th><th>" + datum.parent.data.key + "</th></tr>" +
                         "<tr> <th>" + _dimension[1] + ": </th>"
-                        + "<td>" + datum.data.key + "</td>"
+                        + "<td>" + Math.round(datum.data.key * 100) / 100 + "</td>"
                         + "</tr>";
                 }
             }
@@ -323,13 +323,13 @@ function treemap() {
             if (datum.data.values != undefined) {
                 for (var index = 0; index < datum.data.values.length; index++) {
                     output += " <tr> <th>" + datum.data.values[index].key + ": </th>"
-                        + "<td>" + datum.data.values[index].value + "</td>"
+                        + "<td>" + Math.round(datum.data.values[index].value * 100) / 100 + "</td>"
                         + "</tr>";
                 }
             }
             else {
                 output += " <tr> <th>" + _measure[0] + ": </th>"
-                    + "<td>" + datum.data.value + "</td>"
+                    + "<td>" + Math.round(datum.data.value * 100) / 100 + "</td>"
                     + "</tr>";
             }
             output += "</table>";

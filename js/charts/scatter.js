@@ -106,12 +106,12 @@ function scatter() {
 
         for (let index = 0; index < _dimension.length; index++) {
             output += "<tr><th>" + _dimension[index] + ": </th>";
-            output += "<th>" + datum[_dimension[index]] + "</th></tr>";
+            output += "<td>" + datum[_dimension[index]] + "</td></tr>";
         }
 
         for (let index = 0; index < _measure.length; index++) {
             output += "<tr><th>" + _measure[index] + ": </th>";
-            output += "<th>" + datum[_measure[index]] + "</th></tr>";
+            output += "<td>" + Math.round(datum[_measure[index]] * 100) / 100 + "</td></tr>";
         }
         output += "</table>";
 
@@ -465,7 +465,7 @@ function scatter() {
             .call(_localYGrid);
 
         if (_tooltip) {
-           tooltip = d3.select(div).select('.custom_tooltip');
+            tooltip = d3.select(div).select('.custom_tooltip');
         }
 
         var xAxisGroup,
@@ -752,7 +752,7 @@ function scatter() {
     chart.update = function (data) {
         data = UTIL.sortingData(data, _dimension[0]);
         if (_tooltip) {
-           tooltip = d3.select(div).select('.custom_tooltip');
+            tooltip = d3.select(div).select('.custom_tooltip');
         }
         drawLegend.call(this, data)
         _Local_data = data,

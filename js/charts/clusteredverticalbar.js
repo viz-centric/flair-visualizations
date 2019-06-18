@@ -104,7 +104,7 @@ function clusteredverticalbar() {
             + "<td>" + datum[chart.dimension()] + "</td>"
             + "</tr><tr>"
             + "<th>" + datum["measure"] + ": </th>"
-            + "<td>" + datum[datum["measure"]] + "</td>"
+            + "<td>" + UTIL.getFormattedValue(datum[datum["measure"]], UTIL.getValueNumberFormat(_measure.indexOf(datum["measure"]), _numberFormat,datum[datum["measure"]])) + " </td>"
             + "</tr></table>";
 
         return output;
@@ -786,7 +786,7 @@ function clusteredverticalbar() {
         }
         var text = element.append('text')
             .text(function (d, i) {
-                return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat));
+                return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat,d[d.measure]));
             })
             .attr('y', function (d, i) {
                 if ((d[d['measure']] === null) || (isNaN(d[d['measure']]))) {
@@ -845,6 +845,7 @@ function clusteredverticalbar() {
             })
 
     }
+
     chart._legendInteraction = function (event, data, plot) {
         if (_print) {
             // No interaction during print enabled
@@ -1032,7 +1033,7 @@ function clusteredverticalbar() {
 
         clusteredverticalbar.select('text')
             .text(function (d, i) {
-                return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat));
+                return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat,d[d.measure]));
             })
             .attr('y', function (d, i) {
                 if ((d[d['measure']] === null) || (isNaN(d[d['measure']]))) {
