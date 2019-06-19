@@ -507,17 +507,29 @@ function infographics() {
             .duration(COMMON.DURATION)
             .attr('d', _area);
 
-        plot.selectAll('.infographics-point')
-            .data(function (d) { return d; })
-            .transition()
-            .duration(COMMON.DURATION)
+        plot.selectAll('.infographics-point').remove();
+
+        var points = plot.append('g')
+            .attr('id', 'infographics-point-group')
+            .selectAll('.infographics-point')
+            .data(data)
+            .enter().append('circle')
+            .classed('infographics-point', true)
             .attr('cx', function (d, i) {
                 return _x(d[_dimension[0]]);
             })
             .attr('cy', function (d, i) {
                 return _y(d[_measure[0]]);
-            });
+            })
+            .attr('r', 4)
+            .style('fill', _chartBorderColor)
+            .style('stroke', d3.hsl(_chartBorderColor).darker(1).toString())
+            .style('stroke-width', 0)
 
+        points.on('mouseover', _handleMouseOverFn.call(chart, _localTooltip, infographics))
+            .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, infographics))
+            .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, infographics))
+          
         div.select('#kpi-measure')
             .transition()
             .ease(d3.easeQuadIn)
