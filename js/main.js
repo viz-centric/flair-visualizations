@@ -19,7 +19,6 @@ var stackedhorizontalbar = require('./charts/stackedhorizontalbar.js');
 var stackedverticalbar = require('./charts/stackedverticalbar.js');
 var table = require('./charts/table.js');
 var treemap = require('./charts/treemap.js');
-
 // Load the required CSS files
 //require('../styles/stylesheets/screen.css');
 

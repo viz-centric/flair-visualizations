@@ -90,12 +90,6 @@ text {
   margin: 5px;
 }
 
-/* line 86, ../sass/partials/_common.scss */
-svg.sankey .link {
-  stroke: #000 !important;
-  stroke-opacity: 0.2;
-}
-
 /* line 91, ../sass/partials/_common.scss */
 .base_line line {
   stroke: #787878 !important;
