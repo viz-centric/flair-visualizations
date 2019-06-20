@@ -1,10 +1,10 @@
 var d3 = require('d3');
+var d3drag = require('d3-drag');
 var COMMON = require('../extras/common.js')();
 var UTIL = require('../extras/util.js')();
 var LEGEND = require('../extras/legend_barcharts.js')();
 try {
     var d3Lasso = require("d3-lasso");
-
 } catch (ex) { }
 
 function clusteredverticalbar() {
@@ -40,7 +40,8 @@ function clusteredverticalbar() {
         broadcast,
         filterParameters,
         isAnimationDisable = false,
-        _notification = false;
+        _notification = false,
+        _data;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1, yScale = d3.scaleLinear();
     var _localXAxis,
@@ -62,7 +63,7 @@ function clusteredverticalbar() {
         .domain([22, 34])
         .range([2, 4]);
 
-    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div;
+    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, parentContainer;
 
     var threshold = [];
     var filter = false, filterData = [];
@@ -104,7 +105,7 @@ function clusteredverticalbar() {
             + "<td>" + datum[chart.dimension()] + "</td>"
             + "</tr><tr>"
             + "<th>" + datum["measure"] + ": </th>"
-            + "<td>" + UTIL.getFormattedValue(datum[datum["measure"]], UTIL.getValueNumberFormat(_measure.indexOf(datum["measure"]), _numberFormat,datum[datum["measure"]])) + " </td>"
+            + "<td>" + UTIL.getFormattedValue(datum[datum["measure"]], UTIL.getValueNumberFormat(_measure.indexOf(datum["measure"]), _numberFormat, datum[datum["measure"]])) + " </td>"
             + "</tr></table>";
 
         return output;
@@ -193,7 +194,7 @@ function clusteredverticalbar() {
                 if (broadcast.filterSelection.id) {
                     _filterDimension = broadcast.filterSelection.filter;
                 } else {
-                    broadcast.filterSelection.id = $(div).attr('id');
+                    broadcast.filterSelection.id = parentContainer.attr('id');
                 }
                 var dimension = _dimension[0];
 
@@ -288,35 +289,50 @@ function clusteredverticalbar() {
     }
 
     function chart(selection) {
-        _local_svg = selection;
+        // selection.each(function (data) {
+        // data = [{ order_status: "PENDING", order_item_quantity: 19291, order_item_subtotal: 19291 },
+        // { order_status: "PAYMENT_REVIEW", order_item_quantity: 1797, order_item_subtotal: 1797 },
+        // { order_status: "PROCESSING", order_item_quantity: 20901, order_item_subtotal: 20901 },
+        // { order_status: "COMPLETE", order_item_quantity: 56740, order_item_subtotal: 56740 },
+        // { order_status: "ON_HOLD", order_item_quantity: 9373, order_item_subtotal: 9373 },
+        // { order_status: "CLOSED", order_item_quantity: 18668, order_item_subtotal: 18668 },
+        // { order_status: "PENDING_PAYMENT", order_item_quantity: 38031, order_item_subtotal: 38031 },
+        // { order_status: "SUSPECTED_FRAUD", order_item_quantity: 3878, order_item_subtotal: 3878 },
+        // { order_status: "CANCELED", order_item_quantity: 3519, order_item_subtotal: 3519 }]
 
-        selection.each(function (data) {
-            data = UTIL.sortingData(data, _dimension[0])
-            _Local_data = _originalData = data;
-            div = d3.select(this).node().parentNode;
+        data = UTIL.sortingData(_data, _dimension[0])
+        _Local_data = _originalData = data;
+        parentContainer = d3.select('#' + selection.id)
+        var svg = parentContainer.append('svg')
+            .attr('width', parentContainer.attr('width'))
+            .attr('height', parentContainer.attr('height'))
 
-            var svg = d3.select(this),
-                width = +svg.attr('width'),
-                height = +svg.attr('height');
+        var width = +svg.attr('width'),
+            height = +svg.attr('height');
 
-            parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
-            parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
+        _local_svg = svg;
 
-            container = svg.append('g')
-                .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
+        parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
+        parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
 
-            svg.attr('width', width)
-                .attr('height', height)
+        container = svg.append('g')
+            .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
-            d3.select(div).append('div')
-                .attr('class', 'sort_selection');
+        svg.attr('width', width)
+            .attr('height', height)
 
-            d3.select(div).append('div')
-                .attr('class', 'arrow-down');
+        parentContainer.append('div')
+            .attr('class', 'sort_selection');
 
-            drawLegend.call(this);
-            drawPlot.call(this, data);
-        });
+        parentContainer.append('div')
+            .attr('class', 'arrow-down');
+
+        parentContainer.append('div')
+            .attr('class', 'custom_tooltip');
+
+        drawLegend.call(this);
+        drawPlot.call(this, data);
+        // });
 
     }
 
@@ -386,7 +402,7 @@ function clusteredverticalbar() {
         var me = _local_svg;
         filterData = [];
         if (_tooltip) {
-            tooltip = d3.select(div).select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         var plot = container.append('g')
             .attr('class', 'clusteredverticalbar-plot')
@@ -553,7 +569,7 @@ function clusteredverticalbar() {
             var confirm = $(_local_svg).parent().find('div.confirm')
                 .css('visibility', 'hidden');
 
-            _local_svg.attr('class', 'chartSvg_' + $(div).attr('id'));
+            _local_svg.attr('class', 'chartSvg_' + parentContainer.attr('id'));
 
             //remove Threshold popup icon
             // var AlertElement = UTIL.createAlertElement();
@@ -564,27 +580,29 @@ function clusteredverticalbar() {
             // $('body').append(str);
 
             var _filter = UTIL.createFilterElement()
-            $(div).append(_filter);
+            //$(div).append(_filter);
+            $('#' + parentContainer.attr('id')).append(_filter);
+
 
             $(document).on('click', plot, function (e) {
-                if ($(div).find('.alert').prop('checked') == false) {
+                if ($(parentContainer).find('.alert').prop('checked') == false) {
                     var element = e.target.classList.value.split(' ')
-                    if (element.indexOf("chartSvg_" + $(div).attr('id')) >= 0) {
-                        $('#Modal_' + $(div).attr('id') + ' .measure').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', false)
-                        $('#Modal_' + $(div).attr('id')).modal('show');
+                    if (element.indexOf("chartSvg_" + $(parentContainer).attr('id')) >= 0) {
+                        $('#Modal_' + $(parentContainer).attr('id') + ' .measure').val('')
+                        $('#Modal_' + $(parentContainer).attr('id') + ' .threshold').val('')
+                        $('#Modal_' + $(parentContainer).attr('id') + ' .measure').attr('disabled', false)
+                        $('#Modal_' + $(parentContainer).attr('id')).modal('show');
                     }
                 }
             })
 
-            $(document).on('click', '#Modal_' + $(div).attr('id') + ' .ThresholdSubmit', function (e) {
-                var newValue = $('#Modal_' + $(div).attr('id') + ' .threshold').val();
+            $(document).on('click', '#Modal_' + $(parentContainer).attr('id') + ' .ThresholdSubmit', function (e) {
+                var newValue = $('#Modal_' + $(parentContainer).attr('id') + ' .threshold').val();
                 var obj = new Object()
-                obj.measure = $('#Modal_' + $(div).attr('id') + ' .measure').val()
+                obj.measure = $('#Modal_' + $(parentContainer).attr('id') + ' .measure').val()
                 obj.threshold = newValue;
                 threshold.push(obj);
-                $('#Modal_' + $(div).attr('id')).modal('toggle');
+                $('#Modal_' + $(parentContainer).attr('id')).modal('toggle');
             })
 
             _local_svg.select('g.sort').remove();
@@ -610,11 +628,11 @@ function clusteredverticalbar() {
                     }
                 });
 
-            d3.select(div).select('.filterData')
+            parentContainer.select('.filterData')
                 .on('click', applyFilter());
 
-            d3.select(div).select('.removeFilter')
-                .on('click', clearFilter(div));
+            parentContainer.select('.removeFilter')
+                .on('click', clearFilter(parentContainer));
 
             _local_svg.select('g.lasso').remove();
 
@@ -724,15 +742,15 @@ function clusteredverticalbar() {
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
                     if (!_print) {
-                        if ($(div).find('.alert').prop('checked') == true) {
-                            $('#Modal_' + $(div).attr('id') + ' .measure').val(d.measure);
-                            $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
-                            $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
-                            $('#Modal_' + $(div).attr('id')).modal('toggle');
+                        if ($(parentContainer).find('.alert').prop('checked') == true) {
+                            $('#Modal_' + $(parentContainer).attr('id') + ' .measure').val(d.measure);
+                            $('#Modal_' + $(parentContainer).attr('id') + ' .threshold').val('');
+                            $('#Modal_' + $(parentContainer).attr('id') + ' .measure').attr('disabled', true);;
+                            $('#Modal_' + $(parentContainer).attr('id')).modal('toggle');
                         }
                         else {
                             filter = false;
-                            var confirm = d3.select(div).select('.confirm')
+                            var confirm = parentContainer.select('.confirm')
                                 .style('visibility', 'visible');
                             var _filter = _Local_data.filter(function (d1) {
                                 return d[_dimension[0]] === d1[_dimension[0]]
@@ -762,7 +780,7 @@ function clusteredverticalbar() {
                         if (broadcast.filterSelection.id) {
                             _filterDimension = broadcast.filterSelection.filter;
                         } else {
-                            broadcast.filterSelection.id = $(div).attr('id');
+                            broadcast.filterSelection.id = parentContainer.attr('id');
                         }
                         var dimension = _dimension[0];
                         if (_filterDimension[dimension]) {
@@ -773,9 +791,9 @@ function clusteredverticalbar() {
                             _filterDimension[dimension] = [d[dimension]];
                         }
 
-                        var idWidget = broadcast.updateWidget[$(div).attr('id')];
+                        var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                         broadcast.updateWidget = {};
-                        broadcast.updateWidget[$(div).attr('id')] = idWidget;
+                        broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
                         broadcast.filterSelection.filter = _filterDimension;
                         var _filterParameters = filterParameters.get();
                         _filterParameters[dimension] = _filterDimension[dimension];
@@ -786,7 +804,7 @@ function clusteredverticalbar() {
         }
         var text = element.append('text')
             .text(function (d, i) {
-                return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat,d[d.measure]));
+                return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat, d[d.measure]));
             })
             .attr('y', function (d, i) {
                 if ((d[d['measure']] === null) || (isNaN(d[d['measure']]))) {
@@ -928,7 +946,7 @@ function clusteredverticalbar() {
 
         data = UTIL.sortingData(data, _dimension[0])
         if (_tooltip) {
-            tooltip = d3.select(div).select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         var DURATION = COMMON.DURATION;
         if (isAnimationDisable) {
@@ -1033,7 +1051,7 @@ function clusteredverticalbar() {
 
         clusteredverticalbar.select('text')
             .text(function (d, i) {
-                return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat,d[d.measure]));
+                return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat, d[d.measure]));
             })
             .attr('y', function (d, i) {
                 if ((d[d['measure']] === null) || (isNaN(d[d['measure']]))) {
@@ -1109,7 +1127,7 @@ function clusteredverticalbar() {
                 return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
             })
 
-        xAxisGroup = plot.select('.x.axis')
+        xAxisGroup = plot.select('.x_axis')
             .transition()
             .duration(COMMON.DURATION)
             .attr('visibility', UTIL.getVisibility(_showXaxis))
@@ -1124,8 +1142,7 @@ function clusteredverticalbar() {
                 .attr("transform", "rotate(0)");
         }
 
-
-        yAxisGroup = plot.select('.y.axis')
+        yAxisGroup = plot.select('.y_axis')
             .transition()
             .duration(COMMON.DURATION)
             .attr('visibility', UTIL.getVisibility(_showYaxis))
@@ -1374,7 +1391,13 @@ function clusteredverticalbar() {
         _notification = value;
         return chart;
     }
-
+    chart.data = function (value) {
+        if (!arguments.length) {
+            return _data;
+        }
+        _data = value;
+        return chart;
+    }
     return chart;
 }
 
