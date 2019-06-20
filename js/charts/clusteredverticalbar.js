@@ -1127,7 +1127,7 @@ function clusteredverticalbar() {
                 return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
             })
 
-        xAxisGroup = plot.select('.x.axis')
+        xAxisGroup = plot.select('.x_axis')
             .transition()
             .duration(COMMON.DURATION)
             .attr('visibility', UTIL.getVisibility(_showXaxis))
@@ -1142,8 +1142,7 @@ function clusteredverticalbar() {
                 .attr("transform", "rotate(0)");
         }
 
-
-        yAxisGroup = plot.select('.y.axis')
+        yAxisGroup = plot.select('.y_axis')
             .transition()
             .duration(COMMON.DURATION)
             .attr('visibility', UTIL.getVisibility(_showYaxis))
