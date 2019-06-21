@@ -28,7 +28,8 @@ function sankey() {
         _print,
         broadcast,
         filterParameters,
-        _notification = false;
+        _notification = false,
+        _colorList = [];
 
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [];
@@ -57,6 +58,7 @@ function sankey() {
         this.borderColor(config.borderColor);
 
         this.numberFormat(config.numberFormat);
+        this.colorList(config.colorList)
     }
 
     var _buildTooltipData = function (datum, chart, element) {
@@ -302,7 +304,7 @@ function sankey() {
         if (colorPattern == 'single_color') {
             return displayColor;
         } else if (colorPattern == 'unique_color') {
-            return d3.schemeCategory20c[i % (d3.schemeCategory20c.length)];
+            return _colorList[i % (_colorList.length)];
         } else if (colorPattern == 'gradient_color') {
             return gradientColor(d.value);
         }
@@ -381,21 +383,11 @@ function sankey() {
 
             var nodeDistance = data.nodes[0].sourceLinks[0].target.x - data.nodes[0].x - sankey.nodeWidth();
 
-            link = container.append('g').selectAll('.link')
-                .data(data.links)
-                .enter().append('path')
-                .attr('class', 'link')
-                .style('stroke', '#efefef')
-                .attr('d', path)
-                .style('stroke-width', function (d) { return Math.max(1, d.dy); })
-                .sort(function (a, b) { return b.dy - a.dy; })
-
             var node = container.append('g').selectAll('.node')
                 .data(data.nodes)
                 .enter().append('g')
                 .attr('class', 'node')
                 .attr('transform', function (d) {
-
                     return 'translate(' + d.x + ',' + d.y + ')';
                 })
                 .call(drag);
@@ -403,12 +395,13 @@ function sankey() {
             node.append('rect')
                 .attr('width', sankey.nodeWidth())
                 .attr('height', function (d) { return d.dy; })
+                .attr('class', function (d) { return d.name; })
                 .style('cursor', 'move')
                 .style('fill', function (d, i) {
                     return getFillColor(d, i);
                 })
-                .style('stroke', function (d) {
-                    return borderColor;
+                .style('stroke', function (d, i) {
+                    return getFillColor(d, i);
                 })
 
             node.append('text')
@@ -459,6 +452,17 @@ function sankey() {
                 .filter(function (d) { return d.x < parentWidth / 2; })
                 .attr('x', 6 + sankey.nodeWidth())
                 .attr('text-anchor', 'start');
+
+            link = container.append('g').selectAll('.link')
+                .data(data.links)
+                .enter().append('path')
+                .attr('class', 'link')
+                .style('stroke', function (d, i) {
+                    return d3.select('.' + d.source.name).style('fill');
+                })
+                .attr('d', path)
+                .style('stroke-width', function (d) { return Math.max(1, d.dy); })
+                .sort(function (a, b) { return b.dy - a.dy; })
 
             if (!_print) {
 
@@ -712,12 +716,13 @@ function sankey() {
         node.select('rect')
             .attr('width', sankey.nodeWidth())
             .attr('height', function (d) { return d.dy; })
+            .attr('class', function (d) { return d.name; })
             .style('cursor', 'move')
             .style('fill', function (d, i) {
                 return getFillColor(d, i);
             })
             .style('stroke', function (d) {
-                return borderColor;
+                return getFillColor(d, i);
             })
             .classed('selected', false)
             .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg, 'node'))
@@ -951,6 +956,14 @@ function sankey() {
             return numberFormat;
         }
         numberFormat = value;
+        return chart;
+    }
+
+    chart.colorList = function (value) {
+        if (!arguments.length) {
+            return _colorList;
+        }
+        _colorList = value;
         return chart;
     }
 

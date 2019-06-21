@@ -168,7 +168,76 @@ function gauge() {
                 .outerRadius(radius - ringInset)
                 .startAngle(degToRad(-degree))
 
-            var plot = svg
+            var container = svg.append("g")
+                .attr("transform", 'translate(' + COMMON.PADDING + ',' + COMMON.PADDING + ')')
+
+            var legend = container
+                .attr('class', 'gauge-legend')
+                .selectAll('.item')
+                .data(measures)
+                .enter().append('g')
+                .attr('class', 'item')
+                .attr('id', function (d, i) {
+                    return 'legend' + i;
+                })
+                .attr('transform', function (d, i) {
+                    return 'translate(' + i * Math.floor(width / measures.length) + ', 0)';
+                })
+                .on('mouseover', function (d, i) {
+                    d3.select(this).attr('cursor', 'pointer')
+                    if (i == 0) {
+                        fillArc.style("fill", COMMON.HIGHLIGHTER)
+                    }
+                    else {
+                        targetArc.style("fill", COMMON.HIGHLIGHTER)
+                    }
+                })
+                .on('mousemove', function (d, i) {
+                    d3.select(this).attr('cursor', 'pointer')
+                })
+                .on('mouseout', function (d, i) {
+                    d3.select(this).attr('cursor', 'default')
+                    if (i == 0) {
+                        fillArc.style("fill", displayColor)
+                    }
+                    else {
+                        targetArc.style("fill", targetDisplayColor)
+                    }
+                })
+
+            legend.append('rect')
+                .attr('x', 4)
+                .attr('width', 10)
+                .attr('height', 10)
+                .style('fill', function (d, i) {
+                    if (i == 0)
+                        return displayColor;
+                    else
+                        return targetDisplayColor;
+                })
+                .style('stroke', function (d, i) {
+                    if (i == 0)
+                        return displayColor;
+                    else
+                        return targetDisplayColor;
+                })
+                .style('stroke-width', 0);
+
+            legend.append('text')
+                .attr('x', 18)
+                .attr('y', 5)
+                .attr('dy', function (d) {
+                    return d3.select(this).style('font-size').replace('px', '') / 2.5;
+                })
+                .text(function (d, i) {
+                    return measures[i];
+                })
+                .text(function (d, i) {
+                    return UTIL.getTruncatedLabel(this, measures[i], Math.floor(width / measures
+                        .length), 5);
+                });
+
+            var plot = container
                 .append("g")
                 .attr("transform", getTxCenter(width, height))
 
@@ -219,7 +288,6 @@ function gauge() {
                 .text(function () {
                     return UTIL.getTruncatedLabel(this, displayName + " " + data[0][measures[0]], ringInset)
                 })
-
 
             // displayName + " " + data[0][measures[0]])
 
