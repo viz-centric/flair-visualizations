@@ -119,7 +119,7 @@ function map() {
             svg.selectAll('g').remove();
 
             if (_tooltip) {
-               tooltip = d3.select(div).select('.custom_tooltip');
+              tooltip = parentContainer.select('.custom_tooltip');
             }
 
             svg.attr('width', width)

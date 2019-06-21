@@ -354,7 +354,7 @@ function donut() {
             }
 
             if (_tooltip) {
-               tooltip = d3.select(div).select('.custom_tooltip');
+              tooltip = parentContainer.select('.custom_tooltip');
             }
 
             chart.drawPlot = function (data) {

@@ -462,7 +462,7 @@ function infographics() {
 
         data = UTIL.sortingData(data, _dimension[0]);
         if (_tooltip) {
-            tooltip = d3.select(div).select('.custom_tooltip');
+           tooltip = parentContainer.select('.custom_tooltip');
         }
         var div = _localDiv;
 

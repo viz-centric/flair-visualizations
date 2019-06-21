@@ -42,7 +42,8 @@ function line() {
         _print,
         broadcast,
         filterParameters,
-        _notification = false;
+        _notification = false,
+        _data;
 
     var margin = {
         top: 0,
@@ -315,18 +316,6 @@ function line() {
         }
     }
 
-    var _setAxisColor = function (axis, color) {
-        var path = axis.select('path'),
-            ticks = axis.selectAll('.tick');
-
-        path.style('stroke', color);
-
-        ticks.select('line')
-            .style('stroke', color);
-
-        ticks.select('text')
-            .style('fill', color);
-    }
     var drawLegend = function () {
         var legendWidth = 0,
             legendHeight = 0;
@@ -389,43 +378,44 @@ function line() {
         }
     }
     function chart(selection) {
-        _local_svg = selection;
+        data = UTIL.sortingData(_data, _dimension[0])
+        _Local_data = _originalData = data;
+        parentContainer = d3.select('#' + selection.id)
+        var svg = parentContainer.append('svg')
+            .attr('width', parentContainer.attr('width'))
+            .attr('height', parentContainer.attr('height'))
 
-        selection.each(function (data) {
-            data = UTIL.sortingData(data, _dimension[0])
-            _Local_data = _originalData = data;
-            div = d3.select(this).node().parentNode;
+        var width = +svg.attr('width'),
+            height = +svg.attr('height');
 
-            var svg = d3.select(this),
-                width = +svg.attr('width'),
-                height = +svg.attr('height');
+        _local_svg = svg;
 
-            parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
-            parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
+        parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
+        parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
 
-            container = svg.append('g')
-                .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
+        container = svg.append('g')
+            .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
-            svg.attr('width', width)
-                .attr('height', height)
+        svg.attr('width', width)
+            .attr('height', height)
 
-            d3.select(div).append('div')
-                .attr('class', 'sort_selection');
+        parentContainer.append('div')
+            .attr('class', 'sort_selection');
 
-            d3.select(div).append('div')
-                .attr('class', 'arrow-down');
+        parentContainer.append('div')
+            .attr('class', 'arrow-down');
 
-            drawLegend.call(this);
+        parentContainer.append('div')
+            .attr('class', 'custom_tooltip');
 
-            drawPlot.call(this, data);
-        });
-
+        drawLegend.call(this);
+        drawPlot.call(this, data);
     }
 
     var drawPlot = function (data) {
         var me = this;
         if (_tooltip) {
-            tooltip = d3.select(div).select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         var plot = container.append('g')
             .attr('class', 'line-plot')
@@ -708,8 +698,8 @@ function line() {
             .tickPadding(10);
 
         xAxisGroup = plot.append('g')
-            .attr('class', 'x axis')
-            .attr('visibility', UTIL.getVisibility(_showXaxis))
+            .attr('class', 'x_axis')
+            .attr('visibility', 'visible')
             .attr('transform', 'translate(0, ' + plotHeight + ')')
             .call(_localXAxis);
 
@@ -726,10 +716,9 @@ function line() {
             .text(_displayName);
 
         if (isRotate) {
-            _local_svg.selectAll('.x .tick text')
+            _local_svg.selectAll('.x_axis .tick text')
                 .attr("transform", "rotate(-15)");
         }
-        _setAxisColor(xAxisGroup, _xAxisColor);
 
         _localYAxis = d3.axisLeft(y)
             .tickSize(0)
@@ -739,8 +728,8 @@ function line() {
             });
 
         yAxisGroup = plot.append('g')
-            .attr('class', 'y axis')
-            .attr('visibility', UTIL.getVisibility(_showYaxis))
+            .attr('class', 'y_axis')
+            .attr('visibility', 'visible')
             .call(_localYAxis);
 
         yAxisGroup.append('g')
@@ -758,7 +747,7 @@ function line() {
                 return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
             });
 
-        _setAxisColor(yAxisGroup, _yAxisColor);
+        UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
 
         if (!_print) {
 
@@ -770,7 +759,7 @@ function line() {
                 .css('visibility', 'hidden');
 
             var _filter = UTIL.createFilterElement()
-            $(div).append(_filter);
+            $('#' + parentContainer.attr('id')).append(_filter);
 
             line
                 .on("mouseover", function (d) {
@@ -845,12 +834,11 @@ function line() {
                     }
                 });
 
-            d3.select(div).select('.filterData')
+            parentContainer.select('.filterData')
                 .on('click', applyFilter());
 
-            d3.select(div).select('.removeFilter')
-                .on('click', clearFilter(div));
-
+            parentContainer.select('.removeFilter')
+                .on('click', clearFilter(parentContainer));
             _local_svg.select('g.lasso').remove()
 
             var lasso = d3Lasso.lasso()
@@ -943,7 +931,7 @@ function line() {
 
         data = UTIL.sortingData(data, _dimension[0]);
         if (_tooltip) {
-            tooltip = d3.select(div).select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         _Local_data = data;
         filterData = [];
@@ -957,9 +945,9 @@ function line() {
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
-        x.domain(data.map(function (d) {
-            return d[_dimension[0]];
-        }));
+        x.rangeRound([0, plotWidth])
+            .padding([0.5])
+            .domain(data.map(function (d) { return d[_dimension[0]]; }));
 
         var range = UTIL.getMinMax(data, keys);
 
@@ -1035,7 +1023,6 @@ function line() {
             });
 
         plot.selectAll('path.point').remove()
-
 
         var point = clusterLine.selectAll('point')
             .data(function (d, i) {
@@ -1204,36 +1191,36 @@ function line() {
             })
 
 
-        xAxisGroup = plot.select('.x.axis')
+        xAxisGroup = plot.select('.x_axis')
+            .attr('transform', 'translate(0, ' + plotHeight + ')')
             .transition()
             .duration(COMMON.DURATION)
-            .attr('visibility', UTIL.getVisibility(_showXaxis))
+            .attr('visibility', 'visible')
             .call(_localXAxis);
 
-        _setAxisColor(xAxisGroup, _xAxisColor);
-
         if (isRotate) {
-            _local_svg.selectAll('.x .tick text')
+            _local_svg.selectAll('.x_axis .tick text')
                 .attr("transform", "rotate(-15)");
         }
         else {
-            _local_svg.selectAll('.x .tick text')
+            _local_svg.selectAll('.x_axis .tick text')
                 .attr("transform", "rotate(0)");
         }
 
-        yAxisGroup = plot.select('.y.axis')
+        yAxisGroup = plot.select('.y_axis')
             .transition()
             .duration(COMMON.DURATION)
-            .attr('visibility', UTIL.getVisibility(_showYaxis))
+            .attr('visibility', 'visible')
             .call(_localYAxis);
 
-        _setAxisColor(yAxisGroup, _yAxisColor);
+        UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
 
         /* Update Axes Grid */
         _localXGrid.ticks(x);
         _localYGrid.scale(y);
 
         plot.select('.x.grid')
+            .attr('transform', 'translate(0, ' + plotHeight + ')')
             .transition()
             .duration(COMMON.DURATION)
             .attr('visibility', function () {
@@ -1492,6 +1479,13 @@ function line() {
             return _notification;
         }
         _notification = value;
+        return chart;
+    }
+    chart.data = function (value) {
+        if (!arguments.length) {
+            return _data;
+        }
+        _data = value;
         return chart;
     }
     return chart;

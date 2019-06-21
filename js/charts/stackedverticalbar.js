@@ -43,7 +43,8 @@ function stackedverticalbar() {
         broadcast,
         filterParameters,
         isAnimationDisable = false,
-        _notification = false;;
+        _notification = false,
+        _data;
 
 
     var x = d3.scaleBand(), y = d3.scaleLinear();
@@ -64,7 +65,7 @@ function stackedverticalbar() {
         .domain([22, 34])
         .range([2, 4]);
 
-    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div;
+    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, parentContainer;
     var parentWidth, parentHeight, plotWidth, plotHeight, container;
 
     var filter = false, filterData = [];
@@ -107,7 +108,7 @@ function stackedverticalbar() {
             + "<td>" + datum.data[chart.dimension()] + "</td>"
             + "</tr><tr>"
             + "<th>" + datum.key + ": </th>"
-            + "<td>" + UTIL.getFormattedValue(datum.data[datum.key], UTIL.getValueNumberFormat(_measure.indexOf(datum.key), _numberFormat,datum.data[datum.key])) + " </td>"
+            + "<td>" + UTIL.getFormattedValue(datum.data[datum.key], UTIL.getValueNumberFormat(_measure.indexOf(datum.key), _numberFormat, datum.data[datum.key])) + " </td>"
             + "</tr></table>";
 
         return output;
@@ -204,7 +205,7 @@ function stackedverticalbar() {
                 if (broadcast.filterSelection.id) {
                     _filterDimension = broadcast.filterSelection.filter;
                 } else {
-                    broadcast.filterSelection.id = $(div).attr('id');
+                    broadcast.filterSelection.id = $(parentContainer).attr('id');
                 }
                 var dimension = _dimension[0];
 
@@ -299,18 +300,6 @@ function stackedverticalbar() {
             }
         }
     }
-    var _setAxisColor = function (axis, color) {
-        var path = axis.select('path'),
-            ticks = axis.selectAll('.tick');
-
-        path.style('stroke', color);
-
-        ticks.select('line')
-            .style('stroke', color);
-
-        ticks.select('text')
-            .style('fill', color);
-    }
 
     var drawLegend = function () {
         var legendWidth = 0,
@@ -374,35 +363,38 @@ function stackedverticalbar() {
         }
     }
     function chart(selection) {
-        _local_svg = selection;
+        data = UTIL.sortingData(_data, _dimension[0])
+        _Local_data = _originalData = data;
+        parentContainer = d3.select('#' + selection.id)
+        var svg = parentContainer.append('svg')
+            .attr('width', parentContainer.attr('width'))
+            .attr('height', parentContainer.attr('height'))
 
-        selection.each(function (data) {
-            data = UTIL.sortingData(data, _dimension[0])
-            _originalData = _Local_data = data;
-            div = d3.select(this).node().parentNode;
+        var width = +svg.attr('width'),
+            height = +svg.attr('height');
 
-            var svg = d3.select(this),
-                width = +svg.attr('width'),
-                height = +svg.attr('height');
+        _local_svg = svg;
 
-            parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
-            parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
+        parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
+        parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
 
-            container = svg.append('g')
-                .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
+        container = svg.append('g')
+            .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
-            svg.attr('width', width)
-                .attr('height', height)
+        svg.attr('width', width)
+            .attr('height', height)
 
-            d3.select(div).append('div')
-                .attr('class', 'sort_selection');
+        parentContainer.append('div')
+            .attr('class', 'sort_selection');
 
-            d3.select(div).append('div')
-                .attr('class', 'arrow-down');
+        parentContainer.append('div')
+            .attr('class', 'arrow-down');
 
-            drawLegend.call(this)
-            drawPlot.call(this, data);
-        });
+        parentContainer.append('div')
+            .attr('class', 'custom_tooltip');
+
+        drawLegend.call(this);
+        drawPlot.call(this, data);
     }
 
     var drawViz = function (element) {
@@ -482,14 +474,14 @@ function stackedverticalbar() {
                 .on('click', function (d) {
                     if (!_print) {
                         if ($("#myonoffswitch").prop('checked') == false) {
-                            $('#Modal_' + $(div).attr('id') + ' .measure').val(d.key);
-                            $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
-                            $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
-                            $('#Modal_' + $(div).attr('id')).modal('toggle');
+                            $('#Modal_' + $(parentContainer).attr('id') + ' .measure').val(d.key);
+                            $('#Modal_' + $(parentContainer).attr('id') + ' .threshold').val('');
+                            $('#Modal_' + $(parentContainer).attr('id') + ' .measure').attr('disabled', true);;
+                            $('#Modal_' + $(parentContainer).attr('id')).modal('toggle');
                         }
                         else {
                             filter = false;
-                            var confirm = d3.select(div).select('.confirm')
+                            var confirm = d3.select(parentContainer).select('.confirm')
                                 .style('visibility', 'visible');
 
                             var _filter = _Local_data.filter(function (d1) {
@@ -519,7 +511,7 @@ function stackedverticalbar() {
                             if (broadcast.filterSelection.id) {
                                 _filterDimension = broadcast.filterSelection.filter;
                             } else {
-                                broadcast.filterSelection.id = $(div).attr('id');
+                                broadcast.filterSelection.id = $(parentContainer).attr('id');
                             }
                             var dimension = _dimension[0];
                             if (_filterDimension[dimension]) {
@@ -530,9 +522,9 @@ function stackedverticalbar() {
                                 _filterDimension[dimension] = [d.data[_dimension[0]]];
                             }
 
-                            var idWidget = broadcast.updateWidget[$(div).attr('id')];
+                            var idWidget = broadcast.updateWidget[$(parentContainer).attr('id')];
                             broadcast.updateWidget = {};
-                            broadcast.updateWidget[$(div).attr('id')] = idWidget;
+                            broadcast.updateWidget[$(parentContainer).attr('id')] = idWidget;
                             broadcast.filterSelection.filter = _filterDimension;
                             var _filterParameters = filterParameters.get();
                             _filterParameters[dimension] = _filterDimension[dimension];
@@ -545,7 +537,7 @@ function stackedverticalbar() {
 
         element.append('text')
             .text(function (d, i) {
-                return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat,d.data[d.key]));
+                return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat, d.data[d.key]));
             })
             .attr('x', function (d, i) {
                 return x(d.data[_dimension[0]]) + x.bandwidth() / 2;
@@ -592,17 +584,15 @@ function stackedverticalbar() {
                         if (this.getComputedTextLength() > parseFloat(rectWidth)) {
                             return 'hidden';
                         }
-
                     }
                 }
                 return 'visible';
             })
-
     }
     var drawPlot = function (data) {
         var me = this;
         if (_tooltip) {
-            tooltip = d3.select(div).select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         var plot = container.append('g')
@@ -689,7 +679,7 @@ function stackedverticalbar() {
         _localYGrid.scale(y);
 
         plot.append('g')
-            .attr('class', 'x grid')
+             .attr('class', 'x grid')
             .attr('visibility', function () {
                 return _showGrid ? 'visible' : 'hidden';
             })
@@ -746,12 +736,9 @@ function stackedverticalbar() {
             .tickPadding(10);
 
         xAxisGroup = plot.append('g')
-            .attr('class', 'x axis')
-            .attr('visibility', function () {
-                return 'visible';
-            })
+            .attr('class', 'x_axis')
             .attr('transform', 'translate(0, ' + plotHeight + ')')
-            .attr('visibility', UTIL.getVisibility(_showXaxis))
+            .attr('visibility', 'visible')
             .call(_localXAxis);
 
         xAxisGroup.append('g')
@@ -767,11 +754,9 @@ function stackedverticalbar() {
             .text(_displayName);
 
         if (isRotate) {
-            _local_svg.selectAll('.x .tick text')
+            _local_svg.selectAll('.x_axis .tick text')
                 .attr("transform", "rotate(-15)");
         }
-
-        _setAxisColor(xAxisGroup, _xAxisColor);
 
         _localYAxis = d3.axisLeft(y)
             .tickSize(0)
@@ -781,11 +766,8 @@ function stackedverticalbar() {
             });
 
         yAxisGroup = plot.append('g')
-            .attr('class', 'y axis')
-            .attr('visibility', function () {
-                return 'visible';
-            })
-            .attr('visibility', UTIL.getVisibility(_showYaxis))
+            .attr('class', 'y_axis')
+            .attr('visibility', 'visible')
             .call(_localYAxis);
 
         yAxisGroup.append('g')
@@ -803,7 +785,7 @@ function stackedverticalbar() {
                 return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
             });
 
-        _setAxisColor(yAxisGroup, _yAxisColor);
+        UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
 
         if (!_print) {
             var confirm = $(me).parent().find('div.confirm')
@@ -836,33 +818,34 @@ function stackedverticalbar() {
             // $(div).append(str);
 
             var _filter = UTIL.createFilterElement()
-            $(div).append(_filter);
+            $('#' + parentContainer.attr('id')).append(_filter);
 
             $(document).on('click', '_local_svg', function (e) {
                 if ($("#myonoffswitch").prop('checked') == false) {
                     var element = e.target
                     if (element.tagName == "_local_svg") {
-                        $('#Modal_' + $(div).attr('id') + ' .measure').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', false)
-                        $('#Modal_' + $(div).attr('id')).modal('toggle');
+                        $('#Modal_' + $(parentContainer).attr('id') + ' .measure').val('')
+                        $('#Modal_' + $(parentContainer).attr('id') + ' .threshold').val('')
+                        $('#Modal_' + $(parentContainer).attr('id') + ' .measure').attr('disabled', false)
+                        $('#Modal_' + $(parentContainer).attr('id')).modal('toggle');
                     }
                 }
             })
 
-            $(document).on('click', '#Modal_' + $(div).attr('id') + ' .ThresholdSubmit', function (e) {
-                var newValue = $('#Modal_' + $(div).attr('id') + ' .threshold').val();
+            $(document).on('click', '#Modal_' + $(parentContainer).attr('id') + ' .ThresholdSubmit', function (e) {
+                var newValue = $('#Modal_' + $(parentContainer).attr('id') + ' .threshold').val();
                 var obj = new Object()
-                obj.measure = $('#Modal_' + $(div).attr('id') + ' .measure').val()
+                obj.measure = $('#Modal_' + $(parentContainer).attr('id') + ' .measure').val()
                 obj.threshold = newValue;
                 threshold.push(obj);
-                $('#Modal_' + $(div).attr('id')).modal('toggle');
+                $('#Modal_' + $(parentContainer).attr('id')).modal('toggle');
             })
-            d3.select(div).select('.filterData')
+
+            parentContainer.select('.filterData')
                 .on('click', applyFilter());
 
-            d3.select(div).select('.removeFilter')
-                .on('click', clearFilter(div));
+            parentContainer.select('.removeFilter')
+                .on('click', clearFilter(parentContainer));
 
             _local_svg.select('g.lasso').remove()
             var lasso = d3Lasso.lasso()
@@ -964,7 +947,7 @@ function stackedverticalbar() {
         data = UTIL.sortingData(data, _dimension[0]);
         var labelStack = [];
         if (_tooltip) {
-            tooltip = d3.select(div).select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         _Local_data = data,
             filterData = [];
@@ -975,11 +958,14 @@ function stackedverticalbar() {
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
-        x.domain(data.map(function (d) { return d[_dimension[0]]; }));
+        x.rangeRound([0, plotWidth])
+            .padding([0.2])
+            .domain(data.map(function (d) { return d[_dimension[0]]; }));
 
         var range = UTIL.getMinMax(data, keys);
 
-        y.domain([range[0], range[1]]);
+        y.rangeRound([plotHeight, 0])
+            .domain([range[0], range[1]]);
 
         var _yTicks = y.ticks(),
             yDiff = _yTicks[1] - _yTicks[0],
@@ -1087,7 +1073,7 @@ function stackedverticalbar() {
 
         stackedverticalbar.select('text')
             .text(function (d, i) {
-                return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat,d.data[d.key]));
+                return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat, d.data[d.key]));
             })
             .attr('x', function (d, i) {
                 return x(d.data[_dimension[0]]) + x.bandwidth() / 2;
@@ -1163,37 +1149,34 @@ function stackedverticalbar() {
                 return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
             })
 
-        xAxisGroup = plot.select('.x.axis')
+        xAxisGroup = plot.select('.x_axis')
+            .attr('transform', 'translate(0, ' + plotHeight + ')')
             .transition()
             .duration(COMMON.DURATION)
-            .attr('visibility', UTIL.getVisibility(_showXaxis))
+            .attr('visibility', 'visible')
             .call(_localXAxis);
 
-        _setAxisColor(xAxisGroup, _xAxisColor);
-
         if (isRotate) {
-            _local_svg.selectAll('.x .tick text')
+            _local_svg.selectAll('.x_axis .tick text')
                 .attr("transform", "rotate(-15)");
         }
         else {
-            _local_svg.selectAll('.x .tick text')
+            _local_svg.selectAll('.x_axis .tick text')
                 .attr("transform", "rotate(0)");
         }
 
-        yAxisGroup = plot.select('.y.axis')
+        yAxisGroup = plot.select('.y_axis')
             .transition()
             .duration(COMMON.DURATION)
-            .attr('visibility', UTIL.getVisibility(_showYaxis))
+            .attr('visibility', 'visible')
             .call(_localYAxis);
-
-        _setAxisColor(yAxisGroup, _yAxisColor);
-
 
         /* Update Axes Grid */
         _localXGrid.scale(x);
         _localYGrid.scale(y);
 
         plot.select('.x.grid')
+            .attr('transform', 'translate(0, ' + plotHeight + ')')
             .transition()
             .duration(COMMON.DURATION)
             .attr('visibility', function () {
@@ -1208,6 +1191,8 @@ function stackedverticalbar() {
                 return _showGrid ? 'visible' : 'hidden';
             })
             .call(_localYGrid);
+
+        UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
 
         UTIL.displayThreshold(threshold, data, keys);
 
@@ -1433,6 +1418,13 @@ function stackedverticalbar() {
             return _notification;
         }
         _notification = value;
+        return chart;
+    }
+    chart.data = function (value) {
+        if (!arguments.length) {
+            return _data;
+        }
+        _data = value;
         return chart;
     }
     return chart;

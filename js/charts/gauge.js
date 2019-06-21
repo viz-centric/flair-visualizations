@@ -24,7 +24,8 @@ function gauge() {
         targetTextColor,
         targetNumberFormat,
         _print,
-        _tooltip;
+        _tooltip,
+        _data;
 
     var _local_svg, tooltip;
 
@@ -128,194 +129,191 @@ function gauge() {
     }
 
     function chart(selection) {
-        _local_svg = selection;
 
-        selection.each(function (data) {
-            var div = d3.select(this).node().parentNode;
-            var svg = d3.select(this),
-                width = +svg.attr('width'),
-                height = +svg.attr('height');
+        _Local_data = _originalData = _data;
 
-            svg.selectAll('g').remove();
+        parentContainer = d3.select('#' + selection.id)
 
-            svg.attr('width', width)
-                .attr('height', height)
+        var svg = parentContainer.append('svg')
+            .attr('width', parentContainer.attr('width'))
+            .attr('height', parentContainer.attr('height'))
 
-            if (_tooltip) {
-                tooltip = d3.select(div).select('.custom_tooltip');
-            }
+        var width = +svg.attr('width'),
+            height = +svg.attr('height');
 
-            var radius;
-            var degree = 90;
-            if (gaugeType === 'radial') {
-                degree = 180;
-                radius = Math.min(width, height) / 2;
-            } else {
-                radius = Math.max(width, height) / 2;
-                radius = radius > Math.min(width, height) ? Math.min(width, height) : radius;
-            }
+        if (_tooltip) {
+            tooltip = parentContainer.select('.custom_tooltip');
+        }
 
-            ringInset = radius * 0.3,
-                ringWidth = radius * 0.2;
+        var radius;
+        var degree = 90;
+        if (gaugeType === 'radial') {
+            degree = 180;
+            radius = Math.min(width, height) / 2;
+        } else {
+            radius = Math.max(width, height) / 2;
+            radius = radius > Math.min(width, height) ? Math.min(width, height) : radius;
+        }
 
-            arc = d3.arc()
-                .innerRadius(radius - ringInset - ringWidth)
-                .outerRadius(radius - ringInset)
-                .startAngle(degToRad(-degree))
+        ringInset = radius * 0.3,
+            ringWidth = radius * 0.2;
 
-            _arc = d3.arc()
-                .innerRadius(radius - ringInset - ringWidth)
-                .outerRadius(radius - ringInset)
-                .startAngle(degToRad(-degree))
+        arc = d3.arc()
+            .innerRadius(radius - ringInset - ringWidth)
+            .outerRadius(radius - ringInset)
+            .startAngle(degToRad(-degree))
 
-            var container = svg.append("g")
-                .attr("transform", 'translate(' + COMMON.PADDING + ',' + COMMON.PADDING + ')')
+        _arc = d3.arc()
+            .innerRadius(radius - ringInset - ringWidth)
+            .outerRadius(radius - ringInset)
+            .startAngle(degToRad(-degree))
 
-            var legend = container
-                .attr('class', 'gauge-legend')
-                .selectAll('.item')
-                .data(measures)
-                .enter().append('g')
-                .attr('class', 'item')
-                .attr('id', function (d, i) {
-                    return 'legend' + i;
-                })
-                .attr('transform', function (d, i) {
-                    return 'translate(' + i * Math.floor(width / measures.length) + ', 0)';
-                })
-                .on('mouseover', function (d, i) {
-                    d3.select(this).attr('cursor', 'pointer')
-                    if (i == 0) {
-                        fillArc.style("fill", COMMON.HIGHLIGHTER)
-                    }
-                    else {
-                        targetArc.style("fill", COMMON.HIGHLIGHTER)
-                    }
-                })
-                .on('mousemove', function (d, i) {
-                    d3.select(this).attr('cursor', 'pointer')
-                })
-                .on('mouseout', function (d, i) {
-                    d3.select(this).attr('cursor', 'default')
-                    if (i == 0) {
-                        fillArc.style("fill", displayColor)
-                    }
-                    else {
-                        targetArc.style("fill", targetDisplayColor)
-                    }
-                })
+        var container = svg.append("g")
+            .attr("transform", 'translate(' + COMMON.PADDING + ',' + COMMON.PADDING + ')')
 
-            legend.append('rect')
-                .attr('x', 4)
-                .attr('width', 10)
-                .attr('height', 10)
-                .style('fill', function (d, i) {
-                    if (i == 0)
-                        return displayColor;
-                    else
-                        return targetDisplayColor;
-                })
-                .style('stroke', function (d, i) {
-                    if (i == 0)
-                        return displayColor;
-                    else
-                        return targetDisplayColor;
-                })
-                .style('stroke-width', 0);
+        var legend = container
+            .attr('class', 'gauge-legend')
+            .selectAll('.item')
+            .data(measures)
+            .enter().append('g')
+            .attr('class', 'item')
+            .attr('id', function (d, i) {
+                return 'legend' + i;
+            })
+            .attr('transform', function (d, i) {
+                return 'translate(' + i * Math.floor(width / measures.length) + ', 0)';
+            })
+            .on('mouseover', function (d, i) {
+                d3.select(this).attr('cursor', 'pointer')
+                if (i == 0) {
+                    fillArc.style("fill", COMMON.HIGHLIGHTER)
+                }
+                else {
+                    targetArc.style("fill", COMMON.HIGHLIGHTER)
+                }
+            })
+            .on('mousemove', function (d, i) {
+                d3.select(this).attr('cursor', 'pointer')
+            })
+            .on('mouseout', function (d, i) {
+                d3.select(this).attr('cursor', 'default')
+                if (i == 0) {
+                    fillArc.style("fill", displayColor)
+                }
+                else {
+                    targetArc.style("fill", targetDisplayColor)
+                }
+            })
 
-            legend.append('text')
-                .attr('x', 18)
-                .attr('y', 5)
-                .attr('dy', function (d) {
-                    return d3.select(this).style('font-size').replace('px', '') / 2.5;
-                })
-                .text(function (d, i) {
-                    return measures[i];
-                })
-                .text(function (d, i) {
-                    return UTIL.getTruncatedLabel(this, measures[i], Math.floor(width / measures
-                        .length), 5);
-                });
+        legend.append('rect')
+            .attr('x', 4)
+            .attr('width', 10)
+            .attr('height', 10)
+            .style('fill', function (d, i) {
+                if (i == 0)
+                    return displayColor;
+                else
+                    return targetDisplayColor;
+            })
+            .style('stroke', function (d, i) {
+                if (i == 0)
+                    return displayColor;
+                else
+                    return targetDisplayColor;
+            })
+            .style('stroke-width', 0);
 
-            var plot = container
-                .append("g")
-                .attr("transform", getTxCenter(width, height))
+        legend.append('text')
+            .attr('x', 18)
+            .attr('y', 5)
+            .attr('dy', function (d) {
+                return d3.select(this).style('font-size').replace('px', '') / 2.5;
+            })
+            .text(function (d, i) {
+                return measures[i];
+            })
+            .text(function (d, i) {
+                return UTIL.getTruncatedLabel(this, measures[i], Math.floor(width / measures
+                    .length), 5);
+            });
 
-            emptyArc = plot.append("path")
-                .datum({
-                    endAngle: degToRad(degree)
-                })
-                .style("fill", ' #efefef')
-                .attr("class", "gaugeBackground")
-                .attr("d", arc)
+        var plot = container
+            .append("g")
+            .attr("transform", getTxCenter(width, height))
 
-            fillArc = plot.append("path")
-                .datum({
-                    endAngle: degToRad(-degree)
-                })
-                .attr("class", "fillArc")
-                .style("fill", displayColor)
-                .style("stroke", displayColor)
-                .attr("d", arc);
+        emptyArc = plot.append("path")
+            .datum({
+                endAngle: degToRad(degree)
+            })
+            .style("fill", ' #efefef')
+            .attr("class", "gaugeBackground")
+            .attr("d", arc)
 
-            targetArc = plot.append("path")
-                .datum({
-                    endAngle: degToRad(-degree)
-                })
-                .attr("class", "targetArc")
-                .style("fill", targetDisplayColor)
-                .style("stroke", targetDisplayColor)
-                .attr("d", arc);
+        fillArc = plot.append("path")
+            .datum({
+                endAngle: degToRad(-degree)
+            })
+            .attr("class", "fillArc")
+            .style("fill", displayColor)
+            .style("stroke", displayColor)
+            .attr("d", arc);
 
-            _measure = plot.append("text")
-                .attr("transform", "translate(0," + -(-20 + ringInset / 4) + ")")
-                .attr("text-anchor", "middle")
-                .style('font-size', '12px')
-                .style('font-weight', fontWeight)
-                .style('font-style', fontStyle)
-                .style('visibility', showValues)
-                .style('fill', textColor)
-                .attr('dy', function () {
-                    if (gaugeType === 'radial') {
-                        return 0;
-                    } else {
-                        return -15;
-                    }
-                })
-                .text(function () {
-                    return displayName + " " + data[0][measures[0]];
-                })
-                .text(function () {
-                    return UTIL.getTruncatedLabel(this, displayName + " " + data[0][measures[0]], ringInset)
-                })
+        targetArc = plot.append("path")
+            .datum({
+                endAngle: degToRad(-degree)
+            })
+            .attr("class", "targetArc")
+            .style("fill", targetDisplayColor)
+            .style("stroke", targetDisplayColor)
+            .attr("d", arc);
 
-            // displayName + " " + data[0][measures[0]])
+        _measure = plot.append("text")
+            .attr("transform", "translate(0," + -(-20 + ringInset / 4) + ")")
+            .attr("text-anchor", "middle")
+            .style('font-size', '12px')
+            .style('font-weight', fontWeight)
+            .style('font-style', fontStyle)
+            .style('visibility', showValues)
+            .style('fill', textColor)
+            .attr('dy', function () {
+                if (gaugeType === 'radial') {
+                    return 0;
+                } else {
+                    return -15;
+                }
+            })
+            .text(function () {
+                return displayName + " " + data[0][measures[0]];
+            })
+            .text(function () {
+                return UTIL.getTruncatedLabel(this, displayName + " " + data[0][measures[0]], ringInset)
+            })
 
-            target = plot.append("text")
-                .attr("transform", "translate(0," + -(-20 + ringInset / 4 + 15) + ")")
-                .attr("text-anchor", "middle")
-                .style('font-size', '12px')
-                .style('font-weight', targetFontWeight)
-                .style('font-style', targetFontStyle)
-                .style('visibility', targetShowValues)
-                .style('fill', targetTextColor)
-                .attr('dy', function () {
-                    if (gaugeType === 'radial') {
-                        return 0;
-                    } else {
-                        return -15;
-                    }
-                })
-                .text(function () {
-                    return displayName + " " + data[0][measures[1]];
-                })
-                .text(function () {
-                    return UTIL.getTruncatedLabel(this, displayName + " " + data[0][measures[1]], ringInset)
-                })
+        // displayName + " " + data[0][measures[0]])
 
-            chart.update(data);
+        target = plot.append("text")
+            .attr("transform", "translate(0," + -(-20 + ringInset / 4 + 15) + ")")
+            .attr("text-anchor", "middle")
+            .style('font-size', '12px')
+            .style('font-weight', targetFontWeight)
+            .style('font-style', targetFontStyle)
+            .style('visibility', targetShowValues)
+            .style('fill', targetTextColor)
+            .attr('dy', function () {
+                if (gaugeType === 'radial') {
+                    return 0;
+                } else {
+                    return -15;
+                }
+            })
+            .text(function () {
+                return displayName + " " + data[0][measures[1]];
+            })
+            .text(function () {
+                return UTIL.getTruncatedLabel(this, displayName + " " + data[0][measures[1]], ringInset)
+            })
 
-        });
+        chart.update(_data);
 
     }
 
@@ -552,7 +550,13 @@ function gauge() {
         _tooltip = value;
         return chart;
     }
-
+    chart.data = function (value) {
+        if (!arguments.length) {
+            return _data;
+        }
+        _data = value;
+        return chart;
+    }
     return chart;
 }
 module.exports = gauge;

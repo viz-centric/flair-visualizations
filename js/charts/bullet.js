@@ -400,7 +400,7 @@ function bullet() {
                 .attr('class', 'plot')
 
             if (_tooltip) {
-               tooltip = d3.select(div).select('.custom_tooltip');
+              tooltip = parentContainer.select('.custom_tooltip');
             }
 
             data = data.map(function (item) {
@@ -566,11 +566,11 @@ function bullet() {
                 var _filter = UTIL.createFilterElement()
                 $(div).append(_filter);
 
-                d3.select(div).select('.filterData')
-                    .on('click', applyFilter());
+               parentContainer.select('.filterData')
+                .on('click', applyFilter());
 
-                d3.select(div).select('.removeFilter')
-                    .on('click', clearFilter(div));
+               parentContainer.select('.removeFilter')
+                .on('click', clearFilter(parentContainer));
 
                 _local_svg.select('g.lasso').remove()
 
@@ -600,7 +600,7 @@ function bullet() {
     chart.update = function (data) {
         data = UTIL.sortingData(data, dimension[0]);
         if (_tooltip) {
-           tooltip = d3.select(div).select('.custom_tooltip');
+          tooltip = parentContainer.select('.custom_tooltip');
         }
         _Local_data = data;
         filterData = [];
