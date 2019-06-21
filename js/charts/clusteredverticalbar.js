@@ -1,5 +1,4 @@
 var d3 = require('d3');
-var d3drag = require('d3-drag');
 var COMMON = require('../extras/common.js')();
 var UTIL = require('../extras/util.js')();
 var LEGEND = require('../extras/legend_barcharts.js')();
@@ -289,16 +288,6 @@ function clusteredverticalbar() {
     }
 
     function chart(selection) {
-        // selection.each(function (data) {
-        // data = [{ order_status: "PENDING", order_item_quantity: 19291, order_item_subtotal: 19291 },
-        // { order_status: "PAYMENT_REVIEW", order_item_quantity: 1797, order_item_subtotal: 1797 },
-        // { order_status: "PROCESSING", order_item_quantity: 20901, order_item_subtotal: 20901 },
-        // { order_status: "COMPLETE", order_item_quantity: 56740, order_item_subtotal: 56740 },
-        // { order_status: "ON_HOLD", order_item_quantity: 9373, order_item_subtotal: 9373 },
-        // { order_status: "CLOSED", order_item_quantity: 18668, order_item_subtotal: 18668 },
-        // { order_status: "PENDING_PAYMENT", order_item_quantity: 38031, order_item_subtotal: 38031 },
-        // { order_status: "SUSPECTED_FRAUD", order_item_quantity: 3878, order_item_subtotal: 3878 },
-        // { order_status: "CANCELED", order_item_quantity: 3519, order_item_subtotal: 3519 }]
 
         data = UTIL.sortingData(_data, _dimension[0])
         _Local_data = _originalData = data;
@@ -332,7 +321,6 @@ function clusteredverticalbar() {
 
         drawLegend.call(this);
         drawPlot.call(this, data);
-        // });
 
     }
 
@@ -528,7 +516,7 @@ function clusteredverticalbar() {
             .text(_displayName);
 
         if (isRotate) {
-            _local_svg.selectAll('.x .tick text')
+            _local_svg.selectAll('.x_axis .tick text')
                 .attr("transform", "rotate(-15)");
         }
 
@@ -810,10 +798,10 @@ function clusteredverticalbar() {
                 if ((d[d['measure']] === null) || (isNaN(d[d['measure']]))) {
                     return plotHeight;
                 } else if (d[d['measure']] > 0) {
-                    return y(d[d['measure']]);
+                    return y(d[d['measure']]) + _fontSize[i];
                 }
 
-                return y(0);
+                return y(0) + _fontSize[i];
             })
             .attr("x", function (d) {
                 return x1(d.measure) + (x1.bandwidth() / 2);
@@ -945,6 +933,7 @@ function clusteredverticalbar() {
             });
 
         data = UTIL.sortingData(data, _dimension[0])
+
         if (_tooltip) {
             tooltip = parentContainer.select('.custom_tooltip');
         }
@@ -1057,10 +1046,10 @@ function clusteredverticalbar() {
                 if ((d[d['measure']] === null) || (isNaN(d[d['measure']]))) {
                     return plotHeight;
                 } else if (d[d['measure']] > 0) {
-                    return y(d[d['measure']]);
+                    return y(d[d['measure']]) + _fontSize[i];
                 }
 
-                return y(0);
+                return y(0) + _fontSize[i];
             })
             .attr("x", function (d) {
                 return x1(d.measure) + (x1.bandwidth() / 2);
@@ -1128,24 +1117,23 @@ function clusteredverticalbar() {
             })
 
         xAxisGroup = plot.select('.x_axis')
+            .attr('transform', 'translate(0, ' + plotHeight + ')')
             .transition()
             .duration(COMMON.DURATION)
-            .attr('visibility', UTIL.getVisibility(_showXaxis))
+            .attr('visibility', 'visible')
             .call(_localXAxis);
 
         if (isRotate) {
-            _local_svg.selectAll('.x .tick text')
+            _local_svg.selectAll('.x_axis .tick text')
                 .attr("transform", "rotate(-15)");
         }
         else {
-            _local_svg.selectAll('.x .tick text')
+            _local_svg.selectAll('.x_axis .tick text')
                 .attr("transform", "rotate(0)");
         }
 
         yAxisGroup = plot.select('.y_axis')
-            .transition()
-            .duration(COMMON.DURATION)
-            .attr('visibility', UTIL.getVisibility(_showYaxis))
+            .attr('visibility', 'visible')
             .call(_localYAxis);
 
         UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
@@ -1154,6 +1142,7 @@ function clusteredverticalbar() {
         _localXGrid.ticks(_localXLabels.length);
 
         plot.select('.x.grid')
+            .attr('transform', 'translate(0, ' + plotHeight + ')')
             .transition()
             .duration(COMMON.DURATION)
             .attr('visibility', function () {

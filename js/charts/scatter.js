@@ -43,11 +43,12 @@ function scatter() {
         _print,
         broadcast,
         filterParameters,
-        _notification = false;
+        _notification = false,
+        _data;
 
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
-    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div, color;
+    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, parentContainer, color;
     var parentWidth, parentHeight, plotWidth, plotHeight, container;
     var _localXAxis,
         _localYAxis,
@@ -193,7 +194,7 @@ function scatter() {
                 if (broadcast.filterSelection.id) {
                     _filterDimension = broadcast.filterSelection.filter;
                 } else {
-                    broadcast.filterSelection.id = $(div).attr('id');
+                    broadcast.filterSelection.id = $(parentContainer).attr('id');
                 }
                 var dimension = _dimension[0];
 
@@ -277,28 +278,37 @@ function scatter() {
     }
 
     function chart(selection) {
-        _local_svg = selection;
-        selection.each(function (data) {
-            data = UTIL.sortingData(data, _dimension[0])
-            _Local_data = _originalData = data;
-            div = d3.select(this).node().parentNode;
+        data = UTIL.sortingData(_data, _dimension[0])
+        _Local_data = _originalData = data;
 
-            var svg = d3.select(this),
-                width = +svg.attr('width'),
-                height = +svg.attr('height');
+        parentContainer = d3.select('#' + selection.id)
 
-            parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
-            parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
-            plotWidth = parentWidth;
-            plotHeight = parentHeight;
+        var svg = parentContainer.append('svg')
+            .attr('width', parentContainer.attr('width'))
+            .attr('height', parentContainer.attr('height'))
 
-            container = svg.append('g')
-                .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
+        var width = +svg.attr('width'),
+            height = +svg.attr('height');
 
-            drawPlot.call(this, data);
-            drawLegend.call(this, data);
+        _local_svg = svg;
 
-        });
+        parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
+        parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
+
+        plotWidth = parentWidth;
+        plotHeight = parentHeight;
+
+        container = svg.append('g')
+            .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
+
+        svg.attr('width', width)
+            .attr('height', height)
+
+        parentContainer.append('div')
+            .attr('class', 'custom_tooltip');
+
+        drawPlot.call(this, data);
+        drawLegend.call(this, data);
 
     }
 
@@ -465,7 +475,7 @@ function scatter() {
             .call(_localYGrid);
 
         if (_tooltip) {
-            tooltip = d3.select(div).select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         var xAxisGroup,
@@ -485,7 +495,7 @@ function scatter() {
                 .tickPadding(10);
 
             xAxisGroup = plot.append('g')
-                .attr('class', 'x axis')
+                .attr('class', 'x_axis')
                 .attr('visibility', function () {
                     return 'visible';
                 })
@@ -505,7 +515,7 @@ function scatter() {
                 .text(_displayName);
 
             if (isRotate) {
-                _local_svg.selectAll('.x .tick text')
+                _local_svg.selectAll('.x_axis .tick text')
                     .attr("transform", "rotate(-15)");
             }
 
@@ -522,7 +532,7 @@ function scatter() {
                 });
 
             yAxisGroup = plot.append('g')
-                .attr('class', 'y axis')
+                .attr('class', 'y_axis')
                 .attr('visibility', function () {
                     return 'visible';
                 })
@@ -542,8 +552,6 @@ function scatter() {
                 .text(function () {
                     return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
                 });
-
-            _setAxisColor(yAxisGroup, _yAxisColor);
         }
 
         var dataCircle = plot.selectAll("circle")
@@ -578,34 +586,33 @@ function scatter() {
             // $(div).append(str);
 
             var _filter = UTIL.createFilterElement()
-            $(div).append(_filter);
+            $('#' + parentContainer.attr('id')).append(_filter);
 
             $(document).on('click', '_local_svg', function (e) {
                 if ($("#myonoffswitch").prop('checked') == false) {
                     var element = e.target
                     if (element.tagName == "_local_svg") {
-                        $('#Modal_' + $(div).attr('id') + ' .measure').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', false)
-                        $('#Modal_' + $(div).attr('id')).modal('toggle');
+                        $('#Modal_' + $(parentContainer).attr('id') + ' .measure').val('')
+                        $('#Modal_' + $(parentContainer).attr('id') + ' .threshold').val('')
+                        $('#Modal_' + $(parentContainer).attr('id') + ' .measure').attr('disabled', false)
+                        $('#Modal_' + $(parentContainer).attr('id')).modal('toggle');
                     }
                 }
             })
 
-            $(document).on('click', '#Modal_' + $(div).attr('id') + ' .ThresholdSubmit', function (e) {
-                var newValue = $('#Modal_' + $(div).attr('id') + ' .threshold').val();
+            $(document).on('click', '#Modal_' + $(parentContainer).attr('id') + ' .ThresholdSubmit', function (e) {
+                var newValue = $('#Modal_' + $(parentContainer).attr('id') + ' .threshold').val();
                 var obj = new Object()
-                obj.measure = $('#Modal_' + $(div).attr('id') + ' .measure').val()
+                obj.measure = $('#Modal_' + $(parentContainer).attr('id') + ' .measure').val()
                 obj.threshold = newValue;
                 threshold.push(obj);
-                $('#Modal_' + $(div).attr('id')).modal('toggle');
+                $('#Modal_' + $(parentContainer).attr('id')).modal('toggle');
             })
-            d3.select(div).select('.filterData')
+            parentContainer.select('.filterData')
                 .on('click', applyFilter());
 
-            d3.select(div).select('.removeFilter')
-                .on('click', clearFilter(div));
-
+            parentContainer.select('.removeFilter')
+                .on('click', clearFilter(parentContainer));
             _local_svg.select('g.lasso').remove()
             var lasso = d3Lasso.lasso()
                 .hoverSelect(true)
@@ -627,7 +634,7 @@ function scatter() {
                 .on('click', function (d) {
                     if (!_print) {
                         filter = false;
-                        var confirm = d3.select(div).select('.confirm')
+                        var confirm = d3.select(parentContainer).select('.confirm')
                             .style('visibility', 'visible');
                         var rect = d3.select(this);
                         if (rect.classed('selected')) {
@@ -655,7 +662,7 @@ function scatter() {
                         if (broadcast.filterSelection.id) {
                             _filterDimension = broadcast.filterSelection.filter;
                         } else {
-                            broadcast.filterSelection.id = $(div).attr('id');
+                            broadcast.filterSelection.id = $(parentContainer).attr('id');
                         }
                         var dimension = _dimension[0];
                         if (_filterDimension[dimension]) {
@@ -670,9 +677,9 @@ function scatter() {
                             _filterDimension[dimension] = [d[_dimension[0]]];
                         }
 
-                        var idWidget = broadcast.updateWidget[$(div).attr('id')];
+                        var idWidget = broadcast.updateWidget[$(parentContainer).attr('id')];
                         broadcast.updateWidget = {};
-                        broadcast.updateWidget[$(div).attr('id')] = idWidget;
+                        broadcast.updateWidget[$(parentContainer).attr('id')] = idWidget;
                         broadcast.filterSelection.filter = _filterDimension;
                         var _filterParameters = filterParameters.get();
                         _filterParameters[dimension] = _filterDimension[dimension];
@@ -752,9 +759,9 @@ function scatter() {
     chart.update = function (data) {
         data = UTIL.sortingData(data, _dimension[0]);
         if (_tooltip) {
-            tooltip = d3.select(div).select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
-        drawLegend.call(this, data)
+
         _Local_data = data,
             filterData = [];
         var plot = _local_svg.select('.plot')
@@ -779,14 +786,21 @@ function scatter() {
             .domain([minGDP, maxGDP])
             .range([5, 25]);
 
-        x.rangeRound([0, plotWidth])
-            .domain([0, d3.max(data, function (d) {
-                return parseInt(d[_measure[2]]);
-            })]).nice();
+        var maxx = d3.max(data, (d) => d[_measure[2]]);
+        var minx = d3.min(data, (d) => d[_measure[2]]);
 
-        y.domain([0, d3.max(data, function (d) {
-            return parseInt(d[_measure[0]]);
-        })]).nice();
+        x.rangeRound([0, plotWidth])
+            .domain([minx, maxx]);
+
+        var maxy = d3.max(data, (d) => d[_measure[0]]);
+        var miny = d3.min(data, (d) => d[_measure[0]]);
+
+        y.rangeRound([plotHeight - 40, 0])
+            .domain([miny, maxy]);
+
+        var _localXLabels = data.map(function (d) {
+            return d[_dimension[0]];
+        });
 
         var circle = plot.selectAll('circle')
             .data(data)
@@ -836,7 +850,7 @@ function scatter() {
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
             .on('click', function (d) {
                 filter = false;
-                var confirm = d3.select(div).select('.confirm')
+                var confirm = d3.select(parentContainer).select('.confirm')
                     .style('visibility', 'visible');
                 var rect = d3.select(this);
                 if (rect.classed('selected')) {
@@ -864,7 +878,7 @@ function scatter() {
                 if (broadcast.filterSelection.id) {
                     _filterDimension = broadcast.filterSelection.filter;
                 } else {
-                    broadcast.filterSelection.id = $(div).attr('id');
+                    broadcast.filterSelection.id = $(parentContainer).attr('id');
                 }
                 var dimension = _dimension[0];
                 if (_filterDimension[dimension]) {
@@ -879,16 +893,14 @@ function scatter() {
                     _filterDimension[dimension] = [d[_dimension[0]]];
                 }
 
-                var idWidget = broadcast.updateWidget[$(div).attr('id')];
+                var idWidget = broadcast.updateWidget[$(parentContainer).attr('id')];
                 broadcast.updateWidget = {};
-                broadcast.updateWidget[$(div).attr('id')] = idWidget;
+                broadcast.updateWidget[$(parentContainer).attr('id')] = idWidget;
                 broadcast.filterSelection.filter = _filterDimension;
                 var _filterParameters = filterParameters.get();
                 _filterParameters[dimension] = _filterDimension[dimension];
                 filterParameters.save(_filterParameters);
             })
-
-
 
         var _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
@@ -907,7 +919,7 @@ function scatter() {
         })
 
         if (_showXaxis) {
-            xAxisGroup = plot.select('.x.axis')
+            xAxisGroup = plot.select('.x_axis')
                 .transition()
                 .duration(COMMON.DURATION)
                 .call(_localXAxis);
@@ -915,22 +927,22 @@ function scatter() {
             _setAxisColor(xAxisGroup, _xAxisColor);
 
             if (isRotate) {
-                _local_svg.selectAll('.x .tick text')
+                _local_svg.selectAll('.x_axis .tick text')
                     .attr("transform", "rotate(-15)");
             }
             else {
-                _local_svg.selectAll('.x .tick text')
+                _local_svg.selectAll('.x_axis .tick text')
                     .attr("transform", "rotate(0)");
             }
         }
 
         if (_showYaxis) {
-            yAxisGroup = plot.select('.y.axis')
+            yAxisGroup = plot.select('.y_axis')
                 .transition()
                 .duration(COMMON.DURATION)
                 .call(_localYAxis);
 
-            _setAxisColor(yAxisGroup, _yAxisColor);
+
         }
 
         /* Update Axes Grid */
@@ -966,6 +978,8 @@ function scatter() {
             .on('end', onLassoEnd(lasso, _local_svg));
 
         _local_svg.call(lasso);
+
+        drawLegend.call(this, data)
 
     }
     chart.config = function (value) {
@@ -1205,6 +1219,13 @@ function scatter() {
             return _notification;
         }
         _notification = value;
+        return chart;
+    }
+    chart.data = function (value) {
+        if (!arguments.length) {
+            return _data;
+        }
+        _data = value;
         return chart;
     }
     return chart;

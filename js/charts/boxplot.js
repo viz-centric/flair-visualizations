@@ -286,7 +286,7 @@ function boxplot() {
             var barWidth = Math.floor(gWidth / data.length / 2);
             var me = this;
             if (_tooltip) {
-               tooltip = d3.select(div).select('.custom_tooltip');
+              tooltip = parentContainer.select('.custom_tooltip');
             }
 
             x = d3
@@ -606,11 +606,11 @@ function boxplot() {
                         filterParameters.save(_filterParameters);
                     })
 
-                d3.select(div).select('.filterData')
-                    .on('click', applyFilter());
+               parentContainer.select('.filterData')
+                .on('click', applyFilter());
 
-                d3.select(div).select('.removeFilter')
-                    .on('click', clearFilter(div));
+               parentContainer.select('.removeFilter')
+                .on('click', clearFilter(parentContainer));
 
                 var lasso = d3Lasso
                     .lasso()
@@ -640,7 +640,7 @@ function boxplot() {
     chart.update = function (data) {
         data = UTIL.sortingData(data, _dimension[0]);
         if (_tooltip) {
-           tooltip = d3.select(div).select('.custom_tooltip');
+          tooltip = parentContainer.select('.custom_tooltip');
         }
         _Local_data = data,
             filterData = [];

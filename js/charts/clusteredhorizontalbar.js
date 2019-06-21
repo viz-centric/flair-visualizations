@@ -42,7 +42,8 @@ function clusteredhorizontalbar() {
         broadcast,
         filterParameters,
         isAnimationDisable = false,
-        _notification = false;
+        _notification = false,
+        _data;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
 
@@ -65,7 +66,7 @@ function clusteredhorizontalbar() {
         .domain([22, 34])
         .range([2, 4]);
 
-    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div;
+    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, parentContainer;
 
     var threshold = [];
     var filter = false, filterData = [];
@@ -105,7 +106,7 @@ function clusteredhorizontalbar() {
             + "<td>" + datum[chart.dimension()] + "</td>"
             + "</tr><tr>"
             + "<th>" + datum["measure"] + ": </th>"
-            + "<td>" + UTIL.getFormattedValue(datum[datum["measure"]], UTIL.getValueNumberFormat(_measure.indexOf(datum["measure"]), _numberFormat,datum[datum["measure"]])) + " </td>"
+            + "<td>" + UTIL.getFormattedValue(datum[datum["measure"]], UTIL.getValueNumberFormat(_measure.indexOf(datum["measure"]), _numberFormat, datum[datum["measure"]])) + " </td>"
             + "</tr></table>";
 
         return output;
@@ -190,7 +191,7 @@ function clusteredhorizontalbar() {
                 if (broadcast.filterSelection.id) {
                     _filterDimension = broadcast.filterSelection.filter;
                 } else {
-                    broadcast.filterSelection.id = $(div).attr('id');
+                    broadcast.filterSelection.id = $(parentContainer).attr('id');
                 }
                 var dimension = _dimension[0];
 
@@ -285,18 +286,7 @@ function clusteredhorizontalbar() {
             }
         }
     }
-    var _setAxisColor = function (axis, color) {
-        var path = axis.select('path'),
-            ticks = axis.selectAll('.tick');
-
-        path.style('stroke', color);
-
-        ticks.select('line')
-            .style('stroke', color);
-
-        ticks.select('text')
-            .style('fill', color);
-    }
+   
     var drawLegend = function () {
         var legendWidth = 0,
             legendHeight = 0;
@@ -359,44 +349,44 @@ function clusteredhorizontalbar() {
         }
     }
     function chart(selection) {
-        _local_svg = selection;
+        data = UTIL.sortingData(_data, _dimension[0])
+        _Local_data = _originalData = data;
+        parentContainer = d3.select('#' + selection.id)
+        var svg = parentContainer.append('svg')
+            .attr('width', parentContainer.attr('width'))
+            .attr('height', parentContainer.attr('height'))
 
-        selection.each(function (data) {
+        var width = +svg.attr('width'),
+            height = +svg.attr('height');
 
-            data = UTIL.sortingData(data, _dimension[0])
-            _Local_data = _originalData = data;
+        _local_svg = svg;
 
-            div = d3.select(this).node().parentNode;
+        parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
+        parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
 
-            var svg = d3.select(this),
-                width = +svg.attr('width'),
-                height = +svg.attr('height');
+        container = svg.append('g')
+            .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
-            parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
-            parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
+        svg.attr('width', width)
+            .attr('height', height)
 
-            svg.attr('width', width)
-                .attr('height', height)
+        parentContainer.append('div')
+            .attr('class', 'sort_selection');
 
-            d3.select(div).append('div')
-                .attr('class', 'sort_selection');
+        parentContainer.append('div')
+            .attr('class', 'arrow-down');
 
-            d3.select(div).append('div')
-                .attr('class', 'arrow-down');
+        parentContainer.append('div')
+            .attr('class', 'custom_tooltip');
 
-            container = svg.append('g')
-                .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
-
-            drawLegend.call(this);
-            drawPlot.call(this, data);
-        });
-
+        drawLegend.call(this);
+        drawPlot.call(this, data);
     }
 
     var drawPlot = function (data) {
         var me = this;
         if (_tooltip) {
-            tooltip = d3.select(div).select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         var plot = container.append('g')
             .attr('class', 'clusteredhorizontalbar-plot')
@@ -438,7 +428,7 @@ function clusteredhorizontalbar() {
         _localYGrid.scale(y);
 
         plot.append('g')
-            .attr('class', 'x grid')
+             .attr('class', 'x grid')
             .attr('visibility', function () {
                 return _showGrid ? 'visible' : 'hidden';
             })
@@ -493,12 +483,9 @@ function clusteredhorizontalbar() {
         // .tickPadding(10);
 
         xAxisGroup = plot.append('g')
-            .attr('class', 'x axis')
-            .attr('visibility', function () {
-                return _showXaxis;
-            })
+            .attr('class', 'x_axis')
             .attr('transform', 'translate(0, ' + plotHeight + ')')
-            .attr('visibility', UTIL.getVisibility(_showXaxis))
+            .attr('visibility', 'visible')
             .call(_localXAxis);
 
         xAxisGroup.append('g')
@@ -513,8 +500,6 @@ function clusteredhorizontalbar() {
             .attr('visibility', UTIL.getVisibility(_showXaxisLabel))
             .text(_displayName);
 
-        _setAxisColor(xAxisGroup, _xAxisColor);
-
         _localYAxis = d3.axisLeft(x0)
             .tickSize(0)
             .tickFormat(function (d) {
@@ -526,9 +511,8 @@ function clusteredhorizontalbar() {
             .tickPadding(8)
 
         yAxisGroup = plot.append('g')
-            .attr('class', 'y axis')
-            .attr('visibility', _showYaxis)
-            .attr('visibility', UTIL.getVisibility(_showYaxis))
+            .attr('class', 'y_axis')
+            .attr('visibility', 'visible')
             .call(_localYAxis);
 
         yAxisGroup.append('g')
@@ -546,19 +530,21 @@ function clusteredhorizontalbar() {
                 return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
             });
 
-        _setAxisColor(yAxisGroup, _yAxisColor);
+        UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
 
         if (!_print) {
 
-            var confirm = $(me).parent().find('div.confirm')
+            var confirm = $(_local_svg).parent().find('div.confirm')
                 .css('visibility', 'hidden');
+
 
             //remove Threshold modal popup 
             // var str = UTIL.createAlert($(div).attr('id'), _measure);
             // $(div).append(str);
             $(me).parent().find('div.confirm').remove()
+
             var _filter = UTIL.createFilterElement()
-            $(div).append(_filter);
+            $('#' + parentContainer.attr('id')).append(_filter);
 
             //comment for now working on it
 
@@ -607,13 +593,13 @@ function clusteredhorizontalbar() {
                 }
                 );
 
-            d3.select(div).select('.filterData')
+            parentContainer.select('.filterData')
                 .on('click', applyFilter());
 
-            d3.select(div).select('.removeFilter')
-                .on('click', clearFilter(div));
+            parentContainer.select('.removeFilter')
+                .on('click', clearFilter(parentContainer));
 
-            _local_svg.select('g.lasso').remove()
+            _local_svg.select('g.lasso').remove();
 
             var lasso = d3Lasso.lasso()
                 .hoverSelect(true)
@@ -723,14 +709,14 @@ function clusteredhorizontalbar() {
                 .on('click', function (d) {
                     if (!_print) {
                         if ($("#myonoffswitch").prop('checked') == false) {
-                            $('#Modal_' + $(div).attr('id') + ' .measure').val(d.measure);
-                            $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
-                            $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
-                            $('#Modal_' + $(div).attr('id')).modal('toggle');
+                            $('#Modal_' + $(parentContainer).attr('id') + ' .measure').val(d.measure);
+                            $('#Modal_' + $(parentContainer).attr('id') + ' .threshold').val('');
+                            $('#Modal_' + $(parentContainer).attr('id') + ' .measure').attr('disabled', true);;
+                            $('#Modal_' + $(parentContainer).attr('id')).modal('toggle');
                         }
                         else {
                             filter = false;
-                            var confirm = d3.select(div).select('.confirm')
+                            var confirm = d3.select(parentContainer).select('.confirm')
                                 .style('visibility', 'visible');
                             var _filter = _Local_data.filter(function (d1) {
                                 return d[_dimension[0]] === d1[_dimension[0]]
@@ -758,7 +744,7 @@ function clusteredhorizontalbar() {
                             if (broadcast.filterSelection.id) {
                                 _filterDimension = broadcast.filterSelection.filter;
                             } else {
-                                broadcast.filterSelection.id = $(div).attr('id');
+                                broadcast.filterSelection.id = $(parentContainer).attr('id');
                             }
                             var dimension = _dimension[0];
                             if (_filterDimension[dimension]) {
@@ -769,9 +755,9 @@ function clusteredhorizontalbar() {
                                 _filterDimension[dimension] = [d[dimension]];
                             }
 
-                            var idWidget = broadcast.updateWidget[$(div).attr('id')];
+                            var idWidget = broadcast.updateWidget[$(parentContainer).attr('id')];
                             broadcast.updateWidget = {};
-                            broadcast.updateWidget[$(div).attr('id')] = idWidget;
+                            broadcast.updateWidget[$(parentContainer).attr('id')] = idWidget;
                             broadcast.filterSelection.filter = _filterDimension;
                             var _filterParameters = filterParameters.get();
                             _filterParameters[dimension] = _filterDimension[dimension];
@@ -783,7 +769,7 @@ function clusteredhorizontalbar() {
         }
         element.append('text')
             .text(function (d, i) {
-                return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat,d[d.measure]));
+                return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat, d[d.measure]));
             })
             .attr('x', function (d, i) {
                 if ((d[d['measure']] === null) || (isNaN(d[d['measure']]))) {
@@ -929,7 +915,7 @@ function clusteredhorizontalbar() {
 
         data = UTIL.sortingData(data, _dimension[0]);
         if (_tooltip) {
-            tooltip = d3.select(div).select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         var DURATION = COMMON.DURATION;
         var svg = _local_svg;
@@ -941,11 +927,18 @@ function clusteredhorizontalbar() {
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
-        x0.domain(data.map(function (d) { return d[_dimension[0]]; }));
-        x1.domain(keys).rangeRound([0, x0.bandwidth()]);
+        x0.rangeRound([plotHeight, 0])
+            .paddingInner(0.1)
+            .padding([0.1])
+            .domain(data.map(function (d) { return d[_dimension[0]]; }));
+
+        x1.padding(0.2)
+            .domain(keys).rangeRound([0, x0.bandwidth()]);
+
         var range = UTIL.getMinMax(data, keys);
 
-        y.domain([range[0], range[1]]);
+        y.rangeRound([0, plotWidth])
+            .domain([range[0], range[1]]);
 
         var cluster = plot.selectAll("g.cluster")
             .data(data);
@@ -1019,7 +1012,7 @@ function clusteredhorizontalbar() {
 
         clusteredhorizontalbar.select('text')
             .text(function (d, i) {
-                return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat,d[d.measure]));
+                return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat, d[d.measure]));
             })
             .attr('x', function (d, i) {
                 if ((d[d['measure']] === null) || (isNaN(d[d['measure']]))) {
@@ -1092,6 +1085,7 @@ function clusteredhorizontalbar() {
 
         plot.select('.y.grid')
             .transition()
+            .attr('transform', 'translate(0, ' + plotHeight + ')')
             .duration(COMMON.DURATION)
             .attr('visibility', function () {
                 return _showGrid ? 'visible' : 'hidden';
@@ -1101,21 +1095,20 @@ function clusteredhorizontalbar() {
         var xAxisGroup,
             yAxisGroup;
 
-        xAxisGroup = plot.select('.x.axis')
+        xAxisGroup = plot.select('.x_axis')
             .transition()
+            .attr('transform', 'translate(0, ' + plotHeight + ')')
             .duration(COMMON.DURATION)
-            .attr('visibility', UTIL.getVisibility(_showXaxis))
+           .attr('visibility', 'visible')
             .call(_localXAxis);
 
-        _setAxisColor(xAxisGroup, _xAxisColor);
-
-        yAxisGroup = plot.select('.y.axis')
+        yAxisGroup = plot.select('.y_axis')
             .transition()
             .duration(COMMON.DURATION)
-            .attr('visibility', UTIL.getVisibility(_showYaxis))
+            .attr('visibility', 'visible')
             .call(_localYAxis);
 
-        _setAxisColor(yAxisGroup, _yAxisColor);
+        UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
 
         UTIL.displayThreshold(threshold, data, keys);
 
@@ -1342,6 +1335,13 @@ function clusteredhorizontalbar() {
             return _notification;
         }
         _notification = value;
+        return chart;
+    }
+    chart.data = function (value) {
+        if (!arguments.length) {
+            return _data;
+        }
+        _data = value;
         return chart;
     }
     return chart;

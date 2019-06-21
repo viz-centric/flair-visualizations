@@ -19,6 +19,9 @@ var stackedhorizontalbar = require('./charts/stackedhorizontalbar.js');
 var stackedverticalbar = require('./charts/stackedverticalbar.js');
 var table = require('./charts/table.js');
 var treemap = require('./charts/treemap.js');
+var wordcloud = require('./charts/wordcloud.js');
+
+
 // Load the required CSS files
 //require('../styles/stylesheets/screen.css');
 
@@ -42,5 +45,6 @@ module.exports = {
 	stackedhorizontalbar: stackedhorizontalbar,
 	stackedverticalbar: stackedverticalbar,
 	table: table,
-	treemap: treemap
+	treemap: treemap,
+	wordcloud: wordcloud
 };

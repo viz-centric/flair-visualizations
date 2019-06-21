@@ -642,7 +642,7 @@ function treemap() {
                 .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
             if (_tooltip) {
-                tooltip = d3.select(div).select('.custom_tooltip');
+               tooltip = parentContainer.select('.custom_tooltip');
             }
 
             treemap = d3.treemap()
@@ -705,11 +705,11 @@ function treemap() {
                 var _filter = UTIL.createFilterElement()
                 $(div).append(_filter);
 
-                d3.select(div).select('.filterData')
-                    .on('click', applyFilter());
+               parentContainer.select('.filterData')
+                .on('click', applyFilter());
 
-                d3.select(div).select('.removeFilter')
-                    .on('click', clearFilter(div));
+               parentContainer.select('.removeFilter')
+                .on('click', clearFilter(parentContainer));
 
                 _local_svg.select('g.lasso').remove();
                 var lasso = d3Lasso.lasso()

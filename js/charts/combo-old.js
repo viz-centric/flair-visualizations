@@ -78,25 +78,12 @@ function combo() {
         this.tooltip(config.tooltip);
     }
 
-    var _setAxisColor = function (axis, color) {
-        var path = axis.select('path'),
-            ticks = axis.selectAll('.tick');
-
-        path.style('stroke', color);
-
-        ticks.select('line')
-            .style('stroke', color);
-
-        ticks.select('text')
-            .style('fill', color);
-    }
-
     /* Builds the html data for the tooltip
-     *
-     * @param {object} datum Datum forming the bar
-     * @param {function} chart Clustered Vertical Bar chart function
-     * @return {string} String encoded HTML data
-     */
+  *
+  * @param {object} datum Datum forming the bar
+  * @param {function} chart Clustered Vertical Bar chart function
+  * @return {string} String encoded HTML data
+  */
     var getPointType = function (index) {
         var symbol = null;
 
@@ -896,7 +883,7 @@ function combo() {
                 return _measureDisplayName.map(function (p) { return p; }).join(', ');
             });
 
-     //   UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis, _showYaxis, _showXaxis);
+        //   UTIL.setAxisColor(_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis, _showYaxis, _showXaxis);
         _local_svg.select('g.sort').remove();
         UTIL.sortingView(container, parentHeight, parentWidth + (_showYaxis == true ? margin.left : 0), legendBreakCount, axisLabelSpace, offsetX);
 
@@ -905,10 +892,10 @@ function combo() {
                 var order = d3.select(this).attr('class')
                 switch (order) {
                     case 'ascending':
-                        UTIL.toggleSortSelection( 'ascending', drawPlot, _local_svg, keys, _Local_data);
+                        UTIL.toggleSortSelection('ascending', drawPlot, _local_svg, keys, _Local_data);
                         break;
                     case 'descending':
-                        UTIL.toggleSortSelection( 'descending', drawPlot, _local_svg, keys, _Local_data);
+                        UTIL.toggleSortSelection('descending', drawPlot, _local_svg, keys, _Local_data);
                         break;
                     case 'reset': {
                         _local_svg.select('.plot').remove()

@@ -343,7 +343,7 @@ function sankey() {
             var svg = d3.select(this);
 
             if (_tooltip) {
-                tooltip = d3.select(div).select('.custom_tooltip');
+               tooltip = parentContainer.select('.custom_tooltip');
             }
             var me = this;
             svg.selectAll('g').remove();
@@ -604,11 +604,11 @@ function sankey() {
                         }
                     })
 
-                d3.select(div).select('.filterData')
-                    .on('click', applyFilter());
+               parentContainer.select('.filterData')
+                .on('click', applyFilter());
 
-                d3.select(div).select('.removeFilter')
-                    .on('click', clearFilter(div));
+               parentContainer.select('.removeFilter')
+                .on('click', clearFilter(parentContainer));
 
                 _local_svg.select('g.lasso').remove()
 

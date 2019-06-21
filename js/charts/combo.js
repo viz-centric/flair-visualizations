@@ -45,7 +45,8 @@ function combo() {
         broadcast,
         filterParameters,
         isAnimationDisable = false,
-        _notification = false;
+        _notification = false,
+        _data;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
     var x0 = d3.scaleBand(), x1 = d3.scaleBand(), _xDimensionGrid = d3.scaleLinear(), y = d3.scaleLinear();
@@ -68,7 +69,7 @@ function combo() {
         left: 45
     };
 
-    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div, legendBreakCount = 1;
+    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, parentContainer, legendBreakCount = 1;
 
     var filter = false, filterData = [];
     var threshold = [];
@@ -262,7 +263,7 @@ function combo() {
                 if (broadcast.filterSelection.id) {
                     _filterDimension = broadcast.filterSelection.filter;
                 } else {
-                    broadcast.filterSelection.id = $(div).attr('id');
+                    broadcast.filterSelection.id = $(parentContainer).attr('id');
                 }
                 var dimension = _dimension[0];
 
@@ -348,18 +349,6 @@ function combo() {
             }
         }
     }
-    var _setAxisColor = function (axis, color) {
-        var path = axis.select('path'),
-            ticks = axis.selectAll('.tick');
-
-        path.style('stroke', color);
-
-        ticks.select('line')
-            .style('stroke', color);
-
-        ticks.select('text')
-            .style('fill', color);
-    }
 
     var drawLegend = function () {
         var legendWidth = 0,
@@ -424,41 +413,44 @@ function combo() {
     }
 
     function chart(selection) {
-        _local_svg = selection;
 
-        selection.each(function (data) {
-            data = UTIL.sortingData(data, _dimension[0])
+        data = UTIL.sortingData(_data, _dimension[0])
+        _Local_data = _originalData = data;
+        parentContainer = d3.select('#' + selection.id)
+        var svg = parentContainer.append('svg')
+            .attr('width', parentContainer.attr('width'))
+            .attr('height', parentContainer.attr('height'))
 
-            _Local_data = _originalData = data;
-            div = d3.select(this).node().parentNode;
+        var width = +svg.attr('width'),
+            height = +svg.attr('height');
 
-            var svg = d3.select(this),
-                width = +svg.attr('width'),
-                height = +svg.attr('height');
+        _local_svg = svg;
 
-            parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
-            parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
+        parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
+        parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
 
-            svg.attr('width', width)
-                .attr('height', height)
+        container = svg.append('g')
+            .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
-            d3.select(div).append('div')
-                .attr('class', 'sort_selection');
+        svg.attr('width', width)
+            .attr('height', height)
 
-            d3.select(div).append('div')
-                .attr('class', 'arrow-down');
+        parentContainer.append('div')
+            .attr('class', 'sort_selection');
 
-            container = svg.append('g')
-                .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
+        parentContainer.append('div')
+            .attr('class', 'arrow-down');
 
-            drawLegend.call(this);
-            drawPlot.call(this, data)
-        });
+        parentContainer.append('div')
+            .attr('class', 'custom_tooltip');
+
+        drawLegend.call(this);
+        drawPlot.call(this, data);
     }
     var drawPlot = function (data) {
         var me = this;
         if (_tooltip) {
-            tooltip = d3.select(div).select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
@@ -738,8 +730,8 @@ function combo() {
             .tickPadding(10);
 
         xAxisGroup = plot.append('g')
-            .attr('class', 'x axis')
-            .attr('visibility', UTIL.getVisibility(_showXaxis))
+            .attr('class', 'x_axis')
+            .attr('visibility', 'visible')
             .attr('transform', 'translate(0, ' + plotHeight + ')')
             .call(_localXAxis);
 
@@ -756,12 +748,9 @@ function combo() {
             .text(_displayName);
 
         if (isRotate) {
-            _local_svg.selectAll('.x .tick text')
+            _local_svg.selectAll('.x_axis .tick text')
                 .attr("transform", "rotate(-15)");
         }
-
-        _setAxisColor(xAxisGroup, _xAxisColor);
-
 
         _localYAxis = d3.axisLeft(y)
             .tickSize(0)
@@ -771,8 +760,8 @@ function combo() {
             });
 
         yAxisGroup = plot.append('g')
-            .attr('class', 'y axis')
-            .attr('visibility', UTIL.getVisibility(_showYaxis))
+            .attr('class', 'y_axis')
+            .attr('visibility', 'visible')
             .call(_localYAxis);
 
         yAxisGroup.append('g')
@@ -790,7 +779,7 @@ function combo() {
                 return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
             });
 
-        _setAxisColor(yAxisGroup, _yAxisColor);
+        UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
 
         if (!_print) {
             //remove Threshold modal popup 
@@ -798,27 +787,27 @@ function combo() {
             // $(div).append(str);
 
             var _filter = UTIL.createFilterElement()
-            $(div).append(_filter);
+            $('#' + parentContainer.attr('id')).append(_filter);
 
             $(document).on('click', 'svg', function (e) {
                 if ($("#myonoffswitch").prop('checked') == false) {
                     var element = e.target
                     if (element.tagName == "svg") {
-                        $('#Modal_' + $(div).attr('id') + ' .measure').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', false)
-                        $('#Modal_' + $(div).attr('id')).modal('toggle');
+                        $('#Modal_' + $(parentContainer).attr('id') + ' .measure').val('')
+                        $('#Modal_' + $(parentContainer).attr('id') + ' .threshold').val('')
+                        $('#Modal_' + $(parentContainer).attr('id') + ' .measure').attr('disabled', false)
+                        $('#Modal_' + $(parentContainer).attr('id')).modal('toggle');
                     }
                 }
             });
 
-            $(document).on('click', '#Modal_' + $(div).attr('id') + ' .ThresholdSubmit', function (e) {
-                var newValue = $('#Modal_' + $(div).attr('id') + ' .threshold').val();
+            $(document).on('click', '#Modal_' + $(parentContainer).attr('id') + ' .ThresholdSubmit', function (e) {
+                var newValue = $('#Modal_' + $(parentContainer).attr('id') + ' .threshold').val();
                 var obj = new Object()
-                obj.measure = $('#Modal_' + $(div).attr('id') + ' .measure').val()
+                obj.measure = $('#Modal_' + $(parentContainer).attr('id') + ' .measure').val()
                 obj.threshold = newValue;
                 threshold.push(obj);
-                $('#Modal_' + $(div).attr('id')).modal('toggle');
+                $('#Modal_' + $(parentContainer).attr('id')).modal('toggle');
             });
 
             _local_svg.select('g.sort').remove();
@@ -843,12 +832,11 @@ function combo() {
                     }
                 });
 
-            d3.select(div).select('.filterData')
+            parentContainer.select('.filterData')
                 .on('click', applyFilter());
 
-            d3.select(div).select('.removeFilter')
-                .on('click', clearFilter(div));
-
+            parentContainer.select('.removeFilter')
+                .on('click', clearFilter(parentContainer));
             _local_svg.select('g.lasso').remove()
             var lasso = d3Lasso.lasso()
                 .hoverSelect(true)
@@ -982,14 +970,14 @@ function combo() {
                 .on('click', function (d) {
                     if (!_print) {
                         if ($("#myonoffswitch").prop('checked') == false) {
-                            $('#Modal_' + $(div).attr('id') + ' .measure').val(d.measure);
-                            $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
-                            $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
-                            $('#Modal_' + $(div).attr('id')).modal('toggle');
+                            $('#Modal_' + $(parentContainer).attr('id') + ' .measure').val(d.measure);
+                            $('#Modal_' + $(parentContainer).attr('id') + ' .threshold').val('');
+                            $('#Modal_' + $(parentContainer).attr('id') + ' .measure').attr('disabled', true);;
+                            $('#Modal_' + $(parentContainer).attr('id')).modal('toggle');
                         }
                         else {
                             filter = false;
-                            var confirm = d3.select(div).select('.confirm')
+                            var confirm = d3.select(parentContainer).select('.confirm')
                                 .style('visibility', 'visible');
                             var _filter = _Local_data.filter(function (d1) {
                                 return d.data[_dimension[0]] === d1[_dimension[0]]
@@ -1018,7 +1006,7 @@ function combo() {
                             if (broadcast.filterSelection.id) {
                                 _filterDimension = broadcast.filterSelection.filter;
                             } else {
-                                broadcast.filterSelection.id = $(div).attr('id');
+                                broadcast.filterSelection.id = $(parentContainer).attr('id');
                             }
                             var dimension = _dimension[0];
                             if (_filterDimension[dimension]) {
@@ -1029,9 +1017,9 @@ function combo() {
                                 _filterDimension[dimension] = [d[_dimension[0]]];
                             }
 
-                            var idWidget = broadcast.updateWidget[$(div).attr('id')];
+                            var idWidget = broadcast.updateWidget[$(parentContainer).attr('id')];
                             broadcast.updateWidget = {};
-                            broadcast.updateWidget[$(div).attr('id')] = idWidget;
+                            broadcast.updateWidget[$(parentContainer).attr('id')] = idWidget;
                             broadcast.filterSelection.filter = _filterDimension;
                             var _filterParameters = filterParameters.get();
                             _filterParameters[dimension] = _filterDimension[dimension];
@@ -1142,7 +1130,7 @@ function combo() {
 
         data = UTIL.sortingData(data, _dimension[0]);
         if (_tooltip) {
-            tooltip = d3.select(div).select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         _Local_data = data;
         svg = _local_svg;
@@ -1166,8 +1154,12 @@ function combo() {
         });
 
         x0.domain(xLabels)
+            .rangeRound([0, plotWidth])
+            .padding([0.2]);
+
         x1.domain(measuresBar)
             .rangeRound([0, x0.bandwidth()])
+            .padding([0.2]);
 
         var range = UTIL.getMinMax(data, keys);
 
@@ -1425,35 +1417,35 @@ function combo() {
                 return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
             })
 
-        xAxisGroup = plot.select('.x.axis')
+        xAxisGroup = plot.select('.x_axis')
+            .attr('transform', 'translate(0, ' + plotHeight + ')')
             .transition()
             .duration(COMMON.DURATION)
-            .attr('visibility', UTIL.getVisibility(_showXaxis))
+            .attr('visibility', 'visible')
             .call(_localXAxis);
 
-        _setAxisColor(xAxisGroup, _xAxisColor);
-
         if (isRotate) {
-            _local_svg.selectAll('.x .tick text')
+            _local_svg.selectAll('.x_axis .tick text')
                 .attr("transform", "rotate(-15)");
         }
         else {
-            _local_svg.selectAll('.x .tick text')
+            _local_svg.selectAll('.x_axis .tick text')
                 .attr("transform", "rotate(0)");
         }
 
-        yAxisGroup = plot.select('.y.axis')
+        yAxisGroup = plot.select('.y_axis')
             .transition()
             .duration(COMMON.DURATION)
-            .attr('visibility', UTIL.getVisibility(_showYaxis))
+            .attr('visibility', 'visible')
             .call(_localYAxis);
 
-        _setAxisColor(yAxisGroup, _yAxisColor);
+        UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
 
         /* Update Axes Grid */
         _localXGrid.ticks(_localXLabels.length);
 
         plot.select('.x.grid')
+            .attr('transform', 'translate(0, ' + plotHeight + ')')
             .transition()
             .duration(COMMON.DURATION)
             .attr('visibility', function () {
@@ -1789,6 +1781,13 @@ function combo() {
             return _notification;
         }
         _notification = value;
+        return chart;
+    }
+    chart.data = function (value) {
+        if (!arguments.length) {
+            return _data;
+        }
+        _data = value;
         return chart;
     }
     return chart;

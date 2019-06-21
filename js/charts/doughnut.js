@@ -34,7 +34,8 @@ function doughnut() {
         _fontStyle,
         _fontWeight,
         _fontColor,
-        _notification = false;
+        _notification = false,
+        _data;
 
     /* These are the common variables that is shared across the different private/public
      * methods but is initialized/updated within the methods itself.
@@ -51,7 +52,7 @@ function doughnut() {
         _localData,
         _originalData;
 
-    var filter = false, filterData = [], div;
+    var filter = false, filterData = [], parentContainer;
 
     /* These are the common private functions that is shared across the different private/public
      * methods but is initialized beforehand.
@@ -293,7 +294,7 @@ function doughnut() {
                 if (broadcast.filterSelection.id) {
                     _filterDimension = broadcast.filterSelection.filter;
                 } else {
-                    broadcast.filterSelection.id = $(div).attr('id');
+                    broadcast.filterSelection.id = $(parentContainer).attr('id');
                 }
                 var dimension = _dimension[0];
 
@@ -454,385 +455,390 @@ function doughnut() {
     }
 
     function chart(selection) {
-        _local_svg = selection;
+        data = UTIL.sortingData(_data, _dimension[0])
+        _Local_data = _originalData = data;
 
-        selection.each(function (data) {
-            data = UTIL.sortingData(data, _dimension[0]);
+        parentContainer = d3.select('#' + selection.id)
 
-            /* store the data in local variable */
-            _localData = _originalData = data;
+        var svg = parentContainer.append('svg')
+            .attr('width', parentContainer.attr('width'))
+            .attr('height', parentContainer.attr('height'))
 
-            data.map(function (d) {
-                d[_measure[0]] = Math.abs(d[_measure[0]]);
-            })
-            var svg = d3.select(this),
-                width = +svg.attr('width'),
-                height = +svg.attr('height'),
-                parentWidth = width - 2 * COMMON.PADDING,
-                parentHeight = height - 2 * COMMON.PADDING,
-                outerRadius;
+        data.map(function (d) {
+            d[_measure[0]] = Math.abs(d[_measure[0]]);
+        })
 
-            div = d3.select(this).node().parentNode;
-            var me = this;
+        _local_svg = svg;
 
-            if (_tooltip) {
-                tooltip = d3.select(div).select('.custom_tooltip');
+        parentContainer.append('div')
+            .attr('class', 'custom_tooltip');
+
+        var width = +svg.attr('width'),
+            height = +svg.attr('height'),
+            parentWidth = width - 2 * COMMON.PADDING,
+            parentHeight = height - 2 * COMMON.PADDING,
+            outerRadius;
+
+        var me = this;
+
+        if (_tooltip) {
+            tooltip = parentContainer.select('.custom_tooltip');
+        }
+
+        /* total sum of the measure values */
+        _localTotal = d3.sum(data.map(function (d) { return d[_measure[0]]; }));
+
+        // /* applying sort operation to the data */
+        // // UTIL.sorter(data, _measure, _sort);
+
+        // data.sort(function (a, b) {
+        //     return d3.ascending(a[_dimension[0]], b[_dimension[0]]);
+        // });
+
+        /* extracting measure values only from the data */
+        _localSortedMeasureValue = data.map(function (d) { return +d[_measure[0]]; })
+
+        var container = svg.append('g')
+            .classed('container', true)
+            .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
+
+        var legendWidth = 0,
+            legendHeight = 0,
+            plotWidth = parentWidth,
+            plotHeight = parentHeight;
+
+        if (_legend) {
+            _localLegend = LEGEND.bind(chart);
+
+            var result = _localLegend(data, container, {
+                width: parentWidth,
+                height: parentHeight
+            });
+
+            legendWidth = result.legendWidth;
+            legendHeight = result.legendHeight;
+
+            switch (_legendPosition.toUpperCase()) {
+                case 'TOP':
+                case 'BOTTOM':
+                    plotHeight = plotHeight - legendHeight;
+                    break;
+                case 'RIGHT':
+                case 'LEFT':
+                    plotWidth = plotWidth - legendWidth;
+                    break;
             }
+        }
+        outerRadius = Math.min(plotWidth, plotHeight) / 2.25;
 
-            /* total sum of the measure values */
-            _localTotal = d3.sum(data.map(function (d) { return d[_measure[0]]; }));
+        /* setting the outerradius of the arc */
+        _arc.outerRadius(outerRadius)
+            .innerRadius(outerRadius * 0.8);
 
-            // /* applying sort operation to the data */
-            // // UTIL.sorter(data, _measure, _sort);
+        /* setting the innerradius and outerradius of the masking arc */
+        _arcMask.outerRadius(outerRadius * 1.02)
+            .innerRadius(outerRadius * 1.01);
 
-            // data.sort(function (a, b) {
-            //     return d3.ascending(a[_dimension[0]], b[_dimension[0]]);
-            // });
+        /* setting the outerradius and innerradius of the arc */
+        _labelArc.outerRadius(outerRadius)
+            .innerRadius(outerRadius * 0.8);
 
-            /* extracting measure values only from the data */
-            _localSortedMeasureValue = data.map(function (d) { return +d[_measure[0]]; })
-
-            var container = svg.append('g')
-                .classed('container', true)
-                .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
-
-            var legendWidth = 0,
-                legendHeight = 0,
-                plotWidth = parentWidth,
-                plotHeight = parentHeight;
-
-            if (_legend) {
-                _localLegend = LEGEND.bind(chart);
-
-                var result = _localLegend(data, container, {
-                    width: parentWidth,
-                    height: parentHeight
-                });
-
-                legendWidth = result.legendWidth;
-                legendHeight = result.legendHeight;
+        var plot = container.append('g')
+            .attr('id', 'doughnut-plot')
+            .classed('plot', true)
+            .attr('transform', function () {
+                var translate = [0, 0];
 
                 switch (_legendPosition.toUpperCase()) {
                     case 'TOP':
+                        translate = [(plotWidth / 2), legendHeight + (plotHeight / 2)];
+                        break;
                     case 'BOTTOM':
-                        plotHeight = plotHeight - legendHeight;
-                        break;
                     case 'RIGHT':
-                    case 'LEFT':
-                        plotWidth = plotWidth - legendWidth;
+                        translate = [(plotWidth / 2), (plotHeight / 2)];
                         break;
+                    case 'LEFT':
+                        translate = [legendWidth + (plotWidth / 2), (plotHeight / 2)]
                 }
-            }
-            outerRadius = Math.min(plotWidth, plotHeight) / 2.25;
 
-            /* setting the outerradius of the arc */
-            _arc.outerRadius(outerRadius)
-                .innerRadius(outerRadius * 0.8);
+                return 'translate(' + translate.toString() + ')';
+            });
 
-            /* setting the innerradius and outerradius of the masking arc */
-            _arcMask.outerRadius(outerRadius * 1.02)
-                .innerRadius(outerRadius * 1.01);
+        _localKey = function (d) {
+            return d.data[_dimension[0]];
+        }
 
-            /* setting the outerradius and innerradius of the arc */
-            _labelArc.outerRadius(outerRadius)
-                .innerRadius(outerRadius * 0.8);
+        var centerText = plot.append('text')
+            .attr('id', 'measure-value')
+            .style('text-anchor', 'middle')
+            .style('fill', _fontColor)
+            .style('font-size', _fontSize + 'px')
+            .style('font-weight', _fontWeight)
+            .style('font-style', _fontStyle)
+            .attr('visibility', _showLabel == true ? 'visible' : 'hidden')
+            .append("tspan")
+            .text(function () {
+                return UTIL.getTruncatedLabel(
+                    this,
+                    _measureDisplayName,
+                    outerRadius * 0.8)
+            })
+            .attr("x", 0)
+            .append("tspan")
+            .text(function () {
+                return UTIL.getTruncatedLabel(
+                    this,
+                    _localTotal,
+                    outerRadius * 0.8)
+            })
+            .attr("x", 0)
+            .attr("dy", _fontSize + 5);
 
-            var plot = container.append('g')
-                .attr('id', 'doughnut-plot')
-                .classed('plot', true)
-                .attr('transform', function () {
-                    var translate = [0, 0];
+        var doughnutMask = plot.append('g')
+            .attr('id', 'arc-mask-group')
+            .selectAll('.arc-mask')
+            .data(_doughnut(data), _localKey)
+            .enter().append('g')
+            .attr('id', function (d, i) {
+                return 'arc-mask-group-' + i;
+            })
+            .classed('arc-mask', true)
+            .append('path')
+            .attr('id', function (d, i) {
+                return 'arc-mask-path-' + i;
+            })
+            .attr('d', _arcMask)
+            .style('visibility', 'hidden')
+            .style('fill', function (d) {
+                return COMMON.COLORSCALE(d.data[_dimension[0]]);
+            })
+            .each(function (d) {
+                this._current = d;
+            });
 
-                    switch (_legendPosition.toUpperCase()) {
-                        case 'TOP':
-                            translate = [(plotWidth / 2), legendHeight + (plotHeight / 2)];
-                            break;
-                        case 'BOTTOM':
-                        case 'RIGHT':
-                            translate = [(plotWidth / 2), (plotHeight / 2)];
-                            break;
-                        case 'LEFT':
-                            translate = [legendWidth + (plotWidth / 2), (plotHeight / 2)]
+        var doughnutArcGroup = plot.append('g')
+            .attr('id', 'arc-group')
+            .selectAll('.arc')
+            .data(_doughnut(data), _localKey)
+            .enter().append('g')
+            .attr('id', function (d, i) {
+                return 'arc-group-' + i;
+            })
+            .classed('arc', true);
+
+        var doughnutArcPath = doughnutArcGroup.append('path')
+            .attr('id', function (d, i) {
+                return 'arc-path-' + i;
+            })
+            .style('fill', function (d) {
+                return COMMON.COLORSCALE(d.data[_dimension[0]]);
+            })
+            .attr('fill', function (d) {
+                return COMMON.COLORSCALE(d.data[_dimension[0]]);
+            })
+            .each(function (d) {
+                this._current = d;
+            })
+
+        if (!_print) {
+            doughnutArcPath.transition()
+                .duration(_durationFn())
+                .delay(_delayFn())
+                .attrTween('d', function (d) {
+                    var i = d3.interpolate(d.startAngle + 0.1, d.endAngle);
+                    return function (t) {
+                        d.endAngle = i(t);
+                        return _arc(d)
+                    }
+                });
+        }
+        else {
+            doughnutArcPath.attr('d', _arc)
+        }
+
+        var doughnutLabel;
+
+        // if (_valueAsArc) {
+        //     doughnutLabel = doughnutArcGroup.append('text')
+        //         .attr('dy', function (d, i) {
+        //             if (_valuePosition == 'inside') {
+        //                 return 10;
+        //             } else {
+        //                 return -5;
+        //             }
+        //         })
+
+        //     var textPath = doughnutLabel.append('textPath')
+        //         .attr('xlink:href', function (d, i) {
+        //             return '#arc-path-' + i;
+        //         })
+        //         .attr('text-anchor', function () {
+        //             return 'middle';
+        //         })
+
+        //     if (!_print) {
+        //         textPath.transition()
+        //             .delay(_delayFn(200))
+        //             .on('start', function () {
+        //                 d3.select(this).attr('startOffset', function (d) {
+        //                     var length = doughnutArcPath.nodes()[d.index].getTotalLength(),
+        //                         diff = d.endAngle - d.startAngle,
+        //                         x = 2 * (outerRadius - (outerRadius * 0.8)) + diff * (outerRadius * 0.8);
+
+        //                     return 50 * (length - x) / length + "%";
+        //                 })
+        //                     .text(_labelFn())
+        //                     .filter(function (d, i) {
+        //                         var diff = d.endAngle - d.startAngle;
+        //                         return outerRadius * diff - 5 < this.getComputedTextLength();
+        //                     })
+        //                     .remove();
+
+        //             });
+        //     }
+        //     else {
+        //         textPath.text(_labelFn())
+        //     }
+        // } else {
+        //     var doughnutArcTextGroup = plot.selectAll('.arc-text')
+        //         .data(_doughnut(data))
+        //         .enter().append('g')
+        //         .attr('id', function (d, i) {
+        //             return 'arc-text-group-' + i;
+        //         })
+        //         .classed('arc-text', true);
+
+        //     doughnutLabel = doughnutArcTextGroup.append('text')
+        //         .attr('transform', function (d) {
+        //             var centroid = _labelArc.centroid(d),
+        //                 x = centroid[0],
+        //                 y = centroid[1],
+        //                 h = _pythagorousTheorem(x, y);
+
+        //             if (_valuePosition == 'inside') {
+        //                 return 'translate('
+        //                     + outerRadius * (x / h) * 0.85
+        //                     + ', '
+        //                     + outerRadius * (y / h) * 0.85
+        //                     + ')';
+        //             } else {
+        //                 return 'translate('
+        //                     + outerRadius * (x / h) * 1.05
+        //                     + ', '
+        //                     + outerRadius * (y / h) * 1.05
+        //                     + ')';
+        //             }
+        //         })
+        //         .attr('dy', '0.35em')
+        //         .attr('text-anchor', function (d) {
+        //             if (_valuePosition == 'inside') {
+        //                 return 'middle';
+        //             } else {
+        //                 return (d.endAngle + d.startAngle) / 2 > Math.PI
+        //                     ? 'end' : (d.endAngle + d.startAngle) / 2 < Math.PI
+        //                         ? 'start' : 'middle';
+        //             }
+        //         })
+
+        //     if (!_print) {
+        //         doughnutLabel.transition()
+        //             .delay(_delayFn(200))
+        //             .on('start', function () {
+        //                 d3.select(this).text(_labelFn())
+        //                     .filter(function (d) {
+        //                         /* length of arc = angle in radians * radius */
+        //                         var diff = d.endAngle - d.startAngle;
+        //                         return outerRadius * diff < this.getComputedTextLength();
+        //                     })
+        //                     .remove();
+        //             });
+        //     }
+        //     else {
+        //         doughnutLabel.text(_labelFn())
+        //     }
+        // }
+
+        if (!_print) {
+
+            var confirm = $(me).parent().find('div.confirm')
+                .css('visibility', 'hidden');
+
+            var _filter = UTIL.createFilterElement()
+            $('#' + parentContainer.attr('id')).append(_filter);
+
+            _local_svg.select('g.lasso').remove()
+
+            parentContainer.select('.filterData')
+                .on('click', applyFilter());
+
+            parentContainer.select('.removeFilter')
+                .on('click', clearFilter(parentContainer));
+
+            _local_svg.select('g.lasso').remove();
+
+            var lasso = d3Lasso.lasso()
+                .hoverSelect(true)
+                .closePathSelect(true)
+                .closePathDistance(100)
+                .items(doughnutArcGroup)
+                .targetArea(_local_svg);
+
+            lasso.on('start', onLassoStart(lasso, _local_svg))
+                .on('draw', onLassoDraw(lasso, _local_svg))
+                .on('end', onLassoEnd(lasso, _local_svg));
+
+            _local_svg.call(lasso);
+
+            doughnutArcGroup
+                .on('mouseover', _handleMouseOverFn.call(chart, tooltip, svg))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg))
+                .on('click', function (d, i) {
+
+                    var confirm = d3.select(parentContainer).select('.confirm')
+                        .style('visibility', 'visible');
+                    filter = false;
+
+                    var point = d3.select(this);
+                    if (point.classed('selected')) {
+                        point.classed('selected', false);
+                    } else {
+                        point.classed('selected', true);
+                    }
+                    var obj = new Object();
+                    obj[chart.dimension()] = d.data[_dimension[0]]
+                    obj[chart.measure()] = d.data[_measure[0]]
+                    filterData.push(obj)
+
+                    var _filterDimension = {};
+                    if (broadcast.filterSelection.id) {
+                        _filterDimension = broadcast.filterSelection.filter;
+                    } else {
+                        broadcast.filterSelection.id = $(parentContainer).attr('id');
+                    }
+                    var dimension = _dimension[0];
+                    if (_filterDimension[dimension]) {
+                        var temp = _filterDimension[dimension];
+                        if (temp.indexOf(d.data[_dimension[0]]) < 0) {
+                            temp.push(d.data[_dimension[0]]);
+                        } else {
+                            temp.splice(temp.indexOf(d.data[_dimension[0]]), 1);
+                        }
+                        _filterDimension[dimension] = temp;
+                    } else {
+                        _filterDimension[dimension] = [d.data[_dimension[0]]];
                     }
 
-                    return 'translate(' + translate.toString() + ')';
+                    var idWidget = broadcast.updateWidget[$(parentContainer).attr('id')];
+                    broadcast.updateWidget = {};
+                    broadcast.updateWidget[$(parentContainer).attr('id')] = idWidget;
+                    broadcast.filterSelection.filter = _filterDimension;
+                    var _filterParameters = filterParameters.get();
+                    _filterParameters[dimension] = _filterDimension[dimension];
+                    filterParameters.save(_filterParameters);
                 });
+        }
 
-            _localKey = function (d) {
-                return d.data[_dimension[0]];
-            }
-
-            var centerText = plot.append('text')
-                .attr('id', 'measure-value')
-                .style('text-anchor', 'middle')
-                .style('fill', _fontColor)
-                .style('font-size', _fontSize + 'px')
-                .style('font-weight', _fontWeight)
-                .style('font-style', _fontStyle)
-                .attr('visibility', _showLabel == true ? 'visible' : 'hidden')
-                .append("tspan")
-                .text(function () {
-                    return UTIL.getTruncatedLabel(
-                        this,
-                        _measureDisplayName,
-                        outerRadius * 0.8)
-                })
-                .attr("x", 0)
-                .append("tspan")
-                .text(function () {
-                    return UTIL.getTruncatedLabel(
-                        this,
-                        _localTotal,
-                        outerRadius * 0.8)
-                })
-                .attr("x", 0)
-                .attr("dy", _fontSize + 5);
-
-            var doughnutMask = plot.append('g')
-                .attr('id', 'arc-mask-group')
-                .selectAll('.arc-mask')
-                .data(_doughnut(data), _localKey)
-                .enter().append('g')
-                .attr('id', function (d, i) {
-                    return 'arc-mask-group-' + i;
-                })
-                .classed('arc-mask', true)
-                .append('path')
-                .attr('id', function (d, i) {
-                    return 'arc-mask-path-' + i;
-                })
-                .attr('d', _arcMask)
-                .style('visibility', 'hidden')
-                .style('fill', function (d) {
-                    return COMMON.COLORSCALE(d.data[_dimension[0]]);
-                })
-                .each(function (d) {
-                    this._current = d;
-                });
-
-            var doughnutArcGroup = plot.append('g')
-                .attr('id', 'arc-group')
-                .selectAll('.arc')
-                .data(_doughnut(data), _localKey)
-                .enter().append('g')
-                .attr('id', function (d, i) {
-                    return 'arc-group-' + i;
-                })
-                .classed('arc', true);
-
-            var doughnutArcPath = doughnutArcGroup.append('path')
-                .attr('id', function (d, i) {
-                    return 'arc-path-' + i;
-                })
-                .style('fill', function (d) {
-                    return COMMON.COLORSCALE(d.data[_dimension[0]]);
-                })
-                .attr('fill', function (d) {
-                    return COMMON.COLORSCALE(d.data[_dimension[0]]);
-                })
-                .each(function (d) {
-                    this._current = d;
-                })
-
-            if (!_print) {
-                doughnutArcPath.transition()
-                    .duration(_durationFn())
-                    .delay(_delayFn())
-                    .attrTween('d', function (d) {
-                        var i = d3.interpolate(d.startAngle + 0.1, d.endAngle);
-                        return function (t) {
-                            d.endAngle = i(t);
-                            return _arc(d)
-                        }
-                    });
-            }
-            else {
-                doughnutArcPath.attr('d', _arc)
-            }
-
-            var doughnutLabel;
-
-            // if (_valueAsArc) {
-            //     doughnutLabel = doughnutArcGroup.append('text')
-            //         .attr('dy', function (d, i) {
-            //             if (_valuePosition == 'inside') {
-            //                 return 10;
-            //             } else {
-            //                 return -5;
-            //             }
-            //         })
-
-            //     var textPath = doughnutLabel.append('textPath')
-            //         .attr('xlink:href', function (d, i) {
-            //             return '#arc-path-' + i;
-            //         })
-            //         .attr('text-anchor', function () {
-            //             return 'middle';
-            //         })
-
-            //     if (!_print) {
-            //         textPath.transition()
-            //             .delay(_delayFn(200))
-            //             .on('start', function () {
-            //                 d3.select(this).attr('startOffset', function (d) {
-            //                     var length = doughnutArcPath.nodes()[d.index].getTotalLength(),
-            //                         diff = d.endAngle - d.startAngle,
-            //                         x = 2 * (outerRadius - (outerRadius * 0.8)) + diff * (outerRadius * 0.8);
-
-            //                     return 50 * (length - x) / length + "%";
-            //                 })
-            //                     .text(_labelFn())
-            //                     .filter(function (d, i) {
-            //                         var diff = d.endAngle - d.startAngle;
-            //                         return outerRadius * diff - 5 < this.getComputedTextLength();
-            //                     })
-            //                     .remove();
-
-            //             });
-            //     }
-            //     else {
-            //         textPath.text(_labelFn())
-            //     }
-            // } else {
-            //     var doughnutArcTextGroup = plot.selectAll('.arc-text')
-            //         .data(_doughnut(data))
-            //         .enter().append('g')
-            //         .attr('id', function (d, i) {
-            //             return 'arc-text-group-' + i;
-            //         })
-            //         .classed('arc-text', true);
-
-            //     doughnutLabel = doughnutArcTextGroup.append('text')
-            //         .attr('transform', function (d) {
-            //             var centroid = _labelArc.centroid(d),
-            //                 x = centroid[0],
-            //                 y = centroid[1],
-            //                 h = _pythagorousTheorem(x, y);
-
-            //             if (_valuePosition == 'inside') {
-            //                 return 'translate('
-            //                     + outerRadius * (x / h) * 0.85
-            //                     + ', '
-            //                     + outerRadius * (y / h) * 0.85
-            //                     + ')';
-            //             } else {
-            //                 return 'translate('
-            //                     + outerRadius * (x / h) * 1.05
-            //                     + ', '
-            //                     + outerRadius * (y / h) * 1.05
-            //                     + ')';
-            //             }
-            //         })
-            //         .attr('dy', '0.35em')
-            //         .attr('text-anchor', function (d) {
-            //             if (_valuePosition == 'inside') {
-            //                 return 'middle';
-            //             } else {
-            //                 return (d.endAngle + d.startAngle) / 2 > Math.PI
-            //                     ? 'end' : (d.endAngle + d.startAngle) / 2 < Math.PI
-            //                         ? 'start' : 'middle';
-            //             }
-            //         })
-
-            //     if (!_print) {
-            //         doughnutLabel.transition()
-            //             .delay(_delayFn(200))
-            //             .on('start', function () {
-            //                 d3.select(this).text(_labelFn())
-            //                     .filter(function (d) {
-            //                         /* length of arc = angle in radians * radius */
-            //                         var diff = d.endAngle - d.startAngle;
-            //                         return outerRadius * diff < this.getComputedTextLength();
-            //                     })
-            //                     .remove();
-            //             });
-            //     }
-            //     else {
-            //         doughnutLabel.text(_labelFn())
-            //     }
-            // }
-
-            if (!_print) {
-
-                var confirm = $(me).parent().find('div.confirm')
-                    .css('visibility', 'hidden');
-
-                var _filter = UTIL.createFilterElement()
-                $(div).append(_filter);
-
-                _local_svg.select('g.lasso').remove()
-
-                d3.select(div).select('.filterData')
-                    .on('click', applyFilter());
-
-                d3.select(div).select('.removeFilter')
-                    .on('click', clearFilter(div));
-
-                _local_svg.select('g.lasso').remove();
-
-                var lasso = d3Lasso.lasso()
-                    .hoverSelect(true)
-                    .closePathSelect(true)
-                    .closePathDistance(100)
-                    .items(doughnutArcGroup)
-                    .targetArea(_local_svg);
-
-                lasso.on('start', onLassoStart(lasso, _local_svg))
-                    .on('draw', onLassoDraw(lasso, _local_svg))
-                    .on('end', onLassoEnd(lasso, _local_svg));
-
-                _local_svg.call(lasso);
-
-                doughnutArcGroup
-                    .on('mouseover', _handleMouseOverFn.call(chart, tooltip, svg))
-                    .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg))
-                    .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg))
-                    .on('click', function (d, i) {
-
-                        var confirm = d3.select(div).select('.confirm')
-                            .style('visibility', 'visible');
-                        filter = false;
-
-                        var point = d3.select(this);
-                        if (point.classed('selected')) {
-                            point.classed('selected', false);
-                        } else {
-                            point.classed('selected', true);
-                        }
-                        var obj = new Object();
-                        obj[chart.dimension()] = d.data[_dimension[0]]
-                        obj[chart.measure()] = d.data[_measure[0]]
-                        filterData.push(obj)
-
-                        var _filterDimension = {};
-                        if (broadcast.filterSelection.id) {
-                            _filterDimension = broadcast.filterSelection.filter;
-                        } else {
-                            broadcast.filterSelection.id = $(div).attr('id');
-                        }
-                        var dimension = _dimension[0];
-                        if (_filterDimension[dimension]) {
-                            var temp = _filterDimension[dimension];
-                            if (temp.indexOf(d.data[_dimension[0]]) < 0) {
-                                temp.push(d.data[_dimension[0]]);
-                            } else {
-                                temp.splice(temp.indexOf(d.data[_dimension[0]]), 1);
-                            }
-                            _filterDimension[dimension] = temp;
-                        } else {
-                            _filterDimension[dimension] = [d.data[_dimension[0]]];
-                        }
-
-                        var idWidget = broadcast.updateWidget[$(div).attr('id')];
-                        broadcast.updateWidget = {};
-                        broadcast.updateWidget[$(div).attr('id')] = idWidget;
-                        broadcast.filterSelection.filter = _filterDimension;
-                        var _filterParameters = filterParameters.get();
-                        _filterParameters[dimension] = _filterDimension[dimension];
-                        filterParameters.save(_filterParameters);
-                    });
-            }
-        });
     }
 
     /**
@@ -877,7 +883,7 @@ function doughnut() {
             d[_measure[0]] = Math.abs(d[_measure[0]]);
         })
         if (_tooltip) {
-            tooltip = d3.select(div).select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         var svg = _local_svg,
             width = +svg.attr('width'),
@@ -987,52 +993,7 @@ function doughnut() {
             .each(function (d) {
                 this._current = d;
             })
-            .on('mouseover', _handleMouseOverFn.call(chart, tooltip, svg))
-            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg))
-            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg))
-            .on('click', function (d, i) {
-                var confirm = d3.select(div).select('.confirm')
-                    .style('visibility', 'visible');
-                filter = false;
 
-                var point = d3.select(this);
-                if (point.classed('selected')) {
-                    point.classed('selected', false);
-                } else {
-                    point.classed('selected', true);
-                }
-                var obj = new Object();
-                obj[chart.dimension()] = d.data[_dimension[0]]
-                obj[chart.measure()] = d.data[_measure[0]]
-                filterData.push(obj)
-
-                var _filterDimension = {};
-                if (broadcast.filterSelection.id) {
-                    _filterDimension = broadcast.filterSelection.filter;
-                } else {
-                    broadcast.filterSelection.id = $(div).attr('id');
-                }
-                var dimension = _dimension[0];
-                if (_filterDimension[dimension]) {
-                    var temp = _filterDimension[dimension];
-                    if (temp.indexOf(d.data[_dimension[0]]) < 0) {
-                        temp.push(d.data[_dimension[0]]);
-                    } else {
-                        temp.splice(temp.indexOf(d.data[_dimension[0]]), 1);
-                    }
-                    _filterDimension[dimension] = temp;
-                } else {
-                    _filterDimension[dimension] = [d.data[_dimension[0]]];
-                }
-
-                var idWidget = broadcast.updateWidget[$(div).attr('id')];
-                broadcast.updateWidget = {};
-                broadcast.updateWidget[$(div).attr('id')] = idWidget;
-                broadcast.filterSelection.filter = _filterDimension;
-                var _filterParameters = filterParameters.get();
-                _filterParameters[dimension] = _filterDimension[dimension];
-                filterParameters.save(_filterParameters);
-            });
 
         doughnutArcGroup = svg.selectAll('g.arc')
             .data(_doughnut(newFilteredData), _localKey);
@@ -1056,6 +1017,53 @@ function doughnut() {
             .delay(1000)
             .duration(0)
             .remove();
+
+        doughnutArcGroup.on('mouseover', _handleMouseOverFn.call(chart, tooltip, svg))
+            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg))
+            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg))
+            .on('click', function (d, i) {
+                var confirm = d3.select(parentContainer).select('.confirm')
+                    .style('visibility', 'visible');
+                filter = false;
+
+                var point = d3.select(this);
+                if (point.classed('selected')) {
+                    point.classed('selected', false);
+                } else {
+                    point.classed('selected', true);
+                }
+                var obj = new Object();
+                obj[chart.dimension()] = d.data[_dimension[0]]
+                obj[chart.measure()] = d.data[_measure[0]]
+                filterData.push(obj)
+
+                var _filterDimension = {};
+                if (broadcast.filterSelection.id) {
+                    _filterDimension = broadcast.filterSelection.filter;
+                } else {
+                    broadcast.filterSelection.id = $(parentContainer).attr('id');
+                }
+                var dimension = _dimension[0];
+                if (_filterDimension[dimension]) {
+                    var temp = _filterDimension[dimension];
+                    if (temp.indexOf(d.data[_dimension[0]]) < 0) {
+                        temp.push(d.data[_dimension[0]]);
+                    } else {
+                        temp.splice(temp.indexOf(d.data[_dimension[0]]), 1);
+                    }
+                    _filterDimension[dimension] = temp;
+                } else {
+                    _filterDimension[dimension] = [d.data[_dimension[0]]];
+                }
+
+                var idWidget = broadcast.updateWidget[$(parentContainer).attr('id')];
+                broadcast.updateWidget = {};
+                broadcast.updateWidget[$(parentContainer).attr('id')] = idWidget;
+                broadcast.filterSelection.filter = _filterDimension;
+                var _filterParameters = filterParameters.get();
+                _filterParameters[dimension] = _filterDimension[dimension];
+                filterParameters.save(_filterParameters);
+            });
 
         // if (_valueAsArc) {
 
@@ -1267,6 +1275,13 @@ function doughnut() {
             return _notification;
         }
         _notification = value;
+        return chart;
+    }
+    chart.data = function (value) {
+        if (!arguments.length) {
+            return _data;
+        }
+        _data = value;
         return chart;
     }
     return chart;
