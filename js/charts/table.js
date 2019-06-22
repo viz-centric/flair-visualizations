@@ -35,9 +35,10 @@ function table() {
         _fontWeightForMeasure = [],
         _print,
         broadcast,
-        filterParameters;
+        filterParameters,
+        _data;
 
-    var _localData, filterData = [], _originalData, _local_svg, div;
+    var _Local_data, filterData = [], _originalData, _local_svg, parentContainer;
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
@@ -148,7 +149,7 @@ function table() {
     }
     var applyFilter = function () {
         return function () {
-            var d = _localData.filter(function (val) {
+            var d = _Local_data.filter(function (val) {
                 for (var index = 0; index < filterData.length; index++) {
                     if (val[filterData[index].key] == filterData[index].value) {
                         return val;
@@ -190,7 +191,7 @@ function table() {
         if (broadcast.filterSelection.id) {
             _filterDimension = broadcast.filterSelection.filter;
         } else {
-            broadcast.filterSelection.id = d3.select(div.node()).attr('id');
+            broadcast.filterSelection.id = d3.select(parentContainer.node()).attr('id');
         }
         var dimension = str.id;
         if (_filterDimension[dimension]) {
@@ -205,9 +206,9 @@ function table() {
             _filterDimension[dimension] = [str.textContent]
         }
 
-        var idWidget = broadcast.updateWidget[$(div).attr('id')];
+        var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
         broadcast.updateWidget = {};
-        broadcast.updateWidget[$(div).attr('id')] = idWidget;
+        broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
         broadcast.filterSelection.filter = _filterDimension;
         var _filterParameters = filterParameters.get();
         _filterParameters[dimension] = _filterDimension[dimension];
@@ -311,113 +312,34 @@ function table() {
         return tbody
     }
     function chart(selection) {
-        _local_svg = selection;
 
-        selection.each(function (data) {
-            data = UTIL.sortingData(data, _dimension[0])
-            _localData = _originalData = data
-            div = d3.select(this);
+        data = UTIL.sortingData(_data, _dimension[0])
+        _Local_data = _originalData = data;
+        parentContainer = d3.select('#' + selection.id)
 
-            var svg = d3.select(this),
-                width = parseInt(svg.style('width')),
-                height = parseInt(svg.style('height'));
-
-            var id = svg.attr('id');
-
-            //  var disv = d3.select('#' + id);
-
-            svg
-                .attr('width', width)
-                .attr('height', height)
-                .style('overflow-y', 'hidden')
-                .style('overflow-x', 'auto');
-
-            var table = svg.append('table')
-                .attr('id', 'viz_table')
-                .style('width', '100%')
-                .classed('display', true)
-                .classed('nowrap', true)
-                .classed('table', true)
-                .classed('table-condensed', true)
-                .classed('table-hover', true);
-
-            var thead = createHeader();
-
-            table.append('thead')
-                .html(thead);
-
-            var tbody = createBody(data);
-
-            table.append('tbody').html(tbody);
-
-            if (!_print) {
-
-                var _filter = UTIL.createFilterElement()
-                $('#' + id).append(_filter)
-
-                $('#' + div.attr('id')).find('#viz_table').dataTable({
-                    scrollY: height - 100,
-                    scrollX: true,
-                    scrollCollapse: true,
-                    ordering: true,
-                    info: true,
-                    'dom': 'Rlfrtip',
-                    // colReorder: {
-                    //     allowReorder: false
-                    // },
-                    pagingType: "full_numbers",
-                    aLengthMenu: [[2, 5, 10, 15, 20, 25, -1], [2, 5, 10, 15, 20, 25, "All"]],
-                    iDisplayLength: 20,
-                    bDestroy: true,
-                    //   dom: '<"table-header">rt<"table-footer"lp>',
-                    //  "sDom": "Rlfrtip",
-                    fnDrawCallback: function (oSettings) {
-                        if (oSettings._iDisplayLength > oSettings.fnRecordsDisplay()) {
-                            // $(oSettings.nTableWrapper).find('.dataTables_paginate').hide();
-                            // $(oSettings.nTableWrapper).find('.dataTables_info').hide();
-                        }
-                    }
-                });
-                $("#viz_table_paginate").css('display', 'blobk')
-                $($('#' + div.attr('id') + ' td')).on('click', function () {
-                    readerTableChart.call(this.textContent, this, div)
-                })
-
-                div.select('.filterData')
-                    .on('click', applyFilter());
-
-                div.select('.removeFilter')
-                    .on('click', clearFilter());
-            }
-        }
-        );
-    }
-
-    chart._getName = function () {
-        return _NAME;
-    }
-
-    chart._getHTML = function () {
-        return _local_svg.node().outerHTML;
-    }
-
-    chart.update = function (data) {
-        data = UTIL.sortingData(data, _dimension[0])
-        _localData = data;
-        svg = _local_svg;
-        filterData = [];
-
-        var width = parseInt(svg.style('width')),
-            height = parseInt(svg.style('height'));
+        var svg = parentContainer;
 
         var id = svg.attr('id');
-        div.select("#viz_table").html('');
-//        div.selectAll("#viz_table_length,#viz_table_filter,#viz_table_info,#viz_table_paginate").html('')
 
-        div.selectAll('tbody').remove();
-        div.selectAll('thead').remove();
+        //  var disv = d3.select('#' + id);
 
-        var table = div.select('#viz_table');
+        var width = parentContainer.attr('width'),
+            height = parentContainer.attr('height')
+
+        svg
+            .attr('width', width)
+            .attr('height', height)
+            .style('overflow-y', 'hidden')
+            .style('overflow-x', 'auto');
+
+        var table = svg.append('table')
+            .attr('id', 'viz_table')
+            .style('width', '100%')
+            .classed('display', true)
+            .classed('nowrap', true)
+            .classed('table', true)
+            .classed('table-condensed', true)
+            .classed('table-hover', true);
 
         var thead = createHeader();
 
@@ -428,16 +350,12 @@ function table() {
 
         table.append('tbody').html(tbody);
 
-        $($('#' + div.attr('id') + ' td')).on('click', function () {
-            readerTableChart.call(this.textContent, this, div)
-        })
-
         if (!_print) {
 
             var _filter = UTIL.createFilterElement()
             $('#' + id).append(_filter)
 
-            $('#' + div.attr('id')).find('#viz_table').dataTable({
+            $('#' + parentContainer.attr('id')).find('#viz_table').dataTable({
                 scrollY: height - 100,
                 scrollX: true,
                 scrollCollapse: true,
@@ -461,14 +379,95 @@ function table() {
                 }
             });
             $("#viz_table_paginate").css('display', 'blobk')
-            $($('#' + div.attr('id') + ' td')).on('click', function () {
-                readerTableChart.call(this.textContent, this, div)
+            $($('#' + parentContainer.attr('id') + ' td')).on('click', function () {
+                readerTableChart.call(this.textContent, this, parentContainer)
             })
 
-            div.select('.filterData')
+            parentContainer.select('.filterData')
                 .on('click', applyFilter());
 
-            div.select('.removeFilter')
+            parentContainer.select('.removeFilter')
+                .on('click', clearFilter());
+        }
+
+    }
+
+    chart._getName = function () {
+        return _NAME;
+    }
+
+    chart._getHTML = function () {
+        return _local_svg.node().outerHTML;
+    }
+
+    chart.update = function (data) {
+        data = UTIL.sortingData(data, _dimension[0])
+        _Local_data = data;
+        svg = _local_svg;
+        filterData = [];
+
+        var width = parentContainer.attr('width'),
+            height = parentContainer.attr('height')
+
+        var id = parentContainer.attr('id');
+        parentContainer.select("#viz_table").html('');
+        //        parentContainer.selectAll("#viz_table_length,#viz_table_filter,#viz_table_info,#viz_table_paginate").html('')
+
+        parentContainer.selectAll('tbody').remove();
+        parentContainer.selectAll('thead').remove();
+
+        var table = parentContainer.select('#viz_table');
+
+        var thead = createHeader();
+
+        table.append('thead')
+            .html(thead);
+
+        var tbody = createBody(data);
+
+        table.append('tbody').html(tbody);
+
+        $($('#' + parentContainer.attr('id') + ' td')).on('click', function () {
+            readerTableChart.call(this.textContent, this, parentContainer)
+        })
+
+        if (!_print) {
+
+            var _filter = UTIL.createFilterElement()
+            $('#' + id).append(_filter)
+
+            $('#' + parentContainer.attr('id')).find('#viz_table').dataTable({
+                scrollY: height - 100,
+                scrollX: true,
+                scrollCollapse: true,
+                ordering: true,
+                info: true,
+                'dom': 'Rlfrtip',
+                // colReorder: {
+                //     allowReorder: false
+                // },
+                pagingType: "full_numbers",
+                aLengthMenu: [[2, 5, 10, 15, 20, 25, -1], [2, 5, 10, 15, 20, 25, "All"]],
+                iDisplayLength: 20,
+                bDestroy: true,
+                //   dom: '<"table-header">rt<"table-footer"lp>',
+                //  "sDom": "Rlfrtip",
+                fnDrawCallback: function (oSettings) {
+                    if (oSettings._iDisplayLength > oSettings.fnRecordsDisplay()) {
+                        // $(oSettings.nTableWrapper).find('.dataTables_paginate').hide();
+                        // $(oSettings.nTableWrapper).find('.dataTables_info').hide();
+                    }
+                }
+            });
+            $("#viz_table_paginate").css('display', 'blobk')
+            $($('#' + parentContainer.attr('id') + ' td')).on('click', function () {
+                readerTableChart.call(this.textContent, this, parentContainer)
+            })
+
+            parentContainer.select('.filterData')
+                .on('click', applyFilter());
+
+            parentContainer.select('.removeFilter')
                 .on('click', clearFilter());
         }
     }
@@ -714,7 +713,13 @@ function table() {
         filterParameters = value;
         return chart;
     }
-
+    chart.data = function (value) {
+        if (!arguments.length) {
+            return _data;
+        }
+        _data = value;
+        return chart;
+    }
     return chart;
 }
 

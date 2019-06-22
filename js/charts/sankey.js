@@ -29,12 +29,13 @@ function sankey() {
         broadcast,
         filterParameters,
         _notification = false,
-        _colorList = [];
+        _colorList = [],
+        _data;
 
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [];
 
-    var parentWidth, parentHeight, parentWidth, parentHeight, div;
+    var parentWidth, parentHeight, parentWidth, parentHeight, parentContainer;
     var sankey, path, gradientColor, link
     var margin = {
         top: 10,
@@ -178,7 +179,7 @@ function sankey() {
                 if (broadcast.filterSelection.id) {
                     _filterDimension = broadcast.filterSelection.filter;
                 } else {
-                    broadcast.filterSelection.id = $(div).attr('id');
+                    broadcast.filterSelection.id = parentContainer.attr('id');
                 }
 
                 _filterDimension = _filterList
@@ -212,7 +213,7 @@ function sankey() {
     var clearFilter = function (div) {
         return function () {
             chart.update(_originalData);
-            d3.select(div).select('.confirm')
+            parentContainer.select('.confirm')
                 .style('visibility', 'hidden');
         }
     }
@@ -221,7 +222,7 @@ function sankey() {
         var me = this;
         return function (d, i) {
             d3.select(this).style('cursor', 'pointer');
-            var border = d3.select(this).attr('fill')
+            var border = d3.select(this).style('stroke')
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
                 UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, element), container, border, _notification);
@@ -234,7 +235,7 @@ function sankey() {
 
         return function (d, i) {
             if (tooltip) {
-                var border = d3.select(this).attr('fill')
+                var border = d3.select(this).style('stroke')
                 UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, element), container, border, _notification);
             }
         }
@@ -326,163 +327,270 @@ function sankey() {
         })
 
     function chart(selection) {
-        _local_svg = selection;
+        data = UTIL.sortingData(_data, dimension[0])
+        _Local_data = _originalData = data;
 
-        selection.each(function (data) {
-            data = UTIL.sortingData(data, dimension[0])
-            _Local_data = _originalData = data;
+        parentContainer = d3.select('#' + selection.id);
 
-            div = d3.select(this).node().parentNode;
+        var svg = parentContainer.append('svg')
+            .attr('width', parentContainer.attr('width'))
+            .attr('height', parentContainer.attr('height'))
 
-            var svg = d3.select(this),
-                width = +svg.attr('width'),
-                height = +svg.attr('height');
+        var width = +svg.attr('width'),
+            height = +svg.attr('height');
 
-            var data = getSankeyData(data);
+        parentContainer.append('div')
+            .attr('class', 'custom_tooltip');
 
-            var svg = d3.select(this);
+        _local_svg = svg;
 
-            if (_tooltip) {
-               tooltip = parentContainer.select('.custom_tooltip');
-            }
-            var me = this;
-            svg.selectAll('g').remove();
+        if (_tooltip) {
+            tooltip = parentContainer.select('.custom_tooltip');
+        }
+        var me = this;
+        svg.selectAll('g').remove();
 
-            svg.attr('width', width)
-                .attr('height', height)
-                .attr('class', 'sankey');
+        svg.attr('width', width)
+            .attr('height', height)
+            .attr('class', 'sankey');
 
-            parentWidth = width - margin.left - margin.right;
-            parentHeight = height - margin.top - margin.bottom;
+        var data = getSankeyData(data);
 
-            var container = svg.append('g')
-                .attr('class', 'plot')
-                .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+        parentWidth = width - margin.left - margin.right;
+        parentHeight = height - margin.top - margin.bottom;
 
-            sankey = d3sankey()
-                .nodeWidth(12)
-                .nodePadding(4)
-                .size([parentWidth, parentHeight]);
+        var container = svg.append('g')
+            .attr('class', 'plot')
+            .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-            path = sankey.link();
+        sankey = d3sankey()
+            .nodeWidth(12)
+            .nodePadding(4)
+            .size([parentWidth, parentHeight]);
 
-            sankey.nodes(data.nodes)
-                .links(data.links)
-                .layout(32);
+        path = sankey.link();
 
-            gradientColor = d3.scaleLinear()
+        sankey.nodes(data.nodes)
+            .links(data.links)
+            .layout(32);
 
-            gradientColor.range([
-                d3.rgb(displayColor).brighter(),
-                d3.rgb(displayColor).darker()
-            ])
+        gradientColor = d3.scaleLinear()
 
-            gradientColor.domain(d3.extent(data.nodes, function (d) {
-                return d.value;
-            }));
+        gradientColor.range([
+            d3.rgb(displayColor).brighter(),
+            d3.rgb(displayColor).darker()
+        ])
 
-            var nodeDistance = data.nodes[0].sourceLinks[0].target.x - data.nodes[0].x - sankey.nodeWidth();
+        gradientColor.domain(d3.extent(data.nodes, function (d) {
+            return d.value;
+        }));
 
-            var node = container.append('g').selectAll('.node')
-                .data(data.nodes)
-                .enter().append('g')
-                .attr('class', 'node')
-                .attr('transform', function (d) {
-                    return 'translate(' + d.x + ',' + d.y + ')';
-                })
-                .call(drag);
+        var nodeDistance = data.nodes[0].sourceLinks[0].target.x - data.nodes[0].x - sankey.nodeWidth();
 
-            node.append('rect')
-                .attr('width', sankey.nodeWidth())
-                .attr('height', function (d) { return d.dy; })
-                .attr('class', function (d) { return d.name; })
-                .style('cursor', 'move')
-                .style('fill', function (d, i) {
-                    return getFillColor(d, i);
-                })
-                .style('stroke', function (d, i) {
-                    return getFillColor(d, i);
-                })
+        var node = container.append('g').selectAll('.node')
+            .data(data.nodes)
+            .enter().append('g')
+            .attr('class', 'node')
+            .attr('transform', function (d) {
+                return 'translate(' + d.x + ',' + d.y + ')';
+            })
+            .call(drag);
 
-            node.append('text')
-                .attr('x', -6)
-                .attr('y', function (d) { return d.dy / 2; })
-                .attr('dy', '.35em')
-                .attr('text-anchor', 'end')
-                .style('pointer-events', 'none')
-                .text(function (d) {
+        node.append('rect')
+            .attr('width', sankey.nodeWidth())
+            .attr('height', function (d) { return d.dy; })
+            .attr('class', function (d) { return d.name; })
+            .style('cursor', 'move')
+            .style('fill', function (d, i) {
+                return getFillColor(d, i);
+            })
+            .style('stroke', function (d, i) {
+                return getFillColor(d, i);
+            })
+
+        node.append('text')
+            .attr('x', -6)
+            .attr('y', function (d) { return d.dy / 2; })
+            .attr('dy', '.35em')
+            .attr('text-anchor', 'end')
+            .style('pointer-events', 'none')
+            .text(function (d) {
+                if (d.dy > 4) {
+                    return d.name;
+                }
+                return "";
+            })
+            .text(function (d) {
+                if (!_print) {
+                    if (d.dy > 4) {
+                        if (dimension.indexOf(d.nodeType) >= dimension.length - 2) {
+                            return UTIL.getTruncatedLabel(this, d.name, nodeDistance / 2, 3);
+                        }
+                        return UTIL.getTruncatedLabel(this, d.name, nodeDistance, 3);
+                    }
+                    return "";
+                }
+                else {
                     if (d.dy > 4) {
                         return d.name;
                     }
                     return "";
-                })
-                .text(function (d) {
-                    if (!_print) {
-                        if (d.dy > 4) {
-                            if (dimension.indexOf(d.nodeType) >= dimension.length - 2) {
-                                return UTIL.getTruncatedLabel(this, d.name, nodeDistance / 2, 3);
+                }
+
+            })
+            .style('visibility', function (d, i) {
+                return showLabels[dimension.indexOf(d.nodeType)];
+            })
+            .style('font-style', function (d, i) {
+                return fontStyle[dimension.indexOf(d.nodeType)];
+            })
+            .style('font-weight', function (d, i) {
+                return fontWeight[dimension.indexOf(d.nodeType)];
+            })
+            .style('font-size', function (d, i) {
+                return fontSize[dimension.indexOf(d.nodeType)];
+            })
+            .style('fill', function (d, i) {
+                return textColor[dimension.indexOf(d.nodeType)];
+            })
+            .filter(function (d) { return d.x < parentWidth / 2; })
+            .attr('x', 6 + sankey.nodeWidth())
+            .attr('text-anchor', 'start');
+
+        link = container.append('g').selectAll('.link')
+            .data(data.links)
+            .enter().append('path')
+            .attr('class', 'link')
+            .style('stroke', function (d, i) {
+                return d3.select('.' + d.source.name).style('fill');
+            })
+            .attr('d', path)
+            .style('stroke-width', function (d) { return Math.max(1, d.dy); })
+            .sort(function (a, b) { return b.dy - a.dy; })
+
+        if (!_print) {
+
+            var _filter = UTIL.createFilterElement()
+            $('#' + parentContainer.attr('id')).append(_filter);
+
+            link.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg, 'link'))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, 'link'))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'link'))
+                .on('click', function (d) {
+                    filter = false;
+                    var confirm = parentContainer.select('.confirm')
+                        .style('visibility', 'visible');
+
+                    if (d.nodeType == dimension[0]) {
+                        _Local_data.map(function (val) {
+                            if (dimension[0] == d.nodeType && val[dimension[0]] == d.name) {
+                                var searchObj = _filter.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
+                                if (searchObj == undefined) {
+                                    _filter.push(val)
+                                }
                             }
-                            return UTIL.getTruncatedLabel(this, d.name, nodeDistance, 3);
-                        }
-                        return "";
+                        })
                     }
                     else {
-                        if (d.dy > 4) {
-                            return d.name;
-                        }
-                        return "";
+                        _Local_data.map(function (val) {
+                            if (dimension[1] == d.nodeType && val[dimension[1]] == d.name) {
+                                var searchObj = _filter.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
+                                if (searchObj == undefined) {
+                                    _filter.push(val)
+                                }
+                            }
+                        })
                     }
 
-                })
-                .style('visibility', function (d, i) {
-                    return showLabels[dimension.indexOf(d.nodeType)];
-                })
-                .style('font-style', function (d, i) {
-                    return fontStyle[dimension.indexOf(d.nodeType)];
-                })
-                .style('font-weight', function (d, i) {
-                    return fontWeight[dimension.indexOf(d.nodeType)];
-                })
-                .style('font-size', function (d, i) {
-                    return fontSize[dimension.indexOf(d.nodeType)];
-                })
-                .style('fill', function (d, i) {
-                    return textColor[dimension.indexOf(d.nodeType)];
-                })
-                .filter(function (d) { return d.x < parentWidth / 2; })
-                .attr('x', 6 + sankey.nodeWidth())
-                .attr('text-anchor', 'start');
+                    var _filter = _Local_data.filter(function (d1) {
+                        return d.data[_dimension[0]] === d1[_dimension[0]]
+                    })
+                    var rect = d3.select(this);
+                    if (rect.classed('selected')) {
+                        rect.classed('selected', false);
+                        filterData.map(function (val, i) {
+                            if (val[_dimension[0]] == d.data[_dimension[0]]) {
+                                filterData.splice(i, 1)
+                            }
+                        })
+                    } else {
+                        rect.classed('selected', true);
+                        var isExist = filterData.filter(function (val) {
+                            if (val[_dimension[0]] == d.data[_dimension[0]]) {
+                                return val
+                            }
+                        })
+                        if (isExist.length == 0) {
+                            filterData.push(_filter[0]);
+                        }
+                    }
 
-            link = container.append('g').selectAll('.link')
-                .data(data.links)
-                .enter().append('path')
-                .attr('class', 'link')
-                .style('stroke', function (d, i) {
-                    return d3.select('.' + d.source.name).style('fill');
+                    var _filterDimension = {};
+                    if (broadcast.filterSelection.id) {
+                        _filterDimension = broadcast.filterSelection.filter;
+                    } else {
+                        broadcast.filterSelection.id = parentContainer.attr('id');
+                    }
+                    var dimension = _dimension[0];
+                    if (_filterDimension[dimension]) {
+                        var temp = _filterDimension[dimension];
+                        if (temp.indexOf(d.data[_dimension[0]]) < 0) {
+                            temp.push(d.data[_dimension[0]]);
+                        } else {
+                            temp.splice(temp.indexOf(d.data[_dimension[0]]), 1);
+                        }
+                        _filterDimension[dimension] = temp;
+                    } else {
+                        _filterDimension[dimension] = [d.data[_dimension[0]]];
+                    }
+
+                    var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
+                    broadcast.updateWidget = {};
+                    broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
+                    broadcast.filterSelection.filter = _filterDimension;
+                    var _filterParameters = filterParameters.get();
+                    _filterParameters[dimension] = _filterDimension[dimension];
+                    filterParameters.save(_filterParameters);
                 })
-                .attr('d', path)
-                .style('stroke-width', function (d) { return Math.max(1, d.dy); })
-                .sort(function (a, b) { return b.dy - a.dy; })
 
-            if (!_print) {
-
-                var _filter = UTIL.createFilterElement()
-                $(div).append(_filter);
-
-                link.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg, 'link'))
-                    .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, 'link'))
-                    .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'link'))
-                    .on('click', function (d) {
-                        filter = false;
-                        var confirm = d3.select(div).select('.confirm')
-                            .style('visibility', 'visible');
-
+            node.selectAll('rect')
+                .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg, 'node'))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, 'node'))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'node'))
+                .on('click', function (d) {
+                    filter = false;
+                    var confirm = parentContainer.select('.confirm')
+                        .style('visibility', 'visible');
+                    var rect = d3.select(this)
+                    if (rect.classed('selected')) {
+                        rect.classed('selected', false);
+                        if (d.nodeType == dimension[0]) {
+                            _Local_data.map(function (val) {
+                                filterData = filterData.filter(function (val) {
+                                    if (d.name != val[dimension[0]]) {
+                                        return val;
+                                    }
+                                })
+                            })
+                        }
+                        else {
+                            _Local_data.map(function (val) {
+                                filterData = filterData.filter(function (val) {
+                                    if (d.name != val[dimension[1]]) {
+                                        return val;
+                                    }
+                                })
+                            })
+                        }
+                    }
+                    else {
+                        rect.classed('selected', true);
                         if (d.nodeType == dimension[0]) {
                             _Local_data.map(function (val) {
                                 if (dimension[0] == d.nodeType && val[dimension[0]] == d.name) {
-                                    var searchObj = _filter.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
+                                    var searchObj = filterData.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
                                     if (searchObj == undefined) {
-                                        _filter.push(val)
+                                        filterData.push(val)
                                     }
                                 }
                             })
@@ -490,142 +598,37 @@ function sankey() {
                         else {
                             _Local_data.map(function (val) {
                                 if (dimension[1] == d.nodeType && val[dimension[1]] == d.name) {
-                                    var searchObj = _filter.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
+                                    var searchObj = filterData.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
                                     if (searchObj == undefined) {
-                                        _filter.push(val)
+                                        filterData.push(val)
                                     }
                                 }
                             })
                         }
+                    }
+                })
 
-                        var _filter = _Local_data.filter(function (d1) {
-                            return d.data[_dimension[0]] === d1[_dimension[0]]
-                        })
-                        var rect = d3.select(this);
-                        if (rect.classed('selected')) {
-                            rect.classed('selected', false);
-                            filterData.map(function (val, i) {
-                                if (val[_dimension[0]] == d.data[_dimension[0]]) {
-                                    filterData.splice(i, 1)
-                                }
-                            })
-                        } else {
-                            rect.classed('selected', true);
-                            var isExist = filterData.filter(function (val) {
-                                if (val[_dimension[0]] == d.data[_dimension[0]]) {
-                                    return val
-                                }
-                            })
-                            if (isExist.length == 0) {
-                                filterData.push(_filter[0]);
-                            }
-                        }
-
-                        var _filterDimension = {};
-                        if (broadcast.filterSelection.id) {
-                            _filterDimension = broadcast.filterSelection.filter;
-                        } else {
-                            broadcast.filterSelection.id = $(div).attr('id');
-                        }
-                        var dimension = _dimension[0];
-                        if (_filterDimension[dimension]) {
-                            var temp = _filterDimension[dimension];
-                            if (temp.indexOf(d.data[_dimension[0]]) < 0) {
-                                temp.push(d.data[_dimension[0]]);
-                            } else {
-                                temp.splice(temp.indexOf(d.data[_dimension[0]]), 1);
-                            }
-                            _filterDimension[dimension] = temp;
-                        } else {
-                            _filterDimension[dimension] = [d.data[_dimension[0]]];
-                        }
-
-                        var idWidget = broadcast.updateWidget[$(div).attr('id')];
-                        broadcast.updateWidget = {};
-                        broadcast.updateWidget[$(div).attr('id')] = idWidget;
-                        broadcast.filterSelection.filter = _filterDimension;
-                        var _filterParameters = filterParameters.get();
-                        _filterParameters[dimension] = _filterDimension[dimension];
-                        filterParameters.save(_filterParameters);
-                    })
-
-                node.selectAll('rect')
-                    .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg, 'node'))
-                    .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, 'node'))
-                    .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'node'))
-                    .on('click', function (d) {
-                        filter = false;
-                        var confirm = d3.select(div).select('.confirm')
-                            .style('visibility', 'visible');
-                        var rect = d3.select(this)
-                        if (rect.classed('selected')) {
-                            rect.classed('selected', false);
-                            if (d.nodeType == dimension[0]) {
-                                _Local_data.map(function (val) {
-                                    filterData = filterData.filter(function (val) {
-                                        if (d.name != val[dimension[0]]) {
-                                            return val;
-                                        }
-                                    })
-                                })
-                            }
-                            else {
-                                _Local_data.map(function (val) {
-                                    filterData = filterData.filter(function (val) {
-                                        if (d.name != val[dimension[1]]) {
-                                            return val;
-                                        }
-                                    })
-                                })
-                            }
-                        }
-                        else {
-                            rect.classed('selected', true);
-                            if (d.nodeType == dimension[0]) {
-                                _Local_data.map(function (val) {
-                                    if (dimension[0] == d.nodeType && val[dimension[0]] == d.name) {
-                                        var searchObj = filterData.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
-                                        if (searchObj == undefined) {
-                                            filterData.push(val)
-                                        }
-                                    }
-                                })
-                            }
-                            else {
-                                _Local_data.map(function (val) {
-                                    if (dimension[1] == d.nodeType && val[dimension[1]] == d.name) {
-                                        var searchObj = filterData.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
-                                        if (searchObj == undefined) {
-                                            filterData.push(val)
-                                        }
-                                    }
-                                })
-                            }
-                        }
-                    })
-
-               parentContainer.select('.filterData')
+            parentContainer.select('.filterData')
                 .on('click', applyFilter());
 
-               parentContainer.select('.removeFilter')
+            parentContainer.select('.removeFilter')
                 .on('click', clearFilter(parentContainer));
 
-                _local_svg.select('g.lasso').remove()
+            _local_svg.select('g.lasso').remove()
 
-                var lasso = d3Lasso.lasso()
-                    .hoverSelect(true)
-                    .closePathSelect(true)
-                    .closePathDistance(100)
-                    .items(node.select('rect'))
-                    .targetArea(_local_svg);
+            var lasso = d3Lasso.lasso()
+                .hoverSelect(true)
+                .closePathSelect(true)
+                .closePathDistance(100)
+                .items(node.select('rect'))
+                .targetArea(_local_svg);
 
-                lasso.on('start', onLassoStart(lasso, _local_svg))
-                    .on('draw', onLassoDraw(lasso, _local_svg))
-                    .on('end', onLassoEnd(lasso, _local_svg));
+            lasso.on('start', onLassoStart(lasso, _local_svg))
+                .on('draw', onLassoDraw(lasso, _local_svg))
+                .on('end', onLassoEnd(lasso, _local_svg));
 
-                _local_svg.call(lasso);
-            }
-        });
+            _local_svg.call(lasso);
+        }
     }
 
     chart._getName = function () {
@@ -659,7 +662,9 @@ function sankey() {
         newLink = link.enter().append('path')
             .attr('class', 'link')
             .attr('d', path)
-            .style('stroke', '#efefef')
+            .style('stroke', function (d, i) {
+                return d3.select('.' + d.source.name).style('fill');
+            })
             .style('stroke-width', function (d) { return Math.max(1, d.dy); })
             .sort(function (a, b) { return b.dy - a.dy; })
             .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg, 'link'))
@@ -667,7 +672,7 @@ function sankey() {
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'link'))
             .on('click', function (d) {
                 filter = false;
-                var confirm = d3.select(div).select('.confirm')
+                var confirm = parentContainer.select('.confirm')
                     .style('visibility', 'visible');
 
                 if (d.nodeType == dimension[0]) {
@@ -694,6 +699,9 @@ function sankey() {
 
         link
             .attr('d', path)
+            .style('stroke', function (d, i) {
+                return d3.select('.' + d.source.name).style('fill');
+            })
             .style('stroke-width', function (d) { return Math.max(1, d.dy); })
             .sort(function (a, b) { return b.dy - a.dy; })
 
@@ -721,7 +729,7 @@ function sankey() {
             .style('fill', function (d, i) {
                 return getFillColor(d, i);
             })
-            .style('stroke', function (d) {
+            .style('stroke', function (d, i) {
                 return getFillColor(d, i);
             })
             .classed('selected', false)
@@ -730,7 +738,7 @@ function sankey() {
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'node'))
             .on('click', function (d) {
                 filter = false;
-                var confirm = d3.select(div).select('.confirm')
+                var confirm = parentContainer.select('.confirm')
                     .style('visibility', 'visible');
                 var rect = d3.select(this)
                 if (rect.classed('selected')) {
@@ -825,8 +833,8 @@ function sankey() {
             .style('fill', function (d, i) {
                 return getFillColor(d, i);
             })
-            .style('stroke', function (d) {
-                return borderColor;
+            .style('stroke', function (d,i) {
+                return getFillColor(d, i);
             })
             .classed('selected', false)
 
@@ -1015,6 +1023,13 @@ function sankey() {
             return _notification;
         }
         _notification = value;
+        return chart;
+    }
+    chart.data = function (value) {
+        if (!arguments.length) {
+            return _data;
+        }
+        _data = value;
         return chart;
     }
     return chart;

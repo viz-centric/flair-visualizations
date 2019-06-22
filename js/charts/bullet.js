@@ -30,7 +30,8 @@ function bullet() {
         _print,
         broadcast,
         filterParameters,
-        _notification = false;
+        _notification = false,
+        _data;
 
     var _local_svg, _Local_data, _originalData;
 
@@ -42,7 +43,7 @@ function bullet() {
         left: 0
     };
 
-    var offset = 6, div;
+    var offset = 6, parentContainer;
 
     var filter = false, filterData = [], measuresSum, targetSum;
 
@@ -96,7 +97,7 @@ function bullet() {
             + "<td>" + datum.title + "</td>"
             + "</tr><tr>"
             + "<th>" + 'Value' + ": </th>"
-            + "<td>" +  Math.round(measure * 100) / 100  + "</td>"
+            + "<td>" + Math.round(measure * 100) / 100 + "</td>"
             + "</tr><tr>"
             + "<th>" + "Target" + ": </th>"
             + "<td>" + Math.round(target * 100) / 100 + "</td>"
@@ -191,7 +192,7 @@ function bullet() {
                 if (broadcast.filterSelection.id) {
                     _filterDimension = broadcast.filterSelection.filter;
                 } else {
-                    broadcast.filterSelection.id = $(div).attr('id');
+                    broadcast.filterSelection.id = parentContainer.attr('id');
                 }
                 _filterDimension[dimension] = filterData.map(function (d) {
                     return d[dimension[0]];
@@ -375,219 +376,222 @@ function bullet() {
         }
     }
     function chart(selection) {
-        _local_svg = selection;
 
-        selection.each(function (data) {
-            data = UTIL.sortingData(data, dimension[0])
-            _originalData = _Local_data = data;
-            div = d3.select(this).node().parentNode;
+        data = UTIL.sortingData(_data, dimension[0])
+        _Local_data = _originalData = data;
 
-            var me = this;
+        parentContainer = d3.select('#' + selection.id);
 
-            setMeasuresSum(UTIL.getSum(data, measures[0]));
-            setTargetSum(UTIL.getSum(data, measures[1]));
+        var svg = parentContainer.append('svg')
+            .attr('width', parentContainer.attr('width'))
+            .attr('height', parentContainer.attr('height'))
 
-            var svg = d3.select(this);
-            width = +svg.attr('width');
+        width = +svg.attr('width'),
             height = +svg.attr('height');
 
-            svg.selectAll('g').remove();
+        parentContainer.append('div')
+            .attr('class', 'custom_tooltip');
 
-            svg.attr('width', width)
-                .attr('height', height);
+        _local_svg = svg;
 
-            container = svg.append('g')
-                .attr('class', 'plot')
+        setMeasuresSum(UTIL.getSum(data, measures[0]));
+        setTargetSum(UTIL.getSum(data, measures[1]));
 
-            if (_tooltip) {
-              tooltip = parentContainer.select('.custom_tooltip');
-            }
+        svg.selectAll('g').remove();
 
-            data = data.map(function (item) {
-                var d = {};
-                d.title = item[dimension[0]];
-                d.ranges = getSegmentValues(
-                    Math.floor(1.2 * Math.max.apply(Math, [item[measures[0]], item[measures[1]]]))
-                );
-                d.measures = [item[measures[0]]];
-                d.markers = [item[measures[1]]];
+        svg.attr('width', width)
+            .attr('height', height);
 
-                return d;
-            });
+        container = svg.append('g')
+            .attr('class', 'plot')
 
-            if (!_print) {
-                bullet = d3bullet(_print)
-                    .duration(COMMON.DURATION);
-            }
-            else {
-                bullet = d3bullet(_print)
-            }
+        if (_tooltip) {
+            tooltip = parentContainer.select('.custom_tooltip');
+        }
 
-            var margin = getMargin(width);
-            gWidth = Math.floor((width - margin.left - margin.right) / data.length);
-            gHeight = Math.floor((height - margin.top - margin.bottom) / data.length);
-            offset = 6;
-            if (orientation == 'Horizontal') {
-                bullet.width(width - margin.left - margin.right);
-                if (data.length == 1) {
-                    bullet.height(Math.floor(3 * gHeight / 4));
-                } else {
-                    bullet.height(Math.floor(gHeight / 2));
-                }
-            } else if (orientation == 'Vertical') {
-                bullet.width(height - margin.top - margin.bottom);
-                if (data.length == 1) {
-                    bullet.height(Math.floor(3 * gWidth / 4));
-                } else {
-                    bullet.height(Math.floor(gWidth / 2));
-                }
+        data = data.map(function (item) {
+            var d = {};
+            d.title = item[dimension[0]];
+            d.ranges = getSegmentValues(
+                Math.floor(1.2 * Math.max.apply(Math, [item[measures[0]], item[measures[1]]]))
+            );
+            d.measures = [item[measures[0]]];
+            d.markers = [item[measures[1]]];
+
+            return d;
+        });
+
+        if (!_print) {
+            bullet = d3bullet(_print)
+                .duration(COMMON.DURATION);
+        }
+        else {
+            bullet = d3bullet(_print)
+        }
+
+        var margin = getMargin(width);
+        gWidth = Math.floor((width - margin.left - margin.right) / data.length);
+        gHeight = Math.floor((height - margin.top - margin.bottom) / data.length);
+        offset = 6;
+        if (orientation == 'Horizontal') {
+            bullet.width(width - margin.left - margin.right);
+            if (data.length == 1) {
+                bullet.height(Math.floor(3 * gHeight / 4));
             } else {
-                throw "Invalid orientation";
+                bullet.height(Math.floor(gHeight / 2));
             }
+        } else if (orientation == 'Vertical') {
+            bullet.width(height - margin.top - margin.bottom);
+            if (data.length == 1) {
+                bullet.height(Math.floor(3 * gWidth / 4));
+            } else {
+                bullet.height(Math.floor(gWidth / 2));
+            }
+        } else {
+            throw "Invalid orientation";
+        }
 
-            var g = container.selectAll('g')
-                .data(data)
-                .enter().append('g')
-                .attr('id', function (d, i) {
-                    return 'group_' + div.id + '_' + i;
-                })
-                .attr('class', 'bullet')
-                .attr('transform', function (d, i) {
-                    if (orientation == 'Horizontal') {
-                        return 'translate(' + margin.left + ',' + (margin.top + i * gHeight) + ') rotate(0)';
-                    } else if (orientation == 'Vertical') {
-                        return 'translate(' + (margin.left + i * gWidth) + ',' + (height - margin.top + offset) + ') rotate(-90)';
+        var g = container.selectAll('g')
+            .data(data)
+            .enter().append('g')
+            .attr('id', function (d, i) {
+                return 'group_' + parentContainer.id + '_' + i;
+            })
+            .attr('class', 'bullet')
+            .attr('transform', function (d, i) {
+                if (orientation == 'Horizontal') {
+                    return 'translate(' + margin.left + ',' + (margin.top + i * gHeight) + ') rotate(0)';
+                } else if (orientation == 'Vertical') {
+                    return 'translate(' + (margin.left + i * gWidth) + ',' + (height - margin.top + offset) + ') rotate(-90)';
+                }
+
+            })
+            .call(bullet);
+
+        var title = g.append('g')
+            .style('text-anchor', function (d) {
+                if (orientation == 'Horizontal') {
+                    return 'end';
+                } else if (orientation == 'Vertical') {
+                    return 'middle';
+                }
+            })
+            .attr('display', showLabel ? "inherit" : "none")
+            .attr('transform', function (d) {
+                if (orientation == 'Horizontal') {
+                    return 'translate(' + -offset + ',' + Math.floor(gHeight / 3.25) + ')';
+                } else if (orientation == 'Vertical') {
+                    return 'translate(' + -offset * 2 + ',' + Math.floor(gWidth / 3.25) + ')';
+                }
+            })
+
+        title.append('text')
+            .attr('class', 'title')
+            .style('font-style', fontStyle)
+            .style('font-weight', fontWeight)
+            .style('font-size', fontSize + 'px')
+            .attr('transform', function (d) {
+                if (orientation == 'Horizontal') {
+                    return 'rotate(0)';
+                } else if (orientation == 'Vertical') {
+                    return 'rotate(90)';
+                }
+            })
+            .text(function (d) { return d.title; })
+            .text(function (d) {
+                if (orientation == 'Horizontal') {
+                    if (d.title.length > 3) {
+                        return d.title.substring(0, 3) + '...';
                     }
+                    return d.title;
+                } else if (orientation == 'Vertical') {
+                    return UTIL.getTruncatedLabel(this, d.title, Math.floor(gWidth / 2), offset);
+                }
+            });
+        formatUsingCss(_local_svg);
 
-                })
-                .call(bullet);
+        if (!_print) {
 
-            var title = g.append('g')
-                .style('text-anchor', function (d) {
-                    if (orientation == 'Horizontal') {
-                        return 'end';
-                    } else if (orientation == 'Vertical') {
-                        return 'middle';
-                    }
-                })
-                .attr('display', showLabel ? "inherit" : "none")
-                .attr('transform', function (d) {
-                    if (orientation == 'Horizontal') {
-                        return 'translate(' + -offset + ',' + Math.floor(gHeight / 3.25) + ')';
-                    } else if (orientation == 'Vertical') {
-                        return 'translate(' + -offset * 2 + ',' + Math.floor(gWidth / 3.25) + ')';
-                    }
-                })
+            d3.selectAll('g.bullet')
+                .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+                .on('click', function (d) {
 
-            title.append('text')
-                .attr('class', 'title')
-                .style('font-style', fontStyle)
-                .style('font-weight', fontWeight)
-                .style('font-size', fontSize + 'px')
-                .attr('transform', function (d) {
-                    if (orientation == 'Horizontal') {
-                        return 'rotate(0)';
-                    } else if (orientation == 'Vertical') {
-                        return 'rotate(90)';
-                    }
-                })
-                .text(function (d) { return d.title; })
-                .text(function (d) {
-                    if (orientation == 'Horizontal') {
-                        if (d.title.length > 3) {
-                            return d.title.substring(0, 3) + '...';
-                        }
-                        return d.title;
-                    } else if (orientation == 'Vertical') {
-                        return UTIL.getTruncatedLabel(this, d.title, Math.floor(gWidth / 2), offset);
-                    }
-                });
-            formatUsingCss(_local_svg);
+                    var confirm = parentContainer.select('.confirm')
+                        .style('visibility', 'visible');
 
-            if (!_print) {
+                    var rect = d3.select(this).select('rect.measure');
 
-                d3.selectAll('g.bullet')
-                    .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-                    .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-                    .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
-                    .on('click', function (d) {
-
-                        var confirm = d3.select(div).select('.confirm')
-                            .style('visibility', 'visible');
-
-                        var rect = d3.select(this).select('rect.measure');
-
-                        if (rect.classed('selected')) {
-                            rect.classed('selected', false);
-                            filterData = filterData.filter(function (val) {
-                                if (val[dimension[0]] != d.title) {
-                                    return val;
-                                }
-                            })
-                        } else {
-                            rect.classed('selected', true);
-                            var obj = new Object();
-                            obj[dimension] = d.title;
-                            obj[measures[0]] = d.measures.toString();
-                            obj[measures[1]] = d.markers.toString();
-
-                            filterData.push(obj)
-                        }
-
-                        var _filterDimension = {};
-                        if (broadcast.filterSelection.id) {
-                            _filterDimension = broadcast.filterSelection.filter;
-                        } else {
-                            broadcast.filterSelection.id = $(div).attr('id');
-                        }
-                        var _dimension = dimension[0];
-                        if (_filterDimension[_dimension]) {
-                            var temp = _filterDimension[_dimension];
-                            if (temp.indexOf(d.title) < 0) {
-                                temp.push(d.title);
-                            } else {
-                                temp.splice(temp.indexOf(d.title), 1);
+                    if (rect.classed('selected')) {
+                        rect.classed('selected', false);
+                        filterData = filterData.filter(function (val) {
+                            if (val[dimension[0]] != d.title) {
+                                return val;
                             }
-                            _filterDimension[_dimension] = temp;
+                        })
+                    } else {
+                        rect.classed('selected', true);
+                        var obj = new Object();
+                        obj[dimension] = d.title;
+                        obj[measures[0]] = d.measures.toString();
+                        obj[measures[1]] = d.markers.toString();
+
+                        filterData.push(obj)
+                    }
+
+                    var _filterDimension = {};
+                    if (broadcast.filterSelection.id) {
+                        _filterDimension = broadcast.filterSelection.filter;
+                    } else {
+                        broadcast.filterSelection.id = parentContainer.attr('id');
+                    }
+                    var _dimension = dimension[0];
+                    if (_filterDimension[_dimension]) {
+                        var temp = _filterDimension[_dimension];
+                        if (temp.indexOf(d.title) < 0) {
+                            temp.push(d.title);
                         } else {
-                            _filterDimension[_dimension] = [d.title];
+                            temp.splice(temp.indexOf(d.title), 1);
                         }
+                        _filterDimension[_dimension] = temp;
+                    } else {
+                        _filterDimension[_dimension] = [d.title];
+                    }
 
-                        var idWidget = broadcast.updateWidget[$(div).attr('id')];
-                        broadcast.updateWidget = {};
-                        broadcast.updateWidget[$(div).attr('id')] = idWidget;
-                        broadcast.filterSelection.filter = _filterDimension;
-                        var _filterParameters = filterParameters.get();
-                        _filterParameters[_dimension] = _filterDimension[_dimension];
-                        filterParameters.save(_filterParameters);
-                    })
+                    var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
+                    broadcast.updateWidget = {};
+                    broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
+                    broadcast.filterSelection.filter = _filterDimension;
+                    var _filterParameters = filterParameters.get();
+                    _filterParameters[_dimension] = _filterDimension[_dimension];
+                    filterParameters.save(_filterParameters);
+                })
 
+            var _filter = UTIL.createFilterElement()
+            $('#' + parentContainer.attr('id')).append(_filter);
 
-                var _filter = UTIL.createFilterElement()
-                $(div).append(_filter);
-
-               parentContainer.select('.filterData')
+            parentContainer.select('.filterData')
                 .on('click', applyFilter());
 
-               parentContainer.select('.removeFilter')
+            parentContainer.select('.removeFilter')
                 .on('click', clearFilter(parentContainer));
 
-                _local_svg.select('g.lasso').remove()
+            _local_svg.select('g.lasso').remove()
 
-                var lasso = d3Lasso.lasso()
-                    .hoverSelect(true)
-                    .closePathSelect(true)
-                    .closePathDistance(100)
-                    .items(g)
-                    .targetArea(_local_svg);
+            var lasso = d3Lasso.lasso()
+                .hoverSelect(true)
+                .closePathSelect(true)
+                .closePathDistance(100)
+                .items(g)
+                .targetArea(_local_svg);
 
-                lasso.on('start', onLassoStart(lasso, _local_svg))
-                    .on('draw', onLassoDraw(lasso, _local_svg))
-                    .on('end', onLassoEnd(lasso, _local_svg));
+            lasso.on('start', onLassoStart(lasso, _local_svg))
+                .on('draw', onLassoDraw(lasso, _local_svg))
+                .on('end', onLassoEnd(lasso, _local_svg));
 
-                _local_svg.call(lasso);
-            }
-        });
+            _local_svg.call(lasso);
+        }
     }
     chart._getName = function () {
         return _NAME;
@@ -600,7 +604,7 @@ function bullet() {
     chart.update = function (data) {
         data = UTIL.sortingData(data, dimension[0]);
         if (_tooltip) {
-          tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         _Local_data = data;
         filterData = [];
@@ -664,7 +668,7 @@ function bullet() {
 
         newBullet
             .attr('id', function (d, i) {
-                return 'group_' + div.id + '_' + i;
+                return 'group_' + parentContainer.id + '_' + i;
             })
             .attr('class', 'bullet')
             .attr('transform', function (d, i) {
@@ -679,7 +683,7 @@ function bullet() {
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
             .on('click', function (d) {
-                var confirm = d3.select(div).select('.confirm')
+                var confirm = parentContainer.select('.confirm')
                     .style('visibility', 'visible');
 
                 var rect = d3.select(this).select('rect.measure');
@@ -705,7 +709,7 @@ function bullet() {
                 if (broadcast.filterSelection.id) {
                     _filterDimension = broadcast.filterSelection.filter;
                 } else {
-                    broadcast.filterSelection.id = $(div).attr('id');
+                    broadcast.filterSelection.id = parentContainer.attr('id');
                 }
                 var _dimension = dimension[0];
                 if (_filterDimension[_dimension]) {
@@ -720,9 +724,9 @@ function bullet() {
                     _filterDimension[_dimension] = [d.title];
                 }
 
-                var idWidget = broadcast.updateWidget[$(div).attr('id')];
+                var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                 broadcast.updateWidget = {};
-                broadcast.updateWidget[$(div).attr('id')] = idWidget;
+                broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
                 broadcast.filterSelection.filter = _filterDimension;
                 var _filterParameters = filterParameters.get();
                 _filterParameters[_dimension] = _filterDimension[_dimension];
@@ -937,6 +941,14 @@ function bullet() {
         _notification = value;
         return chart;
     }
+    chart.data = function (value) {
+        if (!arguments.length) {
+            return _data;
+        }
+        _data = value;
+        return chart;
+    }
+    
     return chart;
 }
 

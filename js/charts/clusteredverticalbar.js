@@ -229,7 +229,7 @@ function clusteredverticalbar() {
     var clearFilter = function (div) {
         return function () {
             chart.update(_originalData);
-            d3.select(div).select('.confirm')
+            parentContainer.select('.confirm')
                 .style('visibility', 'hidden');
 
         }
@@ -403,6 +403,7 @@ function clusteredverticalbar() {
 
         x0.rangeRound([0, plotWidth])
             .padding([0.2])
+            .paddingInner(0.1)
             .domain(data.map(function (d) { return d[_dimension[0]]; }));
 
         x1.padding([0.2])
@@ -575,22 +576,22 @@ function clusteredverticalbar() {
             $(document).on('click', plot, function (e) {
                 if ($(parentContainer).find('.alert').prop('checked') == false) {
                     var element = e.target.classList.value.split(' ')
-                    if (element.indexOf("chartSvg_" + $(parentContainer).attr('id')) >= 0) {
-                        $('#Modal_' + $(parentContainer).attr('id') + ' .measure').val('')
-                        $('#Modal_' + $(parentContainer).attr('id') + ' .threshold').val('')
-                        $('#Modal_' + $(parentContainer).attr('id') + ' .measure').attr('disabled', false)
-                        $('#Modal_' + $(parentContainer).attr('id')).modal('show');
+                    if (element.indexOf("chartSvg_" + parentContainer.attr('id')) >= 0) {
+                        $('#Modal_' + parentContainer.attr('id') + ' .measure').val('')
+                        $('#Modal_' + parentContainer.attr('id') + ' .threshold').val('')
+                        $('#Modal_' + parentContainer.attr('id') + ' .measure').attr('disabled', false)
+                        $('#Modal_' + parentContainer.attr('id')).modal('show');
                     }
                 }
             })
 
-            $(document).on('click', '#Modal_' + $(parentContainer).attr('id') + ' .ThresholdSubmit', function (e) {
-                var newValue = $('#Modal_' + $(parentContainer).attr('id') + ' .threshold').val();
+            $(document).on('click', '#Modal_' + parentContainer.attr('id') + ' .ThresholdSubmit', function (e) {
+                var newValue = $('#Modal_' + parentContainer.attr('id') + ' .threshold').val();
                 var obj = new Object()
-                obj.measure = $('#Modal_' + $(parentContainer).attr('id') + ' .measure').val()
+                obj.measure = $('#Modal_' + parentContainer.attr('id') + ' .measure').val()
                 obj.threshold = newValue;
                 threshold.push(obj);
-                $('#Modal_' + $(parentContainer).attr('id')).modal('toggle');
+                $('#Modal_' + parentContainer.attr('id')).modal('toggle');
             })
 
             _local_svg.select('g.sort').remove();
@@ -731,10 +732,10 @@ function clusteredverticalbar() {
                 .on('click', function (d) {
                     if (!_print) {
                         if ($(parentContainer).find('.alert').prop('checked') == true) {
-                            $('#Modal_' + $(parentContainer).attr('id') + ' .measure').val(d.measure);
-                            $('#Modal_' + $(parentContainer).attr('id') + ' .threshold').val('');
-                            $('#Modal_' + $(parentContainer).attr('id') + ' .measure').attr('disabled', true);;
-                            $('#Modal_' + $(parentContainer).attr('id')).modal('toggle');
+                            $('#Modal_' + parentContainer.attr('id') + ' .measure').val(d.measure);
+                            $('#Modal_' + parentContainer.attr('id') + ' .threshold').val('');
+                            $('#Modal_' + parentContainer.attr('id') + ' .measure').attr('disabled', true);;
+                            $('#Modal_' + parentContainer.attr('id')).modal('toggle');
                         }
                         else {
                             filter = false;
@@ -954,6 +955,7 @@ function clusteredverticalbar() {
 
         x0.rangeRound([0, plotWidth])
             .padding([0.2])
+            .paddingInner(0.1)
             .domain(data.map(function (d) { return d[_dimension[0]]; }));
 
         x1.padding([0.2])

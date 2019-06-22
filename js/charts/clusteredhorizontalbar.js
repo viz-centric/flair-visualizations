@@ -191,7 +191,7 @@ function clusteredhorizontalbar() {
                 if (broadcast.filterSelection.id) {
                     _filterDimension = broadcast.filterSelection.filter;
                 } else {
-                    broadcast.filterSelection.id = $(parentContainer).attr('id');
+                    broadcast.filterSelection.id = parentContainer.attr('id');
                 }
                 var dimension = _dimension[0];
 
@@ -228,7 +228,7 @@ function clusteredhorizontalbar() {
     var clearFilter = function (div) {
         return function () {
             chart.update(_originalData);
-            d3.select(div).select('.confirm')
+            parentContainer.select('.confirm')
                 .style('visibility', 'hidden');
         }
     }
@@ -709,14 +709,14 @@ function clusteredhorizontalbar() {
                 .on('click', function (d) {
                     if (!_print) {
                         if ($("#myonoffswitch").prop('checked') == false) {
-                            $('#Modal_' + $(parentContainer).attr('id') + ' .measure').val(d.measure);
-                            $('#Modal_' + $(parentContainer).attr('id') + ' .threshold').val('');
-                            $('#Modal_' + $(parentContainer).attr('id') + ' .measure').attr('disabled', true);;
-                            $('#Modal_' + $(parentContainer).attr('id')).modal('toggle');
+                            $('#Modal_' + parentContainer.attr('id') + ' .measure').val(d.measure);
+                            $('#Modal_' + parentContainer.attr('id') + ' .threshold').val('');
+                            $('#Modal_' + parentContainer.attr('id') + ' .measure').attr('disabled', true);;
+                            $('#Modal_' + parentContainer.attr('id')).modal('toggle');
                         }
                         else {
                             filter = false;
-                            var confirm = d3.select(parentContainer).select('.confirm')
+                            var confirm = parentContainer.select('.confirm')
                                 .style('visibility', 'visible');
                             var _filter = _Local_data.filter(function (d1) {
                                 return d[_dimension[0]] === d1[_dimension[0]]
@@ -744,7 +744,7 @@ function clusteredhorizontalbar() {
                             if (broadcast.filterSelection.id) {
                                 _filterDimension = broadcast.filterSelection.filter;
                             } else {
-                                broadcast.filterSelection.id = $(parentContainer).attr('id');
+                                broadcast.filterSelection.id = parentContainer.attr('id');
                             }
                             var dimension = _dimension[0];
                             if (_filterDimension[dimension]) {
@@ -755,9 +755,9 @@ function clusteredhorizontalbar() {
                                 _filterDimension[dimension] = [d[dimension]];
                             }
 
-                            var idWidget = broadcast.updateWidget[$(parentContainer).attr('id')];
+                            var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                             broadcast.updateWidget = {};
-                            broadcast.updateWidget[$(parentContainer).attr('id')] = idWidget;
+                            broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
                             broadcast.filterSelection.filter = _filterDimension;
                             var _filterParameters = filterParameters.get();
                             _filterParameters[dimension] = _filterDimension[dimension];

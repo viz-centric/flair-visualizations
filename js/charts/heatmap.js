@@ -37,16 +37,18 @@ function heatmap() {
         broadcast,
         filterParameters,
         displayColor = [],
-        _notification = false;
+        _notification = false,
+        _data;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [];
-    var width, height, cellWidth, cellHeight, div;
+    var width, height, cellWidth, cellHeight, parentContainer;
     var margin = {
         top: 30,
         right: 15,
         bottom: 15,
         left: 55
     };
+
     var yScale = d3.scaleBand(),
         xScale = d3.scaleBand();
 
@@ -329,7 +331,7 @@ function heatmap() {
                 if (broadcast.filterSelection.id) {
                     _filterDimension = broadcast.filterSelection.filter;
                 } else {
-                    broadcast.filterSelection.id = $(div).attr('id');
+                    broadcast.filterSelection.id = parentContainer.attr('id');
                 }
                 var dimension = _dimension[0];
 
@@ -371,135 +373,141 @@ function heatmap() {
     }
 
     function chart(selection) {
-        _local_svg = selection;
 
-        selection.each(function (data) {
-            data = UTIL.sortingData(data, _dimension[0])
-            div = d3.select(this).node().parentNode;
-            var svg = d3.select(this);
+        data = UTIL.sortingData(_data, _dimension[0])
+        _Local_data = _originalData = data;
 
-            width = +svg.attr('width');
+        parentContainer = d3.select('#' + selection.id);
+
+        var svg = parentContainer.append('svg')
+            .attr('width', parentContainer.attr('width'))
+            .attr('height', parentContainer.attr('height'))
+
+        width = +svg.attr('width'),
             height = +svg.attr('height');
 
-            svg.selectAll('g').remove();
+        parentContainer.append('div')
+            .attr('class', 'custom_tooltip');
 
-            var plot = svg.attr('width', width)
-                .attr('height', height)
-                .append('g')
-                .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
+        _local_svg = svg;
 
-            /* store the data in local variable */
-            _localData = _originalData = data;
-            var me = this;
-            svg.selectAll('g').remove();
+        svg.selectAll('g').remove();
 
-            var plot = svg.attr('width', width)
-                .attr('height', height)
-                .append('g')
-                .attr('class', 'plot')
-                .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
+        var plot = svg.attr('width', width)
+            .attr('height', height)
+            .append('g')
+            .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
 
-            var yElement = d3.set(data.map(function (item) { return item[_dimension[0]]; })).values();
-            var xElement = d3.map();
+        /* store the data in local variable */
+        _localData = _originalData = data;
+        var me = this;
+        svg.selectAll('g').remove();
 
-            for (var i = 0; i < _measure.length; i++) {
-                xElement.set(i, _measure[i]);
-            }
+        var plot = svg.attr('width', width)
+            .attr('height', height)
+            .append('g')
+            .attr('class', 'plot')
+            .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
 
-            cellWidth = parseInt((width - margin.left - margin.right) / _measure.length),
-                cellHeight = parseInt((height - margin.top - margin.bottom) / data.length);
-            var offset = 6;
-            var dimLabel = plot.selectAll('.dimLabel')
-                .data(yElement)
-                .enter().append('text')
-                .attr('class', 'dimLabel')
-                .text(function (d) { return d; })
-                .text(function (d) {
-                    if (!_print) {
-                        return UTIL.getTruncatedLabel(this, d, (margin.left));
+        var yElement = d3.set(data.map(function (item) { return item[_dimension[0]]; })).values();
+        var xElement = d3.map();
+
+        for (var i = 0; i < _measure.length; i++) {
+            xElement.set(i, _measure[i]);
+        }
+
+        cellWidth = parseInt((width - margin.left - margin.right) / _measure.length),
+            cellHeight = parseInt((height - margin.top - margin.bottom) / data.length);
+        var offset = 6;
+        var dimLabel = plot.selectAll('.dimLabel')
+            .data(yElement)
+            .enter().append('text')
+            .attr('class', 'dimLabel')
+            .text(function (d) { return d; })
+            .text(function (d) {
+                if (!_print) {
+                    return UTIL.getTruncatedLabel(this, d, (margin.left));
+                }
+                else {
+                    if (d.length > 3) {
+                        return d.substring(0, 3) + '...';
                     }
-                    else {
-                        if (d.length > 3) {
-                            return d.substring(0, 3) + '...';
-                        }
-                        return d;
-                    }
-                })
-                .attr('x', 0)
-                .attr('y', function (d, i) { return i * cellHeight; })
-                .style('fill', dimLabelColor)
-                .style('font-style', fontStyleForDimension)
-                .style('font-weight', fontWeightForDimension)
-                .style('font-size', fontSizeForDimension)
-                .style('text-anchor', 'end')
-                .attr('transform', 'translate(' + -offset + ',' + cellHeight / 1.75 + ')');
+                    return d;
+                }
+            })
+            .attr('x', 0)
+            .attr('y', function (d, i) { return i * cellHeight; })
+            .style('fill', dimLabelColor)
+            .style('font-style', fontStyleForDimension)
+            .style('font-weight', fontWeightForDimension)
+            .style('font-size', fontSizeForDimension)
+            .style('text-anchor', 'end')
+            .attr('transform', 'translate(' + -offset + ',' + cellHeight / 1.75 + ')');
 
-            var mesLabel = plot.selectAll('.mesLabel')
-                .data(xElement.values().map(function (mes) {
-                    return displayNameForMeasure[_measure.indexOf(mes)];
-                }))
-                .enter().append('text')
-                .attr('class', 'mesLabel')
-                .text(function (d) { return d; })
-                .text(function (d) {
-                    return UTIL.title(UTIL.getTruncatedLabel(this, d, cellWidth));
-                })
-                .attr('x', function (d, i) { return i * cellWidth; })
-                .attr('y', 0)
-                .style('text-anchor', 'middle')
-                .attr('transform', 'translate(' + cellWidth / 2 + ', -6)');
+        var mesLabel = plot.selectAll('.mesLabel')
+            .data(xElement.values().map(function (mes) {
+                return displayNameForMeasure[_measure.indexOf(mes)];
+            }))
+            .enter().append('text')
+            .attr('class', 'mesLabel')
+            .text(function (d) { return d; })
+            .text(function (d) {
+                return UTIL.title(UTIL.getTruncatedLabel(this, d, cellWidth));
+            })
+            .attr('x', function (d, i) { return i * cellWidth; })
+            .attr('y', 0)
+            .style('text-anchor', 'middle')
+            .attr('transform', 'translate(' + cellWidth / 2 + ', -6)');
 
-            yScale
-                .domain(yElement)
-                .range([0, yElement.length * cellHeight]);
+        yScale
+            .domain(yElement)
+            .range([0, yElement.length * cellHeight]);
 
-            xScale
-                .domain(xElement.entries().map(function (element) {
-                    return element.key + '_' + element.value;
-                }))
-                .range([0, xElement.size() * cellWidth]);
+        xScale
+            .domain(xElement.entries().map(function (element) {
+                return element.key + '_' + element.value;
+            }))
+            .range([0, xElement.size() * cellWidth]);
 
-            data = transformData(data);
-            if (_tooltip) {
-               tooltip = parentContainer.select('.custom_tooltip');
-            }
+        data = transformData(data);
+        if (_tooltip) {
+            tooltip = parentContainer.select('.custom_tooltip');
+        }
 
-            var cell = plot.selectAll(".node")
-                .data(data)
-                .enter().append('g')
-                .attr('transform', function (d) {
-                    return 'translate(' + xScale(d.column + '_' + d.x) + ',' + yScale(d.y) + ')';
-                })
-                .attr('class', 'node')
+        var cell = plot.selectAll(".node")
+            .data(data)
+            .enter().append('g')
+            .attr('transform', function (d) {
+                return 'translate(' + xScale(d.column + '_' + d.x) + ',' + yScale(d.y) + ')';
+            })
+            .attr('class', 'node')
 
-            drawViz(cell);
-            if (!_print) {
-                var _filter = UTIL.createFilterElement()
-                $(div).append(_filter);
+        drawViz(cell);
+        if (!_print) {
+            var _filter = UTIL.createFilterElement()
+            $('#' + parentContainer.attr('id')).append(_filter);
 
-               parentContainer.select('.filterData')
+            parentContainer.select('.filterData')
                 .on('click', applyFilter());
 
-               parentContainer.select('.removeFilter')
+            parentContainer.select('.removeFilter')
                 .on('click', clearFilter(parentContainer));
 
-                _local_svg.select('g.lasso').remove()
+            _local_svg.select('g.lasso').remove()
 
-                var lasso = d3Lasso.lasso()
-                    .hoverSelect(true)
-                    .closePathSelect(true)
-                    .closePathDistance(100)
-                    .items(cell)
-                    .targetArea(_local_svg);
+            var lasso = d3Lasso.lasso()
+                .hoverSelect(true)
+                .closePathSelect(true)
+                .closePathDistance(100)
+                .items(cell)
+                .targetArea(_local_svg);
 
-                lasso.on('start', onLassoStart(lasso, _local_svg))
-                    .on('draw', onLassoDraw(lasso, _local_svg))
-                    .on('end', onLassoEnd(lasso, _local_svg));
+            lasso.on('start', onLassoStart(lasso, _local_svg))
+                .on('draw', onLassoDraw(lasso, _local_svg))
+                .on('end', onLassoEnd(lasso, _local_svg));
 
-                _local_svg.call(lasso);
-            }
-        })
-
+            _local_svg.call(lasso);
+        }
     }
 
     var drawViz = function (element) {
@@ -524,7 +532,7 @@ function heatmap() {
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
                     filter = false;
-                    var confirm = d3.select(div).select('.confirm')
+                    var confirm = parentContainer.select('.confirm')
                         .style('visibility', 'visible');
                     var _filter = _localData.filter(function (d1) {
                         return d.y === d1[_dimension[0]]
@@ -542,7 +550,7 @@ function heatmap() {
                     if (broadcast.filterSelection.id) {
                         _filterDimension = broadcast.filterSelection.filter;
                     } else {
-                        broadcast.filterSelection.id = $(div).attr('id');
+                        broadcast.filterSelection.id = parentContainer.attr('id');
                     }
                     var dimension = _dimension[0];
                     if (_filterDimension[dimension]) {
@@ -557,9 +565,9 @@ function heatmap() {
                         _filterDimension[dimension] = [d.y];
                     }
 
-                    var idWidget = broadcast.updateWidget[$(div).attr('id')];
+                    var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                     broadcast.updateWidget = {};
-                    broadcast.updateWidget[$(div).attr('id')] = idWidget;
+                    broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
                     broadcast.filterSelection.filter = _filterDimension;
                     var _filterParameters = filterParameters.get();
                     _filterParameters[dimension] = _filterDimension[dimension];
@@ -645,7 +653,7 @@ function heatmap() {
     chart.update = function (data) {
         data = UTIL.sortingData(data, _dimension[0]);
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         _Local_data = data;
         filterData = [];
@@ -790,6 +798,53 @@ function heatmap() {
             .duration(COMMON.DURATION)
             .styleTween('fill', function (d) {
                 return d3.interpolateRgb('transparent', getFillColor(d));
+            });
+
+        newCell.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+            .on('click', function (d) {
+                filter = false;
+                var confirm = parentContainer.select('.confirm')
+                    .style('visibility', 'visible');
+                var _filter = _localData.filter(function (d1) {
+                    return d.y === d1[_dimension[0]]
+                })
+
+                var rect = d3.select(this).select('rect');
+
+                if (rect.classed('selected')) {
+                    rect.classed('selected', false);
+                } else {
+                    rect.classed('selected', true);
+                }
+
+                var _filterDimension = {};
+                if (broadcast.filterSelection.id) {
+                    _filterDimension = broadcast.filterSelection.filter;
+                } else {
+                    broadcast.filterSelection.id = parentContainer.attr('id');
+                }
+                var dimension = _dimension[0];
+                if (_filterDimension[dimension]) {
+                    var temp = _filterDimension[dimension];
+                    if (temp.indexOf(d.y) < 0) {
+                        temp.push(d.y);
+                    } else {
+                        temp.splice(temp.indexOf(d.y), 1);
+                    }
+                    _filterDimension[dimension] = temp;
+                } else {
+                    _filterDimension[dimension] = [d.y];
+                }
+
+                var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
+                broadcast.updateWidget = {};
+                broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
+                broadcast.filterSelection.filter = _filterDimension;
+                var _filterParameters = filterParameters.get();
+                _filterParameters[dimension] = _filterDimension[dimension];
+                filterParameters.save(_filterParameters);
             });
 
         newCell.append('text')
@@ -1054,6 +1109,13 @@ function heatmap() {
             return _notification;
         }
         _notification = value;
+        return chart;
+    }
+    chart.data = function (value) {
+        if (!arguments.length) {
+            return _data;
+        }
+        _data = value;
         return chart;
     }
     return chart;

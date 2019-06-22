@@ -220,7 +220,7 @@ function doughnut() {
     var clearFilter = function (div) {
         return function () {
             chart.update(_originalData);
-            d3.select(div).select('.confirm')
+            parentContainer.select('.confirm')
                 .style('visibility', 'hidden');
         }
     }
@@ -294,7 +294,7 @@ function doughnut() {
                 if (broadcast.filterSelection.id) {
                     _filterDimension = broadcast.filterSelection.filter;
                 } else {
-                    broadcast.filterSelection.id = $(parentContainer).attr('id');
+                    broadcast.filterSelection.id = parentContainer.attr('id');
                 }
                 var dimension = _dimension[0];
 
@@ -795,7 +795,7 @@ function doughnut() {
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg))
                 .on('click', function (d, i) {
 
-                    var confirm = d3.select(parentContainer).select('.confirm')
+                    var confirm = parentContainer.select('.confirm')
                         .style('visibility', 'visible');
                     filter = false;
 
@@ -814,7 +814,7 @@ function doughnut() {
                     if (broadcast.filterSelection.id) {
                         _filterDimension = broadcast.filterSelection.filter;
                     } else {
-                        broadcast.filterSelection.id = $(parentContainer).attr('id');
+                        broadcast.filterSelection.id = parentContainer.attr('id');
                     }
                     var dimension = _dimension[0];
                     if (_filterDimension[dimension]) {
@@ -829,9 +829,9 @@ function doughnut() {
                         _filterDimension[dimension] = [d.data[_dimension[0]]];
                     }
 
-                    var idWidget = broadcast.updateWidget[$(parentContainer).attr('id')];
+                    var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                     broadcast.updateWidget = {};
-                    broadcast.updateWidget[$(parentContainer).attr('id')] = idWidget;
+                    broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
                     broadcast.filterSelection.filter = _filterDimension;
                     var _filterParameters = filterParameters.get();
                     _filterParameters[dimension] = _filterDimension[dimension];
@@ -1022,7 +1022,7 @@ function doughnut() {
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg))
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg))
             .on('click', function (d, i) {
-                var confirm = d3.select(parentContainer).select('.confirm')
+                var confirm = parentContainer.select('.confirm')
                     .style('visibility', 'visible');
                 filter = false;
 
@@ -1041,7 +1041,7 @@ function doughnut() {
                 if (broadcast.filterSelection.id) {
                     _filterDimension = broadcast.filterSelection.filter;
                 } else {
-                    broadcast.filterSelection.id = $(parentContainer).attr('id');
+                    broadcast.filterSelection.id = parentContainer.attr('id');
                 }
                 var dimension = _dimension[0];
                 if (_filterDimension[dimension]) {
@@ -1056,9 +1056,9 @@ function doughnut() {
                     _filterDimension[dimension] = [d.data[_dimension[0]]];
                 }
 
-                var idWidget = broadcast.updateWidget[$(parentContainer).attr('id')];
+                var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                 broadcast.updateWidget = {};
-                broadcast.updateWidget[$(parentContainer).attr('id')] = idWidget;
+                broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
                 broadcast.filterSelection.filter = _filterDimension;
                 var _filterParameters = filterParameters.get();
                 _filterParameters[dimension] = _filterDimension[dimension];
