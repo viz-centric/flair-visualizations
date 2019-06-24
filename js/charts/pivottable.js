@@ -35,9 +35,10 @@ function pivottable() {
         _fontWeightForMeasure = [],
         _print,
         broadcast,
-        filterParameters;;
+        filterParameters,
+        _data;
 
-    var _localData, filterData = [], _local_svg, _originalData, div, mapper;
+    var _localData, filterData = [], _local_svg, _originalData, parentContainer, mapper;
 
     var unpivotedDimension, nester, pivotedDimension, nestedData, pivotedData = [];
     var _setConfigParams = function (config) {
@@ -316,7 +317,7 @@ function pivottable() {
         if (broadcast.filterSelection.id) {
             _filterDimension = broadcast.filterSelection.filter;
         } else {
-            broadcast.filterSelection.id = d3.select(div.node()).attr('id');
+            broadcast.filterSelection.id = parentContainer.attr('id');
         }
         var dimension = _dimension[0];
         if (_filterDimension[dimension]) {
@@ -331,9 +332,9 @@ function pivottable() {
             _filterDimension[dimension] = [str.textContent]
         }
 
-        var idWidget = broadcast.updateWidget[$(div).attr('id')];
+        var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
         broadcast.updateWidget = {};
-        broadcast.updateWidget[$(div).attr('id')] = idWidget;
+        broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
         broadcast.filterSelection.filter = _filterDimension;
         var _filterParameters = filterParameters.get();
         _filterParameters[dimension] = _filterDimension[dimension];
@@ -468,127 +469,121 @@ function pivottable() {
     function chart(selection) {
         _local_svg = selection;
 
-        selection.each(function (data) {
-            data = UTIL.sortingData(data, _dimension[0])
-            _localData = data
-            div = d3.select(this);
-            var svg = d3.select(this),
-                width = parseInt(svg.style('width')),
-                height = parseInt(svg.style('height'));
+        data = UTIL.sortingData(_data, _dimension[0])
+        _Local_data = _originalData = data;
+        if (_print && !_notification) {
+            parentContainer = selection;
+        }
+        else {
+            parentContainer = d3.select('#' + selection.id)
+        }
 
-            var id = svg.attr('id');
+        var svg = parentContainer;
 
-            if (_print) {
-                svg
-                    .attr('width', 0)
-                    .attr('height', 0)
-            }
-            else {
-                svg
-                    .attr('width', width)
-                    .attr('height', height)
-                    .style('overflow-y', 'auto')
-                    .style('overflow-x', 'auto');
-            }
+        var id = svg.attr('id');
 
-            nester = d3.nest(),
-                pivotedDimension = getPivotedDimension();
+        //  var disv = d3.select('#' + id);
 
-            unpivotedDimension = getUnPivotedDimension();
+        var width = parentContainer.attr('width'),
+            height = parentContainer.attr('height')
 
-            unpivotedDimension.forEach(function (dim) {
-                nester = nester.key(function (d) {
-                    return d[dim];
-                })
-            });
+        var id = svg.attr('id');
 
-            nester.rollup(function (values) {
-                var _sorter = function (x, y, i) {
-                    if (typeof (pivotedDimension[i]) === 'undefined') {
-                        return 0;
-                    }
+        if (_print) {
+            svg
+                .attr('width', 0)
+                .attr('height', 0)
+        }
+        else {
+            svg
+                .attr('width', width)
+                .attr('height', height)
+                .style('overflow-y', 'auto')
+                .style('overflow-x', 'auto');
+        }
 
-                    return x[pivotedDimension[i]] < y[pivotedDimension[i]]
-                        ? -1 : x[pivotedDimension[i]] > y[pivotedDimension[i]] ? 1 : _sorter(x, y, i + 1);
+        nester = d3.nest(),
+            pivotedDimension = getPivotedDimension();
+
+        unpivotedDimension = getUnPivotedDimension();
+
+        unpivotedDimension.forEach(function (dim) {
+            nester = nester.key(function (d) {
+                return d[dim];
+            })
+        });
+
+        nester.rollup(function (values) {
+            var _sorter = function (x, y, i) {
+                if (typeof (pivotedDimension[i]) === 'undefined') {
+                    return 0;
                 }
 
-                var sortedValues = values.sort(function (x, y) {
-                    return _sorter(x, y, 0);
-                });
-
-                sortedValues = values;
-
-                var leafNode = function (data, measure, value) {
-                    var leafDim = "";
-
-                    pivotedDimension.forEach(function (pd) {
-                        leafDim += "_" + data[pd];
-                    });
-
-                    return {
-                        name: measure + leafDim,
-                        value: value
-                    };
-                }
-
-                var result = [];
-
-                _measure.forEach(function (m) {
-                    var temp = sortedValues.map(function (d) {
-                        return leafNode(d, m, d[m]);
-                    });
-
-                    result = Array.prototype.concat(result, temp);
-                });
-
-                return result;
-            });
-
-            nestedData = nester.entries(data),
-                pivotedData = [];
-
-            getGeneratedPivotData(nestedData, 0);
-
-            mapper = d3.map();
-
-            pivotedDimension.forEach(function (pd) {
-                mapper.set(pd, getUniqueData(data, pd));
-            });
-
-
-            var table = svg.append('table')
-                .attr('id', 'viz_pivot-table')
-                .style('width', '100%')
-                .style('font-size', '0.7rem')
-                .classed('display', true)
-                .classed('nowrap', true)
-                .classed('table', true)
-                .classed('table-condensed', true)
-                .classed('table-hover', true);
-
-            var thead = "<thead><tr>",
-                tbody = "<tbody>";
-
-            if (_dimension.length === unpivotedDimension.length) {
-                unpivotedDimension.forEach(function (upd, i) {
-                    var style = {
-                        'text-align': getTextAlignment(upd, true),
-                        'background-color': '#f7f7f7',
-                        'font-weight': 'bold',
-                    };
-
-                    style = JSON.stringify(style);
-                    style = style.replace(/","/g, ';').replace(/["{}]/g, '');
-
-                    thead += "<th style=\"" + style + "\">" + upd + "</th>";
-                });
-            } else {
-                thead += "<th colspan=\"" + unpivotedDimension.length + "\" rowspan=\"" + pivotedDimension.length + "\"></th>";
+                return x[pivotedDimension[i]] < y[pivotedDimension[i]]
+                    ? -1 : x[pivotedDimension[i]] > y[pivotedDimension[i]] ? 1 : _sorter(x, y, i + 1);
             }
+
+            var sortedValues = values.sort(function (x, y) {
+                return _sorter(x, y, 0);
+            });
+
+            sortedValues = values;
+
+            var leafNode = function (data, measure, value) {
+                var leafDim = "";
+
+                pivotedDimension.forEach(function (pd) {
+                    leafDim += "_" + data[pd];
+                });
+
+                return {
+                    name: measure + leafDim,
+                    value: value
+                };
+            }
+
+            var result = [];
 
             _measure.forEach(function (m) {
+                var temp = sortedValues.map(function (d) {
+                    return leafNode(d, m, d[m]);
+                });
+
+                result = Array.prototype.concat(result, temp);
+            });
+
+            return result;
+        });
+
+        nestedData = nester.entries(data),
+            pivotedData = [];
+
+        getGeneratedPivotData(nestedData, 0);
+
+        mapper = d3.map();
+
+        pivotedDimension.forEach(function (pd) {
+            mapper.set(pd, getUniqueData(data, pd));
+        });
+
+
+        var table = svg.append('table')
+            .attr('id', 'viz_pivot-table')
+            .style('width', '100%')
+            .style('font-size', '0.7rem')
+            .classed('display', true)
+            .classed('nowrap', true)
+            .classed('table', true)
+            .classed('table-condensed', true)
+            .classed('table-hover', true);
+
+        var thead = "<thead><tr>",
+            tbody = "<tbody>";
+
+        if (_dimension.length === unpivotedDimension.length) {
+            unpivotedDimension.forEach(function (upd, i) {
                 var style = {
-                    'text-align': getTextAlignment(m),
+                    'text-align': getTextAlignment(upd, true),
                     'background-color': '#f7f7f7',
                     'font-weight': 'bold',
                 };
@@ -596,57 +591,72 @@ function pivottable() {
                 style = JSON.stringify(style);
                 style = style.replace(/","/g, ';').replace(/["{}]/g, '');
 
-                thead += "<th colspan=\"" + getColspanValue(mapper, 0) + "\" style=\"" + style + "\">" + m + "</th>";
+                thead += "<th style=\"" + style + "\">" + upd + "</th>";
             });
+        } else {
+            thead += "<th colspan=\"" + unpivotedDimension.length + "\" rowspan=\"" + pivotedDimension.length + "\"></th>";
+        }
 
-            thead += "</tr>";
+        _measure.forEach(function (m) {
+            var style = {
+                'text-align': getTextAlignment(m),
+                'background-color': '#f7f7f7',
+                'font-weight': 'bold',
+            };
 
-            mapper.entries().forEach(function (entry, index) {
-                thead += createHeaders(entry.value, entry.key, index);
-            });
+            style = JSON.stringify(style);
+            style = style.replace(/","/g, ';').replace(/["{}]/g, '');
 
-            thead += "</thead>";
-
-
-            pivotedData.forEach(function (pd) {
-                tbody += "<tr>" + createEntries(pd) + "</tr>";
-            });
-
-            tbody += "</tbody></table>";
-
-            table.append('thead')
-                .html(thead);
-
-            table.append('tbody')
-                .html(tbody);
-
-            if (!_print) {
-
-                var _filter = UTIL.createFilterElement()
-                $('#' + id).append(_filter)
-
-                $('#' + div.attr('id')).find('#viz_pivot-table').dataTable({
-                    scrollY: height - 100,
-                    scrollX: true,
-                    scrollCollapse: true,
-                    ordering: true,
-                    info: true,
-                    searching: false,
-                    bDestroy: true,
-                    'sDom': 't'
-                });
-
-                $($('#' + div.attr('id') + ' td')).on('click', function () {
-                    readerTableChart.call(this.textContent, this, div)
-                })
-
-                svg.select('.filterData')
-                    .on('click', applyFilter());
-
-                svg.select('.removeFilter')
-                    .on('click', clearFilter());
-            }
+            thead += "<th colspan=\"" + getColspanValue(mapper, 0) + "\" style=\"" + style + "\">" + m + "</th>";
         });
+
+        thead += "</tr>";
+
+        mapper.entries().forEach(function (entry, index) {
+            thead += createHeaders(entry.value, entry.key, index);
+        });
+
+        thead += "</thead>";
+
+
+        pivotedData.forEach(function (pd) {
+            tbody += "<tr>" + createEntries(pd) + "</tr>";
+        });
+
+        tbody += "</tbody></table>";
+
+        table.append('thead')
+            .html(thead);
+
+        table.append('tbody')
+            .html(tbody);
+
+        if (!_print) {
+
+            var _filter = UTIL.createFilterElement()
+            $('#' + id).append(_filter)
+
+            $('#' + parentContainer.attr('id')).find('#viz_pivot-table').dataTable({
+                scrollY: height - 100,
+                scrollX: true,
+                scrollCollapse: true,
+                ordering: true,
+                info: true,
+                searching: false,
+                bDestroy: true,
+                'sDom': 't'
+            });
+
+            $($('#' + parentContainer.attr('id') + ' td')).on('click', function () {
+                readerTableChart.call(this.textContent, this, parentContainer)
+            })
+
+            svg.select('.filterData')
+                .on('click', applyFilter());
+
+            svg.select('.removeFilter')
+                .on('click', clearFilter());
+        }
     }
 
     chart._getName = function () {
@@ -662,10 +672,10 @@ function pivottable() {
         _localData = data;
         svg = _local_svg;
         filterData = [];
-        div.selectAll('tbody').remove();
-        div.selectAll('thead').remove();
+        parentContainer.selectAll('tbody').remove();
+        parentContainer.selectAll('thead').remove();
 
-        var table = div.select('#viz_pivot-table');
+        var table = parentContainer.select('#viz_pivot-table');
 
         nestedData = nester.entries(data),
             pivotedData = [];
@@ -732,8 +742,8 @@ function pivottable() {
         table.append('tbody')
             .html(tbody);
 
-        $($('#' + div.attr('id') + ' td')).on('click', function () {
-            readerTableChart.call(this.textContent, this, div)
+        $($('#' + parentContainer.attr('id') + ' td')).on('click', function () {
+            readerTableChart.call(this.textContent, this, parentContainer)
         })
     }
 
@@ -988,6 +998,15 @@ function pivottable() {
         filterParameters = value;
         return chart;
     }
+
+    chart.data = function (value) {
+        if (!arguments.length) {
+            return _data;
+        }
+        _data = value;
+        return chart;
+    }
+    
     return chart;
 }
 

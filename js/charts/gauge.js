@@ -29,7 +29,7 @@ function gauge() {
 
     var _local_svg, tooltip;
 
-    var emptyArc, fillArc, targetArc, arc, _arc, svg, _measure, target;
+    var emptyArc, fillArc, targetArc, arc, _measure, target, offsetX = 16;
     var ringInset, ringWidth;
 
     var _setConfigParams = function (config) {
@@ -132,7 +132,12 @@ function gauge() {
 
         _Local_data = _originalData = _data;
 
-        parentContainer = d3.select('#' + selection.id)
+        if (_print && !_notification) {
+            parentContainer = selection;
+        }
+        else {
+            parentContainer = d3.select('#' + selection.id)
+        }
 
         var svg = parentContainer.append('svg')
             .attr('width', parentContainer.attr('width'))
@@ -140,6 +145,11 @@ function gauge() {
 
         var width = +svg.attr('width'),
             height = +svg.attr('height');
+
+        parentContainer.append('div')
+            .attr('class', 'custom_tooltip');
+
+        _local_svg = svg;
 
         if (_tooltip) {
             tooltip = parentContainer.select('.custom_tooltip');
@@ -237,6 +247,15 @@ function gauge() {
                     .length), 5);
             });
 
+        legend.attr('transform', function (d, i) {
+            var count = i,
+                widthSum = 0
+            while (count-- != 0) {
+                widthSum += parentContainer.select('#legend' + count).node().getBBox().width + offsetX;
+            }
+            return 'translate(' + widthSum + ', ' + 0 + ')';
+        });
+
         var plot = container
             .append("g")
             .attr("transform", getTxCenter(width, height))
@@ -283,10 +302,10 @@ function gauge() {
                 }
             })
             .text(function () {
-                return displayName + " " + data[0][measures[0]];
+                return displayName + " " + UTIL.getNumberFormatterFn(numberFormat)(UTIL.roundNumber(_data[0][measures[0]], 0));
             })
             .text(function () {
-                return UTIL.getTruncatedLabel(this, displayName + " " + data[0][measures[0]], ringInset)
+                return UTIL.getTruncatedLabel(this, displayName + " " + UTIL.getNumberFormatterFn(numberFormat)(UTIL.roundNumber(_data[0][measures[0]], 0)), ringInset)
             })
 
         // displayName + " " + data[0][measures[0]])
@@ -307,10 +326,11 @@ function gauge() {
                 }
             })
             .text(function () {
-                return displayName + " " + data[0][measures[1]];
+
+                return displayName + " " + _data[0][measures[1]];
             })
             .text(function () {
-                return UTIL.getTruncatedLabel(this, displayName + " " + data[0][measures[1]], ringInset)
+                return UTIL.getTruncatedLabel(this, displayName + " " + _data[0][measures[1]], ringInset)
             })
 
         chart.update(_data);
@@ -324,19 +344,29 @@ function gauge() {
         return _local_svg.node().outerHTML;
     }
 
-    chart.update = function (value) {
+    chart.update = function (_data) {
 
-        var maxVal = Math.max(value[0][measures[0]], value[0][measures[1]]);
+        var maxVal = Math.max(_data[0][measures[0]], _data[0][measures[1]]);
 
-        var _measurePi = degToRad(Math.floor(value[0][measures[0]] * 180 / maxVal - 90));
-        var targetPi = degToRad(Math.floor(value[0][measures[1]] * 180 / maxVal - 90));
-
+        var _measurePi = degToRad(Math.floor(_data[0][measures[0]] * 180 / maxVal - 90));
+        var targetPi = degToRad(Math.floor(_data[0][measures[1]] * 180 / maxVal - 90));
+        var _measureValue = Math.round(UTIL.getNumberFormatterFn(numberFormat)(UTIL.roundNumber(_data[0][measures[0]], 2)) * 100) / 100;
+        var _tragetValue = Math.round(UTIL.getNumberFormatterFn(numberFormat)(UTIL.roundNumber(_data[0][measures[1]], 2)) * 100) / 100;
         _measure.transition()
-            .text(displayName + " " + value[0][measures[0]])
+            .text(function () {
+                return displayName + " " + _measureValue;
+            })
+            .text(function () {
+                return UTIL.getTruncatedLabel(this, displayName + " " + _measureValue, ringInset)
+            })
 
         target.transition()
-            .text(targetDisplayName + " " + value[0][measures[1]])
-
+            .text(function () {
+                return targetDisplayName + " " + _tragetValue;
+            })
+            .text(function () {
+                return UTIL.getTruncatedLabel(this, targetDisplayName + " " + _tragetValue, ringInset)
+            })
 
         if (!_print) {
 
@@ -354,13 +384,13 @@ function gauge() {
                 })
                 .call(arcTween, targetPi);
 
-            fillArc.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg, value[0][measures[0]], displayName))
-                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, value[0][measures[0]], displayName))
-                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, value[0][measures[0]], displayName))
+            fillArc.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg, _measureValue, displayName))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, _measureValue, displayName))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, _measureValue, displayName))
 
-            targetArc.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg, value[0][measures[1]], targetDisplayName))
-                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, value[0][measures[1]], targetDisplayName))
-                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, value[0][measures[1]], targetDisplayName))
+            targetArc.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg, _tragetValue, targetDisplayName))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, _tragetValue, targetDisplayName))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, _tragetValue, targetDisplayName))
         }
         else {
             fillArc

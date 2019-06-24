@@ -37,7 +37,8 @@ function treemap() {
         _print,
         broadcast,
         filterParameters,
-        _notification = false;
+        _notification = false,
+        _data;
 
     /* These are the common variables that is shared across the different private/public 
      * methods but is initialized/updated within the methods itself.
@@ -49,7 +50,7 @@ function treemap() {
         textPadding = 2,
         _originalData,
         width,
-        height, div;
+        height, parentContainer;
     // _localLabelStack;
 
     /* These are the common private functions that is shared across the different private/public 
@@ -465,7 +466,7 @@ function treemap() {
     var clearFilter = function (div) {
         return function () {
             chart.update(_originalData);
-            d3.select(div).select('.confirm')
+            parentContainer.select('.confirm')
                 .style('visibility', 'hidden');
         }
     }
@@ -498,7 +499,7 @@ function treemap() {
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
                     filter = false;
-                    var confirm = d3.select(div).select('.confirm')
+                    var confirm = parentContainer.select('.confirm')
                         .style('visibility', 'visible');
 
                     var rect = d3.select(this)
@@ -512,7 +513,7 @@ function treemap() {
                     if (broadcast.filterSelection.id) {
                         filterList = broadcast.filterSelection.filter;
                     } else {
-                        broadcast.filterSelection.id = $(div).attr('id');
+                        broadcast.filterSelection.id = parentContainer.attr('id');
                     }
                     if (_dimension.length == 2) {
                         if (d.children) {
@@ -554,9 +555,9 @@ function treemap() {
                         }
                     }
 
-                    var idWidget = broadcast.updateWidget[$(div).attr('id')];
+                    var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                     broadcast.updateWidget = {};
-                    broadcast.updateWidget[$(div).attr('id')] = idWidget;
+                    broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
                     broadcast.filterSelection.filter = filterList;
                     var _filterParameters = filterParameters.get();
 
@@ -621,111 +622,125 @@ function treemap() {
 
     }
     function chart(selection) {
-        _local_svg = selection;
 
-        selection.each(function (data) {
-            data = UTIL.sortingData(data, _dimension[0])
-            div = d3.select(this).node().parentNode;
+        data = UTIL.sortingData(_data, _dimension[0])
 
-            var svg = d3.select(this),
-                width = +svg.attr('width') - 2 * COMMON.PADDING,
-                height = +svg.attr('height') - 2 * COMMON.PADDING;
-            /* store the data in local variable */
-            _localData = _originalData = data;
+        if (_print && !_notification) {
+            parentContainer = selection;
+        }
+        else {
+            parentContainer = d3.select('#' + selection.id)
+        }
 
-            var me = this;
+        var svg = parentContainer.append('svg')
+            .attr('width', parentContainer.attr('width') - 2 * COMMON.PADDING)
+            .attr('height', parentContainer.attr('height') - 2 * COMMON.PADDING)
 
-            svg.selectAll('g').remove();
+        var width = +svg.attr('width'),
+            height = +svg.attr('height');
 
-            svg.attr('width', width)
-                .attr('height', height)
-                .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
+        parentContainer.append('div')
+            .attr('class', 'custom_tooltip');
 
-            if (_tooltip) {
-               tooltip = parentContainer.select('.custom_tooltip');
-            }
+        _local_svg = svg;
 
-            treemap = d3.treemap()
-                .size([width, height])
-                .paddingOuter(function (node) {
-                    if (node.parent) {
-                        return 5;
-                    }
-                    return 1;
-                })
-                .paddingTop(function (node) {
-                    if (node.parent) {
-                        return 20;
-                    }
-                    return 0;
-                })
-                .paddingInner(10)
-                .round(true);
+        /* store the data in local variable */
+        _localData = _originalData = data;
 
-            if (_dimension.length == 2) {
-                nest = this._nest = d3.nest()
-                    .key(function (d) { return d[_dimension[0]]; })
-                    .key(function (d) { return d[_dimension[1]]; })
-                    .rollup(function (d) { return d3.sum(d, function (d) { return d[_measure[0]]; }); });
-            } else {
-                nest = this._nest = d3.nest()
-                    .key(function (d) { return d[_dimension[0]]; })
-                    .rollup(function (d) { return d3.sum(d, function (d) { return d[_measure[0]]; }); });
-            }
+        var me = this;
 
-            root = d3.hierarchy({ values: nest.entries(data) }, function (d) { return d.values; })
-                .sum(function (d) { return d.value; })
-                .sort(function (a, b) { return b.value - a.value; });
+        svg.selectAll('g').remove();
 
-            _localTotal = root.value;
+        svg.attr('width', width)
+            .attr('height', height)
+            .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
-            treemap(root);
+        if (_tooltip) {
+            tooltip = parentContainer.select('.custom_tooltip');
+        }
 
-            var dim = _dimension.length;
+        treemap = d3.treemap()
+            .size([width, height])
+            .paddingOuter(function (node) {
+                if (node.parent) {
+                    return 5;
+                }
+                return 1;
+            })
+            .paddingTop(function (node) {
+                if (node.parent) {
+                    return 20;
+                }
+                return 0;
+            })
+            .paddingInner(10)
+            .round(true);
 
-            while (dim > 0) {
-                setColorDomainRange(root.descendants(), dim);
-                dim -= 1;
-            }
-            var plot = svg.append('g')
-                .attr('class', 'plot');
+        if (_dimension.length == 2) {
+            nest = this._nest = d3.nest()
+                .key(function (d) { return d[_dimension[0]]; })
+                .key(function (d) { return d[_dimension[1]]; })
+                .rollup(function (d) { return d3.sum(d, function (d) { return d[_measure[0]]; }); });
+        } else {
+            nest = this._nest = d3.nest()
+                .key(function (d) { return d[_dimension[0]]; })
+                .rollup(function (d) { return d3.sum(d, function (d) { return d[_measure[0]]; }); });
+        }
 
-            var cell = plot.selectAll('.node')
-                .data(root.descendants())
-                .enter().append('g')
-                .attr('transform', function (d) {
-                    return 'translate(' + d.x0 + ',' + d.y0 + ')';
-                })
-                .attr('class', 'node')
-                .each(function (d) { d.node = this; });
+        root = d3.hierarchy({ values: nest.entries(data) }, function (d) { return d.values; })
+            .sum(function (d) { return d.value; })
+            .sort(function (a, b) { return b.value - a.value; });
 
-            drawViz(cell)
+        _localTotal = root.value;
 
-            if (!_print) {
-                var _filter = UTIL.createFilterElement()
-                $(div).append(_filter);
+        treemap(root);
 
-               parentContainer.select('.filterData')
+        var dim = _dimension.length;
+
+        while (dim > 0) {
+            setColorDomainRange(root.descendants(), dim);
+            dim -= 1;
+        }
+        var plot = svg.append('g')
+            .attr('class', 'plot');
+
+        var cell = plot.selectAll('.node')
+            .data(root.descendants())
+            .enter().append('g')
+            .attr('transform', function (d) {
+                return 'translate(' + d.x0 + ',' + d.y0 + ')';
+            })
+            .attr('class', 'node')
+            .each(function (d) { d.node = this; });
+
+        drawViz(cell)
+
+        if (!_print) {
+
+            var _filter = UTIL.createFilterElement()
+            //$(div).append(_filter);
+            $('#' + parentContainer.attr('id')).append(_filter);
+
+            parentContainer.select('.filterData')
                 .on('click', applyFilter());
 
-               parentContainer.select('.removeFilter')
+            parentContainer.select('.removeFilter')
                 .on('click', clearFilter(parentContainer));
 
-                _local_svg.select('g.lasso').remove();
-                var lasso = d3Lasso.lasso()
-                    .hoverSelect(true)
-                    .closePathSelect(true)
-                    .closePathDistance(100)
-                    .items(cell)
-                    .targetArea(_local_svg);
+            _local_svg.select('g.lasso').remove();
+            var lasso = d3Lasso.lasso()
+                .hoverSelect(true)
+                .closePathSelect(true)
+                .closePathDistance(100)
+                .items(cell)
+                .targetArea(_local_svg);
 
-                lasso.on('start', onLassoStart(lasso, _local_svg))
-                    .on('draw', onLassoDraw(lasso, _local_svg))
-                    .on('end', onLassoEnd(lasso, _local_svg));
+            lasso.on('start', onLassoStart(lasso, _local_svg))
+                .on('draw', onLassoDraw(lasso, _local_svg))
+                .on('end', onLassoEnd(lasso, _local_svg));
 
-                _local_svg.call(lasso);
-            }
-        });
+            _local_svg.call(lasso);
+        }
     }
 
     chart._getName = function () {
@@ -1057,6 +1072,13 @@ function treemap() {
             return colorSet;
         }
         colorSet = value;
+        return chart;
+    }
+    chart.data = function (value) {
+        if (!arguments.length) {
+            return _data;
+        }
+        _data = value;
         return chart;
     }
     return chart;

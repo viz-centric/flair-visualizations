@@ -33,7 +33,8 @@ function infographics() {
         _kpiIconExpression,
         _tooltip,
         _print,
-        _notification = false;
+        _notification = false,
+        _data;
 
     /* These are the common variables that is shared across the different private/public
      * methods but is initialized/updated within the methods itself.
@@ -45,7 +46,7 @@ function infographics() {
         _localXLabels = [],
         _localMin,
         _localMax,
-        _localTooltip;
+        _localTooltip, infographics;
 
     /* These are the common private functions that is shared across the different private/public
      * methods but is initialized beforehand.
@@ -212,235 +213,235 @@ function infographics() {
     }
 
     function chart(selection) {
-        _localDiv = selection;
 
-        selection.each(function (data) {
-            data = UTIL.sortingData(data, _dimension[0])
-            var infographics = d3.select(this),
-                width = parseInt(infographics.style('width')),
-                height = parseInt(infographics.style('height')),
-                parentWidth = width - 2 * COMMON.PADDING,
-                parentHeight = height - 2 * COMMON.PADDING;
+        data = UTIL.sortingData(_data, _dimension[0])
+        infographics = d3.select('#' + selection.id),
+            width = infographics.attr('width'),
+            height = infographics.attr('height'),
+            parentWidth = width - 2 * COMMON.PADDING,
+            parentHeight = height - 2 * COMMON.PADDING;
 
-            /* total sum of the measure values */
-            _localTotal = d3.sum(data.map(function (d) { return d[_measure[0]]; }));
+        /* total sum of the measure values */
+        _localTotal = d3.sum(data.map(function (d) { return d[_measure[0]]; }));
 
-            /* store the data in local variable */
-            _localData = data;
+        /* store the data in local variable */
+        _localData = data;
 
-            var container = infographics.append('div')
-                .classed('container', true)
-                .style('width', parentWidth + 'px')
-                .style('height', parentHeight + 'px')
-                .style('margin', COMMON.PADDING)
-                .style('padding', '0px');
+        infographics.append('div')
+            .attr('class', 'custom_tooltip');
 
-            var graphics = container.append('svg')
-                .attr('id', 'graphics')
-                .attr("width", parentWidth)
-                .attr("height", parentHeight)
-                .style("position", 'absolute');
+        var container = infographics.append('div')
+            .classed('container', true)
+            .style('width', parentWidth + 'px')
+            .style('height', parentHeight + 'px')
+            .style('margin', COMMON.PADDING)
+            .style('padding', '0px');
 
-            var info = container.append('div')
-                .attr('id', 'info')
-                .style('position', 'absolute')
-                .style('width', '100%')
-                .style('height', '100%')
-                .style('pointer-events', 'none');
+        var graphics = container.append('svg')
+            .attr('id', 'graphics')
+            .datum(data)
+            .attr("width", parentWidth)
+            .attr("height", parentHeight)
+            .style("position", 'absolute');
 
-            var tooltip = container.append('div')
-                .attr('class', 'custom_tooltip');
+        var info = container.append('div')
+            .attr('id', 'info')
+            .style('position', 'absolute')
+            .style('width', '100%')
+            .style('height', '100%')
+            .style('pointer-events', 'none');
 
-            if (_tooltip) {
-                _localTooltip = tooltip;
-            }
+        if (_tooltip) {
+            _localTooltip = infographics.select('.custom_tooltip');
+        }
 
-            /* Label values for the dimension */
-            _localXLabels = data.map(function (d) {
-                return d[_dimension[0]];
+        _localDiv = graphics;
+        /* Label values for the dimension */
+        _localXLabels = data.map(function (d) {
+            return d[_dimension[0]];
+        });
+
+        var keys = UTIL.getMeasureList(data[0], _dimension);
+        var range = UTIL.getMinMax(data, keys);
+
+        /* Minimum and Maximum value of the measures */
+        // _localMin = d3.min(data, function (d) { return d[_measure[0]]; });
+        // _localMax = d3.max(data, function (d) { return d[_measure[0]]; });
+        _localMin = range[0];
+        _localMax = range[1];
+
+        _x.domain(_localXLabels)
+            .range([0, parentWidth]);
+
+        _y.domain([_localMin, _localMax])
+            .range([parentHeight, 0]);
+
+        _line.x(function (d) {
+            return _x(d[_dimension[0]]);
+        })
+            .y(function (d) {
+                return _y(d[_measure[0]]);
             });
 
-            var keys = UTIL.getMeasureList(data[0], _dimension);
-            var range = UTIL.getMinMax(data, keys);
+        _area.x(function (d) {
+            return _x(d[_dimension[0]]);
+        })
+            .y0(function (d, i) {
+                return _y(0);
+            })
+            .y1(function (d) {
+                return _y(d[_measure[0]]);
+            });
 
-            /* Minimum and Maximum value of the measures */
-            // _localMin = d3.min(data, function (d) { return d[_measure[0]]; });
-            // _localMax = d3.max(data, function (d) { return d[_measure[0]]; });
-            _localMin = range[0];
-            _localMax = range[1];
+        var plot = graphics.append('g')
+            .attr('transform', 'translate(' + 0 + ', ' + COMMON.PADDING + ')')
+            .attr('id', 'infographics-plot');
 
-            _x.domain(_localXLabels)
-                .range([0, parentWidth]);
+        var line = plot.append('path')
+            .classed('infographics-line', true)
+            .style('fill', 'none')
+            .style('stroke', _chartBorderColor)
+            .style('stroke-linejoin', 'round')
+            .style('stroke-linecap', 'round')
+            .style('stroke-width', 4)
+            .attr('d', _line)
 
-            _y.domain([_localMin, _localMax])
-                .range([parentHeight, 0]);
+        var area = plot.append('path')
+            .classed('infographics-area', true)
+            .style('fill', _chartDisplayColor)
+            .style('stroke-width', 0)
+            .style('opacity', 0)
+            .attr('d', _area)
 
-            _line.x(function (d) {
+        var points = plot.append('g')
+            .attr('id', 'infographics-point-group')
+            .selectAll('.infographics-point')
+            .data(data)
+            .enter().append('circle')
+            .classed('infographics-point', true)
+            .attr('cx', function (d, i) {
                 return _x(d[_dimension[0]]);
             })
-                .y(function (d) {
-                    return _y(d[_measure[0]]);
-                });
-
-            _area.x(function (d) {
-                return _x(d[_dimension[0]]);
+            .attr('cy', function (d, i) {
+                return _y(d[_measure[0]]);
             })
-                .y0(function (d, i) {
-                    return _y(0);
-                })
-                .y1(function (d) {
-                    return _y(d[_measure[0]]);
+            .attr('r', 4)
+            .style('fill', _chartBorderColor)
+            .style('stroke', d3.hsl(_chartBorderColor).darker(1).toString())
+            .style('stroke-width', 0)
+
+        var measure = info.append('div')
+            .classed('measure', true)
+            .style('justify-content', _kpiAlignment)
+            .style('display', 'flex')
+            .style('align-items', 'center')
+            .style('height', '100%');
+
+        var parent = measure.append('div')
+            .classed('parent', true)
+            .style('background-color', function (d, i1) {
+                return _kpiBackgroundColor || 'transparent';
+            })
+            .style('border-radius', function (d, i1) {
+                return COMMON.BORDER_RADIUS + 'px';
+            })
+            .style('display', 'table');
+
+        parent.append('div')
+            .attr('id', 'kpi-label')
+            .classed('child', true)
+            .html(_getKpiDisplayName() + "&nbsp;")
+            .style('font-size', _kpiFontSize + 'px')
+            .style('padding-left', '5px')
+            .style('display', 'table-cell')
+            .style('vertical-align', 'middle');
+
+
+        var kpi = parent.append('div')
+            .attr('id', 'kpi-measure')
+            .classed('child', true)
+            .style('font-size', _kpiFontSize + 'px')
+            .style('border-radius', function (d, i1) {
+                return COMMON.BORDER_RADIUS + 'px';
+            })
+            .style('padding', function (d, i1) {
+                return (_kpiFontStyle == 'oblique')
+                    ? '3px 8px'
+                    : '3px 0px';
+            })
+            .style('display', 'table-cell')
+            .style('vertical-align', 'middle');
+
+        if (!_print) {
+            line.transition()
+                .duration(COMMON.DURATION)
+                .attrTween('stroke-dasharray', function () {
+                    var l = this.getTotalLength(),
+                        interpolator = d3.interpolateString('0,' + l, l + ',' + l);
+
+                    return function (t) {
+                        return interpolator(t);
+                    }
                 });
 
-            var plot = graphics.append('g')
-                .attr('transform', 'translate(' + 0 + ', ' + COMMON.PADDING + ')')
-                .attr('id', 'infographics-plot');
+            area.transition()
+                .duration(COMMON.DURATION)
+                .styleTween('opacity', function () {
+                    var interpolator = d3.interpolateNumber(0, .5);
 
-            var line = plot.append('path')
-                .classed('infographics-line', true)
-                .style('fill', 'none')
-                .style('stroke', _chartBorderColor)
-                .style('stroke-linejoin', 'round')
-                .style('stroke-linecap', 'round')
-                .style('stroke-width', 4)
-                .attr('d', _line)
+                    return function (t) {
+                        return interpolator(t);
+                    }
+                });
 
-            var area = plot.append('path')
-                .classed('infographics-area', true)
-                .style('fill', _chartDisplayColor)
-                .style('stroke-width', 0)
-                .style('opacity', 0)
-                .attr('d', _area)
+            kpi.transition()
+                .ease(d3.easeQuadIn)
+                .duration(COMMON.DURATION)
+                .delay(0)
+                .tween('html', function () {
+                    var me = d3.select(this),
+                        i = d3.interpolateNumber(_localPrevKpiValue, _localTotal);
 
-            var points = plot.append('g')
-                .attr('id', 'infographics-point-group')
-                .selectAll('.infographics-point')
-                .data(data)
-                .enter().append('circle')
-                .classed('infographics-point', true)
-                .attr('cx', function (d, i) {
-                    return _x(d[_dimension[0]]);
-                })
-                .attr('cy', function (d, i) {
-                    return _y(d[_measure[0]]);
-                })
-                .attr('r', 4)
-                .style('fill', _chartBorderColor)
-                .style('stroke', d3.hsl(_chartBorderColor).darker(1).toString())
-                .style('stroke-width', 0)
+                    _localPrevKpiValue = _localTotal;
 
-            var measure = info.append('div')
-                .classed('measure', true)
-                .style('justify-content', _kpiAlignment)
-                .style('display', 'flex')
-                .style('align-items', 'center')
-                .style('height', '100%');
+                    return function (t) {
+                        me.html(_getKpi(i(t), _localTotal));
+                    }
+                });
+        }
+        else {
+            area.style('opacity', .5)
+            kpi.html(_getKpi(_localTotal, _localTotal))
 
-            var parent = measure.append('div')
-                .classed('parent', true)
-                .style('background-color', function (d, i1) {
-                    return _kpiBackgroundColor || 'transparent';
-                })
-                .style('border-radius', function (d, i1) {
-                    return COMMON.BORDER_RADIUS + 'px';
-                })
-                .style('display', 'table');
+            var kpiData = graphics.append('text')
+                .text(_getKpiDisplayName() + " " + _localTotal)
 
-            parent.append('div')
-                .attr('id', 'kpi-label')
-                .classed('child', true)
-                .html(_getKpiDisplayName() + "&nbsp;")
-                .style('font-size', _kpiFontSize + 'px')
-                .style('padding-left', '5px')
-                .style('display', 'table-cell')
-                .style('vertical-align', 'middle');
-
-
-            var kpi = parent.append('div')
-                .attr('id', 'kpi-measure')
-                .classed('child', true)
-                .style('font-size', _kpiFontSize + 'px')
-                .style('border-radius', function (d, i1) {
-                    return COMMON.BORDER_RADIUS + 'px';
-                })
-                .style('padding', function (d, i1) {
-                    return (_kpiFontStyle == 'oblique')
-                        ? '3px 8px'
-                        : '3px 0px';
-                })
-                .style('display', 'table-cell')
-                .style('vertical-align', 'middle');
-
-            if (!_print) {
-                line.transition()
-                    .duration(COMMON.DURATION)
-                    .attrTween('stroke-dasharray', function () {
-                        var l = this.getTotalLength(),
-                            interpolator = d3.interpolateString('0,' + l, l + ',' + l);
-
-                        return function (t) {
-                            return interpolator(t);
-                        }
-                    });
-
-                area.transition()
-                    .duration(COMMON.DURATION)
-                    .styleTween('opacity', function () {
-                        var interpolator = d3.interpolateNumber(0, .5);
-
-                        return function (t) {
-                            return interpolator(t);
-                        }
-                    });
-
-                kpi.transition()
-                    .ease(d3.easeQuadIn)
-                    .duration(COMMON.DURATION)
-                    .delay(0)
-                    .tween('html', function () {
-                        var me = d3.select(this),
-                            i = d3.interpolateNumber(_localPrevKpiValue, _localTotal);
-
-                        _localPrevKpiValue = _localTotal;
-
-                        return function (t) {
-                            me.html(_getKpi(i(t), _localTotal));
-                        }
-                    });
+            if (_kpiAlignment == "right") {
+                kpiData
+                    .attr('transform', 'translate(' + width + ', ' + height / 2 + ')');
+            }
+            else if (_kpiAlignment == "left") {
+                kpiData
+                    .attr('transform', 'translate(' + 0 + ', ' + height / 2 + ')');
             }
             else {
-                area.style('opacity', .5)
-                kpi.html(_getKpi(_localTotal, _localTotal))
-
-                var kpiData = graphics.append('text')
-                    .text(_getKpiDisplayName() + " " + _localTotal)
-
-                if (_kpiAlignment == "right") {
-                    kpiData
-                        .attr('transform', 'translate(' + width + ', ' + height / 2 + ')');
-                }
-                else if (_kpiAlignment == "left") {
-                    kpiData
-                        .attr('transform', 'translate(' + 0 + ', ' + height / 2 + ')');
-                }
-                else {
-                    kpiData
-                        .attr('transform', 'translate(' + width / 2 + ', ' + height / 2 + ')')
-                        .style('text-anchor', 'middle')
-                }
-
-                _localDiv = graphics
-
+                kpiData
+                    .attr('transform', 'translate(' + width / 2 + ', ' + height / 2 + ')')
+                    .style('text-anchor', 'middle')
             }
-            if (!_print || _notification) {
-                points.on('mouseover', _handleMouseOverFn.call(chart, _localTooltip, infographics))
-                    .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, infographics))
-                    .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, infographics))
-                    .on('click', function (d, i) {
 
-                    });
-            }
-        });
+            _localDiv = graphics
+
+        }
+        if (!_print || _notification) {
+            points.on('mouseover', _handleMouseOverFn.call(chart, _localTooltip, infographics))
+                .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, infographics))
+                .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, infographics))
+                .on('click', function (d, i) {
+
+                });
+        }
+
     }
 
     chart._getName = function () {
@@ -455,14 +456,14 @@ function infographics() {
     chart.update = function (data) {
 
         var infographics = _localDiv,
-            width = parseInt(infographics.style('width')),
-            height = parseInt(infographics.style('height')),
+            width = infographics.attr('width'),
+            height = infographics.attr('height'),
             parentWidth = width - 2 * COMMON.PADDING,
             parentHeight = height - 2 * COMMON.PADDING;
 
         data = UTIL.sortingData(data, _dimension[0]);
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            _localTooltip = infographics.select('.custom_tooltip');
         }
         var div = _localDiv;
 
@@ -529,7 +530,7 @@ function infographics() {
         points.on('mouseover', _handleMouseOverFn.call(chart, _localTooltip, infographics))
             .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, infographics))
             .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, infographics))
-          
+
         div.select('#kpi-measure')
             .transition()
             .ease(d3.easeQuadIn)
@@ -720,6 +721,13 @@ function infographics() {
             return _notification;
         }
         _notification = value;
+        return chart;
+    }
+    chart.data = function (value) {
+        if (!arguments.length) {
+            return _data;
+        }
+        _data = value;
         return chart;
     }
     return chart;

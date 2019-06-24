@@ -59,10 +59,10 @@ function wordcloud() {
         var output = "";
         output += "<table><tr>"
             + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + datum.data[chart.dimension()] + "</td>"
+            + "<td>" + datum.text + "</td>"
             + "</tr><tr>"
-            + "<th>" + datum.key + ": </th>"
-            + "<td>" + UTIL.getFormattedValue(datum.data[datum.key], UTIL.getValueNumberFormat(_measure.indexOf(datum.key), _numberFormat, datum.data[datum.key])) + " </td>"
+            + "<th>" + chart.measure() + ": </th>"
+            + "<td>" + getValue(datum.text) + " </td>"
             + "</tr></table>";
 
         return output;
@@ -78,13 +78,73 @@ function wordcloud() {
         })
         return result;
     }
+    var getValue = function (recoed) {
+        var result = 0;
+        _Local_data.map(function (val) {
+            if (recoed == val[_dimension]) {
+                result = val[_measure];
+            }
+        })
+        return result;
+    }
+    var _handleMouseOverFn = function (tooltip, container) {
+        var me = this;
+
+        return function (d, i) {
+            var border = d3.select(this).style('fill')
+            d3.select(this)
+                .style('cursor', 'pointer')
+                .style('cursor', 'pointer')
+                .style('fill-opacity', '0.5')
+                .style('stroke', border)
+                .style('stroke-width', '2px;');
+
+            if (tooltip) {
+                UTIL.showTooltip(tooltip);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border, _notification);
+            }
+        }
+    }
+
+    var _handleMouseMoveFn = function (tooltip, container) {
+        var me = this;
+
+        return function (d, i) {
+            if (tooltip) {
+                var border = d3.select(this).style('fill')
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border, _notification);
+            }
+        }
+    }
+
+    var _handleMouseOutFn = function (tooltip, container) {
+        var me = this;
+
+        return function (d, i) {
+            var border = d3.select(this).style('fill')
+            d3.select(this)
+                .style('cursor', 'default')
+                .style('fill-opacity', '1')
+                .style('stroke', 'none')
+                .style('stroke-width', '0px;');
+
+            if (tooltip) {
+                UTIL.hideTooltip(tooltip);
+            }
+        }
+    }
 
     function chart(selection) {
 
         data = UTIL.sortingData(_data, _dimension[0])
         _Local_data = _originalData = data;
 
-        parentContainer = d3.select('#' + selection.id)
+        if (_print && !_notification) {
+            parentContainer = selection;
+        }
+        else {
+            parentContainer = d3.select('#' + selection.id)
+        }
 
         var svg = parentContainer.append('svg')
             .attr('width', parentContainer.attr('width'))
@@ -95,54 +155,14 @@ function wordcloud() {
 
         _local_svg = svg;
 
+        parentContainer.append('div')
+            .attr('class', 'custom_tooltip');
+
         parentWidth = width - 2 * COMMON.PADDING;
         parentHeight = (height - 2 * COMMON.PADDING);
 
-        container = svg.append('g')
-            .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
-
         svg.attr('width', width)
             .attr('height', height)
-
-        // var data = [
-        //     { text: 'javascript', size: 40888 },
-        //     { text: 'D3.js', size: 15 },
-        //     { text: 'coffeescript', size: 28885 },
-        //     { text: 'shaving sheep', size: 28885 },
-        //     { text: 'AngularJS', size: 88830 },
-        //     { text: 'Ruby', size: 38880 },
-        //     { text: 'ECMAScript', size: 15777 },
-        //     { text: 'Actionscript', size: 17770 },
-        //     { text: 'Linux', size: 27770 },
-        //     { text: 'C++', size: 24440 },
-        //     { text: 'C#', size: 25444 },
-        //     { text: 'JAVA', size: 34448 },
-        //     // just copy twice for extra data, else the cloud is a little boring
-        //     { text: 'javascript1', size: 40000 },
-        //     { text: 'd3.js1', size: 10005 },
-        //     { text: 'coffeescript1', size: 44425 },
-        //     { text: 'shaving sheep1', size: 44425 },
-        //     { text: 'angularjs1', size: 11130 },
-        //     { text: 'ruby1', size: 31110 },
-        //     { text: 'ecmascript1', size: 11115 },
-        //     { text: 'actionscript1', size: 11110 },
-        //     { text: 'linux1', size: 20000 },
-        //     { text: 'c++1', size: 20000 },
-        //     { text: 'c#1', size: 20005 },
-        //     { text: 'java1', size: 30008 },
-        //     { text: 'javascript2', size: 40000 },
-        //     { text: 'd3.js2', size: 10005 },
-        //     { text: 'coffeescript2', size: 25000 },
-        //     { text: 'shaving sheep2', size: 25000 },
-        //     { text: 'angularjs2', size: 30000 },
-        //     { text: 'ruby2', size: 30000 },
-        //     { text: 'ecmascript2', size: 15000 },
-        //     { text: 'actionscript2', size: 10000 },
-        //     { text: 'linux2', size: 20000 },
-        //     { text: 'c+2+', size: 20000 },
-        //     { text: 'c#2', size: 25000 },
-        //     { text: 'java2', size: 38000 }
-        // ];
 
         drawPlot.call(this, data);
     }
@@ -150,32 +170,31 @@ function wordcloud() {
 
     var drawPlot = function (data) {
         var me = this;
+        _Local_data = data;
         if (_tooltip) {
-            //  tooltip = d3.select(div).select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
+        var colour = d3.schemePaired;
+
         Seedrandom('heo.');
         var words = setData(data);
         var maxSize = d3.max(words, function (d) { return d.size; });
         var minSize = d3.min(words, function (d) { return d.size; });
-        var fontSizeScale = d3.scalePow().exponent(5).domain([0, 1]).range([30, 150]);
-        var plot = container.append('g')
-            .attr('class', 'stackedverticalbar-plot')
-            .classed('plot', true)
+        var fontSizeScale = d3.scalePow().exponent(5).domain([0, 1]).range([10, parentWidth * 15 / 100]);
 
         d3layoutcloud()
             .size([parentWidth, parentHeight])
             .words(words)
-            .rotate(function() { return ~~(Math.random() * 2) * 90; })
+            .rotate(function () { return ~~(Math.random() * 2) * 90; })
             .font("Impact")
             .fontSize(function (d) {
                 return fontSizeScale(d.size / maxSize);;
             })
             .on("end", drawSkillCloud)
+            .fontWeight(['bold'])
+            .spiral('rectangular')
             .start();
 
-        // Finally implement `drawSkillCloud`, which performs the D3 drawing:
-
-        // apply D3.js drawing API
         function drawSkillCloud(words) {
             _local_svg
                 .append("g")
@@ -195,7 +214,7 @@ function wordcloud() {
                 .style("cursor", "default")
                 .style("font-family", "Impact")
                 .style("fill", function (d, i) {
-                    return _colorSet[i];
+                    return colour[i];
                 })
                 .attr("text-anchor", "middle")
                 .attr("transform", function (d) {
@@ -203,7 +222,10 @@ function wordcloud() {
                 })
                 .text(function (d) {
                     return d.text;
-                });
+                })
+                .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
         }
     }
 
@@ -213,6 +235,13 @@ function wordcloud() {
 
     chart._getHTML = function () {
         return _local_svg.node().outerHTML;
+    }
+
+    chart.update = function (data) {
+
+        _local_svg.selectAll('text').remove();
+
+        drawPlot(data);
     }
 
     chart.config = function (value) {

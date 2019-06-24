@@ -194,7 +194,7 @@ function scatter() {
                 if (broadcast.filterSelection.id) {
                     _filterDimension = broadcast.filterSelection.filter;
                 } else {
-                    broadcast.filterSelection.id = $(parentContainer).attr('id');
+                    broadcast.filterSelection.id = parentContainer.attr('id');
                 }
                 var dimension = _dimension[0];
 
@@ -232,7 +232,7 @@ function scatter() {
     var clearFilter = function (div) {
         return function () {
             chart.update(_originalData);
-            d3.select(div).select('.confirm')
+            parentContainer.select('.confirm')
                 .style('visibility', 'hidden');
         }
     }
@@ -281,7 +281,12 @@ function scatter() {
         data = UTIL.sortingData(_data, _dimension[0])
         _Local_data = _originalData = data;
 
-        parentContainer = d3.select('#' + selection.id)
+        if (_print && !_notification) {
+            parentContainer = selection;
+        }
+        else {
+            parentContainer = d3.select('#' + selection.id)
+        }
 
         var svg = parentContainer.append('svg')
             .attr('width', parentContainer.attr('width'))
@@ -592,21 +597,21 @@ function scatter() {
                 if ($("#myonoffswitch").prop('checked') == false) {
                     var element = e.target
                     if (element.tagName == "_local_svg") {
-                        $('#Modal_' + $(parentContainer).attr('id') + ' .measure').val('')
-                        $('#Modal_' + $(parentContainer).attr('id') + ' .threshold').val('')
-                        $('#Modal_' + $(parentContainer).attr('id') + ' .measure').attr('disabled', false)
-                        $('#Modal_' + $(parentContainer).attr('id')).modal('toggle');
+                        $('#Modal_' + parentContainer.attr('id') + ' .measure').val('')
+                        $('#Modal_' + parentContainer.attr('id') + ' .threshold').val('')
+                        $('#Modal_' + parentContainer.attr('id') + ' .measure').attr('disabled', false)
+                        $('#Modal_' + parentContainer.attr('id')).modal('toggle');
                     }
                 }
             })
 
-            $(document).on('click', '#Modal_' + $(parentContainer).attr('id') + ' .ThresholdSubmit', function (e) {
-                var newValue = $('#Modal_' + $(parentContainer).attr('id') + ' .threshold').val();
+            $(document).on('click', '#Modal_' + parentContainer.attr('id') + ' .ThresholdSubmit', function (e) {
+                var newValue = $('#Modal_' + parentContainer.attr('id') + ' .threshold').val();
                 var obj = new Object()
-                obj.measure = $('#Modal_' + $(parentContainer).attr('id') + ' .measure').val()
+                obj.measure = $('#Modal_' + parentContainer.attr('id') + ' .measure').val()
                 obj.threshold = newValue;
                 threshold.push(obj);
-                $('#Modal_' + $(parentContainer).attr('id')).modal('toggle');
+                $('#Modal_' + parentContainer.attr('id')).modal('toggle');
             })
             parentContainer.select('.filterData')
                 .on('click', applyFilter());
@@ -634,7 +639,7 @@ function scatter() {
                 .on('click', function (d) {
                     if (!_print) {
                         filter = false;
-                        var confirm = d3.select(parentContainer).select('.confirm')
+                        var confirm = parentContainer.select('.confirm')
                             .style('visibility', 'visible');
                         var rect = d3.select(this);
                         if (rect.classed('selected')) {
@@ -662,7 +667,7 @@ function scatter() {
                         if (broadcast.filterSelection.id) {
                             _filterDimension = broadcast.filterSelection.filter;
                         } else {
-                            broadcast.filterSelection.id = $(parentContainer).attr('id');
+                            broadcast.filterSelection.id = parentContainer.attr('id');
                         }
                         var dimension = _dimension[0];
                         if (_filterDimension[dimension]) {
@@ -677,9 +682,9 @@ function scatter() {
                             _filterDimension[dimension] = [d[_dimension[0]]];
                         }
 
-                        var idWidget = broadcast.updateWidget[$(parentContainer).attr('id')];
+                        var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                         broadcast.updateWidget = {};
-                        broadcast.updateWidget[$(parentContainer).attr('id')] = idWidget;
+                        broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
                         broadcast.filterSelection.filter = _filterDimension;
                         var _filterParameters = filterParameters.get();
                         _filterParameters[dimension] = _filterDimension[dimension];
@@ -757,6 +762,20 @@ function scatter() {
     }
 
     chart.update = function (data) {
+
+        var svg = _local_svg
+            .attr('width', parentContainer.attr('width'))
+            .attr('height', parentContainer.attr('height'))
+
+        var width = +svg.attr('width'),
+            height = +svg.attr('height');
+
+        parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
+        parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
+
+        plotWidth = parentWidth;
+        plotHeight = parentHeight;
+
         data = UTIL.sortingData(data, _dimension[0]);
         if (_tooltip) {
             tooltip = parentContainer.select('.custom_tooltip');
@@ -850,7 +869,7 @@ function scatter() {
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
             .on('click', function (d) {
                 filter = false;
-                var confirm = d3.select(parentContainer).select('.confirm')
+                var confirm = parentContainer.select('.confirm')
                     .style('visibility', 'visible');
                 var rect = d3.select(this);
                 if (rect.classed('selected')) {
@@ -878,7 +897,7 @@ function scatter() {
                 if (broadcast.filterSelection.id) {
                     _filterDimension = broadcast.filterSelection.filter;
                 } else {
-                    broadcast.filterSelection.id = $(parentContainer).attr('id');
+                    broadcast.filterSelection.id = parentContainer.attr('id');
                 }
                 var dimension = _dimension[0];
                 if (_filterDimension[dimension]) {
@@ -893,9 +912,9 @@ function scatter() {
                     _filterDimension[dimension] = [d[_dimension[0]]];
                 }
 
-                var idWidget = broadcast.updateWidget[$(parentContainer).attr('id')];
+                var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                 broadcast.updateWidget = {};
-                broadcast.updateWidget[$(parentContainer).attr('id')] = idWidget;
+                broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
                 broadcast.filterSelection.filter = _filterDimension;
                 var _filterParameters = filterParameters.get();
                 _filterParameters[dimension] = _filterDimension[dimension];

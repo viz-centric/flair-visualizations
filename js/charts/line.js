@@ -274,7 +274,7 @@ function line() {
     var clearFilter = function (div) {
         return function () {
             chart.update(_originalData);
-            d3.select(div).select('.confirm')
+            parentContainer.select('.confirm')
                 .style('visibility', 'hidden');
         }
     }
@@ -380,7 +380,14 @@ function line() {
     function chart(selection) {
         data = UTIL.sortingData(_data, _dimension[0])
         _Local_data = _originalData = data;
-        parentContainer = d3.select('#' + selection.id)
+
+        if (_print && !_notification) {
+            parentContainer = selection;
+        }
+        else {
+            parentContainer = d3.select('#' + selection.id)
+        }
+
         var svg = parentContainer.append('svg')
             .attr('width', parentContainer.attr('width'))
             .attr('height', parentContainer.attr('height'))
@@ -628,7 +635,7 @@ function line() {
                         }
                         else {
                             filter = false;
-                            var confirm = d3.select(div).select('.confirm')
+                            var confirm = parentContainer.select('.confirm')
                                 .style('visibility', 'visible');
                             var _filter = _Local_data.filter(function (d1) {
                                 return d.data[_dimension[0]] === d1[_dimension[0]]
@@ -1058,7 +1065,7 @@ function line() {
                 }
                 else {
                     filter = false;
-                    var confirm = d3.select(div).select('.confirm')
+                    var confirm = parentContainer.select('.confirm')
                         .style('visibility', 'visible');
                     var _filter = _Local_data.filter(function (d1) {
                         return d.data[_dimension[0]] === d1[_dimension[0]]

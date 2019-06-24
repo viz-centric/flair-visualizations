@@ -205,7 +205,7 @@ function stackedverticalbar() {
                 if (broadcast.filterSelection.id) {
                     _filterDimension = broadcast.filterSelection.filter;
                 } else {
-                    broadcast.filterSelection.id = $(parentContainer).attr('id');
+                    broadcast.filterSelection.id = parentContainer.attr('id');
                 }
                 var dimension = _dimension[0];
 
@@ -243,7 +243,7 @@ function stackedverticalbar() {
     var clearFilter = function (div) {
         return function () {
             chart.update(_originalData);
-            d3.select(div).select('.confirm')
+            parentContainer.select('.confirm')
                 .style('visibility', 'hidden');
         }
     }
@@ -365,7 +365,12 @@ function stackedverticalbar() {
     function chart(selection) {
         data = UTIL.sortingData(_data, _dimension[0])
         _Local_data = _originalData = data;
-        parentContainer = d3.select('#' + selection.id)
+        if (_print && !_notification) {
+            parentContainer = selection;
+        }
+        else {
+            parentContainer = d3.select('#' + selection.id)
+        }
         var svg = parentContainer.append('svg')
             .attr('width', parentContainer.attr('width'))
             .attr('height', parentContainer.attr('height'))
@@ -474,14 +479,14 @@ function stackedverticalbar() {
                 .on('click', function (d) {
                     if (!_print) {
                         if ($("#myonoffswitch").prop('checked') == false) {
-                            $('#Modal_' + $(parentContainer).attr('id') + ' .measure').val(d.key);
-                            $('#Modal_' + $(parentContainer).attr('id') + ' .threshold').val('');
-                            $('#Modal_' + $(parentContainer).attr('id') + ' .measure').attr('disabled', true);;
-                            $('#Modal_' + $(parentContainer).attr('id')).modal('toggle');
+                            $('#Modal_' + parentContainer.attr('id') + ' .measure').val(d.key);
+                            $('#Modal_' + parentContainer.attr('id') + ' .threshold').val('');
+                            $('#Modal_' + parentContainer.attr('id') + ' .measure').attr('disabled', true);;
+                            $('#Modal_' + parentContainer.attr('id')).modal('toggle');
                         }
                         else {
                             filter = false;
-                            var confirm = d3.select(parentContainer).select('.confirm')
+                            var confirm = parentContainer.select('.confirm')
                                 .style('visibility', 'visible');
 
                             var _filter = _Local_data.filter(function (d1) {
@@ -511,7 +516,7 @@ function stackedverticalbar() {
                             if (broadcast.filterSelection.id) {
                                 _filterDimension = broadcast.filterSelection.filter;
                             } else {
-                                broadcast.filterSelection.id = $(parentContainer).attr('id');
+                                broadcast.filterSelection.id = parentContainer.attr('id');
                             }
                             var dimension = _dimension[0];
                             if (_filterDimension[dimension]) {
@@ -522,9 +527,9 @@ function stackedverticalbar() {
                                 _filterDimension[dimension] = [d.data[_dimension[0]]];
                             }
 
-                            var idWidget = broadcast.updateWidget[$(parentContainer).attr('id')];
+                            var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                             broadcast.updateWidget = {};
-                            broadcast.updateWidget[$(parentContainer).attr('id')] = idWidget;
+                            broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
                             broadcast.filterSelection.filter = _filterDimension;
                             var _filterParameters = filterParameters.get();
                             _filterParameters[dimension] = _filterDimension[dimension];
@@ -824,21 +829,21 @@ function stackedverticalbar() {
                 if ($("#myonoffswitch").prop('checked') == false) {
                     var element = e.target
                     if (element.tagName == "_local_svg") {
-                        $('#Modal_' + $(parentContainer).attr('id') + ' .measure').val('')
-                        $('#Modal_' + $(parentContainer).attr('id') + ' .threshold').val('')
-                        $('#Modal_' + $(parentContainer).attr('id') + ' .measure').attr('disabled', false)
-                        $('#Modal_' + $(parentContainer).attr('id')).modal('toggle');
+                        $('#Modal_' + parentContainer.attr('id') + ' .measure').val('')
+                        $('#Modal_' + parentContainer.attr('id') + ' .threshold').val('')
+                        $('#Modal_' + parentContainer.attr('id') + ' .measure').attr('disabled', false)
+                        $('#Modal_' + parentContainer.attr('id')).modal('toggle');
                     }
                 }
             })
 
-            $(document).on('click', '#Modal_' + $(parentContainer).attr('id') + ' .ThresholdSubmit', function (e) {
-                var newValue = $('#Modal_' + $(parentContainer).attr('id') + ' .threshold').val();
+            $(document).on('click', '#Modal_' + parentContainer.attr('id') + ' .ThresholdSubmit', function (e) {
+                var newValue = $('#Modal_' + parentContainer.attr('id') + ' .threshold').val();
                 var obj = new Object()
-                obj.measure = $('#Modal_' + $(parentContainer).attr('id') + ' .measure').val()
+                obj.measure = $('#Modal_' + parentContainer.attr('id') + ' .measure').val()
                 obj.threshold = newValue;
                 threshold.push(obj);
-                $('#Modal_' + $(parentContainer).attr('id')).modal('toggle');
+                $('#Modal_' + parentContainer.attr('id')).modal('toggle');
             })
 
             parentContainer.select('.filterData')

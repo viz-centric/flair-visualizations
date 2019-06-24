@@ -32,7 +32,8 @@ function kpi() {
         _kpiIconColor = [],
         _kpiIconExpression = [],
         _FontsizeForDisplayName = [],
-        _print;
+        _print,
+        _data;
 
     /* These are the common variables that is shared across the different private/public
      * methods but is initialized/updated within the methods itself.
@@ -40,8 +41,9 @@ function kpi() {
     var _localDiv,
         _localTotal = [],
         _localPrevKpiValue = [0, 0],
-        _localData,
-        _localLabelFontSize = [1.2, 0.9];
+        _Local_data,
+        _localLabelFontSize = [1.2, 0.9],
+        parentContainer;
 
     /* These are the common private functions that is shared across the different private/public
      * methods but is initialized beforehand.
@@ -109,8 +111,8 @@ function kpi() {
         style = style.replace(/["{}]/g, '').replace(/,/g, ';');
 
         numberOutput += "<span style='" + style + "'>"
-            + UTIL.getNumberFormatterFn(_kpiNumberFormat[index])(UTIL.roundNumber(value, 0)).toUpperCase()
-            + "</span>";
+            + Math.round(UTIL.getNumberFormatterFn(_kpiNumberFormat[index])(UTIL.roundNumber(value, 2)) * 100) / 100;
+        + "</span>";
 
         var iconStyle = {
             'font-weight': _kpiIconFontWeight[index] || COMMON.DEFAULT_FONTWEIGHT,
@@ -140,102 +142,107 @@ function kpi() {
     }
 
     function chart(selection) {
-        _localDiv = selection;
 
-        selection.each(function (data) {
-            var kpi = d3.select(this),
-                width = parseInt(kpi.style('width')),
-                height = parseInt(kpi.style('height'));
+        var kpi = selection;
 
-            /* total sum of the measure values */
-            _localTotal = _measure.map(function (m) {
-                return d3.sum(data.map(function (d) { return d[m]; }));
-            });
+        _Local_data = _originalData = _data;
 
-            /* store the data in local variable */
-            _localData = data;
+        if (_print && !_notification) {
+            parentContainer = selection;
+        }
+        else {
+            parentContainer = d3.select('#' + selection.id)
+        }
 
-            var container = kpi.append('div')
-                .classed('_container', true)
-                .style('width', width - 2 * COMMON.PADDING)
-                .style('height', height - 2 * COMMON.PADDING)
-                .style('padding', COMMON.PADDING);
+        var width = parentContainer.attr('width'),
+            height = parentContainer.attr('height')
 
-            _measure.forEach(function (m, i) {
-                var measure = container.append('div')
-                    .classed('measure', true)
-                    .style('display', 'flex')
-                    .style('height', '50%')
-                    .style('align-items', function (d, i1) {
-                        return i ? 'center' : 'flex-end';
-                    })
-                    .style('justify-content', _kpiAlignment[i])
-                    .append('div')
-                    .classed('parent', true)
-                    .style('display', 'block')
-                    .style('width', 'auto')
-                    .style('height', 'auto')
+        _localDiv = parentContainer
 
-                measure.append('div')
-                    .attr('id', function (d, i1) {
-                        return 'kpi-label-' + i;
-                    })
-                    .style('display', 'block')
-                    .classed('child', true)
-                    .html(_getKpiDisplayName(i))
-                    .style('font-size', function (d, i1) {
-                        return _FontsizeForDisplayName[i] + 'px';
-                    })
-                    .style('padding-left', '5px')
-                    .style('text-align', function (d, i1) {
-                        return i ? 'right' : 'Left';
+        /* total sum of the measure values */
+        _localTotal = _measure.map(function (m) {
+            return d3.sum(_data.map(function (d) { return d[m]; }));
+        });
+
+        var container = parentContainer.append('div')
+            .classed('_container', true)
+            .style('width', width - 2 * COMMON.PADDING)
+            .style('height', height - 2 * COMMON.PADDING)
+            .style('padding', COMMON.PADDING);
+
+        _measure.forEach(function (m, i) {
+            var measure = container.append('div')
+                .classed('measure', true)
+                .style('display', 'flex')
+                .style('height', '50%')
+                .style('align-items', function (d, i1) {
+                    return i ? 'center' : 'flex-end';
+                })
+                .style('justify-content', _kpiAlignment[i])
+                .append('div')
+                .classed('parent', true)
+                .style('display', 'block')
+                .style('width', 'auto')
+                .style('height', 'auto')
+
+            measure.append('div')
+                .attr('id', function (d, i1) {
+                    return 'kpi-label-' + i;
+                })
+                .style('display', 'block')
+                .classed('child', true)
+                .html(_getKpiDisplayName(i))
+                .style('font-size', function (d, i1) {
+                    return _FontsizeForDisplayName[i] + 'px';
+                })
+                .style('padding-left', '5px')
+                .style('text-align', function (d, i1) {
+                    return i ? 'right' : 'Left';
+                });
+
+            var kpiMeasure = measure.insert('div', (function () {
+                return i ? ':first-child' : null;
+            })())
+                .attr('id', function (d, i1) {
+                    return 'kpi-measure-' + i;
+                })
+                .classed('child', true)
+                .style('font-size', _kpiFontSize[i] + 'px')
+                .style('border-radius', function (d, i1) {
+                    return COMMON.BORDER_RADIUS + 'px';
+                })
+                .style('background-color', function (d, i1) {
+                    return _kpiBackgroundColor[i] || 'transparent';
+                })
+                .style('padding', function (d, i1) {
+                    return (_kpiFontStyle[i] == 'oblique' && i)
+                        ? '3px 8px'
+                        : '3px 0px';
+                })
+                .style('display', function (d, i1) {
+                    return 'contents';
+                })
+                .style('line-height', 1)
+
+            if (!_print) {
+                kpiMeasure.transition()
+                    .ease(d3.easeQuadIn)
+                    .duration(1000)
+                    .delay(0)
+                    .tween('html', function () {
+                        var me = d3.select(this),
+                            interpolator = d3.interpolateNumber(_localPrevKpiValue[i], _localTotal[i]);
+
+                        _localPrevKpiValue[i] = _localTotal[i];
+
+                        return function (t) {
+                            me.html(_getKpi(interpolator(t), _localTotal[i], i));
+                        }
                     });
-
-                var kpiMeasure = measure.insert('div', (function () {
-                    return i ? ':first-child' : null;
-                })())
-                    .attr('id', function (d, i1) {
-                        return 'kpi-measure-' + i;
-                    })
-                    .classed('child', true)
-                    .style('font-size', _kpiFontSize[i] + 'px')
-                    .style('border-radius', function (d, i1) {
-                        return COMMON.BORDER_RADIUS + 'px';
-                    })
-                    .style('background-color', function (d, i1) {
-                        return _kpiBackgroundColor[i] || 'transparent';
-                    })
-                    .style('padding', function (d, i1) {
-                        return (_kpiFontStyle[i] == 'oblique' && i)
-                            ? '3px 8px'
-                            : '3px 0px';
-                    })
-                    .style('display', function (d, i1) {
-                        return 'contents';
-                    })
-                    .style('line-height', 1)
-
-                if (!_print) {
-                    kpiMeasure.transition()
-                        .ease(d3.easeQuadIn)
-                        .duration(1000)
-                        .delay(0)
-                        .tween('html', function () {
-                            var me = d3.select(this),
-                                interpolator = d3.interpolateNumber(_localPrevKpiValue[i], _localTotal[i]);
-
-                            _localPrevKpiValue[i] = _localTotal[i];
-
-                            return function (t) {
-                                me.html(_getKpi(interpolator(t), _localTotal[i], i));
-                            }
-                        });
-                }
-                else {
-                    kpiMeasure.html(_getKpi(_localTotal[i], _localTotal[i], 0));
-                }
-            });
-
+            }
+            else {
+                kpiMeasure.html(_getKpi(_localTotal[i], _localTotal[i], 0));
+            }
         });
     }
 
@@ -251,7 +258,7 @@ function kpi() {
         var div = _localDiv;
 
         /* store the data in local variable */
-        _localData = data;
+        _Local_data = data;
 
         /* total sum of the measure values */
         _localTotal = _measure.map(function (m) {
@@ -537,7 +544,13 @@ function kpi() {
         _FontsizeForDisplayName = value;
         return chart;
     }
-
+    chart.data = function (value) {
+        if (!arguments.length) {
+            return _data;
+        }
+        _data = value;
+        return chart;
+    }
     return chart;
 }
 
