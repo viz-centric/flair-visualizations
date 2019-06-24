@@ -281,7 +281,12 @@ function scatter() {
         data = UTIL.sortingData(_data, _dimension[0])
         _Local_data = _originalData = data;
 
-        parentContainer = d3.select('#' + selection.id)
+        if (_print && !_notification) {
+            parentContainer = selection;
+        }
+        else {
+            parentContainer = d3.select('#' + selection.id)
+        }
 
         var svg = parentContainer.append('svg')
             .attr('width', parentContainer.attr('width'))
@@ -757,6 +762,20 @@ function scatter() {
     }
 
     chart.update = function (data) {
+
+        var svg = _local_svg
+            .attr('width', parentContainer.attr('width'))
+            .attr('height', parentContainer.attr('height'))
+
+        var width = +svg.attr('width'),
+            height = +svg.attr('height');
+
+        parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
+        parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
+
+        plotWidth = parentWidth;
+        plotHeight = parentHeight;
+
         data = UTIL.sortingData(data, _dimension[0]);
         if (_tooltip) {
             tooltip = parentContainer.select('.custom_tooltip');

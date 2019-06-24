@@ -46,7 +46,7 @@ function infographics() {
         _localXLabels = [],
         _localMin,
         _localMax,
-        _localTooltip;
+        _localTooltip, infographics;
 
     /* These are the common private functions that is shared across the different private/public
      * methods but is initialized beforehand.
@@ -213,10 +213,9 @@ function infographics() {
     }
 
     function chart(selection) {
-        _localDiv = selection;
 
         data = UTIL.sortingData(_data, _dimension[0])
-        var infographics = d3.select('#' + selection.id),
+        infographics = d3.select('#' + selection.id),
             width = infographics.attr('width'),
             height = infographics.attr('height'),
             parentWidth = width - 2 * COMMON.PADDING,
@@ -228,6 +227,9 @@ function infographics() {
         /* store the data in local variable */
         _localData = data;
 
+        infographics.append('div')
+            .attr('class', 'custom_tooltip');
+
         var container = infographics.append('div')
             .classed('container', true)
             .style('width', parentWidth + 'px')
@@ -237,6 +239,7 @@ function infographics() {
 
         var graphics = container.append('svg')
             .attr('id', 'graphics')
+            .datum(data)
             .attr("width", parentWidth)
             .attr("height", parentHeight)
             .style("position", 'absolute');
@@ -248,13 +251,11 @@ function infographics() {
             .style('height', '100%')
             .style('pointer-events', 'none');
 
-        var tooltip = container.append('div')
-            .attr('class', 'custom_tooltip');
-
         if (_tooltip) {
-            _localTooltip = tooltip;
+            _localTooltip = infographics.select('.custom_tooltip');
         }
 
+        _localDiv = graphics;
         /* Label values for the dimension */
         _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
@@ -455,14 +456,14 @@ function infographics() {
     chart.update = function (data) {
 
         var infographics = _localDiv,
-            width = parseInt(infographics.style('width')),
-            height = parseInt(infographics.style('height')),
+            width = infographics.attr('width'),
+            height = infographics.attr('height'),
             parentWidth = width - 2 * COMMON.PADDING,
             parentHeight = height - 2 * COMMON.PADDING;
 
         data = UTIL.sortingData(data, _dimension[0]);
         if (_tooltip) {
-            tooltip = parentContainer.select('.custom_tooltip');
+            _localTooltip = infographics.select('.custom_tooltip');
         }
         var div = _localDiv;
 

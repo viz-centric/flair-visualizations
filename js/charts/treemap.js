@@ -625,7 +625,12 @@ function treemap() {
 
         data = UTIL.sortingData(_data, _dimension[0])
 
-        parentContainer = d3.select('#' + selection.id)
+        if (_print && !_notification) {
+            parentContainer = selection;
+        }
+        else {
+            parentContainer = d3.select('#' + selection.id)
+        }
 
         var svg = parentContainer.append('svg')
             .attr('width', parentContainer.attr('width') - 2 * COMMON.PADDING)

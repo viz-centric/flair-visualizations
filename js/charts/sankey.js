@@ -330,7 +330,12 @@ function sankey() {
         data = UTIL.sortingData(_data, dimension[0])
         _Local_data = _originalData = data;
 
-        parentContainer = d3.select('#' + selection.id);
+        if (_print && !_notification) {
+            parentContainer = selection;
+        }
+        else {
+            parentContainer = d3.select('#' + selection.id)
+        }
 
         var svg = parentContainer.append('svg')
             .attr('width', parentContainer.attr('width'))
@@ -663,7 +668,12 @@ function sankey() {
             .attr('class', 'link')
             .attr('d', path)
             .style('stroke', function (d, i) {
-                return d3.select('.' + d.source.name).style('fill');
+                if (d3.select('.' + d.source.name).size()>0) {
+                    return d3.select('.' + d.source.name).style('fill');
+                }
+                else {
+                    _colorList[i];
+                }
             })
             .style('stroke-width', function (d) { return Math.max(1, d.dy); })
             .sort(function (a, b) { return b.dy - a.dy; })
@@ -700,7 +710,12 @@ function sankey() {
         link
             .attr('d', path)
             .style('stroke', function (d, i) {
-                return d3.select('.' + d.source.name).style('fill');
+                if (d3.select('.' + d.source.name).size()>0) {
+                    return d3.select('.' + d.source.name).style('fill');
+                }
+                else {
+                    _colorList[isFinite];
+                }
             })
             .style('stroke-width', function (d) { return Math.max(1, d.dy); })
             .sort(function (a, b) { return b.dy - a.dy; })
@@ -833,7 +848,7 @@ function sankey() {
             .style('fill', function (d, i) {
                 return getFillColor(d, i);
             })
-            .style('stroke', function (d,i) {
+            .style('stroke', function (d, i) {
                 return getFillColor(d, i);
             })
             .classed('selected', false)

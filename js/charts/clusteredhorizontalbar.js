@@ -286,7 +286,7 @@ function clusteredhorizontalbar() {
             }
         }
     }
-   
+
     var drawLegend = function () {
         var legendWidth = 0,
             legendHeight = 0;
@@ -351,7 +351,13 @@ function clusteredhorizontalbar() {
     function chart(selection) {
         data = UTIL.sortingData(_data, _dimension[0])
         _Local_data = _originalData = data;
-        parentContainer = d3.select('#' + selection.id)
+        if (_print && !_notification) {
+            parentContainer = selection;
+        }
+        else {
+            parentContainer = d3.select('#' + selection.id)
+        }
+
         var svg = parentContainer.append('svg')
             .attr('width', parentContainer.attr('width'))
             .attr('height', parentContainer.attr('height'))
@@ -428,7 +434,7 @@ function clusteredhorizontalbar() {
         _localYGrid.scale(y);
 
         plot.append('g')
-             .attr('class', 'x grid')
+            .attr('class', 'x grid')
             .attr('visibility', function () {
                 return _showGrid ? 'visible' : 'hidden';
             })
@@ -772,13 +778,8 @@ function clusteredhorizontalbar() {
                 return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat, d[d.measure]));
             })
             .attr('x', function (d, i) {
-                if ((d[d['measure']] === null) || (isNaN(d[d['measure']]))) {
-                    return 0;
-                } else if (d[d['measure']] > 0) {
-                    return y(d[d['measure']]);
-                }
-
-                return y(0);
+                if ((d[d.measure] === null) || (isNaN(d[d.measure]))) return 0;
+                return Math.abs(y(0) - y(d[d.measure])) - offsetX / 2;
             })
             .attr('y', function (d, i) {
                 return x1(d['measure']) + (x1.bandwidth());
@@ -808,8 +809,8 @@ function clusteredhorizontalbar() {
 
                     if (parseInt(rectHeight) < parseInt(_fontSize[i])) {
                         d3.select(this).style('font-size', parseInt(rectHeight) - 2 + 'px')
-                        d3.select(this).attr('x', function (d, i) {
-                            return y(d[d.measure]) - parseInt(rectHeight) - 2;
+                        d3.select(this).attr('y', function (d, i) {
+                            return x1(d.measure) + parseInt(rectHeight);
                         })
                     }
                     if ((this.getComputedTextLength()) > parseFloat(rectWidth)) {
@@ -1015,13 +1016,8 @@ function clusteredhorizontalbar() {
                 return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat, d[d.measure]));
             })
             .attr('x', function (d, i) {
-                if ((d[d['measure']] === null) || (isNaN(d[d['measure']]))) {
-                    return 0;
-                } else if (d[d['measure']] > 0) {
-                    return y(d[d['measure']]);
-                }
-
-                return y(0);
+                if ((d[d.measure] === null) || (isNaN(d[d.measure]))) return 0;
+                return Math.abs(y(0) - y(d[d.measure])) - offsetX / 2;
             })
             .attr('y', function (d, i) {
                 return x1(d['measure']) + (x1.bandwidth());
@@ -1051,8 +1047,8 @@ function clusteredhorizontalbar() {
 
                     if (parseInt(rectHeight) < parseInt(_fontSize[i])) {
                         d3.select(this).style('font-size', parseInt(rectHeight) - 2 + 'px')
-                        d3.select(this).attr('x', function (d, i) {
-                            return y(d[d.measure]) - parseInt(rectHeight) - 2;
+                        d3.select(this).attr('y', function (d, i) {
+                            return x1(d.measure) + parseInt(rectHeight);
                         })
                     }
                     if ((this.getComputedTextLength()) > parseFloat(rectWidth)) {
@@ -1060,6 +1056,15 @@ function clusteredhorizontalbar() {
                     }
                 }
             })
+            .style('font-style', function (d, i) {
+                return _fontStyle[i];
+            })
+            .style('font-weight', function (d, i) {
+                return _fontWeight[i];
+            })
+            .style('fill', function (d, i) {
+                return _textColor[i];
+            });
 
 
         var newBars = clusteredhorizontalbar.enter().append('g')
@@ -1099,7 +1104,7 @@ function clusteredhorizontalbar() {
             .transition()
             .attr('transform', 'translate(0, ' + plotHeight + ')')
             .duration(COMMON.DURATION)
-           .attr('visibility', 'visible')
+            .attr('visibility', 'visible')
             .call(_localXAxis);
 
         yAxisGroup = plot.select('.y_axis')

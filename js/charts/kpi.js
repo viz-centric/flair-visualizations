@@ -147,7 +147,12 @@ function kpi() {
 
         _Local_data = _originalData = _data;
 
-        parentContainer = d3.select('#' + selection.id);
+        if (_print && !_notification) {
+            parentContainer = selection;
+        }
+        else {
+            parentContainer = d3.select('#' + selection.id)
+        }
 
         var width = parentContainer.attr('width'),
             height = parentContainer.attr('height')

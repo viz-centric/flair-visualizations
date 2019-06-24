@@ -416,7 +416,13 @@ function combo() {
 
         data = UTIL.sortingData(_data, _dimension[0])
         _Local_data = _originalData = data;
-        parentContainer = d3.select('#' + selection.id)
+        if (_print && !_notification) {
+            parentContainer = selection;
+        }
+        else {
+            parentContainer = d3.select('#' + selection.id)
+        }
+
         var svg = parentContainer.append('svg')
             .attr('width', parentContainer.attr('width'))
             .attr('height', parentContainer.attr('height'))
