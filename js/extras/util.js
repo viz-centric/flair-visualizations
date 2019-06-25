@@ -982,7 +982,29 @@ function util() {
             _local_svg.selectAll('g.y_axis .tick text')
                 .style('fill', _yAxisColor);
 
+        },
+        setAxisGridVisibility: function (tickLine, _local_svg, _showGrid, d) {
+            if (d == 0) {
+                _local_svg.selectAll('g.base_line').classed('base_line', false);
+                d3.select(tickLine.parentNode).classed('base_line', true);
+                d3.select(tickLine.parentNode).select('line')
+                    .style('stroke', '#787878')
+                    .style('stroke-width', '2px')
+                    .style('stroke-opacity', '1')
+                    .style('visibility', 'visible');
+            }
+            else {
+                _local_svg.selectAll('g.base_line').classed('base_line', false);
+                d3.select(tickLine.parentNode)
+                    .style('visibility', function () {
+                        return _showGrid == true ? 'visible' : 'hidden'
+                    })
+                    .style('stroke', '#787878')
+                    .style('stroke-width', '1px')
+                    .style('stroke-opacity', '0.5')
+            }
         }
+
     }
 
     return publicMethods;

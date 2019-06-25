@@ -134,6 +134,28 @@ function wordcloud() {
         }
     }
 
+    var applyFilter = function () {
+        return function () {
+            if (broadcast) {
+                broadcast.updateWidget = {};
+                broadcast.filterSelection.id = null;
+                broadcast.$broadcast('flairbiApp:filter-input-refresh');
+                broadcast.$broadcast('flairbiApp:filter');
+                broadcast.$broadcast('flairbiApp:filter-add');
+                d3.select(this.parentNode)
+                    .style('visibility', 'hidden');
+            }
+        }
+    }
+    var clearFilter = function (div) {
+        return function () {
+            chart.update(_originalData);
+            parentContainer.select('.confirm')
+                .style('visibility', 'hidden');
+        }
+    }
+
+
     function chart(selection) {
 
         data = UTIL.sortingData(_data, _dimension[0])
@@ -196,7 +218,7 @@ function wordcloud() {
             .start();
 
         function drawSkillCloud(words) {
-            _local_svg
+            var text = _local_svg
                 .append("g")
                 .attr("transform", "translate(" + ~~(parentWidth / 2) + "," + ~~(parentHeight / 2) + ")")
                 .selectAll("text")
@@ -223,9 +245,61 @@ function wordcloud() {
                 .text(function (d) {
                     return d.text;
                 })
-                .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+            if (!_print) {
+
+                var _filter = UTIL.createFilterElement()
+                $('#' + parentContainer.attr('id')).append(_filter);
+
+                text.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+                    .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+                    .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+                    .on('click', function (d, i) {
+                        var confirm = parentContainer.select('.confirm')
+                            .style('visibility', 'visible');
+                        filter = false;
+
+                        var point = d3.select(this);
+                        if (point.classed('selected')) {
+                            point.classed('selected', false);
+                        } else {
+                            point.classed('selected', true);
+                        }
+
+                        var _filterDimension = {};
+                        if (broadcast.filterSelection.id) {
+                            _filterDimension = broadcast.filterSelection.filter;
+                        } else {
+                            broadcast.filterSelection.id = parentContainer.attr('id');
+                        }
+
+                        var dimension = _dimension;
+                        if (_filterDimension[dimension]) {
+                            var temp = _filterDimension[dimension];
+                            if (temp.indexOf(d.text) < 0) {
+                                temp.push(d.text);
+                            } else {
+                                temp.splice(temp.indexOf(d.text), 1);
+                            }
+                            _filterDimension[dimension] = temp;
+                        } else {
+                            _filterDimension[dimension] = [d.text];
+                        }
+
+                        var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
+                        broadcast.updateWidget = {};
+                        broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
+                        broadcast.filterSelection.filter = _filterDimension;
+                        var _filterParameters = filterParameters.get();
+                        _filterParameters[dimension] = _filterDimension[dimension];
+                        filterParameters.save(_filterParameters);
+                    });
+
+                parentContainer.select('.filterData')
+                    .on('click', applyFilter());
+
+                parentContainer.select('.removeFilter')
+                    .on('click', clearFilter(parentContainer));
+            }
         }
     }
 

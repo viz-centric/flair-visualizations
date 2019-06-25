@@ -4,7 +4,7 @@ var UTIL = require('../extras/util.js')();
 var LEGEND = require('../extras/legend_barcharts.js')();
 
 try {
-    var d3Lasso = require("d3-lasso");
+    var d3Lasso = __webpack_require__(/*! d3-lasso */ "./node_modules/d3-lasso/build/d3-lasso.js");
 
 } catch (ex) { }
 
@@ -64,7 +64,7 @@ function line() {
         .domain([22, 34])
         .range([2, 4]);
 
-    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, div;
+    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, parentContainer;
     var parentWidth, parentHeight, plotWidth, plotHeight, container;
     var threshold = [];
     var filter = false, filterData = [];
@@ -241,7 +241,7 @@ function line() {
                 if (broadcast.filterSelection.id) {
                     _filterDimension = broadcast.filterSelection.filter;
                 } else {
-                    broadcast.filterSelection.id = $(div).attr('id');
+                    broadcast.filterSelection.id = parentContainer.attr('id');
                 }
                 var dimension = _dimension[0];
 
@@ -271,7 +271,7 @@ function line() {
             }
         }
     }
-    var clearFilter = function (div) {
+    var clearFilter = function (parentContainer) {
         return function () {
             chart.update(_originalData);
             parentContainer.select('.confirm')
@@ -441,16 +441,17 @@ function line() {
         var range = UTIL.getMinMax(data, keys);
 
         y.rangeRound([plotHeight, 0])
-            .domain([range[0], range[1]]);
+            .domain([range[0], range[1]])
+            .nice();
 
-        var _yTicks = y.ticks(),
-            yDiff = _yTicks[1] - _yTicks[0];
+        // var _yTicks = y.ticks(),
+        //     yDiff = _yTicks[1] - _yTicks[0];
 
-        if ((_yTicks[_yTicks.length - 1] + yDiff) > range[1] + (yDiff / 2)) {
-            y.domain([range[0], (_yTicks[_yTicks.length - 1] + yDiff)])
-        } else {
-            y.domain([range[0], (_yTicks[_yTicks.length - 1] + 2 * yDiff)])
-        }
+        // if ((_yTicks[_yTicks.length - 1] + yDiff) > range[1] + (yDiff / 2)) {
+        //     y.domain([range[0], (_yTicks[_yTicks.length - 1] + yDiff)])
+        // } else {
+        //     y.domain([range[0], (_yTicks[_yTicks.length - 1] + 2 * yDiff)])
+        // }
 
         var _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
@@ -463,11 +464,7 @@ function line() {
 
         _localYGrid = d3.axisLeft()
             .tickFormat(function (d) {
-                if (d == 0) {
-                    _local_svg.selectAll('g.base_line').classed('base_line', false);
-                    d3.select(this.parentNode).classed('base_line', true);
-                    d3.select(this.parentNode).select('line').style('stroke', '#787878');
-                }
+                UTIL.setAxisGridVisibility(this, _local_svg, _showGrid, d)
             })
             .tickSize(-plotWidth);
 
@@ -476,17 +473,13 @@ function line() {
 
         plot.append('g')
             .attr('class', 'x grid')
-            .attr('visibility', function () {
-                return _showGrid ? 'visible' : 'hidden';
-            })
+            .attr('visibility', UTIL.getVisibility(_showGrid))
             .attr('transform', 'translate(0, ' + plotHeight + ')')
             .call(_localXGrid);
 
         plot.append('g')
             .attr('class', 'y grid')
-            .attr('visibility', function () {
-                return _showGrid ? 'visible' : 'hidden';
-            })
+            .attr('visibility', 'visible')
             .call(_localYGrid);
 
         var areaGenerator = d3.area()
@@ -628,10 +621,10 @@ function line() {
                 .on('click', function (d) {
                     if (!_print) {
                         if ($("#myonoffswitch").prop('checked') == false) {
-                            $('#Modal_' + $(div).attr('id') + ' .measure').val(d.measure);
-                            $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
-                            $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
-                            $('#Modal_' + $(div).attr('id')).modal('toggle');
+                            $('#Modal_' + parentContainer.attr('id') + ' .measure').val(d.measure);
+                            $('#Modal_' + parentContainer.attr('id') + ' .threshold').val('');
+                            $('#Modal_' + parentContainer.attr('id') + ' .measure').attr('disabled', true);;
+                            $('#Modal_' + parentContainer.attr('id')).modal('toggle');
                         }
                         else {
                             filter = false;
@@ -664,7 +657,7 @@ function line() {
                             if (broadcast.filterSelection.id) {
                                 _filterDimension = broadcast.filterSelection.filter;
                             } else {
-                                broadcast.filterSelection.id = $(div).attr('id');
+                                broadcast.filterSelection.id = parentContainer.attr('id');
                             }
                             var dimension = _dimension[0];
                             if (_filterDimension[dimension]) {
@@ -675,9 +668,9 @@ function line() {
                                 _filterDimension[dimension] = [d.data[_dimension[0]]];
                             }
 
-                            var idWidget = broadcast.updateWidget[$(div).attr('id')];
+                            var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                             broadcast.updateWidget = {};
-                            broadcast.updateWidget[$(div).attr('id')] = idWidget;
+                            broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
                             broadcast.filterSelection.filter = _filterDimension;
                             var _filterParameters = filterParameters.get();
                             _filterParameters[dimension] = _filterDimension[dimension];
@@ -802,21 +795,21 @@ function line() {
                 if ($("#myonoffswitch").prop('checked') == false) {
                     var element = e.target
                     if (element.tagName == "_local_svg") {
-                        $('#Modal_' + $(div).attr('id') + ' .measure').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .threshold').val('')
-                        $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', false)
-                        $('#Modal_' + $(div).attr('id')).modal('toggle');
+                        $('#Modal_' + parentContainer.attr('id') + ' .measure').val('')
+                        $('#Modal_' + parentContainer.attr('id') + ' .threshold').val('')
+                        $('#Modal_' + parentContainer.attr('id') + ' .measure').attr('disabled', false)
+                        $('#Modal_' + parentContainer.attr('id')).modal('toggle');
                     }
                 }
             })
 
-            $(document).on('click', '#Modal_' + $(div).attr('id') + ' .ThresholdSubmit', function (e) {
-                var newValue = $('#Modal_' + $(div).attr('id') + ' .threshold').val();
+            $(document).on('click', '#Modal_' + parentContainer.attr('id') + ' .ThresholdSubmit', function (e) {
+                var newValue = $('#Modal_' + parentContainer.attr('id') + ' .threshold').val();
                 var obj = new Object()
-                obj.measure = $('#Modal_' + $(div).attr('id') + ' .measure').val()
+                obj.measure = $('#Modal_' + parentContainer.attr('id') + ' .measure').val()
                 obj.threshold = newValue;
                 threshold.push(obj);
-                $('#Modal_' + $(div).attr('id')).modal('toggle');
+                $('#Modal_' + parentContainer.attr('id')).modal('toggle');
             })
 
             _local_svg.select('g.sort').remove();
@@ -959,16 +952,17 @@ function line() {
         var range = UTIL.getMinMax(data, keys);
 
         y.rangeRound([plotHeight, 0])
-            .domain([range[0], range[1]]);
+            .domain([range[0], range[1]])
+            .nice();
 
-        var _yTicks = y.ticks(),
-            yDiff = _yTicks[1] - _yTicks[0];
+        // var _yTicks = y.ticks(),
+        //     yDiff = _yTicks[1] - _yTicks[0];
 
-        if ((_yTicks[_yTicks.length - 1] + yDiff) > range[1] + (yDiff / 2)) {
-            y.domain([range[0], (_yTicks[_yTicks.length - 1] + yDiff)])
-        } else {
-            y.domain([range[0], (_yTicks[_yTicks.length - 1] + 2 * yDiff)])
-        }
+        // if ((_yTicks[_yTicks.length - 1] + yDiff) > range[1] + (yDiff / 2)) {
+        //     y.domain([range[0], (_yTicks[_yTicks.length - 1] + yDiff)])
+        // } else {
+        //     y.domain([range[0], (_yTicks[_yTicks.length - 1] + 2 * yDiff)])
+        // }
 
         var areaGenerator = d3.area()
             .curve(d3.curveLinear)
@@ -1057,39 +1051,65 @@ function line() {
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
             .on('click', function (d) {
-                if ($("#myonoffswitch").prop('checked') == false) {
-                    $('#Modal_' + $(div).attr('id') + ' .measure').val(d.measure);
-                    $('#Modal_' + $(div).attr('id') + ' .threshold').val('');
-                    $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', true);;
-                    $('#Modal_' + $(div).attr('id')).modal('toggle');
-                }
-                else {
-                    filter = false;
-                    var confirm = parentContainer.select('.confirm')
-                        .style('visibility', 'visible');
-                    var _filter = _Local_data.filter(function (d1) {
-                        return d.data[_dimension[0]] === d1[_dimension[0]]
-                    })
-                    var rect = d3.select(this);
-                    if (rect.classed('selected')) {
-                        rect.classed('selected', false);
-                        filterData.map(function (val, i) {
-                            if (val[_dimension[0]] == d.data[_dimension[0]]) {
-                                filterData.splice(i, 1)
-                            }
+                if (!_print) {
+                    if ($("#myonoffswitch").prop('checked') == false) {
+                        $('#Modal_' + parentContainer.attr('id') + ' .measure').val(d.measure);
+                        $('#Modal_' + parentContainer.attr('id') + ' .threshold').val('');
+                        $('#Modal_' + parentContainer.attr('id') + ' .measure').attr('disabled', true);;
+                        $('#Modal_' + parentContainer.attr('id')).modal('toggle');
+                    }
+                    else {
+                        filter = false;
+                        var confirm = parentContainer.select('.confirm')
+                            .style('visibility', 'visible');
+                        var _filter = _Local_data.filter(function (d1) {
+                            return d.data[_dimension[0]] === d1[_dimension[0]]
                         })
-                    } else {
-                        rect.classed('selected', true);
-                        var isExist = filterData.filter(function (val) {
-                            if (val[_dimension[0]] == d.data[_dimension[0]]) {
-                                return val
+                        var rect = d3.select(this);
+                        if (rect.classed('selected')) {
+                            rect.classed('selected', false);
+                            filterData.map(function (val, i) {
+                                if (val[_dimension[0]] == d.data[_dimension[0]]) {
+                                    filterData.splice(i, 1)
+                                }
+                            })
+                        } else {
+                            rect.classed('selected', true);
+                            var isExist = filterData.filter(function (val) {
+                                if (val[_dimension[0]] == d.data[_dimension[0]]) {
+                                    return val
+                                }
+                            })
+                            if (isExist.length == 0) {
+                                filterData.push(_filter[0]);
                             }
-                        })
-                        if (isExist.length == 0) {
-                            filterData.push(_filter[0]);
                         }
+
+                        var _filterDimension = {};
+                        if (broadcast.filterSelection.id) {
+                            _filterDimension = broadcast.filterSelection.filter;
+                        } else {
+                            broadcast.filterSelection.id = parentContainer.attr('id');
+                        }
+                        var dimension = _dimension[0];
+                        if (_filterDimension[dimension]) {
+                            _filterDimension[dimension] = filterData.map(function (d) {
+                                return d[_dimension[0]];
+                            });
+                        } else {
+                            _filterDimension[dimension] = [d.data[_dimension[0]]];
+                        }
+
+                        var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
+                        broadcast.updateWidget = {};
+                        broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
+                        broadcast.filterSelection.filter = _filterDimension;
+                        var _filterParameters = filterParameters.get();
+                        _filterParameters[dimension] = _filterDimension[dimension];
+                        filterParameters.save(_filterParameters);
                     }
                 }
+
             })
 
 
@@ -1230,17 +1250,13 @@ function line() {
             .attr('transform', 'translate(0, ' + plotHeight + ')')
             .transition()
             .duration(COMMON.DURATION)
-            .attr('visibility', function () {
-                return _showGrid ? 'visible' : 'hidden';
-            })
+            .attr('visibility', 'visible')
             .call(_localXGrid);
 
         plot.select('.y.grid')
             .transition()
             .duration(COMMON.DURATION)
-            .attr('visibility', function () {
-                return _showGrid ? 'visible' : 'hidden';
-            })
+            .attr('visibility', 'visible')
             .call(_localYGrid);
 
         UTIL.displayThreshold(threshold, data, keys);

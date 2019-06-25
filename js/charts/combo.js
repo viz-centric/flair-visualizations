@@ -492,7 +492,8 @@ function combo() {
         var range = UTIL.getMinMax(data, keys);
 
         y.rangeRound([plotHeight, 0])
-            .domain([range[0], range[1]]);
+            .domain([range[0], range[1]])
+            .nice();
 
         var _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
@@ -508,11 +509,7 @@ function combo() {
 
         _localYGrid = d3.axisLeft()
             .tickFormat(function (d) {
-                if (d == 0) {
-                    _local_svg.selectAll('g.base_line').classed('base_line', false);
-                    d3.select(this.parentNode).classed('base_line', true);
-                    d3.select(this.parentNode).select('line').style('stroke', '#787878');
-                }
+                 UTIL.setAxisGridVisibility(this, _local_svg, _showGrid, d)
             })
             .tickSize(-plotWidth);
 
@@ -521,17 +518,13 @@ function combo() {
 
         plot.append('g')
             .attr('class', 'x grid')
-            .attr('visibility', function () {
-                return _showGrid ? 'visible' : 'hidden';
-            })
+            .attr('visibility', UTIL.getVisibility(_showGrid))
             .attr('transform', 'translate(0, ' + plotHeight + ')')
             .call(_localXGrid);
 
         plot.append('g')
             .attr('class', 'y grid')
-            .attr('visibility', function () {
-                return _showGrid ? 'visible' : 'hidden';
-            })
+            .attr('visibility','visible')
             .call(_localYGrid);
 
         var content = plot.append('g')
@@ -1170,7 +1163,8 @@ function combo() {
         var range = UTIL.getMinMax(data, keys);
 
         y.rangeRound([plotHeight, 0])
-            .domain([range[0], range[1]]);
+            .domain([range[0], range[1]])
+            .nice();
 
         var _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
@@ -1454,17 +1448,13 @@ function combo() {
             .attr('transform', 'translate(0, ' + plotHeight + ')')
             .transition()
             .duration(COMMON.DURATION)
-            .attr('visibility', function () {
-                return _showGrid ? 'visible' : 'hidden';
-            })
+            .attr('visibility', UTIL.getVisibility(_showGrid))
             .call(_localXGrid);
 
         plot.select('.y.grid')
             .transition()
             .duration(COMMON.DURATION)
-            .attr('visibility', function () {
-                return _showGrid ? 'visible' : 'hidden';
-            })
+            .attr('visibility','visible')
             .call(_localYGrid);
 
         UTIL.displayThreshold(threshold, data, keys);
