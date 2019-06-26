@@ -194,9 +194,6 @@ function sankey() {
 
     var applyFilter = function () {
         return function () {
-
-            //Viz renders twice issue
-            // chart.update(filterData);
             if (broadcast) {
                 broadcast.updateWidget = {};
                 broadcast.filterSelection.id = null;
@@ -399,9 +396,9 @@ function sankey() {
             .attr('transform', function (d) {
                 return 'translate(' + d.x + ',' + d.y + ')';
             })
-            .call(drag);
+        //.call(drag);
 
-        node.append('rect')
+        var rect = node.append('rect')
             .attr('width', sankey.nodeWidth())
             .attr('height', function (d) { return d.dy; })
             .attr('class', function (d) { return d.name; })
@@ -558,7 +555,7 @@ function sankey() {
                     filterParameters.save(_filterParameters);
                 })
 
-            node.selectAll('rect')
+            node.select('rect')
                 .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg, 'node'))
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, 'node'))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'node'))
@@ -566,51 +563,40 @@ function sankey() {
                     filter = false;
                     var confirm = parentContainer.select('.confirm')
                         .style('visibility', 'visible');
-                    var rect = d3.select(this)
+                    var rect = d3.select(this);
                     if (rect.classed('selected')) {
                         rect.classed('selected', false);
-                        if (d.nodeType == dimension[0]) {
-                            _Local_data.map(function (val) {
-                                filterData = filterData.filter(function (val) {
-                                    if (d.name != val[dimension[0]]) {
-                                        return val;
-                                    }
-                                })
-                            })
-                        }
-                        else {
-                            _Local_data.map(function (val) {
-                                filterData = filterData.filter(function (val) {
-                                    if (d.name != val[dimension[1]]) {
-                                        return val;
-                                    }
-                                })
-                            })
-                        }
-                    }
-                    else {
+
+                    } else {
                         rect.classed('selected', true);
-                        if (d.nodeType == dimension[0]) {
-                            _Local_data.map(function (val) {
-                                if (dimension[0] == d.nodeType && val[dimension[0]] == d.name) {
-                                    var searchObj = filterData.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
-                                    if (searchObj == undefined) {
-                                        filterData.push(val)
-                                    }
-                                }
-                            })
-                        }
-                        else {
-                            _Local_data.map(function (val) {
-                                if (dimension[1] == d.nodeType && val[dimension[1]] == d.name) {
-                                    var searchObj = filterData.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
-                                    if (searchObj == undefined) {
-                                        filterData.push(val)
-                                    }
-                                }
-                            })
-                        }
                     }
+
+                    var _filterDimension = {};
+                    if (broadcast.filterSelection.id) {
+                        _filterDimension = broadcast.filterSelection.filter;
+                    } else {
+                        broadcast.filterSelection.id = parentContainer.attr('id');
+                    }
+                    var _dimension = d.nodeType;
+                    if (_filterDimension[_dimension]) {
+                        var temp = _filterDimension[_dimension];
+                        if (temp.indexOf() < 0) {
+                            temp.push(d.name);
+                        } else {
+                            temp.splice(temp.indexOf(d.name, 1));
+                        }
+                        _filterDimension[_dimension] = temp;
+                    } else {
+                        _filterDimension[_dimension] = [d.name];
+                    }
+
+                    var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
+                    broadcast.updateWidget = {};
+                    broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
+                    broadcast.filterSelection.filter = _filterDimension;
+                    var _filterParameters = filterParameters.get();
+                    _filterParameters[_dimension] = _filterDimension[_dimension];
+                    filterParameters.save(_filterParameters);
                 })
 
             parentContainer.select('.filterData')
@@ -657,7 +643,9 @@ function sankey() {
         gradientColor.domain(d3.extent(data.nodes, function (d) {
             return d.value;
         }));
-
+        if (_tooltip) {
+            tooltip = parentContainer.select('.custom_tooltip');
+        }
         var nodeDistance = data.nodes[0].sourceLinks[0].target.x - data.nodes[0].x - sankey.nodeWidth();
 
         var link = plot.selectAll('.link')
@@ -668,7 +656,7 @@ function sankey() {
             .attr('class', 'link')
             .attr('d', path)
             .style('stroke', function (d, i) {
-                if (d3.select('.' + d.source.name).size()>0) {
+                if (d3.select('.' + d.source.name).size() > 0) {
                     return d3.select('.' + d.source.name).style('fill');
                 }
                 else {
@@ -710,7 +698,7 @@ function sankey() {
         link
             .attr('d', path)
             .style('stroke', function (d, i) {
-                if (d3.select('.' + d.source.name).size()>0) {
+                if (d3.select('.' + d.source.name).size() > 0) {
                     return d3.select('.' + d.source.name).style('fill');
                 }
                 else {

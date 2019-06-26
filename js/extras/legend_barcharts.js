@@ -35,7 +35,7 @@ function legend() {
                         translate = [i * Math.floor(extraParams.width / data.measureConfig.length), (extraParams.height - COMMON.PADDING)];
                         break;
                     case 'RIGHT':
-                        translate = [((4 / 5) * extraParams.width)+10, i * 20];
+                        translate = [((4 / 5) * extraParams.width) + 10, i * 20];
                         break;
                     case 'LEFT':
                         translate = [0, i * 20];
@@ -105,7 +105,7 @@ function legend() {
             .text(function (d, i) {
                 return measure.measureName[i];
             })
-            .text(function (d,i) {
+            .text(function (d, i) {
                 if (me.print() == false) {
                     if ((me.legendPosition().toUpperCase() == 'TOP') || (me.legendPosition().toUpperCase() == 'BOTTOM')) {
                         return UTIL.getTruncatedLabel(this, measure.measureName[i], Math.floor(extraParams.width / data.measureConfig.length) - 5);
@@ -113,7 +113,7 @@ function legend() {
                         return UTIL.getTruncatedLabel(this, measure.measureName[i], extraParams.width / 5);
                     }
                 }
-                else{
+                else {
                     return measure.measureName[i];
                 }
             })
@@ -122,7 +122,7 @@ function legend() {
 
         var legendBreak = 0,
             legendBreakCount = 0;
-        if (me.legendPosition().toUpperCase() == 'TOP' && me.print() == false) {
+        if ((me.legendPosition().toUpperCase() == 'BOTTOM' || me.legendPosition().toUpperCase() == 'TOP') && me.print() == false) {
             legendItem.attr('transform', function (d, i) {
                 var count = i,
                     widthSum = 0

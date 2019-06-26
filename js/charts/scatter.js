@@ -466,17 +466,13 @@ function scatter() {
 
         plot.append('g')
             .attr('class', 'x grid')
-            .attr('visibility', function () {
-                return _showGrid ? 'visible' : 'hidden';
-            })
+            .attr('visibility','visible')
             .attr('transform', 'translate(0, ' + parseInt(plotHeight - 40) + ')')
             .call(_localXGrid);
 
         plot.append('g')
             .attr('class', 'y grid')
-            .attr('visibility', function () {
-                return _showGrid ? 'visible' : 'hidden';
-            })
+            .attr('visibility','visible')
             .call(_localYGrid);
 
         if (_tooltip) {
@@ -971,17 +967,13 @@ function scatter() {
         plot.select('.x.grid')
             .transition()
             .duration(COMMON.DURATION)
-            .attr('visibility', function () {
-                return _showGrid ? 'visible' : 'hidden';
-            })
+            .attr('visibility','visible')
             .call(_localXGrid);
 
         plot.select('.y.grid')
             .transition()
             .duration(COMMON.DURATION)
-            .attr('visibility', function () {
-                return _showGrid ? 'visible' : 'hidden';
-            })
+            .attr('visibility','visible')
             .call(_localYGrid);
 
         _local_svg.select('g.lasso').remove()

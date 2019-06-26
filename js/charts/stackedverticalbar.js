@@ -616,17 +616,18 @@ function stackedverticalbar() {
         var range = UTIL.getMinMax(data, keys);
 
         y.rangeRound([plotHeight, 0])
-            .domain([range[0], range[1]]);
+            .domain([range[0], range[1]])
+            .nice();
 
-        var _yTicks = y.ticks(),
-            yDiff = _yTicks[1] - _yTicks[0],
-            correctionVal = 10;
+        // var _yTicks = y.ticks(),
+        //     yDiff = _yTicks[1] - _yTicks[0],
+        //     correctionVal = 10;
 
-        if ((_yTicks[_yTicks.length - 1] + yDiff) > range[1] + correctionVal) {
-            y.domain([range[0], (_yTicks[_yTicks.length - 1] + yDiff)])
-        } else {
-            y.domain([range[0], (_yTicks[_yTicks.length - 1] + 2 * yDiff)])
-        }
+        // if ((_yTicks[_yTicks.length - 1] + yDiff) > range[1] + correctionVal) {
+        //     y.domain([range[0], (_yTicks[_yTicks.length - 1] + yDiff)])
+        // } else {
+        //     y.domain([range[0], (_yTicks[_yTicks.length - 1] + 2 * yDiff)])
+        // }
 
         var posTotal,
             negTotal;
@@ -651,10 +652,10 @@ function stackedverticalbar() {
             d3.max(data, function (d) { return d.posTotal; })
         ]).nice();
 
-        var _yTicks = y.ticks(),
-            yDiff = _yTicks[1] - _yTicks[0];
+        // var _yTicks = y.ticks(),
+        //     yDiff = _yTicks[1] - _yTicks[0];
 
-        y.domain([range[0], (_yTicks[_yTicks.length - 1] + yDiff)])
+        // y.domain([range[0], (_yTicks[_yTicks.length - 1] + yDiff)])
 
         data.map(function (val) {
             delete val['negTotal'];
@@ -672,11 +673,7 @@ function stackedverticalbar() {
 
         _localYGrid = d3.axisLeft()
             .tickFormat(function (d) {
-                if (d == 0) {
-                    _local_svg.selectAll('g.base_line').classed('base_line', false);
-                    d3.select(this.parentNode).classed('base_line', true);
-                    d3.select(this.parentNode).select('line').style('stroke', '#787878');
-                }
+                UTIL.setAxisGridVisibility(this, _local_svg, _showGrid, d)
             })
             .tickSize(-plotWidth);
 
@@ -684,18 +681,14 @@ function stackedverticalbar() {
         _localYGrid.scale(y);
 
         plot.append('g')
-             .attr('class', 'x grid')
-            .attr('visibility', function () {
-                return _showGrid ? 'visible' : 'hidden';
-            })
+            .attr('class', 'x grid')
+            .attr('visibility', UTIL.getVisibility(_showGrid))
             .attr('transform', 'translate(0, ' + plotHeight + ')')
             .call(_localXGrid);
 
         plot.append('g')
             .attr('class', 'y grid')
-            .attr('visibility', function () {
-                return _showGrid ? 'visible' : 'hidden';
-            })
+            .attr('visibility', 'visible')
             .call(_localYGrid);
 
         var labelStack = [];
@@ -970,17 +963,18 @@ function stackedverticalbar() {
         var range = UTIL.getMinMax(data, keys);
 
         y.rangeRound([plotHeight, 0])
-            .domain([range[0], range[1]]);
+            .domain([range[0], range[1]])
+            .nice();
 
-        var _yTicks = y.ticks(),
-            yDiff = _yTicks[1] - _yTicks[0],
-            correctionVal = 10;
+        // var _yTicks = y.ticks(),
+        //     yDiff = _yTicks[1] - _yTicks[0],
+        //     correctionVal = 10;
 
-        if ((_yTicks[_yTicks.length - 1] + yDiff) > range[1] + correctionVal) {
-            y.domain([range[0], (_yTicks[_yTicks.length - 1] + yDiff)])
-        } else {
-            y.domain([range[0], (_yTicks[_yTicks.length - 1] + 2 * yDiff)])
-        }
+        // if ((_yTicks[_yTicks.length - 1] + yDiff) > range[1] + correctionVal) {
+        //     y.domain([range[0], (_yTicks[_yTicks.length - 1] + yDiff)])
+        // } else {
+        //     y.domain([range[0], (_yTicks[_yTicks.length - 1] + 2 * yDiff)])
+        // }
 
         var posTotal,
             negTotal;
@@ -1005,10 +999,10 @@ function stackedverticalbar() {
             d3.max(data, function (d) { return d.posTotal; })
         ]).nice();
 
-        var _yTicks = y.ticks(),
-            yDiff = _yTicks[1] - _yTicks[0];
+        // var _yTicks = y.ticks(),
+        //     yDiff = _yTicks[1] - _yTicks[0];
 
-        y.domain([range[0], (_yTicks[_yTicks.length - 1] + yDiff)]);
+        // y.domain([range[0], (_yTicks[_yTicks.length - 1] + yDiff)]);
 
         data.map(function (val) {
             delete val['negTotal'];
@@ -1184,17 +1178,13 @@ function stackedverticalbar() {
             .attr('transform', 'translate(0, ' + plotHeight + ')')
             .transition()
             .duration(COMMON.DURATION)
-            .attr('visibility', function () {
-                return _showGrid ? 'visible' : 'hidden';
-            })
+            .attr('visibility', UTIL.getVisibility(_showGrid))
             .call(_localXGrid);
 
         plot.select('.y.grid')
             .transition()
             .duration(COMMON.DURATION)
-            .attr('visibility', function () {
-                return _showGrid ? 'visible' : 'hidden';
-            })
+            .attr('visibility', 'visible')
             .call(_localYGrid);
 
         UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);

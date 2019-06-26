@@ -67,7 +67,6 @@ function clusteredhorizontalbar() {
         .range([2, 4]);
 
     var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, parentContainer;
-
     var threshold = [];
     var filter = false, filterData = [];
 
@@ -414,15 +413,12 @@ function clusteredhorizontalbar() {
         var range = UTIL.getMinMax(data, keys);
 
         y.rangeRound([0, plotWidth])
-            .domain([range[0], range[1]]);
+            .domain([range[0], range[1]])
+            .nice();
 
         _localYGrid = d3.axisBottom()
             .tickFormat(function (d) {
-                if (d == 0) {
-                    _local_svg.selectAll('g.base_line').classed('base_line', false);
-                    d3.select(this.parentNode).classed('base_line', true);
-                    d3.select(this.parentNode).select('line').style('stroke', '#787878');
-                }
+                UTIL.setAxisGridVisibility(this, _local_svg, _showGrid, d)
             })
             .tickSize(-plotHeight);
 
@@ -435,16 +431,12 @@ function clusteredhorizontalbar() {
 
         plot.append('g')
             .attr('class', 'x grid')
-            .attr('visibility', function () {
-                return _showGrid ? 'visible' : 'hidden';
-            })
+            .attr('visibility', 'visible')
             .call(_localXGrid);
 
         plot.append('g')
             .attr('class', 'y grid')
-            .attr('visibility', function () {
-                return _showGrid ? 'visible' : 'hidden';
-            })
+            .attr('visibility', UTIL.getVisibility(_showGrid))
             .attr('transform', 'translate(0, ' + plotHeight + ')')
             .call(_localYGrid);
 
@@ -777,46 +769,12 @@ function clusteredhorizontalbar() {
             .text(function (d, i) {
                 return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat, d[d.measure]));
             })
-            .attr('x', function (d, i) {
-                if ((d[d.measure] === null) || (isNaN(d[d.measure]))) return 0;
-                return Math.abs(y(0) - y(d[d.measure])) - offsetX / 2;
-            })
-            .attr('y', function (d, i) {
-                return x1(d['measure']) + (x1.bandwidth());
-            })
-            .attr('dx', function (d, i) {
-                return -offsetX;
-            })
-            .attr('dy', function (d, i) {
-                return -offsetX / 4;
-            })
             .style('text-anchor', 'middle')
             .attr('visibility', function (d, i) {
                 return UTIL.getVisibility(_showValues[i]);
             })
             .style('font-size', function (d, i) {
                 return _fontSize[i] + 'px';
-            })
-            .attr('visibility', function (d, i) {
-                var rect = d3.select(this.previousElementSibling).node(),
-                    rectWidth = rect.getAttribute('width'),
-                    rectHeight = rect.getAttribute('height');
-                if (_notification) {
-                    return 'hidden';
-                }
-                if (!_print) {
-                    if (this.getAttribute('visibility') == 'hidden') return 'hidden';
-
-                    if (parseInt(rectHeight) < parseInt(_fontSize[i])) {
-                        d3.select(this).style('font-size', parseInt(rectHeight) - 2 + 'px')
-                        d3.select(this).attr('y', function (d, i) {
-                            return x1(d.measure) + parseInt(rectHeight);
-                        })
-                    }
-                    if ((this.getComputedTextLength()) > parseFloat(rectWidth)) {
-                        return 'hidden';
-                    }
-                }
             })
             .style('font-style', function (d, i) {
                 return _fontStyle[i];
@@ -826,7 +784,56 @@ function clusteredhorizontalbar() {
             })
             .style('fill', function (d, i) {
                 return _textColor[i];
-            });
+            })
+            .attr('x', function (d, i) {
+                if ((d[d.measure] === null) || (isNaN(d[d.measure]))) {
+                    return 0;
+                } else if (d[d.measure] > 0) {
+                    return y(d[d.measure]);
+                }
+
+                return y(0);
+            })
+            .attr('y', function (d, i) {
+                return x1(d['measure']);
+            })
+            .attr('visibility', function (d, i) {
+                var rect = d3.select(this.previousElementSibling).node(),
+                    rectWidth = rect.getAttribute('width'),
+                    rectHeight = rect.getAttribute('height');
+
+                if (this.getAttribute('visibility') == 'hidden') return 'hidden';
+
+                if ((this.getComputedTextLength() + (offsetX / 2)) > parseFloat(plotWidth - rectWidth)) {
+                    return 'hidden';
+                }
+
+                if (rectHeight < _fontSize[i] && _fontSize[i] >= rectHeight) {
+                    d3.select(this).style('font-size', parseInt(rectHeight) - 2 + 'px')
+                }
+
+                if (this.getComputedTextLength() >= rectWidth) {
+                    return 'hidden';
+                }
+                return 'visible';
+            })
+            .attr('dx', function (d, i) {
+                return -offsetX;
+            })
+            .attr('dy', function (d, i) {
+                return x1.bandwidth() / 2 + d3.select(this).style('font-size').replace('px', '') / 2.5;
+            })
+            .text(function (d, i) {
+                var barLength;
+
+                if ((d[d.measure] === null) || (isNaN(d[d.measure]))) {
+                    barLength = 0;
+                } else {
+                    barLength = Math.abs(y(0) - y(d[d.measure]));
+                }
+
+                return UTIL.getTruncatedLabel(this, d3.select(this).text(), plotWidth - barLength);
+            })
     }
     /**
      * Builds the html data for the tooltip
@@ -939,7 +946,8 @@ function clusteredhorizontalbar() {
         var range = UTIL.getMinMax(data, keys);
 
         y.rangeRound([0, plotWidth])
-            .domain([range[0], range[1]]);
+            .domain([range[0], range[1]])
+            .nice();
 
         var cluster = plot.selectAll("g.cluster")
             .data(data);
@@ -1015,46 +1023,12 @@ function clusteredhorizontalbar() {
             .text(function (d, i) {
                 return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat, d[d.measure]));
             })
-            .attr('x', function (d, i) {
-                if ((d[d.measure] === null) || (isNaN(d[d.measure]))) return 0;
-                return Math.abs(y(0) - y(d[d.measure])) - offsetX / 2;
-            })
-            .attr('y', function (d, i) {
-                return x1(d['measure']) + (x1.bandwidth());
-            })
-            .attr('dx', function (d, i) {
-                return -offsetX;
-            })
-            .attr('dy', function (d, i) {
-                return -offsetX / 4;
-            })
             .style('text-anchor', 'middle')
             .attr('visibility', function (d, i) {
                 return UTIL.getVisibility(_showValues[i]);
             })
             .style('font-size', function (d, i) {
                 return _fontSize[i] + 'px';
-            })
-            .attr('visibility', function (d, i) {
-                var rect = d3.select(this.previousElementSibling).node(),
-                    rectWidth = rect.getAttribute('width'),
-                    rectHeight = rect.getAttribute('height');
-                if (_notification) {
-                    return 'hidden';
-                }
-                if (!_print) {
-                    if (this.getAttribute('visibility') == 'hidden') return 'hidden';
-
-                    if (parseInt(rectHeight) < parseInt(_fontSize[i])) {
-                        d3.select(this).style('font-size', parseInt(rectHeight) - 2 + 'px')
-                        d3.select(this).attr('y', function (d, i) {
-                            return x1(d.measure) + parseInt(rectHeight);
-                        })
-                    }
-                    if ((this.getComputedTextLength()) > parseFloat(rectWidth)) {
-                        return 'hidden';
-                    }
-                }
             })
             .style('font-style', function (d, i) {
                 return _fontStyle[i];
@@ -1064,7 +1038,56 @@ function clusteredhorizontalbar() {
             })
             .style('fill', function (d, i) {
                 return _textColor[i];
-            });
+            })
+            .attr('x', function (d, i) {
+                if ((d[d.measure] === null) || (isNaN(d[d.measure]))) {
+                    return 0;
+                } else if (d[d.measure] > 0) {
+                    return y(d[d.measure]);
+                }
+
+                return y(0);
+            })
+            .attr('y', function (d, i) {
+                return x1(d['measure']);
+            })
+            .attr('visibility', function (d, i) {
+                var rect = d3.select(this.previousElementSibling).node(),
+                    rectWidth = rect.getAttribute('width'),
+                    rectHeight = rect.getAttribute('height');
+
+                if (this.getAttribute('visibility') == 'hidden') return 'hidden';
+
+                if ((this.getComputedTextLength() + (offsetX / 2)) > parseFloat(plotWidth - rectWidth)) {
+                    return 'hidden';
+                }
+
+                if (rectHeight < _fontSize[i] && _fontSize[i] >= rectHeight) {
+                    d3.select(this).style('font-size', parseInt(rectHeight) - 2 + 'px')
+                }
+
+                if (this.getComputedTextLength() >= rectWidth) {
+                    return 'hidden';
+                }
+                return 'visible';
+            })
+            .attr('dx', function (d, i) {
+                return -offsetX;
+            })
+            .attr('dy', function (d, i) {
+                return x1.bandwidth() / 2 + d3.select(this).style('font-size').replace('px', '') / 2.5;
+            })
+            .text(function (d, i) {
+                var barLength;
+
+                if ((d[d.measure] === null) || (isNaN(d[d.measure]))) {
+                    barLength = 0;
+                } else {
+                    barLength = Math.abs(y(0) - y(d[d.measure]));
+                }
+
+                return UTIL.getTruncatedLabel(this, d3.select(this).text(), plotWidth - barLength);
+            })
 
 
         var newBars = clusteredhorizontalbar.enter().append('g')
@@ -1083,18 +1106,14 @@ function clusteredhorizontalbar() {
         plot.select('.x.grid')
             .transition()
             .duration(COMMON.DURATION)
-            .attr('visibility', function () {
-                return _showGrid ? 'visible' : 'hidden';
-            })
+            .attr('visibility', 'visible')
             .call(_localXGrid);
 
         plot.select('.y.grid')
             .transition()
             .attr('transform', 'translate(0, ' + plotHeight + ')')
             .duration(COMMON.DURATION)
-            .attr('visibility', function () {
-                return _showGrid ? 'visible' : 'hidden';
-            })
+            .attr('visibility', UTIL.getVisibility(_showGrid))
             .call(_localYGrid);
 
         var xAxisGroup,
