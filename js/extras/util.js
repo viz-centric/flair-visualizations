@@ -200,7 +200,7 @@ function util() {
                 });
             }
         },
-        positionDownArrow: function (container, arrowDom, sortType) {
+        positionDownArrow: function (container, arrowDom, sortType, isFilter) {
             var left = container.offsetLeft,
                 width = container.offsetWidth,
                 height = container.offsetHeight,
@@ -208,6 +208,10 @@ function util() {
 
             var offsetLeft,
                 offsetTop = 40;
+
+            if (isFilter) {
+                offsetTop = offsetTop + COMMON.PADDING + parseInt(d3.select(container).select('.filterElement').attr('height'));
+            }
 
             switch (sortType.toLowerCase()) {
                 case "ascending":
@@ -222,7 +226,7 @@ function util() {
             arrowDom.style.left = (left + width - offsetLeft) + 'px';
             arrowDom.style.top = (top + height - offsetTop) + 'px';
         },
-        positionSortSelection: function (container, sortSelectDom) {
+        positionSortSelection: function (container, sortSelectDom, isFilter) {
             var left = container.offsetLeft,
                 width = container.offsetWidth,
                 height = container.offsetHeight,
@@ -233,6 +237,10 @@ function util() {
 
             var offsetLeft = 11,
                 offsetTop = 40;
+
+            if (isFilter) {
+                offsetTop = offsetTop + COMMON.PADDING + parseInt(d3.select(container).select('.filterElement').attr('height'));
+            }
 
             sortSelectDom.style.left = (left + width - tipWidth - offsetLeft) + 'px';
             sortSelectDom.style.top = (top + height - tipHeight - offsetTop) + 'px';
@@ -601,11 +609,12 @@ function util() {
 
             return sortedData;
         },
-        toggleSortSelection: function (sortType, callback, _local_svg, _measure, _Local_data) {
+
+        toggleSortSelection: function (sortType, callback, _local_svg, _measure, _Local_data, isFilter) {
             var me = this;
             var _onRadioButtonClick = function (event) {
-                $(this).closest('.sort_selection').parent().find('.plot').remove();
-                callback.call(_local_svg, me.sortData(_Local_data, event.data.measure, sortType));
+                //  $(this).closest('.sort_selection').parent().find('.plot').remove();
+                callback.call(_local_svg, me.sortData(_Local_data, event.data.measure, sortType), true);
                 var container = _local_svg.node().parentNode;
                 $(container).find('.sort_selection').css('visibility', 'hidden');
                 $(container).find('.arrow-down').css('visibility', 'hidden');
@@ -641,8 +650,8 @@ function util() {
                 }, _onRadioButtonClick);
             }
 
-            this.positionDownArrow(div, downArrow.node(), sortType);
-            this.positionSortSelection(div, sortWindow.node());
+            this.positionDownArrow(div, downArrow.node(), sortType, isFilter);
+            this.positionSortSelection(div, sortWindow.node(), isFilter);
 
         },
 
@@ -1003,9 +1012,19 @@ function util() {
                     .style('stroke-width', '1px')
                     .style('stroke-opacity', '0.5')
             }
+        },
+        getFilterDataForGrid: function (_data, filterList, key) {
+            filterData = []
+            _data.map(function (val) {
+                if (filterList.indexOf(val[key]) >= 0) {
+                    filterData.push(val);
+                }
+            })
+            return filterData;
         }
 
     }
+
 
     return publicMethods;
 
