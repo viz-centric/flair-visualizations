@@ -797,10 +797,10 @@ function stackedverticalbar() {
                     var order = d3.select(this).attr('class')
                     switch (order) {
                         case 'ascending':
-                            UTIL.toggleSortSelection('ascending', drawPlot, _local_svg, keys, _Local_data);
+                             UTIL.toggleSortSelection('ascending', chart.update, _local_svg, keys, _Local_data,_isFilterGrid);
                             break;
                         case 'descending':
-                            UTIL.toggleSortSelection('descending', drawPlot, _local_svg, keys, _Local_data);
+                             UTIL.toggleSortSelection('descending', chart.update, _local_svg, keys, _Local_data,_isFilterGrid);
                             break;
                         case 'reset': {
                             $(me).parent().find('.sort_selection,.arrow-down').css('visibility', 'hidden');

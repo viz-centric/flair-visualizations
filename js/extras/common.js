@@ -15,6 +15,7 @@ function common() {
         NEGATIVE_KPI_COLOR: '#ff0000',
         LEGEND_COLOR: '#6B6A5D',
         HIGHLIGHTER: '#DCDCDC',
+        SEPARATIONLINE: '#676a6c',
         BORDER_RADIUS: 5,
         DURATION: 1000,
         AXIS_THICKNESS: 50,
