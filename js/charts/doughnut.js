@@ -584,18 +584,29 @@ function doughnut() {
             .attr('visibility', _showLabel == true ? 'visible' : 'hidden')
             .append("tspan")
             .text(function () {
-                return UTIL.getTruncatedLabel(
-                    this,
-                    _measureDisplayName,
-                    outerRadius * 0.8)
+                if (!_print) {
+                    return UTIL.getTruncatedLabel(
+                        this,
+                        _measureDisplayName,
+                        outerRadius * 0.8)
+                }
+                else {
+                    return _measureDisplayName;
+                }
+
             })
             .attr("x", 0)
             .append("tspan")
             .text(function () {
-                return UTIL.getTruncatedLabel(
-                    this,
-                    _localTotal,
-                    outerRadius * 0.8)
+                if (!_print) {
+                    return UTIL.getTruncatedLabel(
+                        this,
+                        _localTotal,
+                        outerRadius * 0.8)
+                }
+                else {
+                    return _localTotal;
+                }
             })
             .attr("x", 0)
             .attr("dy", _fontSize + 5);

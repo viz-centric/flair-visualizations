@@ -46,7 +46,8 @@ function combo() {
         filterParameters,
         isAnimationDisable = false,
         _notification = false,
-        _data;
+        _data,
+        _isFilterGrid;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
     var x0 = d3.scaleBand(), x1 = d3.scaleBand(), _xDimensionGrid = d3.scaleLinear(), y = d3.scaleLinear();
@@ -509,7 +510,7 @@ function combo() {
 
         _localYGrid = d3.axisLeft()
             .tickFormat(function (d) {
-                 UTIL.setAxisGridVisibility(this, _local_svg, _showGrid, d)
+                UTIL.setAxisGridVisibility(this, _local_svg, _showGrid, d)
             })
             .tickSize(-plotWidth);
 
@@ -524,7 +525,7 @@ function combo() {
 
         plot.append('g')
             .attr('class', 'y grid')
-            .attr('visibility','visible')
+            .attr('visibility', 'visible')
             .call(_localYGrid);
 
         var content = plot.append('g')
@@ -584,7 +585,7 @@ function combo() {
                 return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
             })
             .attr('visibility', function (d, i) {
-                if (_lineType[(_measure.indexOf(d[0]['tag']))] == "area") {
+                if (_lineType[(_measure.indexOf(d[0]['tag']))].toUpperCase() == "AREA") {
                     return 'visible'
                 }
                 else {
@@ -650,8 +651,13 @@ function combo() {
                 return UTIL.getFormattedValue(d['data'][d['tag']], UTIL.getValueNumberFormat(_measure.indexOf(d['tag']), _numberFormat, d['data'][d['tag']]));
             })
             .text(function (d, i) {
-                var width = (1 - x1.padding()) * plotWidth / (_localXLabels.length - 1);
-                return UTIL.getTruncatedLabel(this, d3.select(this).text(), width);
+                if (!_print) {
+                    var width = (1 - x1.padding()) * plotWidth / (_localXLabels.length - 1);
+                    return UTIL.getTruncatedLabel(this, d3.select(this).text(), width);
+                }
+                else {
+                    return UTIL.getFormattedValue(d['data'][d['tag']], UTIL.getValueNumberFormat(_measure.indexOf(d['tag']), _numberFormat, d['data'][d['tag']]));
+                }
             })
             .attr('visibility', function (d, i) {
                 return UTIL.getVisibility(_showValues[_measure.indexOf(d['tag'])]);
@@ -817,10 +823,10 @@ function combo() {
                     var order = d3.select(this).attr('class')
                     switch (order) {
                         case 'ascending':
-                             UTIL.toggleSortSelection('ascending', chart.update, _local_svg, keys, _Local_data,_isFilterGrid);
+                            UTIL.toggleSortSelection('ascending', chart.update, _local_svg, keys, _Local_data, _isFilterGrid);
                             break;
                         case 'descending':
-                             UTIL.toggleSortSelection('descending', chart.update, _local_svg, keys, _Local_data,_isFilterGrid);
+                            UTIL.toggleSortSelection('descending', chart.update, _local_svg, keys, _Local_data, _isFilterGrid);
                             break;
                         case 'reset': {
                             $(me).parent().find('.sort_selection,.arrow-down').css('visibility', 'hidden');
@@ -1454,7 +1460,7 @@ function combo() {
         plot.select('.y.grid')
             .transition()
             .duration(COMMON.DURATION)
-            .attr('visibility','visible')
+            .attr('visibility', 'visible')
             .call(_localYGrid);
 
         UTIL.displayThreshold(threshold, data, keys);
@@ -1784,6 +1790,13 @@ function combo() {
             return _data;
         }
         _data = value;
+        return chart;
+    }
+    chart.isFilterGrid = function (value) {
+        if (!arguments.length) {
+            return _isFilterGrid;
+        }
+        _isFilterGrid = value;
         return chart;
     }
     return chart;

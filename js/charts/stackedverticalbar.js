@@ -44,8 +44,8 @@ function stackedverticalbar() {
         filterParameters,
         isAnimationDisable = false,
         _notification = false,
-        _data;
-
+        _data,
+        _isFilterGrid;
 
     var x = d3.scaleBand(), y = d3.scaleLinear();
     var margin = {
@@ -1420,6 +1420,13 @@ function stackedverticalbar() {
             return _data;
         }
         _data = value;
+        return chart;
+    }
+    chart.isFilterGrid = function (value) {
+        if (!arguments.length) {
+            return _isFilterGrid;
+        }
+        _isFilterGrid = value;
         return chart;
     }
     return chart;

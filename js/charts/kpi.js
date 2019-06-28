@@ -33,8 +33,8 @@ function kpi() {
         _kpiIconExpression = [],
         _FontsizeForDisplayName = [],
         _print,
+        _notification = false,
         _data;
-
     /* These are the common variables that is shared across the different private/public
      * methods but is initialized/updated within the methods itself.
      */
