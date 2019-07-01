@@ -1505,7 +1505,6 @@ function clusteredverticalbar() {
         _isFilterGrid = value;
         return chart;
     }
-
     return chart;
 }
 

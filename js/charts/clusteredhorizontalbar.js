@@ -43,7 +43,8 @@ function clusteredhorizontalbar() {
         filterParameters,
         isAnimationDisable = false,
         _notification = false,
-        _data;
+        _data,
+        _isFilterGrid;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
 
@@ -576,10 +577,10 @@ function clusteredhorizontalbar() {
                     var order = d3.select(this).attr('class')
                     switch (order) {
                         case 'ascending':
-                             UTIL.toggleSortSelection('ascending', chart.update, _local_svg, keys, _Local_data,_isFilterGrid);
+                            UTIL.toggleSortSelection('ascending', chart.update, _local_svg, keys, _Local_data, _isFilterGrid);
                             break;
                         case 'descending':
-                             UTIL.toggleSortSelection('descending', chart.update, _local_svg, keys, _Local_data,_isFilterGrid);
+                            UTIL.toggleSortSelection('descending', chart.update, _local_svg, keys, _Local_data, _isFilterGrid);
                             break;
                         case 'reset': {
                             $(me).parent().find('.sort_selection,.arrow-down').css('visibility', 'hidden');
@@ -804,16 +805,18 @@ function clusteredhorizontalbar() {
 
                 if (this.getAttribute('visibility') == 'hidden') return 'hidden';
 
-                if ((this.getComputedTextLength() + (offsetX / 2)) > parseFloat(plotWidth - rectWidth)) {
-                    return 'hidden';
-                }
+                if (!_print) {
+                    if ((this.getComputedTextLength() + (offsetX / 2)) > parseFloat(plotWidth - rectWidth)) {
+                        return 'hidden';
+                    }
 
-                if (rectHeight < _fontSize[i] && _fontSize[i] >= rectHeight) {
-                    d3.select(this).style('font-size', parseInt(rectHeight) - 2 + 'px')
-                }
+                    if (rectHeight < _fontSize[i] && _fontSize[i] >= rectHeight) {
+                        d3.select(this).style('font-size', parseInt(rectHeight) - 2 + 'px')
+                    }
 
-                if (this.getComputedTextLength() >= rectWidth) {
-                    return 'hidden';
+                    if (this.getComputedTextLength() >= rectWidth) {
+                        return 'hidden';
+                    }
                 }
                 return 'visible';
             })
@@ -824,15 +827,21 @@ function clusteredhorizontalbar() {
                 return x1.bandwidth() / 2 + d3.select(this).style('font-size').replace('px', '') / 2.5;
             })
             .text(function (d, i) {
-                var barLength;
+                if (!_print) {
+                    var barLength;
 
-                if ((d[d.measure] === null) || (isNaN(d[d.measure]))) {
-                    barLength = 0;
-                } else {
-                    barLength = Math.abs(y(0) - y(d[d.measure]));
+                    if ((d[d.measure] === null) || (isNaN(d[d.measure]))) {
+                        barLength = 0;
+                    } else {
+                        barLength = Math.abs(y(0) - y(d[d.measure]));
+                    }
+
+                    return UTIL.getTruncatedLabel(this, d3.select(this).text(), plotWidth - barLength);
+                }
+                else {
+                    return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat, d[d.measure]));
                 }
 
-                return UTIL.getTruncatedLabel(this, d3.select(this).text(), plotWidth - barLength);
             })
     }
     /**
@@ -1366,6 +1375,13 @@ function clusteredhorizontalbar() {
             return _data;
         }
         _data = value;
+        return chart;
+    }
+    chart.isFilterGrid = function (value) {
+        if (!arguments.length) {
+            return _isFilterGrid;
+        }
+        _isFilterGrid = value;
         return chart;
     }
     return chart;

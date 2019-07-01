@@ -25,6 +25,7 @@ function gauge() {
         targetNumberFormat,
         _print,
         _tooltip,
+        _notification = false,
         _data;
 
     var _local_svg, tooltip;

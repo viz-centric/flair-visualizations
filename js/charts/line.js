@@ -43,7 +43,8 @@ function line() {
         broadcast,
         filterParameters,
         _notification = false,
-        _data;
+        _data,
+        _isFilterGrid;
 
     var margin = {
         top: 0,
@@ -517,7 +518,7 @@ function line() {
                 return UTIL.getBorderColor(_measure.indexOf(d[0]['tag']), _borderColor);
             })
             .attr('visibility', function (d, i) {
-                if (_lineType[(_measure.indexOf(d[0]['tag']))] == "area") {
+                if (_lineType[(_measure.indexOf(d[0]['tag']))].toUpperCase() == "AREA") {
                     return 'visible'
                 }
                 else {
@@ -1509,6 +1510,13 @@ function line() {
             return _data;
         }
         _data = value;
+        return chart;
+    }
+    chart.isFilterGrid = function (value) {
+        if (!arguments.length) {
+            return _isFilterGrid;
+        }
+        _isFilterGrid = value;
         return chart;
     }
     return chart;

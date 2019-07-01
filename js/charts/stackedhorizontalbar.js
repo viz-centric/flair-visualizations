@@ -43,7 +43,8 @@ function stackedhorizontalbar() {
         filterParameters,
         isAnimationDisable = false,
         _notification = false,
-        _data;
+        _data,
+        _isFilterGrid;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
     var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, parentContainer;
@@ -1352,6 +1353,13 @@ function stackedhorizontalbar() {
             return _data;
         }
         _data = value;
+        return chart;
+    }
+    chart.isFilterGrid = function (value) {
+        if (!arguments.length) {
+            return _isFilterGrid;
+        }
+        _isFilterGrid = value;
         return chart;
     }
     return chart;

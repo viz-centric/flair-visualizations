@@ -36,6 +36,7 @@ function pivottable() {
         _print,
         broadcast,
         filterParameters,
+        _notification = false,
         _data;
 
     var _localData, filterData = [], _local_svg, _originalData, parentContainer, mapper;
