@@ -158,6 +158,7 @@ function gauge() {
 
         var radius;
         var degree = 90;
+
         if (gaugeType === 'radial') {
             degree = 180;
             radius = Math.min(width, height) / 2;
@@ -303,10 +304,10 @@ function gauge() {
                 }
             })
             .text(function () {
-                return displayName + " " + UTIL.getNumberFormatterFn(numberFormat)(UTIL.roundNumber(_data[0][measures[0]], 0));
+                return displayName + " " + UTIL.getFormattedValue(_data[0][measures[0]], UTIL.getNumberFormatterFn(numberFormat, _data[0][measures[0]]));
             })
             .text(function () {
-                return UTIL.getTruncatedLabel(this, displayName + " " + UTIL.getNumberFormatterFn(numberFormat)(UTIL.roundNumber(_data[0][measures[0]], 0)), ringInset)
+                return UTIL.getTruncatedLabel(this, displayName + " " + UTIL.getFormattedValue(_data[0][measures[0]], UTIL.getNumberFormatterFn(numberFormat, _data[0][measures[0]])), ringInset)
             })
 
         // displayName + " " + data[0][measures[0]])
@@ -327,11 +328,10 @@ function gauge() {
                 }
             })
             .text(function () {
-
-                return displayName + " " + _data[0][measures[1]];
+                return displayName + " " + UTIL.getFormattedValue(_data[0][measures[1]], UTIL.getNumberFormatterFn(targetNumberFormat, _data[0][measures[1]]));
             })
             .text(function () {
-                return UTIL.getTruncatedLabel(this, displayName + " " + _data[0][measures[1]], ringInset)
+                return UTIL.getTruncatedLabel(this, displayName + " " + UTIL.getFormattedValue(_data[0][measures[1]], UTIL.getNumberFormatterFn(targetNumberFormat, _data[0][measures[1]])), ringInset)
             })
 
         chart.update(_data);
@@ -348,11 +348,16 @@ function gauge() {
     chart.update = function (_data) {
 
         var maxVal = Math.max(_data[0][measures[0]], _data[0][measures[1]]);
-
-        var _measurePi = degToRad(Math.floor(_data[0][measures[0]] * 180 / maxVal - 90));
-        var targetPi = degToRad(Math.floor(_data[0][measures[1]] * 180 / maxVal - 90));
-        var _measureValue = Math.round(UTIL.getNumberFormatterFn(numberFormat)(UTIL.roundNumber(_data[0][measures[0]], 2)) * 100) / 100;
-        var _tragetValue = Math.round(UTIL.getNumberFormatterFn(numberFormat)(UTIL.roundNumber(_data[0][measures[1]], 2)) * 100) / 100;
+        var point = 90
+        if (gaugeType === 'radial') {
+            point = 0;
+        } else {
+            point = 90
+        }
+        var _measurePi = degToRad(Math.floor(_data[0][measures[0]] * 180 / maxVal - point));
+        var targetPi = degToRad(Math.floor(_data[0][measures[1]] * 180 / maxVal - point));
+        var _measureValue = UTIL.getFormattedValue(_data[0][measures[0]], UTIL.getNumberFormatterFn(numberFormat, _data[0][measures[0]]));
+        var _tragetValue = UTIL.getFormattedValue(_data[0][measures[1]], UTIL.getNumberFormatterFn(targetNumberFormat, _data[0][measures[1]]));
         _measure.transition()
             .text(function () {
                 return displayName + " " + _measureValue;

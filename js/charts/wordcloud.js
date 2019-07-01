@@ -238,6 +238,7 @@ function wordcloud() {
                 .style("fill", function (d, i) {
                     return colour[i];
                 })
+                .attr("class", "wordcloud")
                 .attr("text-anchor", "middle")
                 .attr("transform", function (d) {
                     return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";

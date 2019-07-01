@@ -314,29 +314,33 @@ function util() {
          * @param {string} si Type of Number format to be used
          * @return {function}
          */
-        getNumberFormatterFn: function (si) {
+        getNumberFormatterFn: function (si, value) {
             if (si === void 0) {
-                si = "actual";
+                si = "Actual";
             }
-            si = si.toLowerCase();
-
             var result;
 
             var siMapper = {
-                'k': '1e3',
-                'm': '1e6',
-                'b': '1e9',
+                "K": "1e3",
+                "M": "1e6",
+                "B": "1e9",
             };
 
             switch (si) {
-                case "actual":
-                    result = d3.format('.2f');
+                case "Actual":
+                    {
+                        if (value % 1 == 0)
+                            result = d3.format('');
+                        else
+                            result = d3.format('.2f');
+                        break;
+                    }
                     break;
-                case "percent":
+                case "Percent":
                     result = d3.format('.0%');
                     break;
                 default:
-                    result = d3.formatPrefix(',.2s', siMapper[si] || '1e6');
+                    result = d3.formatPrefix('.2s', siMapper[si]);
                     break;
             }
 
@@ -614,7 +618,11 @@ function util() {
             var me = this;
             var _onRadioButtonClick = function (event) {
                 //  $(this).closest('.sort_selection').parent().find('.plot').remove();
-                callback.call(_local_svg, me.sortData(_Local_data, event.data.measure, sortType), true);
+                var filterConfig = {}
+                filterConfig.key = event.data.measure;
+                filterConfig.sortType = sortType;
+                filterConfig.isFilter = true;
+                callback.call(_local_svg, me.sortData(_Local_data, event.data.measure, sortType), filterConfig);
                 var container = _local_svg.node().parentNode;
                 $(container).find('.sort_selection').css('visibility', 'hidden');
                 $(container).find('.arrow-down').css('visibility', 'hidden');

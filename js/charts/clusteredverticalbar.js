@@ -300,14 +300,16 @@ function clusteredverticalbar() {
         // get bounds of selection
         var s = d3.event.selection,
             filterList = [];
-        _x0.domain().forEach((d) => { //not as smooth as I'd like it
+        _x0.domain().forEach((d) => {
             var pos = _x0(d) + _x0.bandwidth() / 2;
             if (pos > s[0] && pos < s[1]) {
                 filterList.push(d);
             }
         });
         var updatedData = UTIL.getFilterDataForGrid(_data, filterList, _dimension[0]);
-        chart.update(updatedData);
+        if (updatedData.length > 0) {
+            chart.update(updatedData);
+        }
     }
 
 
@@ -315,6 +317,12 @@ function clusteredverticalbar() {
 
         data = UTIL.sortingData(_data, _dimension[0])
         _Local_data = _originalData = data;
+
+        if (_isFilterGrid) {
+            if (!(Object.keys(broadcast.filterSelection.filter).length === 0 && broadcast.filterSelection.filter.constructor === Object)) {
+                _isFilterGrid = false;
+            }
+        }
 
         if (_print && !_notification) {
             parentContainer = selection;
@@ -454,124 +462,7 @@ function clusteredverticalbar() {
             .domain([range[0], range[1]])
             .nice();
 
-        if (!_print) {
-            svgFilter = parentContainer.append('svg')
-                .attr('width', parentContainer.attr('width'))
-                .attr('height', FilterControlHeight)
-                .attr('class', 'filterElement')
-                .style('visibility', UTIL.getVisibility(_isFilterGrid));
-
-            _x0.rangeRound([0, parseInt(_local_svg.attr('width') - 2 * COMMON.PADDING)])
-                .padding([0.2])
-                .paddingInner(0.1)
-                .domain(data.map(function (d) { return d[_dimension[0]]; }));
-
-            _x1.padding([0.2])
-                .domain(keys).rangeRound([0, _x0.bandwidth()]);
-
-            _y.rangeRound([FilterControlHeight - COMMON.PADDING, 0])
-                .domain([range[0], range[1]])
-                .nice();
-
-            brush.extent([[0, 0], [parentContainer.attr('width'), FilterControlHeight]])
-                .on("brush", brushed);
-
-            var separationLine = svgFilter.append("line")
-                .attr("stroke", COMMON.SEPARATIONLINE)
-                .attr("x1", COMMON.PADDING)
-                .attr("x2", parseInt(_local_svg.attr('width') - 2 * COMMON.PADDING))
-                .attr("y1", "0")
-                .attr("y1", "0")
-                .style("stroke-dasharray", ("3, 3"));
-
-            var context = svgFilter.append("g")
-                .attr("class", "context")
-                .attr('width', parentContainer.attr('width'))
-                .attr('height', FilterControlHeight)
-                .attr('transform', 'translate(' + COMMON.PADDING + ', ' + 0 + ')');
-
-            _localXAxisForFilter = d3.axisBottom(_x0)
-                .tickSize(0)
-                .tickFormat(function (d) {
-                    return '';
-                })
-                .tickPadding(10);
-
-            context.append("g")
-                .attr("class", "x axis_filter")
-                .attr("transform", "translate(0," + parseInt(FilterControlHeight - COMMON.PADDING) + ")")
-                .call(_localXAxisForFilter);
-
-            context.append("g")
-                .attr("class", "x brush")
-                .call(brush)
-                .selectAll("rect")
-                .attr("y", -6)
-                .attr("height", FilterControlHeight + 7);
-
-            var clusterFilter = context.selectAll('.clusterFilter')
-                .data(data)
-                .enter().append('g')
-                .attr('class', 'clusterFilter')
-                .attr('transform', function (d) {
-                    return 'translate(' + _x0(d[_dimension[0]]) + ', 0)';
-                });
-
-            var labelStack = []
-            var clusteredverticalbarFilter = clusterFilter.selectAll('g.clusteredverticalbarFilter')
-                .data(function (d) {
-                    return keys.filter(function (m) {
-                        return labelStack.indexOf(m) == -1;
-                    }).map(function (m) {
-                        var obj = {};
-                        obj[_dimension[0]] = d[_dimension[0]];
-                        obj[m] = d[m];
-                        obj['dimension'] = _dimension[0];
-                        obj['measure'] = m;
-                        return obj;
-                    });
-                })
-                .enter().append('g')
-                .attr('class', 'clusteredverticalbarFilter');
-
-            clusteredverticalbarFilter.append('rect')
-                .style('fill', function (d, i) {
-                    if (d[d.measure] < 0) {
-                        return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
-                    }
-                    else {
-                        return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
-                    }
-                })
-                .style('stroke', function (d, i) {
-                    if (d[d.measure] < 0) {
-                        return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
-                    }
-                    else {
-                        return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
-                    }
-                })
-                .style('fill-opacity', 0.6)
-                .style('stroke-opacity', 0.6)
-                .style('stroke-width', 1)
-                .attr("height", function (d, i) {
-                    if ((d[d.measure] === null) || (isNaN(d[d.measure]))) return 0;
-                    return Math.abs(_y(0) - _y(d[d.measure]));
-                })
-                .attr("y", function (d, i) {
-                    if ((d[d.measure] === null) || (isNaN(d[d.measure]))) {
-                        return plotHeight;
-                    } else if (d[d.measure] > 0) {
-                        return _y(d[d.measure]);
-                    }
-
-                    return _y(0);
-                })
-                .attr("width", _x1.bandwidth())
-                .attr("x", function (d, i) {
-                    return _x1(d.measure);;
-                })
-        }
+        drawPlotForFilter.call(this, data);
 
         var _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
@@ -752,15 +643,16 @@ function clusteredverticalbar() {
                     var order = d3.select(this).attr('class')
                     switch (order) {
                         case 'ascending':
-                            UTIL.toggleSortSelection('ascending', chart.update, _local_svg, keys, _Local_data,_isFilterGrid);
+                            UTIL.toggleSortSelection('ascending', chart.update, _local_svg, keys, _Local_data, _isFilterGrid);
                             break;
                         case 'descending':
-                            UTIL.toggleSortSelection('descending', chart.update, _local_svg, keys, _Local_data,_isFilterGrid);
+                            UTIL.toggleSortSelection('descending', chart.update, _local_svg, keys, _Local_data, _isFilterGrid);
                             break;
                         case 'reset': {
                             // $(_local_svg).parent().find('.sort_selection,.arrow-down').css('visibility', 'hidden');
                             // _local_svg.select('.plot').remove()
                             chart.update.call(me, _Local_data);
+                            drawPlotForFilter.call(this, _originalData);
                             break;
                         }
                     }
@@ -786,6 +678,130 @@ function clusteredverticalbar() {
                 .on('end', onLassoEnd(lasso, _local_svg));
 
             _local_svg.call(lasso);
+        }
+    }
+
+    var drawPlotForFilter = function (data) {
+        if (!_print) {
+            var keys = UTIL.getMeasureList(data[0], _dimension);
+            var range = UTIL.getMinMax(data, keys);
+            parentContainer.select('.filterElement').remove();
+            svgFilter = parentContainer.append('svg')
+                .attr('width', parentContainer.attr('width'))
+                .attr('height', FilterControlHeight)
+                .attr('class', 'filterElement')
+                .style('visibility', UTIL.getVisibility(_isFilterGrid));
+
+            _x0.rangeRound([0, parseInt(_local_svg.attr('width') - 2 * COMMON.PADDING)])
+                .padding([0.2])
+                .paddingInner(0.1)
+                .domain(data.map(function (d) { return d[_dimension[0]]; }));
+
+            _x1.padding([0.2])
+                .domain(keys).rangeRound([0, _x0.bandwidth()]);
+
+            _y.rangeRound([FilterControlHeight - COMMON.PADDING, 0])
+                .domain([range[0], range[1]])
+                .nice();
+
+            brush.extent([[0, 0], [parentContainer.attr('width'), FilterControlHeight]])
+                .on("brush", brushed);
+
+            var separationLine = svgFilter.append("line")
+                .attr("stroke", COMMON.SEPARATIONLINE)
+                .attr("x1", COMMON.PADDING)
+                .attr("x2", parseInt(_local_svg.attr('width') - 2 * COMMON.PADDING))
+                .attr("y1", "0")
+                .attr("y1", "0")
+                .style("stroke-dasharray", ("3, 3"));
+
+            var context = svgFilter.append("g")
+                .attr("class", "context")
+                .attr('width', parentContainer.attr('width'))
+                .attr('height', FilterControlHeight)
+                .attr('transform', 'translate(' + COMMON.PADDING + ', ' + 0 + ')');
+
+            _localXAxisForFilter = d3.axisBottom(_x0)
+                .tickSize(0)
+                .tickFormat(function (d) {
+                    return '';
+                })
+                .tickPadding(10);
+
+            context.append("g")
+                .attr("class", "x axis_filter")
+                .attr("transform", "translate(0," + parseInt(FilterControlHeight - COMMON.PADDING) + ")")
+                .call(_localXAxisForFilter);
+
+            context.append("g")
+                .attr("class", "x brush")
+                .call(brush)
+                .selectAll("rect")
+                .attr("y", -6)
+                .attr("height", FilterControlHeight + 7);
+
+            var clusterFilter = context.selectAll('.clusterFilter')
+                .data(data)
+                .enter().append('g')
+                .attr('class', 'clusterFilter')
+                .attr('transform', function (d) {
+                    return 'translate(' + _x0(d[_dimension[0]]) + ', 0)';
+                });
+
+            var labelStack = []
+            var clusteredverticalbarFilter = clusterFilter.selectAll('g.clusteredverticalbarFilter')
+                .data(function (d) {
+                    return keys.filter(function (m) {
+                        return labelStack.indexOf(m) == -1;
+                    }).map(function (m) {
+                        var obj = {};
+                        obj[_dimension[0]] = d[_dimension[0]];
+                        obj[m] = d[m];
+                        obj['dimension'] = _dimension[0];
+                        obj['measure'] = m;
+                        return obj;
+                    });
+                })
+                .enter().append('g')
+                .attr('class', 'clusteredverticalbarFilter');
+
+            clusteredverticalbarFilter.append('rect')
+                .style('fill', function (d, i) {
+                    if (d[d.measure] < 0) {
+                        return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                    }
+                })
+                .style('stroke', function (d, i) {
+                    if (d[d.measure] < 0) {
+                        return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
+                    }
+                    else {
+                        return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
+                    }
+                })
+                .style('fill-opacity', 0.6)
+                .style('stroke-opacity', 0.6)
+                .style('stroke-width', 1)
+                .attr("height", function (d, i) {
+                    if ((d[d.measure] === null) || (isNaN(d[d.measure]))) return 0;
+                    return Math.abs(_y(0) - _y(d[d.measure]));
+                })
+                .attr("y", function (d, i) {
+                    if ((d[d.measure] === null) || (isNaN(d[d.measure]))) {
+                        return plotHeight;
+                    } else if (d[d.measure] > 0) {
+                        return _y(d[d.measure]);
+                    }
+
+                    return _y(0);
+                })
+                .attr("width", _x1.bandwidth())
+                .attr("x", function (d, i) {
+                    return _x1(d.measure);;
+                })
         }
     }
 
@@ -1020,7 +1036,13 @@ function clusteredverticalbar() {
         return _local_svg.node().outerHTML;
     }
 
-    chart.update = function (data, aviodSorting) {
+    chart.update = function (data, filterConfig) {
+
+        if (_isFilterGrid) {
+            if (!(Object.keys(broadcast.filterSelection.filter).length === 0 && broadcast.filterSelection.filter.constructor === Object)) {
+                _isFilterGrid = false;
+            }
+        }
 
         var containerHeight = parentContainer.attr('height');
         if (_isFilterGrid) {
@@ -1049,13 +1071,22 @@ function clusteredverticalbar() {
                 return UTIL.setPlotPosition(_legendPosition, _showXaxis, _showYaxis, _showLegend, margin.left, legendSpace, legendBreakCount, axisLabelSpace, _local_svg);
             });
 
-        if (!aviodSorting) {
+        if (filterConfig) {
+            if (!filterConfig.isFilter) {
+                data = UTIL.sortingData(data, _dimension[0]);
+            }
+            else {
+                drawPlotForFilter.call(this, UTIL.sortData(_originalData, filterConfig.key, filterConfig.sortType));
+            }
+        }
+        else {
             data = UTIL.sortingData(data, _dimension[0]);
         }
 
         if (_tooltip) {
             tooltip = parentContainer.select('.custom_tooltip');
         }
+
         var DURATION = COMMON.DURATION;
         if (isAnimationDisable) {
             DURATION = 0;
