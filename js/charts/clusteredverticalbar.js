@@ -293,7 +293,6 @@ function clusteredverticalbar() {
         }
     }
 
-
     var brushed = function () {
         if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return; // ignore brush-by-zoom
 
@@ -311,7 +310,6 @@ function clusteredverticalbar() {
             chart.update(updatedData);
         }
     }
-
 
     function chart(selection) {
 
@@ -548,7 +546,7 @@ function clusteredverticalbar() {
         xAxisGroup.append('g')
             .attr('class', 'label')
             .attr('transform', function () {
-                return 'translate(' + (plotWidth / 2) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
+                return 'translate(' + (plotWidth / 2) + ', ' + parseFloat((COMMON.AXIS_THICKNESS / 1.5) + COMMON.PADDING) + ')';
             })
             .append('text')
             .style('text-anchor', 'middle')
@@ -825,7 +823,7 @@ function clusteredverticalbar() {
                     return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
                 }
             })
-            .style('stroke-width', 2)
+            .style('stroke-width', 1)
             .attr("height", function (d, i) {
                 if ((d[d.measure] === null) || (isNaN(d[d.measure]))) return 0;
                 return Math.abs(y(0) - y(d[d.measure]));
