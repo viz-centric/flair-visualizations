@@ -44,7 +44,7 @@ function line() {
         filterParameters,
         _notification = false,
         _data,
-        _isFilterGrid;
+        _isFilterGrid = false;
 
     var margin = {
         top: 0,
@@ -60,6 +60,10 @@ function line() {
         _localYGrid;
 
     var x = d3.scalePoint(), y = d3.scaleLinear();
+    var _x = d3.scalePoint(), _y = d3.scaleLinear(), brush = d3.brushX();;
+    var FilterControlHeight = 100;
+
+    var areaGenerator = d3.area(), lineGenerator = d3.line();
 
     var tickLength = d3.scaleLinear()
         .domain([22, 34])
@@ -95,6 +99,7 @@ function line() {
         this.fontSize(config.fontSize);
         this.lineType(config.lineType);
         this.pointType(config.pointType);
+        this.isFilterGrid(config.isFilterGrid);
         this.legendData(config.displayColor, config.measure);
     }
     var getPointType = function (index) {
@@ -378,9 +383,33 @@ function line() {
             plotHeight = parentHeight;
         }
     }
+    var brushed = function () {
+        if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return; // ignore brush-by-zoom
+
+        // get bounds of selection
+        var s = d3.event.selection,
+            filterList = [];
+        _x.domain().forEach((d) => {
+            var pos = _x(d) + _x.bandwidth() / 2;
+            if (pos > s[0] && pos < s[1]) {
+                filterList.push(d);
+            }
+        });
+        var updatedData = UTIL.getFilterDataForGrid(_data, filterList, _dimension[0]);
+        if (updatedData.length > 0) {
+            chart.update(updatedData);
+        }
+    }
     function chart(selection) {
+
         data = UTIL.sortingData(_data, _dimension[0])
         _Local_data = _originalData = data;
+
+        if (_isFilterGrid) {
+            if (!(Object.keys(broadcast.filterSelection.filter).length === 0 && broadcast.filterSelection.filter.constructor === Object)) {
+                _isFilterGrid = false;
+            }
+        }
 
         if (_print && !_notification) {
             parentContainer = selection;
@@ -389,9 +418,15 @@ function line() {
             parentContainer = d3.select('#' + selection.id)
         }
 
+        var containerHeight = parentContainer.attr('height');
+        if (_isFilterGrid) {
+            containerHeight = containerHeight * 80 / 100;
+            FilterControlHeight = containerHeight * 20 / 100;
+        }
+
         var svg = parentContainer.append('svg')
             .attr('width', parentContainer.attr('width'))
-            .attr('height', parentContainer.attr('height'))
+            .attr('height', containerHeight)
 
         var width = +svg.attr('width'),
             height = +svg.attr('height');
@@ -402,6 +437,7 @@ function line() {
         parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
 
         container = svg.append('g')
+            .attr("class", "focus")
             .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
         svg.attr('width', width)
@@ -445,14 +481,7 @@ function line() {
             .domain([range[0], range[1]])
             .nice();
 
-        // var _yTicks = y.ticks(),
-        //     yDiff = _yTicks[1] - _yTicks[0];
-
-        // if ((_yTicks[_yTicks.length - 1] + yDiff) > range[1] + (yDiff / 2)) {
-        //     y.domain([range[0], (_yTicks[_yTicks.length - 1] + yDiff)])
-        // } else {
-        //     y.domain([range[0], (_yTicks[_yTicks.length - 1] + 2 * yDiff)])
-        // }
+        drawPlotForFilter.call(this, data);
 
         var _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
@@ -483,7 +512,7 @@ function line() {
             .attr('visibility', 'visible')
             .call(_localYGrid);
 
-        var areaGenerator = d3.area()
+        areaGenerator = d3.area()
             .curve(d3.curveLinear)
             .x(function (d, i) {
                 return x(d['data'][_dimension[0]]) + x.bandwidth() / 2;
@@ -495,7 +524,7 @@ function line() {
                 return y(d['data'][d['tag']]);
             });
 
-        var lineGenerator = d3.line()
+        lineGenerator = d3.line()
             .curve(d3.curveLinear)
             .x(function (d, i) {
                 return x(d['data'][_dimension[0]]) + x.bandwidth() / 2;
@@ -707,7 +736,7 @@ function line() {
         xAxisGroup.append('g')
             .attr('class', 'label')
             .attr('transform', function () {
-                return 'translate(' + (plotWidth / 2) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
+                return 'translate(' + (plotWidth / 2) + ', ' + parseFloat((COMMON.AXIS_THICKNESS / 1.5) + COMMON.PADDING) + ')';
             })
             .append('text')
             .style('text-anchor', 'middle')
@@ -821,15 +850,14 @@ function line() {
                     var order = d3.select(this).attr('class')
                     switch (order) {
                         case 'ascending':
-                             UTIL.toggleSortSelection('ascending', chart.update, _local_svg, keys, _Local_data,_isFilterGrid);
+                            UTIL.toggleSortSelection('ascending', chart.update, _local_svg, keys, _Local_data, _isFilterGrid);
                             break;
                         case 'descending':
-                             UTIL.toggleSortSelection('descending', chart.update, _local_svg, keys, _Local_data,_isFilterGrid);
+                            UTIL.toggleSortSelection('descending', chart.update, _local_svg, keys, _Local_data, _isFilterGrid);
                             break;
                         case 'reset': {
-                            $(me).parent().find('.sort_selection,.arrow-down').css('visibility', 'hidden');
-                            _local_svg.select('.plot').remove()
-                            drawPlot.call(me, _Local_data);
+                            chart.update.call(me, _Local_data);
+                            drawPlotForFilter.call(this, _originalData);
                             break;
                         }
                     }
@@ -863,7 +891,131 @@ function line() {
         }
 
     }
+    var drawPlotForFilter = function (data) {
+        if (!_print) {
+            var keys = UTIL.getMeasureList(data[0], _dimension);
+            var range = UTIL.getMinMax(data, keys);
+            parentContainer.select('.filterElement').remove();
+            svgFilter = parentContainer.append('svg')
+                .attr('width', parentContainer.attr('width'))
+                .attr('height', FilterControlHeight)
+                .attr('class', 'filterElement')
+                .style('visibility', UTIL.getVisibility(_isFilterGrid));
 
+            _x.rangeRound([0, parseInt(_local_svg.attr('width') - 2 * COMMON.PADDING)])
+                .padding([0.5])
+                .domain(data.map(function (d) { return d[_dimension[0]]; }));
+
+            var range = UTIL.getMinMax(data, keys);
+
+            _y.rangeRound([FilterControlHeight - COMMON.PADDING, 0])
+                .domain([range[0], range[1]])
+                .nice();
+
+            brush.extent([[0, 0], [parentContainer.attr('width'), FilterControlHeight]])
+                .on("brush", brushed);
+
+            var separationLine = svgFilter.append("line")
+                .attr("stroke", COMMON.SEPARATIONLINE)
+                .attr("x1", COMMON.PADDING)
+                .attr("x2", parseInt(_local_svg.attr('width') - 2 * COMMON.PADDING))
+                .attr("y1", "0")
+                .attr("y1", "0")
+                .style("stroke-dasharray", ("3, 3"));
+
+            var context = svgFilter.append("g")
+                .attr("class", "context")
+                .attr('width', parentContainer.attr('width'))
+                .attr('height', FilterControlHeight)
+                .attr('transform', 'translate(' + COMMON.PADDING + ', ' + 0 + ')');
+
+            _localXAxisForFilter = d3.axisBottom(_x)
+                .tickSize(0)
+                .tickFormat(function (d) {
+                    return '';
+                })
+                .tickPadding(10);
+
+            context.append("g")
+                .attr("class", "x axis_filter")
+                .attr("transform", "translate(0," + parseInt(FilterControlHeight - COMMON.PADDING) + ")")
+                .call(_localXAxisForFilter);
+
+            context.append("g")
+                .attr("class", "x brush")
+                .call(brush)
+                .selectAll("rect")
+                .attr("y", -6)
+                .attr("height", FilterControlHeight + 7);
+
+            var labelStack = [];
+
+            var _areaGenerator = d3.area()
+                .curve(d3.curveLinear)
+                .x(function (d, i) {
+                    return _x(d['data'][_dimension[0]]) + _x.bandwidth() / 2;
+                })
+                .y0(function (d, i) {
+                    return _y(0);
+                })
+                .y1(function (d) {
+                    return _y(d['data'][d['tag']]);
+                });
+
+            var _lineGenerator = d3.line()
+                .curve(d3.curveLinear)
+                .x(function (d, i) {
+                    return _x(d['data'][_dimension[0]]) + x.bandwidth() / 2;
+                })
+                .y(function (d, i) {
+                    return _y(d['data'][d['tag']]);
+                });
+
+            var cluster_lineFilter = context.selectAll('.cluster_lineFilter')
+                .data(keys.filter(function (m) { return labelStack.indexOf(m) == -1; }))
+                .enter().append('g')
+                .attr('class', 'cluster_lineFilter');
+
+            var areaFilter = cluster_lineFilter.append('path')
+                .datum(function (d, i) {
+                    return data.map(function (datum) { return { "tag": d, "data": datum }; });
+                })
+                .attr('class', 'areaFilter')
+                .attr('fill', function (d, i) {
+                    return UTIL.getBorderColor(_measure.indexOf(d[0]['tag']), _borderColor);
+                })
+                .attr('visibility', function (d, i) {
+                    if (_lineType[(_measure.indexOf(d[0]['tag']))].toUpperCase() == "AREA") {
+                        return 'visible'
+                    }
+                    else {
+                        return 'hidden';
+                    }
+                })
+                .style('fill-opacity', 0.3)
+                .attr('stroke', 'none')
+                .style('stroke-width', 0)
+                .style('opacity', 1)
+                .attr('d', _areaGenerator);
+
+            var lineFilter = cluster_lineFilter.append('path')
+                .classed('line-path', true)
+                .datum(function (d, i) {
+                    return data.map(function (datum) { return { "tag": d, "data": datum }; });
+                })
+                .attr('class', 'line')
+                .attr('stroke-dasharray', 'none')
+                .style('fill', 'none')
+                .attr('stroke', function (d, i) {
+                    return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
+                })
+                .attr('stroke-linejoin', 'round')
+                .attr('stroke-linecap', 'round')
+                .attr('stroke-width', 1)
+                .attr('d', _lineGenerator)
+                .style('stroke-opacity', 0.6)
+        }
+    }
     chart._legendInteraction = function (event, data, plot) {
         if (_print) {
             // No interaction during print enabled
@@ -914,7 +1066,23 @@ function line() {
         drawPlot.call(this, _filter);
     }
 
-    chart.update = function (data) {
+    chart.update = function (data, filterConfig) {
+
+        if (_isFilterGrid) {
+            if (!(Object.keys(broadcast.filterSelection.filter).length === 0 && broadcast.filterSelection.filter.constructor === Object)) {
+                _isFilterGrid = false;
+            }
+        }
+
+        var containerHeight = parentContainer.attr('height');
+        if (_isFilterGrid) {
+            containerHeight = containerHeight * 80 / 100;
+            FilterControlHeight = containerHeight * 20 / 100;
+        }
+
+        var svg = _local_svg
+            .attr('width', parentContainer.attr('width'))
+            .attr('height', containerHeight)
 
         var svg = _local_svg,
             width = +svg.attr('width'),
@@ -930,7 +1098,18 @@ function line() {
                 return UTIL.setPlotPosition(_legendPosition, _showXaxis, _showYaxis, _showLegend, margin.left, legendSpace, legendBreakCount, axisLabelSpace, _local_svg);
             });
 
-        data = UTIL.sortingData(data, _dimension[0]);
+        if (filterConfig) {
+            if (!filterConfig.isFilter) {
+                data = UTIL.sortingData(data, _dimension[0]);
+            }
+            else {
+                drawPlotForFilter.call(this, UTIL.sortData(_originalData, filterConfig.key, filterConfig.sortType));
+            }
+        }
+        else {
+            data = UTIL.sortingData(data, _dimension[0]);
+        }
+
         if (_tooltip) {
             tooltip = parentContainer.select('.custom_tooltip');
         }
@@ -955,36 +1134,6 @@ function line() {
         y.rangeRound([plotHeight, 0])
             .domain([range[0], range[1]])
             .nice();
-
-        // var _yTicks = y.ticks(),
-        //     yDiff = _yTicks[1] - _yTicks[0];
-
-        // if ((_yTicks[_yTicks.length - 1] + yDiff) > range[1] + (yDiff / 2)) {
-        //     y.domain([range[0], (_yTicks[_yTicks.length - 1] + yDiff)])
-        // } else {
-        //     y.domain([range[0], (_yTicks[_yTicks.length - 1] + 2 * yDiff)])
-        // }
-
-        var areaGenerator = d3.area()
-            .curve(d3.curveLinear)
-            .x(function (d, i) {
-                return x(d['data'][_dimension[0]]) + x.bandwidth() / 2;
-            })
-            .y0(function (d, i) {
-                return y(0);
-            })
-            .y1(function (d) {
-                return y(d['data'][d['tag']]);
-            });
-
-        var lineGenerator = d3.line()
-            .curve(d3.curveLinear)
-            .x(function (d, i) {
-                return x(d['data'][_dimension[0]]) + x.bandwidth() / 2;
-            })
-            .y(function (d, i) {
-                return y(d['data'][d['tag']]);
-            });
 
         var clusterLine = plot.selectAll('.cluster_line')
             .data(keys.filter(function (m) { return labelStack.indexOf(m) == -1; }))
@@ -1221,8 +1370,6 @@ function line() {
 
         xAxisGroup = plot.select('.x_axis')
             .attr('transform', 'translate(0, ' + plotHeight + ')')
-            .transition()
-            .duration(COMMON.DURATION)
             .attr('visibility', 'visible')
             .call(_localXAxis);
 
@@ -1236,8 +1383,6 @@ function line() {
         }
 
         yAxisGroup = plot.select('.y_axis')
-            .transition()
-            .duration(COMMON.DURATION)
             .attr('visibility', 'visible')
             .call(_localYAxis);
 
@@ -1249,14 +1394,10 @@ function line() {
 
         plot.select('.x.grid')
             .attr('transform', 'translate(0, ' + plotHeight + ')')
-            .transition()
-            .duration(COMMON.DURATION)
             .attr('visibility', 'visible')
             .call(_localXGrid);
 
         plot.select('.y.grid')
-            .transition()
-            .duration(COMMON.DURATION)
             .attr('visibility', 'visible')
             .call(_localYGrid);
 

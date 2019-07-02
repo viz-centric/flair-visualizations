@@ -75,7 +75,7 @@ function legend() {
                 } else {
                     d3.select(this).select('rect')
                         .style('fill-opacity', .5)
-                        .style('stroke-width', 2);
+                        .style('stroke-width', 1);
                 }
 
                 me._legendInteraction('click', data.measureName[i]);

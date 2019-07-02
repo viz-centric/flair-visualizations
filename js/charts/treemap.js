@@ -488,7 +488,7 @@ function treemap() {
             .attr('stroke', function (d, i) {
                 return getFillColor(d, i);
             })
-            .style('stroke-width', 2)
+            .style('stroke-width', 1)
             .attr('id', function (d, i) {
                 return 'rect-' + i;
             })
@@ -823,7 +823,7 @@ function treemap() {
             .attr('stroke', function (d, i) {
                 return getFillColor(d, i);
             })
-            .style('stroke-width', 2)
+            .style('stroke-width', 1)
             .classed('selected', false)
             .attr('id', function (d, i) {
                 return 'rect-' + i;

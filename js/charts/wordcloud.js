@@ -21,7 +21,7 @@ function wordcloud() {
         _measure,
         _colorSet = [],
         _tooltip,
-
+        _labelColor,
         _print,
         broadcast,
         filterParameters,
@@ -29,7 +29,8 @@ function wordcloud() {
         _notification = false,
         _data;
 
-    var x = d3.scaleBand(), y = d3.scaleLinear();
+    var gradientColor;
+
     var margin = {
         top: 0,
         right: 0,
@@ -53,6 +54,7 @@ function wordcloud() {
         this.dimension(config.dimension);
         this.measure(config.measure);
         this.colorSet(config.colorSet);
+        this.labelColor(config.labelColor);
     }
 
     var _buildTooltipData = function (datum, chart) {
@@ -155,6 +157,25 @@ function wordcloud() {
         }
     }
 
+    var getFillColor = function (obj, index) {
+        if (_labelColor == 'single_color') {
+            return _colorSet[0];
+        } else if (_labelColor == 'unique_color') {
+            var r = parseInt(Math.abs(Math.sin(index + 50)) * 255),
+                g = parseInt(Math.abs(Math.cos(index)) * 255),
+                b = parseInt(Math.abs(Math.sin(7 * index - 100)) * 255);
+            return d3.rgb(r, g, b);
+        } else if (_labelColor == 'gradient_color') {
+            return gradientColor(obj[_measure]);
+        }
+    }
+    var setColorDomain = function (values) {
+        var min = Math.min.apply(Math, values),
+            max = Math.max.apply(Math, values);
+
+        gradientColor.domain([min, max]);
+    }
+
 
     function chart(selection) {
 
@@ -192,6 +213,10 @@ function wordcloud() {
 
     var drawPlot = function (data) {
         var me = this;
+
+        gradientColor = d3.scaleLinear()
+            .range(['#ff9696', '#bc2f2f']);
+
         _Local_data = data;
         if (_tooltip) {
             tooltip = parentContainer.select('.custom_tooltip');
@@ -199,10 +224,23 @@ function wordcloud() {
         var colour = d3.schemePaired;
 
         Seedrandom('heo.');
+        data = UTIL.sortData(data, _measure, 'ascending')
+
+        var _localTotal = d3.sum(data.map(function (d) { return d[_measure]; }));
+
+        data.map(function (val) {
+            val[_measure] = val[_measure] * 100 / _localTotal;
+        })
+
+        var values = data.map(function (d) { return d[_measure]; });
+
+        setColorDomain(values)
+
         var words = setData(data);
+
         var maxSize = d3.max(words, function (d) { return d.size; });
         var minSize = d3.min(words, function (d) { return d.size; });
-        var fontSizeScale = d3.scalePow().exponent(5).domain([0, 1]).range([10, parentWidth * 15 / 100]);
+        var fontSizeScale = d3.scalePow().exponent(5).domain([0, 1]).range([10, 50]);
 
         d3layoutcloud()
             .size([parentWidth, parentHeight])
@@ -214,7 +252,7 @@ function wordcloud() {
             })
             .on("end", drawSkillCloud)
             .fontWeight(['bold'])
-            .spiral('rectangular')
+            .spiral("rectangular")
             .start();
 
         function drawSkillCloud(words) {
@@ -236,7 +274,7 @@ function wordcloud() {
                 .style("cursor", "default")
                 .style("font-family", "Impact")
                 .style("fill", function (d, i) {
-                    return colour[i];
+                    return getFillColor(d, i);
                 })
                 .attr("class", "wordcloud")
                 .attr("text-anchor", "middle")
@@ -351,7 +389,14 @@ function wordcloud() {
         _colorSet = value;
         return chart;
     }
-
+    
+    chart.labelColor = function (value) {
+        if (!arguments.length) {
+            return _labelColor;
+        }
+        _labelColor = value;
+        return chart;
+    }
     chart.tooltip = function (value) {
         if (!arguments.length) {
             return _tooltip;
