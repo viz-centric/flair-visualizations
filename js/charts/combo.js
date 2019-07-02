@@ -47,11 +47,16 @@ function combo() {
         isAnimationDisable = false,
         _notification = false,
         _data,
-        _isFilterGrid;
+        _isFilterGrid = false;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
     var x0 = d3.scaleBand(), x1 = d3.scaleBand(), _xDimensionGrid = d3.scaleLinear(), y = d3.scaleLinear();
 
+    var _x0 = d3.scaleBand(), _x1 = d3.scaleBand(), _y = d3.scaleLinear(), brush = d3.brushX();
+
+    var areaGenerator = d3.area(), lineGenerator = d3.line();
+
+    var FilterControlHeight = 100;
     var tickLength = d3.scaleLinear()
         .domain([22, 34])
         .range([2, 4]);
@@ -105,7 +110,8 @@ function combo() {
         this.fontSize(config.fontSize);
         this.comboChartType(config.comboChartType)
         this.lineType(config.lineType);
-        this.pointType(config.pointType)
+        this.pointType(config.pointType);
+        this.isFilterGrid(config.isFilterGrid);
         this.legendData(config.displayColor, config.measure);
     }
     var getPointType = function (index) {
@@ -413,10 +419,35 @@ function combo() {
         }
     }
 
+    var brushed = function () {
+        if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return; // ignore brush-by-zoom
+
+        // get bounds of selection
+        var s = d3.event.selection,
+            filterList = [];
+        _x0.domain().forEach((d) => {
+            var pos = _x0(d) + _x0.bandwidth() / 2;
+            if (pos > s[0] && pos < s[1]) {
+                filterList.push(d);
+            }
+        });
+        var updatedData = UTIL.getFilterDataForGrid(_data, filterList, _dimension[0]);
+        if (updatedData.length > 0) {
+            chart.update(updatedData);
+        }
+    }
+
     function chart(selection) {
 
         data = UTIL.sortingData(_data, _dimension[0])
         _Local_data = _originalData = data;
+
+        if (_isFilterGrid) {
+            if (!(Object.keys(broadcast.filterSelection.filter).length === 0 && broadcast.filterSelection.filter.constructor === Object)) {
+                _isFilterGrid = false;
+            }
+        }
+
         if (_print && !_notification) {
             parentContainer = selection;
         }
@@ -424,9 +455,15 @@ function combo() {
             parentContainer = d3.select('#' + selection.id)
         }
 
+        var containerHeight = parentContainer.attr('height');
+        if (_isFilterGrid) {
+            containerHeight = containerHeight * 80 / 100;
+            FilterControlHeight = containerHeight * 20 / 100;
+        }
+
         var svg = parentContainer.append('svg')
             .attr('width', parentContainer.attr('width'))
-            .attr('height', parentContainer.attr('height'))
+            .attr('height', containerHeight)
 
         var width = +svg.attr('width'),
             height = +svg.attr('height');
@@ -437,6 +474,7 @@ function combo() {
         parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
 
         container = svg.append('g')
+            .attr("class", "focus")
             .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
         svg.attr('width', width)
@@ -496,6 +534,8 @@ function combo() {
             .domain([range[0], range[1]])
             .nice();
 
+        drawPlotForFilter.call(this, data);
+
         var _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
         });
@@ -531,7 +571,7 @@ function combo() {
         var content = plot.append('g')
             .attr('class', 'chart')
 
-        var areaGenerator = d3.area()
+        areaGenerator = d3.area()
             .curve(d3.curveLinear)
             .x(function (d, i) {
                 return x0(d['data'][_dimension[0]]) + x0.bandwidth() / 2;
@@ -543,7 +583,7 @@ function combo() {
                 return y(d['data'][d['tag']]);
             });
 
-        var lineGenerator = d3.line()
+        lineGenerator = d3.line()
             .curve(d3.curveLinear)
             .x(function (d, i) {
                 return x0(d['data'][_dimension[0]]) + x0.bandwidth() / 2;
@@ -743,7 +783,7 @@ function combo() {
         xAxisGroup.append('g')
             .attr('class', 'label')
             .attr('transform', function () {
-                return 'translate(' + (plotWidth / 2) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
+                return 'translate(' + (plotWidth / 2) + ', ' + parseFloat((COMMON.AXIS_THICKNESS / 1.5) + COMMON.PADDING) + ')';
             })
             .append('text')
             .style('text-anchor', 'middle')
@@ -829,9 +869,8 @@ function combo() {
                             UTIL.toggleSortSelection('descending', chart.update, _local_svg, keys, _Local_data, _isFilterGrid);
                             break;
                         case 'reset': {
-                            $(me).parent().find('.sort_selection,.arrow-down').css('visibility', 'hidden');
-                            _local_svg.select('.plot').remove()
-                            drawPlot.call(me, _Local_data);
+                            chart.update.call(me, _Local_data);
+                            drawPlotForFilter.call(this, _originalData);
                             break;
                         }
                     }
@@ -858,6 +897,197 @@ function combo() {
         }
 
     }
+
+    var drawPlotForFilter = function (data) {
+        if (!_print) {
+            var keys = UTIL.getMeasureList(data[0], _dimension);
+            var range = UTIL.getMinMax(data, keys);
+            parentContainer.select('.filterElement').remove();
+            svgFilter = parentContainer.append('svg')
+                .attr('width', parentContainer.attr('width'))
+                .attr('height', FilterControlHeight)
+                .attr('class', 'filterElement')
+                .style('visibility', UTIL.getVisibility(_isFilterGrid));
+
+            _x0.rangeRound([0, parseInt(_local_svg.attr('width') - 2 * COMMON.PADDING)])
+                .padding([0.2])
+                .paddingInner(0.1)
+                .domain(data.map(function (d) { return d[_dimension[0]]; }));
+
+            _x1.padding([0.2])
+                .domain(keys).rangeRound([0, _x0.bandwidth()]);
+
+            _y.rangeRound([FilterControlHeight - COMMON.PADDING, 0])
+                .domain([range[0], range[1]])
+                .nice();
+
+            brush.extent([[0, 0], [parentContainer.attr('width'), FilterControlHeight]])
+                .on("brush", brushed);
+
+            var separationLine = svgFilter.append("line")
+                .attr("stroke", COMMON.SEPARATIONLINE)
+                .attr("x1", COMMON.PADDING)
+                .attr("x2", parseInt(_local_svg.attr('width') - 2 * COMMON.PADDING))
+                .attr("y1", "0")
+                .attr("y1", "0")
+                .style("stroke-dasharray", ("3, 3"));
+
+            var context = svgFilter.append("g")
+                .attr("class", "context")
+                .attr('width', parentContainer.attr('width'))
+                .attr('height', FilterControlHeight)
+                .attr('transform', 'translate(' + COMMON.PADDING + ', ' + 0 + ')');
+
+            _localXAxisForFilter = d3.axisBottom(_x0)
+                .tickSize(0)
+                .tickFormat(function (d) {
+                    return '';
+                })
+                .tickPadding(10);
+
+            context.append("g")
+                .attr("class", "x axis_filter")
+                .attr("transform", "translate(0," + parseInt(FilterControlHeight - COMMON.PADDING) + ")")
+                .call(_localXAxisForFilter);
+
+            context.append("g")
+                .attr("class", "x brush")
+                .call(brush)
+                .selectAll("rect")
+                .attr("y", -6)
+                .attr("height", FilterControlHeight + 7);
+
+            var clusterFilter = context.selectAll('.clusterFilter')
+                .data(data)
+                .enter().append('g')
+                .attr('class', 'clusterFilter')
+                .attr('transform', function (d) {
+                    return 'translate(' + _x0(d[_dimension[0]]) + ', 0)';
+                });
+
+            var labelStack = [];
+            var _areaGenerator = d3.area()
+                .curve(d3.curveLinear)
+                .x(function (d, i) {
+                    return _x0(d['data'][_dimension[0]]) + _x0.bandwidth() / 2;
+                })
+                .y0(function (d, i) {
+                    return _y(0);
+                })
+                .y1(function (d) {
+                    return _y(d['data'][d['tag']]);
+                });
+
+            var _lineGenerator = d3.line()
+                .curve(d3.curveLinear)
+                .x(function (d, i) {
+                    return _x0(d['data'][_dimension[0]]) + _x0.bandwidth() / 2;
+                })
+                .y(function (d, i) {
+                    return _y(d['data'][d['tag']]);
+                });
+
+            var cluster_lineFilter = context.selectAll('.cluster_lineFilter')
+                .data(keys.filter(function (m) { return labelStack.indexOf(m) == -1; }))
+                .enter().append('g')
+                .attr('class', 'cluster_lineFilter');
+
+            var areaFilter = cluster_lineFilter.append('path')
+                .datum(function (d, i) {
+                    return data.map(function (datum) { return { "tag": d, "data": datum }; });
+                })
+                .attr('class', 'areaFilter')
+                .attr('fill', function (d, i) {
+                    return UTIL.getBorderColor(_measure.indexOf(d[0]['tag']), _borderColor);
+                })
+                .attr('visibility', function (d, i) {
+                    if (_lineType[(_measure.indexOf(d[0]['tag']))].toUpperCase() == "AREA") {
+                        return 'visible'
+                    }
+                    else {
+                        return 'hidden';
+                    }
+                })
+                .style('fill-opacity', 0.3)
+                .attr('stroke', 'none')
+                .style('stroke-width', 0)
+                .style('opacity', 1)
+                .attr('d', _areaGenerator);
+
+            var lineFilter = cluster_lineFilter.append('path')
+                .classed('line-path', true)
+                .datum(function (d, i) {
+                    return data.map(function (datum) { return { "tag": d, "data": datum }; });
+                })
+                .attr('class', 'line')
+                .attr('stroke-dasharray', 'none')
+                .style('fill', 'none')
+                .attr('stroke', function (d, i) {
+                    return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
+                })
+                .attr('stroke-linejoin', 'round')
+                .attr('stroke-linecap', 'round')
+                .attr('stroke-width', 1)
+                .style('stroke-opacity', 0.6)
+                .attr('d', _lineGenerator)
+
+            var labelStack = []
+            var clusteredverticalbarFilter = clusterFilter.selectAll('g.clusteredverticalbarFilter')
+                .data(function (d) {
+                    return keys.filter(function (m) {
+                        return labelStack.indexOf(m) == -1;
+                    }).map(function (m) {
+                        var obj = {};
+                        obj[_dimension[0]] = d[_dimension[0]];
+                        obj[m] = d[m];
+                        obj['dimension'] = _dimension[0];
+                        obj['measure'] = m;
+                        return obj;
+                    });
+                })
+                .enter().append('g')
+                .attr('class', 'clusteredverticalbarFilter');
+
+            clusteredverticalbarFilter.append('rect')
+                .style('fill', function (d, i) {
+                    if (d[d.measure] < 0) {
+                        return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                    }
+                })
+                .style('stroke', function (d, i) {
+                    if (d[d.measure] < 0) {
+                        return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
+                    }
+                    else {
+                        return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
+                    }
+                })
+                .style('fill-opacity', 0.6)
+                .style('stroke-opacity', 0.6)
+                .style('stroke-width', 1)
+                .attr("height", function (d, i) {
+                    if ((d[d.measure] === null) || (isNaN(d[d.measure]))) return 0;
+                    return Math.abs(_y(0) - _y(d[d.measure]));
+                })
+                .attr("y", function (d, i) {
+                    if ((d[d.measure] === null) || (isNaN(d[d.measure]))) {
+                        return plotHeight;
+                    } else if (d[d.measure] > 0) {
+                        return _y(d[d.measure]);
+                    }
+
+                    return _y(0);
+                })
+                .attr("width", _x1.bandwidth())
+                .attr("x", function (d, i) {
+                    return _x1(d.measure);;
+                })
+        }
+    }
+
     var drawViz = function (element, keys) {
         var me = this;
         var rect;
@@ -1033,10 +1263,7 @@ function combo() {
                     }
 
                 })
-
         }
-
-
     }
     chart._legendInteraction = function (event, data, plot) {
         if (_print) {
@@ -1117,7 +1344,23 @@ function combo() {
         return _local_svg.node().outerHTML;
     }
 
-    chart.update = function (data) {
+    chart.update = function (data, filterConfig) {
+
+        if (_isFilterGrid) {
+            if (!(Object.keys(broadcast.filterSelection.filter).length === 0 && broadcast.filterSelection.filter.constructor === Object)) {
+                _isFilterGrid = false;
+            }
+        }
+
+        var containerHeight = parentContainer.attr('height');
+        if (_isFilterGrid) {
+            containerHeight = containerHeight * 80 / 100;
+            FilterControlHeight = containerHeight * 20 / 100;
+        }
+
+        var svg = _local_svg
+            .attr('width', parentContainer.attr('width'))
+            .attr('height', containerHeight)
 
         var svg = _local_svg,
             width = +svg.attr('width'),
@@ -1133,7 +1376,18 @@ function combo() {
                 return UTIL.setPlotPosition(_legendPosition, _showXaxis, _showYaxis, _showLegend, margin.left, legendSpace, legendBreakCount, axisLabelSpace, _local_svg);
             });
 
-        data = UTIL.sortingData(data, _dimension[0]);
+        if (filterConfig) {
+            if (!filterConfig.isFilter) {
+                data = UTIL.sortingData(data, _dimension[0]);
+            }
+            else {
+                drawPlotForFilter.call(this, UTIL.sortData(_originalData, filterConfig.key, filterConfig.sortType));
+            }
+        }
+        else {
+            data = UTIL.sortingData(data, _dimension[0]);
+        }
+
         if (_tooltip) {
             tooltip = parentContainer.select('.custom_tooltip');
         }
@@ -1180,27 +1434,6 @@ function combo() {
 
         var chartploat = svg.select('.chart')
         var labelStack = [];
-
-        var areaGenerator = d3.area()
-            .curve(d3.curveLinear)
-            .x(function (d, i) {
-                return x0(d['data'][_dimension[0]]) + x0.bandwidth() / 2;
-            })
-            .y0(function (d, i) {
-                return y(0);
-            })
-            .y1(function (d) {
-                return y(d['data'][d['tag']]);
-            });
-
-        var lineGenerator = d3.line()
-            .curve(d3.curveLinear)
-            .x(function (d, i) {
-                return x0(d['data'][_dimension[0]]) + x0.bandwidth() / 2;
-            })
-            .y(function (d, i) {
-                return y(d['data'][d['tag']]);
-            });
 
         plot.selectAll('path.point').remove()
 
@@ -1358,15 +1591,7 @@ function combo() {
                 return data.map(function (datum) { return { "tag": d, "data": datum }; });
             })
             .attr('stroke-dasharray', 'none')
-            .transition()
-            .duration(COMMON.DURATION)
             .attr('d', lineGenerator)
-            .attrTween('stroke-dasharray', function () {
-                var l = this.getTotalLength(),
-                    i = d3.interpolateString("0," + l, l + "," + l);
-                return function (t) { return i(t); };
-            });
-
 
         var area = clusterLine.select('path.area')
             .datum(function (d, i) {
@@ -1376,16 +1601,7 @@ function combo() {
             .style('fill-opacity', 0.5)
             .attr('stroke', 'none')
             .style('stroke-width', 0)
-            .style('opacity', 0)
-            .transition()
-            .duration(COMMON.DURATION)
-            .styleTween('opacity', function () {
-                var interpolator = d3.interpolateNumber(0, 1);
-
-                return function (t) {
-                    return interpolator(t);
-                }
-            });
+            .style('opacity', 1)
 
         var point = clusterLine.selectAll('point')
             .data(function (d, i) {
@@ -1425,8 +1641,6 @@ function combo() {
 
         xAxisGroup = plot.select('.x_axis')
             .attr('transform', 'translate(0, ' + plotHeight + ')')
-            .transition()
-            .duration(COMMON.DURATION)
             .attr('visibility', 'visible')
             .call(_localXAxis);
 
@@ -1440,8 +1654,6 @@ function combo() {
         }
 
         yAxisGroup = plot.select('.y_axis')
-            .transition()
-            .duration(COMMON.DURATION)
             .attr('visibility', 'visible')
             .call(_localYAxis);
 
@@ -1452,14 +1664,10 @@ function combo() {
 
         plot.select('.x.grid')
             .attr('transform', 'translate(0, ' + plotHeight + ')')
-            .transition()
-            .duration(COMMON.DURATION)
             .attr('visibility', UTIL.getVisibility(_showGrid))
             .call(_localXGrid);
 
         plot.select('.y.grid')
-            .transition()
-            .duration(COMMON.DURATION)
             .attr('visibility', 'visible')
             .call(_localYGrid);
 

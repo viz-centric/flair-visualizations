@@ -506,7 +506,7 @@ function scatter() {
             xAxisGroup.append('g')
                 .attr('class', 'label')
                 .attr('transform', function () {
-                    return 'translate(' + (plotWidth / 2) + ', ' + (COMMON.AXIS_THICKNESS / 1.5) + ')';
+                    return 'translate(' + (plotWidth / 2) + ', ' + parseFloat((COMMON.AXIS_THICKNESS / 1.5) + COMMON.PADDING) + ')';
                 })
                 .append('text')
                 .style('text-anchor', 'middle')
