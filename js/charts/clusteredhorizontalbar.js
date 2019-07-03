@@ -390,8 +390,8 @@ function clusteredhorizontalbar() {
 
         var containerWidth = parentContainer.attr('width');
         if (_isFilterGrid) {
-            containerWidth = containerWidth * 80 / 100;
-            FilterControlWidth = containerWidth * 20 / 100;
+            containerWidth = containerWidth * 90 / 100;
+            FilterControlWidth = containerWidth * 10 / 100;
         }
 
         var svg = parentContainer.append('svg')
@@ -706,7 +706,7 @@ function clusteredhorizontalbar() {
                 .call(_localYAxisFilter);
 
             context.append("g")
-                .attr("class", "y brush")
+                .attr("class", "y_brush")
                 .call(brush)
                 .selectAll("rect")
                 .attr("y", -6)
@@ -1042,8 +1042,8 @@ function clusteredhorizontalbar() {
 
         var containerWidth = parentContainer.attr('width');
         if (_isFilterGrid) {
-            containerWidth = containerWidth * 80 / 100;
-            FilterControlWidth = containerWidth * 20 / 100;
+            containerWidth = containerWidth * 90 / 100;
+            FilterControlWidth = containerWidth * 10 / 100;
         }
 
         var svg = _local_svg
