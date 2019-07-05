@@ -77,6 +77,7 @@ function infographics() {
         this.kpiIconColor(config.kpiIconColor);
         this.kpiIconExpression(config.kpiIconExpression);
         this.tooltip(config.tooltip);
+        setDefaultColorForChart();
     }
 
     var _getKpiDisplayName = function () {
@@ -141,6 +142,15 @@ function infographics() {
         iconOutput += "<i class=\"" + _kpiIcon + "\" style=\"" + iconStyle + "\" aria-hidden=\"true\"></i>";
 
         return numberOutput + "&nbsp;" + iconOutput;
+    }
+
+    var setDefaultColorForChart = function () {
+        if (_chartDisplayColor == null || _chartDisplayColor == undefined) {
+            _chartDisplayColor = COMMON.COLORSCALE(0);
+        }
+        if (_chartBorderColor == null || _chartBorderColor == undefined) {
+            _chartBorderColor = COMMON.COLORSCALE(0);
+        }
     }
 
     /* Builds the html data for the tooltip
@@ -215,8 +225,15 @@ function infographics() {
     function chart(selection) {
 
         data = UTIL.sortingData(_data, _dimension[0])
-        infographics = d3.select('#' + selection.id),
-            width = infographics.attr('width'),
+
+        if (!_print) {
+            infographics = d3.select('#' + selection.id);
+        }
+        else {
+            infographics = selection;
+        }
+
+        var width = infographics.attr('width'),
             height = infographics.attr('height'),
             parentWidth = width - 2 * COMMON.PADDING,
             parentHeight = height - 2 * COMMON.PADDING;

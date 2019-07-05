@@ -112,7 +112,8 @@ function combo() {
         this.lineType(config.lineType);
         this.pointType(config.pointType);
         this.isFilterGrid(config.isFilterGrid);
-        this.legendData(config.displayColor, config.measure);
+        setDefaultColorForChart()
+        this.legendData(_displayColor, config.measure);
     }
     var getPointType = function (index) {
         var symbol = null;
@@ -167,6 +168,17 @@ function combo() {
 
     var getXLabels = function (data) {
         return data.map(function (d) { return d[_dimension[0]]; })
+    }
+
+    var setDefaultColorForChart = function () {
+        for (let index = 0; index < _measure.length; index++) {
+            if (_displayColor[index] == null || _displayColor[index] == undefined) {
+                _displayColor[index] = COMMON.COLORSCALE(index);
+            }
+            if (_borderColor[index] == null || _borderColor[index] == undefined) {
+                _borderColor[index] = COMMON.COLORSCALE(index);
+            }
+        }
     }
 
     var _buildTooltipData = function (datum, chart) {

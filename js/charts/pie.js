@@ -168,12 +168,12 @@ function pie() {
     }
 
     /**
-     * Builds the html data for the tooltip
-     *
-     * @param {object} datum Datum forming the arc
-     * @param {function} chart Pie chart function
-     * @return {string} String encoded HTML data
-     */
+   * Builds the html data for the tooltip
+   *
+   * @param {object} datum Datum forming the arc
+   * @param {function} chart Pie chart function
+   * @return {string} String encoded HTML data
+   */
     var _buildTooltipData = function (datum, chart) {
         var output = "";
 
@@ -615,16 +615,22 @@ function pie() {
                 });
         }
 
-        pieArcPath.transition()
-            .duration(_durationFn())
-            .delay(_delayFn())
-            .attrTween('d', function (d) {
-                var i = d3.interpolate(d.startAngle + 0.1, d.endAngle);
-                return function (t) {
-                    d.endAngle = i(t);
-                    return _arc(d)
-                }
-            });
+        if (!_print) {
+            pieArcPath.transition()
+                .duration(_durationFn())
+                .delay(_delayFn())
+                .attrTween('d', function (d) {
+                    var i = d3.interpolate(d.startAngle + 0.1, d.endAngle);
+                    return function (t) {
+                        d.endAngle = i(t);
+                        return _arc(d)
+                    }
+                });
+        }
+        else {
+            pieArcPath
+                .attr('d', _arc);
+        }
 
         var pieLabel;
 

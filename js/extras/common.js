@@ -20,18 +20,25 @@ function common() {
         DURATION: 1000,
         AXIS_THICKNESS: 50,
         COLORSCALE: d3.scaleOrdinal()
-            .range(['#4897D8',
-                '#ED5752',
-                '#5BC8AC',
-                '#20948B',
-                '#9A9EAB',
-                '#755248',
-                '#FA6E59',
-                '#CF3721',
-                '#31A9B8',
-                '#F1F3CE',
-                '#34675C',
-                '#AF4425'
+            .range([
+                "#439dd3",
+                "#0CC69A",
+                "#556080",
+                "#F0785A",
+                "#F0C419",
+                "#DBCBD8",
+                "#D10257",
+                "#BDDBFF",
+                "#9BC9FF",
+                "#8AD5DD",
+                "#EFEFEF",
+                "#FF2970",
+                "#6DDDC2",
+                "#778099",
+                "#F3937B",
+                "#F3D047",
+                "#DA3579",
+                "#8EA4BF",
             ])
     }
 }

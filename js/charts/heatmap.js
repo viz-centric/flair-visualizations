@@ -79,6 +79,15 @@ function heatmap() {
         this.numberFormat(config.numberFormat);
         this.fontSizeForMeasure(config.fontSizeForMeasure);
         this.displayColor(config.displayColor);
+        setDefaultColorForChart();
+    }
+
+    var setDefaultColorForChart = function () {
+        for (let index = 0; index < _measure.length; index++) {
+            if (displayColor[index] == null || displayColor[index] == undefined) {
+                displayColor[index] = COMMON.COLORSCALE(index);
+            }
+        }
     }
 
     var _buildTooltipData = function (datum, chart) {
