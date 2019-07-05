@@ -100,7 +100,8 @@ function line() {
         this.lineType(config.lineType);
         this.pointType(config.pointType);
         this.isFilterGrid(config.isFilterGrid);
-        this.legendData(config.displayColor, config.measure);
+        setDefaultColorForChart()
+        this.legendData(_displayColor, config.measure);
     }
     var getPointType = function (index) {
         var symbol = null;
@@ -152,6 +153,18 @@ function line() {
 
         return symbol;
     }
+
+    var setDefaultColorForChart = function () {
+        for (let index = 0; index < _measure.length; index++) {
+            if (_displayColor[index] == null || _displayColor[index] == undefined) {
+                _displayColor[index] = COMMON.COLORSCALE(index);
+            }
+            if (_borderColor[index] == null || _borderColor[index] == undefined) {
+                _borderColor[index] = COMMON.COLORSCALE(index);
+            }
+        }
+    }
+
     var _buildTooltipData = function (datum, chart) {
         var output = "";
         output += "<table><tr>"

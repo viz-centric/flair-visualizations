@@ -315,7 +315,7 @@ function table() {
 
         data = UTIL.sortingData(_data, _dimension[0])
         _Local_data = _originalData = data;
-        if (_print && !_notification) {
+        if (_print) {
             parentContainer = selection;
         }
         else {
@@ -323,6 +323,8 @@ function table() {
         }
 
         var svg = parentContainer;
+
+        _local_svg = svg;
 
         var id = svg.attr('id');
 

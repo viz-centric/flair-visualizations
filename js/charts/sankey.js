@@ -60,6 +60,19 @@ function sankey() {
 
         this.numberFormat(config.numberFormat);
         this.colorList(config.colorList)
+        setDefaultColorForChart();
+    }
+
+    var setDefaultColorForChart = function () {
+        if (displayColor[0] == null || displayColor[0] == undefined) {
+            displayColor[0] = COMMON.COLORSCALE(0);
+        }
+        if (borderColor[0] == null || borderColor[0] == undefined) {
+            borderColor[0] = COMMON.COLORSCALE(0);
+        }
+        if (_colorList.length == 0) {
+            _colorList = UTIL.defaultColours();
+        }
     }
 
     var _buildTooltipData = function (datum, chart, element) {

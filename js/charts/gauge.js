@@ -51,10 +51,20 @@ function gauge() {
         this.targetDisplayColor(config.targetDisplayColor);
         this.targetTextColor(config.targetTextColor);
         this.targetNumberFormat(config.targetNumberFormat);
+        setDefaultColorForChart();
     }
 
     var degToRad = function (deg) {
         return deg * Math.PI / 180;
+    }
+
+    var setDefaultColorForChart = function () {
+        if (displayColor == null || displayColor == undefined) {
+            displayColor = COMMON.COLORSCALE(0);
+        }
+        if (targetDisplayColor == null || targetDisplayColor == undefined) {
+            targetDisplayColor = COMMON.COLORSCALE(1);
+        }
     }
 
     var _buildTooltipData = function (datum, chart, value, key) {

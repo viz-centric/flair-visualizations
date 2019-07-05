@@ -46,7 +46,7 @@ function treemap() {
     var _local_svg,
         _localTotal,
         _localData = [],
-        _localTooltip,
+        _tooltip,
         textPadding = 2,
         _originalData,
         width,
@@ -82,6 +82,7 @@ function treemap() {
         this.fontStyleForDimension(config.fontStyleForDimension);
         this.fontWeightForDimension(config.fontWeightForDimension);
         this.fontSizeForDimension(config.fontSizeForDimension);
+        setDefaultColorForChart();
     }
 
     var setColorDomainRange = function (arr, dim) {
@@ -290,6 +291,14 @@ function treemap() {
 
             if (tooltip) {
                 UTIL.hideTooltip(tooltip);
+            }
+        }
+    }
+
+    var setDefaultColorForChart = function () {
+        for (let index = 0; index < _dimension.length; index++) {
+            if (displayColor[index] == null || displayColor[index] == undefined) {
+                displayColor[index] = COMMON.COLORSCALE(index);
             }
         }
     }

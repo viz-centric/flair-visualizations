@@ -999,6 +999,10 @@ function util() {
             _local_svg.selectAll('g.y_axis .tick text')
                 .style('fill', _yAxisColor);
 
+            _local_svg.selectAll('.grid line')
+                .style('stroke', '#787878')
+                .style('stroke-opacity', '0.5');
+
         },
         setAxisGridVisibility: function (tickLine, _local_svg, _showGrid, d) {
             if (d == 0) {
@@ -1029,8 +1033,27 @@ function util() {
                 }
             })
             return filterData;
+        },
+        defaultColours: function () {
+            return ["#439dd3",
+                "#0CC69A",
+                "#556080",
+                "#F0785A",
+                "#F0C419",
+                "#DBCBD8",
+                "#D10257",
+                "#BDDBFF",
+                "#9BC9FF",
+                "#8AD5DD",
+                "#EFEFEF",
+                "#FF2970",
+                "#6DDDC2",
+                "#778099",
+                "#F3937B",
+                "#F3D047",
+                "#DA3579",
+                "#8EA4BF"];
         }
-
     }
 
 

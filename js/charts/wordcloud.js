@@ -40,21 +40,23 @@ function wordcloud() {
 
     var _local_svg, _Local_data, _originalData
 
-    var tickLength = d3.scaleLinear()
-        .domain([22, 34])
-        .range([2, 4]);
-
-    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, parentContainer;
-    var parentWidth, parentHeight, plotWidth, plotHeight, container;
-
-    var filter = false, filterData = [];
-    var threshold = [];
+    var parentContainer, parentWidth, parentHeight, plotWidth, plotHeight, container;
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
         this.measure(config.measure);
         this.colorSet(config.colorSet);
         this.labelColor(config.labelColor);
+        setDefaultColorForChart();
+    }
+
+    var setDefaultColorForChart = function () {
+        if (_labelColor == null && _labelColor == undefined) {
+            _labelColor = COMMON.COLORSCALE(0);
+        }
+        if (_colorSet.length == 0) {
+            _colorSet = UTIL.defaultColours();
+        }
     }
 
     var _buildTooltipData = function (datum, chart) {
@@ -389,7 +391,7 @@ function wordcloud() {
         _colorSet = value;
         return chart;
     }
-    
+
     chart.labelColor = function (value) {
         if (!arguments.length) {
             return _labelColor;
