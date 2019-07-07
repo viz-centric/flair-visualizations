@@ -628,10 +628,10 @@ function clusteredhorizontalbar() {
                     var order = d3.select(this).attr('class')
                     switch (order) {
                         case 'ascending':
-                            UTIL.toggleSortSelection('ascending', chart.update, _local_svg, keys, _Local_data, _isFilterGrid);
+                            UTIL.toggleSortSelection('ascending', chart.update, _local_svg, keys, _Local_data, _isFilterGrid, "horizontal");
                             break;
                         case 'descending':
-                            UTIL.toggleSortSelection('descending', chart.update, _local_svg, keys, _Local_data, _isFilterGrid);
+                            UTIL.toggleSortSelection('descending', chart.update, _local_svg, keys, _Local_data, _isFilterGrid, "horizontal");
                             break;
                         case 'reset': {
                             chart.update.call(me, _Local_data);
