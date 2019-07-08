@@ -161,9 +161,9 @@ function pivottable() {
         return result;
     }
 
-    var getValueNumberFormat = function (index) {
+    var getValueNumberFormat = function (index, value) {
         var si = _numberFormatForMeasure[index],
-            nf = getNumberFormatter(si);
+            nf = UTIL.getNumberFormatterFn(si, value);
 
         return nf;
     }
@@ -232,13 +232,6 @@ function pivottable() {
             _textAlignmentForDimension[_dimension.indexOf(value)]
         }
         _textAlignmentForMeasure[_measure.indexOf(value)]
-    }
-
-    var getValueNumberFormat = function (value) {
-        var si = _numberFormatForMeasure[_measure.indexOf(value)]
-        nf = UTIL.getNumberFormatter(si);
-
-        return nf;
     }
 
     var getUniqueData = function (data, pivoted_dimension) {
@@ -412,7 +405,7 @@ function pivottable() {
             style = JSON.stringify(style);
             style = style.replace(/","/g, ';').replace(/["{}]/g, '');
 
-            content += "<td id=\"" + _dimension[i] + "\"  onClick=\"chart.readerTableChart('" + datum[_dimension[i]] + "',this,_local_svg,'" + datum[parent.join('_')] + "')\"  style=\"" + style + "\">" + ((datum[parent.join('_')] !== undefined) ? getValueNumberFormat(parent[0])(datum[parent.join('_')]) : "-") + "</td>";
+            content += "<td id=\"" + _dimension[i] + "\"  onClick=\"chart.readerTableChart('" + datum[_dimension[i]] + "',this,_local_svg,'" + datum[parent.join('_')] + "')\"  style=\"" + style + "\">" + ((datum[parent.join('_')] !== undefined) ? getValueNumberFormat(parent[0], datum[parent.join('_')])(datum[parent.join('_')]) : "-") + "</td>";
         }
 
         parent.pop();
@@ -1007,7 +1000,7 @@ function pivottable() {
         _data = value;
         return chart;
     }
-    
+
     return chart;
 }
 

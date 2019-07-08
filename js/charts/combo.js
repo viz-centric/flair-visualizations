@@ -1555,11 +1555,25 @@ function combo() {
                 return data.map(function (datum) { return { "tag": d, "data": datum }; });
             })
             .attr('stroke-dasharray', 'none')
+            .attr('stroke', function (d, i) {
+                return UTIL.getBorderColor(_measure.indexOf(d[0]['tag']), _borderColor);
+            })
             .attr('d', lineGenerator)
 
         var area = clusterLine.select('path.area')
             .datum(function (d, i) {
                 return data.map(function (datum) { return { "tag": d, "data": datum }; });
+            })
+            .attr('fill', function (d, i) {
+                return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
+            })
+            .attr('visibility', function (d, i) {
+                if (_lineType[(_measure.indexOf(d[0]['tag']))].toUpperCase() == "AREA") {
+                    return 'visible'
+                }
+                else {
+                    return 'hidden';
+                }
             })
             .attr('d', areaGenerator)
             .style('fill-opacity', 0.5)

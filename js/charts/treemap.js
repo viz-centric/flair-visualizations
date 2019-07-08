@@ -156,7 +156,7 @@ function treemap() {
         }
 
         if (showLabelForDimension[0]) {
-            var nf = UTIL.getNumberFormatter(numberFormat),
+            var nf = UTIL.getNumberFormatterFn(numberFormat,obj.value),
                 value;
 
             if (numberFormat == "Percent") {
