@@ -609,41 +609,9 @@ function clusteredverticalbar() {
             var confirm = $(_local_svg).parent().find('div.confirm')
                 .css('visibility', 'hidden');
 
-            _local_svg.attr('class', 'chartSvg_' + parentContainer.attr('id'));
-
-            //remove Threshold popup icon
-            // var AlertElement = UTIL.createAlertElement();
-            // $(div).append(AlertElement);
-
-            //remove Threshold modal popup 
-            // var str = UTIL.createAlert($(div).attr('id'), _measure);
-            // $('body').append(str);
-
             var _filter = UTIL.createFilterElement()
-            //$(div).append(_filter);
+
             $('#' + parentContainer.attr('id')).append(_filter);
-
-
-            $(document).on('click', plot, function (e) {
-                if ($(parentContainer).find('.alert').prop('checked') == false) {
-                    var element = e.target.classList.value.split(' ')
-                    if (element.indexOf("chartSvg_" + parentContainer.attr('id')) >= 0) {
-                        $('#Modal_' + parentContainer.attr('id') + ' .measure').val('')
-                        $('#Modal_' + parentContainer.attr('id') + ' .threshold').val('')
-                        $('#Modal_' + parentContainer.attr('id') + ' .measure').attr('disabled', false)
-                        $('#Modal_' + parentContainer.attr('id')).modal('show');
-                    }
-                }
-            })
-
-            $(document).on('click', '#Modal_' + parentContainer.attr('id') + ' .ThresholdSubmit', function (e) {
-                var newValue = $('#Modal_' + parentContainer.attr('id') + ' .threshold').val();
-                var obj = new Object()
-                obj.measure = $('#Modal_' + parentContainer.attr('id') + ' .measure').val()
-                obj.threshold = newValue;
-                threshold.push(obj);
-                $('#Modal_' + parentContainer.attr('id')).modal('toggle');
-            })
 
             _local_svg.select('g.sort').remove();
             UTIL.sortingView(container, parentHeight, parentWidth + (_showYaxis == true ? margin.left : 0), legendBreakCount, axisLabelSpace, offsetX);
@@ -846,7 +814,6 @@ function clusteredverticalbar() {
                 } else if (d[d.measure] > 0) {
                     return y(d[d.measure]);
                 }
-
                 return y(0);
             })
             .attr("width", x1.bandwidth())
@@ -860,11 +827,8 @@ function clusteredverticalbar() {
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
                     if (!_print) {
-                        if ($(parentContainer).find('.alert').prop('checked') == true) {
-                            $('#Modal_' + parentContainer.attr('id') + ' .measure').val(d.measure);
-                            $('#Modal_' + parentContainer.attr('id') + ' .threshold').val('');
-                            $('#Modal_' + parentContainer.attr('id') + ' .measure').attr('disabled', true);;
-                            $('#Modal_' + parentContainer.attr('id')).modal('toggle');
+                        if (broadcast.isThresholdAlert) {
+                            alert("dimension : " + d[_dimension[0]] + "\nID: " + parentContainer.attr('vizID'));
                         }
                         else {
                             filter = false;

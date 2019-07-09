@@ -483,12 +483,12 @@ function clusteredhorizontalbar() {
 
         plot.append('g')
             .attr('class', 'x grid')
-            .attr('visibility', 'visible')
+            .attr('visibility', UTIL.getVisibility(_showGrid))
             .call(_localXGrid);
 
         plot.append('g')
             .attr('class', 'y grid')
-            .attr('visibility', UTIL.getVisibility(_showGrid))
+            .attr('visibility', 'visible')
             .attr('transform', 'translate(0, ' + plotHeight + ')')
             .call(_localYGrid);
 
@@ -836,11 +836,8 @@ function clusteredhorizontalbar() {
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
                     if (!_print) {
-                        if ($("#myonoffswitch").prop('checked') == false) {
-                            $('#Modal_' + parentContainer.attr('id') + ' .measure').val(d.measure);
-                            $('#Modal_' + parentContainer.attr('id') + ' .threshold').val('');
-                            $('#Modal_' + parentContainer.attr('id') + ' .measure').attr('disabled', true);;
-                            $('#Modal_' + parentContainer.attr('id')).modal('toggle');
+                        if (broadcast.isThresholdAlert) {
+                            alert(d[_dimension[0]]);
                         }
                         else {
                             filter = false;

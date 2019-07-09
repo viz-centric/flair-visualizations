@@ -114,7 +114,7 @@ function legend() {
                     if (typeof d == 'string') {
                         return d;
                     }
-                    return d[me.dimension()];
+                    return d[me.dimension()].toString().substring(0, 5) + "...";
                 })
                 .text(function (d) {
                     if (me.print() == false) {

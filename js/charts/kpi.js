@@ -43,7 +43,8 @@ function kpi() {
         _localPrevKpiValue = [0, 0],
         _Local_data,
         _localLabelFontSize = [1.2, 0.9],
-        parentContainer;
+        parentContainer,
+        plot;
 
     /* These are the common private functions that is shared across the different private/public
      * methods but is initialized beforehand.
@@ -244,6 +245,18 @@ function kpi() {
                 kpiMeasure.html(_getKpi(_localTotal[i], _localTotal[i], 0));
             }
         });
+
+        if (_print) {
+
+            plot = parentContainer.append('svg')
+                .attr('width', width - 2 * COMMON.PADDING)
+                .attr('height', height - 2 * COMMON.PADDING)
+
+            plot.append('foreignObject')
+                .attr('class', 'plot')
+                .html(_localDiv.node().outerHTML);
+
+        }
     }
 
     chart._getName = function () {
@@ -251,7 +264,7 @@ function kpi() {
     }
 
     chart._getHTML = function () {
-        return _localDiv.node().outerHTML;
+        return plot.node().outerHTML;
     }
 
     chart.update = function (data) {
