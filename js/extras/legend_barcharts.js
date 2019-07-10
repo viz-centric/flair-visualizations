@@ -153,7 +153,7 @@ function legend() {
                 var count = i,
                     widthSum = 0
                 while (count-- != 0) {
-                    widthSum += 130 + 16;
+                    widthSum += 150 + 16;
                 }
                 if ((widthSum + 100) > extraParams.width) {
                     widthSum = 0;
@@ -166,7 +166,7 @@ function legend() {
                     }
                     var newcount = i - (legendBreak * legendBreakCount);
                     while (newcount-- != 0) {
-                        widthSum += 130 + 16;
+                        widthSum += 150 + 16;
                     }
                     return 'translate(' + widthSum + ', ' + legendBreakCount * 20 + ')';
                 }

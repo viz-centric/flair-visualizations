@@ -126,9 +126,9 @@ function legend() {
                     }
                     else {
                         if (typeof d == 'string') {
-                            return d;
+                            return d[me.dimension()].toString().substring(0, 5) + "...";;
                         }
-                        return d[me.dimension()];
+                        return d[me.dimension()].toString().substring(0, 5) + "...";
                     }
                 })
                 .style('fill', COMMON.LEGEND_COLOR)

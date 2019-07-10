@@ -827,8 +827,17 @@ function clusteredverticalbar() {
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
                     if (!_print) {
-                        if (broadcast.isThresholdAlert) {
-                            alert("dimension : " + d[_dimension[0]] + "\nID: " + parentContainer.attr('vizID'));
+                        if (broadcast != undefined && broadcast.isThresholdAlert) {
+                          
+                            var ThresholdViz = {};
+                            ThresholdViz.ID = parentContainer.attr('vizID');
+                            ThresholdViz.measure = d.measure;
+                            ThresholdViz.measureValue = d[d.measure];
+                            ThresholdViz.dimension = d.dimension;
+                            ThresholdViz.dimensionValue = d[d.dimension];
+
+                            broadcast.ThresholdViz = ThresholdViz;
+                            broadcast.$broadcast('FlairBi:threshold-dialog');
                         }
                         else {
                             filter = false;
@@ -856,30 +865,30 @@ function clusteredverticalbar() {
                                     filterData.push(_filter[0]);
                                 }
                             }
-                        }
 
-                        var _filterDimension = {};
-                        if (broadcast.filterSelection.id) {
-                            _filterDimension = broadcast.filterSelection.filter;
-                        } else {
-                            broadcast.filterSelection.id = parentContainer.attr('id');
-                        }
-                        var dimension = _dimension[0];
-                        if (_filterDimension[dimension]) {
-                            _filterDimension[dimension] = filterData.map(function (d) {
-                                return d[_dimension[0]];
-                            });
-                        } else {
-                            _filterDimension[dimension] = [d[dimension]];
-                        }
+                            var _filterDimension = {};
+                            if (broadcast.filterSelection.id) {
+                                _filterDimension = broadcast.filterSelection.filter;
+                            } else {
+                                broadcast.filterSelection.id = parentContainer.attr('id');
+                            }
+                            var dimension = _dimension[0];
+                            if (_filterDimension[dimension]) {
+                                _filterDimension[dimension] = filterData.map(function (d) {
+                                    return d[_dimension[0]];
+                                });
+                            } else {
+                                _filterDimension[dimension] = [d[dimension]];
+                            }
 
-                        var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
-                        broadcast.updateWidget = {};
-                        broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
-                        broadcast.filterSelection.filter = _filterDimension;
-                        var _filterParameters = filterParameters.get();
-                        _filterParameters[dimension] = _filterDimension[dimension];
-                        filterParameters.save(_filterParameters);
+                            var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
+                            broadcast.updateWidget = {};
+                            broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
+                            broadcast.filterSelection.filter = _filterDimension;
+                            var _filterParameters = filterParameters.get();
+                            _filterParameters[dimension] = _filterDimension[dimension];
+                            filterParameters.save(_filterParameters);
+                        }
                     }
 
                 })

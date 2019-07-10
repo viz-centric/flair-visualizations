@@ -33,6 +33,7 @@ function heatmap() {
         fontWeightForMeasure = [],
         numberFormat = [],
         fontSizeForMeasure = [],
+        _tooltip,
         _print,
         broadcast,
         filterParameters,
@@ -466,7 +467,12 @@ function heatmap() {
             .attr('class', 'mesLabel')
             .text(function (d) { return d; })
             .text(function (d) {
-                return UTIL.title(UTIL.getTruncatedLabel(this, d, cellWidth));
+                if (!_print) {
+                    return UTIL.title(UTIL.getTruncatedLabel(this, d, cellWidth));
+                }
+                else {
+                    return d.substring(0, 15)
+                }
             })
             .attr('x', function (d, i) { return i * cellWidth; })
             .attr('y', 0)

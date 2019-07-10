@@ -707,17 +707,22 @@ function pie() {
                                 ? 'start' : 'middle';
                     }
                 })
-                .transition()
-                .delay(_delayFn(200))
-                .on('start', function () {
-                    d3.select(this).text(_labelFn())
-                        .filter(function (d) {
-                            /* length of arc = angle in radians * radius */
-                            var diff = d.endAngle - d.startAngle;
-                            return outerRadius * diff < this.getComputedTextLength();
-                        })
-                        .remove();
-                });
+            if (!_print) {
+                pieLabel.transition()
+                    .delay(_delayFn(200))
+                    .on('start', function () {
+                        d3.select(this).text(_labelFn())
+                            .filter(function (d) {
+                                /* length of arc = angle in radians * radius */
+                                var diff = d.endAngle - d.startAngle;
+                                return outerRadius * diff < this.getComputedTextLength();
+                            })
+                            .remove();
+                    });
+            }
+            else {
+                pieLabel.text(_labelFn())
+            }
         }
 
         if (!_print) {
@@ -1052,17 +1057,22 @@ function pie() {
                                 ? 'start' : 'middle';
                     }
                 })
-                .transition()
-                .delay(_delayFn(200))
-                .on('start', function () {
-                    d3.select(this).text(_labelFn())
-                        .filter(function (d) {
-                            /* length of arc = angle in radians * radius */
-                            var diff = d.endAngle - d.startAngle;
-                            return outerRadius * diff < this.getComputedTextLength();
-                        })
-                        .remove();
-                });
+            if (!_print) {
+                pieLabel.transition()
+                    .delay(_delayFn(200))
+                    .on('start', function () {
+                        d3.select(this).text(_labelFn())
+                            .filter(function (d) {
+                                /* length of arc = angle in radians * radius */
+                                var diff = d.endAngle - d.startAngle;
+                                return outerRadius * diff < this.getComputedTextLength();
+                            })
+                            .remove();
+                    });
+            }
+            else {
+                pieLabel.text(_labelFn())
+            }
         }
 
         pieArcPath.on('mouseover', _handleMouseOverFn.call(chart, tooltip, svg))

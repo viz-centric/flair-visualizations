@@ -249,6 +249,7 @@ function kpi() {
         if (_print) {
 
             plot = parentContainer.append('svg')
+                .attr('class', 'KPI')
                 .attr('width', width - 2 * COMMON.PADDING)
                 .attr('height', height - 2 * COMMON.PADDING)
 
@@ -256,6 +257,7 @@ function kpi() {
                 .attr('class', 'plot')
                 .html(_localDiv.node().outerHTML);
 
+            plot = d3.select('.KPI');
         }
     }
 

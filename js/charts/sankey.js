@@ -477,6 +477,9 @@ function sankey() {
             .enter().append('path')
             .attr('class', 'link')
             .style('stroke', function (d, i) {
+                if (_print) {
+                    return _colorList[0];
+                }
                 return d3.select('.' + d.source.name).style('fill');
             })
             .attr('d', path)
