@@ -235,7 +235,7 @@ function sankey() {
             var border = d3.select(this).style('stroke')
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, element), container, border, _notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, element), container,  border);
             }
         }
     }
@@ -246,7 +246,7 @@ function sankey() {
         return function (d, i) {
             if (tooltip) {
                 var border = d3.select(this).style('stroke')
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, element), container, border, _notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, element), container,  border);
             }
         }
     }
