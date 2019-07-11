@@ -156,7 +156,7 @@ function treemap() {
         }
 
         if (showLabelForDimension[0]) {
-            var nf = UTIL.getNumberFormatter(numberFormat),
+            var nf = UTIL.getNumberFormatterFn(numberFormat,obj.value),
                 value;
 
             if (numberFormat == "Percent") {
@@ -263,7 +263,7 @@ function treemap() {
             var border = d3.select(this).attr('fill');
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border, _notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -274,7 +274,7 @@ function treemap() {
         return function (d, i) {
             if (tooltip) {
                 var border = d3.select(this).attr('fill');
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border, _notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }

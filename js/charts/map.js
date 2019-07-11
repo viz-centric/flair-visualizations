@@ -83,7 +83,7 @@ function map() {
         return function (d, i) {
             if (tooltip) {
                 var border = getFillColor(valueMapper[d.properties.name]);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border,_notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border,_notification);
             }
         }
     }

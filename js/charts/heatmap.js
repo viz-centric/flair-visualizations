@@ -33,6 +33,7 @@ function heatmap() {
         fontWeightForMeasure = [],
         numberFormat = [],
         fontSizeForMeasure = [],
+        _tooltip,
         _print,
         broadcast,
         filterParameters,
@@ -113,7 +114,7 @@ function heatmap() {
             var border = d3.select(this).attr('fill');
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border, _notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container,  border);
             }
         }
     }
@@ -124,7 +125,7 @@ function heatmap() {
         return function (d, i) {
             if (tooltip) {
                 var border = getFillColor(d);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border, _notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container,  border);
             }
         }
     }
@@ -466,7 +467,12 @@ function heatmap() {
             .attr('class', 'mesLabel')
             .text(function (d) { return d; })
             .text(function (d) {
-                return UTIL.title(UTIL.getTruncatedLabel(this, d, cellWidth));
+                if (!_print) {
+                    return UTIL.title(UTIL.getTruncatedLabel(this, d, cellWidth));
+                }
+                else {
+                    return d.substring(0, 15)
+                }
             })
             .attr('x', function (d, i) { return i * cellWidth; })
             .attr('y', 0)
@@ -611,11 +617,11 @@ function heatmap() {
             })
             .text(function (d) {
                 var si = numberFormat[_measure.indexOf(d.x)],
-                    nf = UTIL.getNumberFormatter(si),
+                    nf = UTIL.getNumberFormatterFn(si, d.val),
                     value;
 
                 if (si == "Percent") {
-                    // value = nf(d.val / me.helper.measuresTotal[d.x]);
+                    value = nf(d.val / me.helper.measuresTotal[d.x]);
                 } else {
                     value = nf(d.val);
                 }
@@ -749,11 +755,11 @@ function heatmap() {
             })
             .text(function (d) {
                 var si = numberFormat[_measure.indexOf(d.x)],
-                    nf = UTIL.getNumberFormatter(si),
+                    nf = UTIL.getNumberFormatterFn(si, d.val),
                     value;
 
                 if (si == "Percent") {
-                    // value = nf(d.val / me.helper.measuresTotal[d.x]);
+                    value = nf(d.val / me.helper.measuresTotal[d.x]);
                 } else {
                     value = nf(d.val);
                 }
@@ -870,11 +876,11 @@ function heatmap() {
             })
             .text(function (d) {
                 var si = numberFormat[_measure.indexOf(d.x)],
-                    nf = UTIL.getNumberFormatter(si),
+                    nf = UTIL.getNumberFormatterFn(si, d.val),
                     value;
 
                 if (si == "Percent") {
-                    // value = nf(d.val / me.helper.measuresTotal[d.x]);
+                    value = nf(d.val / me.helper.measuresTotal[d.x]);
                 } else {
                     value = nf(d.val);
                 }
