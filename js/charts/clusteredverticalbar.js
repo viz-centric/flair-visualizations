@@ -835,7 +835,6 @@ function clusteredverticalbar() {
                             ThresholdViz.measureValue = d[d.measure];
                             ThresholdViz.dimension = d.dimension;
                             ThresholdViz.dimensionValue = d[d.dimension];
-
                             broadcast.ThresholdViz = ThresholdViz;
                             broadcast.$broadcast('FlairBi:threshold-dialog');
                         }
