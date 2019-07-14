@@ -306,7 +306,7 @@ function line() {
             var border = UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor)
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container,  border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -316,7 +316,7 @@ function line() {
         return function (d, i) {
             if (tooltip) {
                 var border = UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor)
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container,  border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -663,11 +663,15 @@ function line() {
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
                     if (!_print) {
-                        if ($("#myonoffswitch").prop('checked') == false) {
-                            $('#Modal_' + parentContainer.attr('id') + ' .measure').val(d.measure);
-                            $('#Modal_' + parentContainer.attr('id') + ' .threshold').val('');
-                            $('#Modal_' + parentContainer.attr('id') + ' .measure').attr('disabled', true);;
-                            $('#Modal_' + parentContainer.attr('id')).modal('toggle');
+                        if (broadcast != undefined && broadcast.isThresholdAlert) {
+                            var ThresholdViz = {};
+                            ThresholdViz.ID = parentContainer.attr('vizID');
+                            ThresholdViz.measure = d.tag;
+                            ThresholdViz.measureValue = d.data[d.tag];
+                            ThresholdViz.dimension = _dimension[0];
+                            ThresholdViz.dimensionValue = d.data[_dimension[0]];
+                            broadcast.ThresholdViz = ThresholdViz;
+                            broadcast.$broadcast('FlairBi:threshold-dialog');
                         }
                         else {
                             filter = false;
@@ -1215,11 +1219,15 @@ function line() {
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
             .on('click', function (d) {
                 if (!_print) {
-                    if ($("#myonoffswitch").prop('checked') == false) {
-                        $('#Modal_' + parentContainer.attr('id') + ' .measure').val(d.measure);
-                        $('#Modal_' + parentContainer.attr('id') + ' .threshold').val('');
-                        $('#Modal_' + parentContainer.attr('id') + ' .measure').attr('disabled', true);;
-                        $('#Modal_' + parentContainer.attr('id')).modal('toggle');
+                    if (broadcast != undefined && broadcast.isThresholdAlert) {
+                        var ThresholdViz = {};
+                        ThresholdViz.ID = parentContainer.attr('vizID');
+                        ThresholdViz.measure = d.tag;
+                        ThresholdViz.measureValue = d.data[d.tag];
+                        ThresholdViz.dimension = _dimension[0];
+                        ThresholdViz.dimensionValue = d.data[_dimension[0]];
+                        broadcast.ThresholdViz = ThresholdViz;
+                        broadcast.$broadcast('FlairBi:threshold-dialog');
                     }
                     else {
                         filter = false;

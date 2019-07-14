@@ -836,8 +836,15 @@ function clusteredhorizontalbar() {
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
                     if (!_print) {
-                        if (broadcast.isThresholdAlert) {
-                            alert(d[_dimension[0]]);
+                        if (broadcast != undefined && broadcast.isThresholdAlert) {
+                            var ThresholdViz = {};
+                            ThresholdViz.ID = parentContainer.attr('vizID');
+                            ThresholdViz.measure = d.measure;
+                            ThresholdViz.measureValue = d[d.measure];
+                            ThresholdViz.dimension = d.dimension;
+                            ThresholdViz.dimensionValue = d[d.dimension];
+                            broadcast.ThresholdViz = ThresholdViz;
+                            broadcast.$broadcast('FlairBi:threshold-dialog');
                         }
                         else {
                             filter = false;
