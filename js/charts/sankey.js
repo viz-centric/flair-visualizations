@@ -235,7 +235,7 @@ function sankey() {
             var border = d3.select(this).style('stroke')
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, element), container,  border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, element), container, border);
             }
         }
     }
@@ -246,7 +246,7 @@ function sankey() {
         return function (d, i) {
             if (tooltip) {
                 var border = d3.select(this).style('stroke')
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, element), container,  border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, element), container, border);
             }
         }
     }
@@ -304,6 +304,7 @@ function sankey() {
                     link.source = nodeOffsets[index] + sourceUniqueDimensions.indexOf(d[_dimension]);
                     link.target = nodes.length + targetUniqueDimensions.indexOf(d[dimension[index + 1]]);
                     link.value = (isNaN(d[measure]) || d[measure] === null) ? 0 : d[measure];
+                    link.index = sourceUniqueDimensions.indexOf(d[_dimension]);
                     links.push(link);
                 });
             }
@@ -477,10 +478,16 @@ function sankey() {
             .enter().append('path')
             .attr('class', 'link')
             .style('stroke', function (d, i) {
-                if (_print) {
+                if (colorPattern == 'single_color') {
                     return _colorList[0];
+                } else if (colorPattern == 'unique_color') {
+                    return _colorList[d.index];
+                } else if (colorPattern == 'gradient_color') {
+                    if (_print) {
+                        return _colorList[0];
+                    }
+                    return d3.select('.' + d.source.name).style('fill');
                 }
-                return d3.select('.' + d.source.name).style('fill');
             })
             .attr('d', path)
             .style('stroke-width', function (d) { return Math.max(1, d.dy); })
@@ -664,66 +671,6 @@ function sankey() {
         }
         var nodeDistance = data.nodes[0].sourceLinks[0].target.x - data.nodes[0].x - sankey.nodeWidth();
 
-        var link = plot.selectAll('.link')
-            .data(data.links);
-
-        link.exit().remove();
-        newLink = link.enter().append('path')
-            .attr('class', 'link')
-            .attr('d', path)
-            .style('stroke', function (d, i) {
-                if (d3.select('.' + d.source.name).size() > 0) {
-                    return d3.select('.' + d.source.name).style('fill');
-                }
-                else {
-                    _colorList[i];
-                }
-            })
-            .style('stroke-width', function (d) { return Math.max(1, d.dy); })
-            .sort(function (a, b) { return b.dy - a.dy; })
-            .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg, 'link'))
-            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, 'link'))
-            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'link'))
-            .on('click', function (d) {
-                filter = false;
-                var confirm = parentContainer.select('.confirm')
-                    .style('visibility', 'visible');
-
-                if (d.nodeType == dimension[0]) {
-                    _Local_data.map(function (val) {
-                        if (dimension[0] == d.nodeType && val[dimension[0]] == d.name) {
-                            var searchObj = _filter.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
-                            if (searchObj == undefined) {
-                                _filter.push(val)
-                            }
-                        }
-                    })
-                }
-                else {
-                    _Local_data.map(function (val) {
-                        if (dimension[1] == d.nodeType && val[dimension[1]] == d.name) {
-                            var searchObj = _filter.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
-                            if (searchObj == undefined) {
-                                _filter.push(val)
-                            }
-                        }
-                    })
-                }
-            })
-
-        link
-            .attr('d', path)
-            .style('stroke', function (d, i) {
-                if (d3.select('.' + d.source.name).size() > 0) {
-                    return d3.select('.' + d.source.name).style('fill');
-                }
-                else {
-                    _colorList[isFinite];
-                }
-            })
-            .style('stroke-width', function (d) { return Math.max(1, d.dy); })
-            .sort(function (a, b) { return b.dy - a.dy; })
-
         var node = plot.selectAll('.node')
             .data(data.nodes);
 
@@ -731,14 +678,12 @@ function sankey() {
         var newNode = node.enter().append('g')
             .attr('class', 'node')
             .attr('transform', function (d) {
-
                 return 'translate(' + d.x + ',' + d.y + ')';
             })
 
         node.attr('transform', function (d) {
             return 'translate(' + d.x + ',' + d.y + ')';
         })
-            .call(drag);
 
         node.select('rect')
             .attr('width', sankey.nodeWidth())
@@ -848,6 +793,7 @@ function sankey() {
         newNode.append('rect')
             .attr('width', sankey.nodeWidth())
             .attr('height', function (d) { return d.dy; })
+            .attr('class', function (d) { return d.name; })
             .style('cursor', 'move')
             .style('fill', function (d, i) {
                 return getFillColor(d, i);
@@ -896,6 +842,74 @@ function sankey() {
             .filter(function (d) { return d.x < parentWidth / 2; })
             .attr('x', 6 + sankey.nodeWidth())
             .attr('text-anchor', 'start');
+
+        var link = plot.selectAll('.link')
+            .data(data.links);
+
+        link.exit().remove();
+        newLink = link.enter().append('path')
+            .attr('class', 'link')
+            .attr('d', path)
+            .style('stroke', function (d, i) {
+                if (colorPattern == 'single_color') {
+                    return _colorList[0];
+                } else if (colorPattern == 'unique_color') {
+                    return _colorList[d.index];
+                } else if (colorPattern == 'gradient_color') {
+                    if (_print) {
+                        return _colorList[0];
+                    }
+                    return d3.select('.' + d.source.name).style('fill');
+                }
+            })
+            .style('stroke-width', function (d) { return Math.max(1, d.dy); })
+            .sort(function (a, b) { return b.dy - a.dy; })
+            .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg, 'link'))
+            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, 'link'))
+            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'link'))
+            .on('click', function (d) {
+                filter = false;
+                var confirm = parentContainer.select('.confirm')
+                    .style('visibility', 'visible');
+
+                if (d.nodeType == dimension[0]) {
+                    _Local_data.map(function (val) {
+                        if (dimension[0] == d.nodeType && val[dimension[0]] == d.name) {
+                            var searchObj = _filter.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
+                            if (searchObj == undefined) {
+                                _filter.push(val)
+                            }
+                        }
+                    })
+                }
+                else {
+                    _Local_data.map(function (val) {
+                        if (dimension[1] == d.nodeType && val[dimension[1]] == d.name) {
+                            var searchObj = _filter.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
+                            if (searchObj == undefined) {
+                                _filter.push(val)
+                            }
+                        }
+                    })
+                }
+            })
+
+        link
+            .attr('d', path)
+            .style('stroke', function (d, i) {
+                if (colorPattern == 'single_color') {
+                    return _colorList[0];
+                } else if (colorPattern == 'unique_color') {
+                    return _colorList[d.index];
+                } else if (colorPattern == 'gradient_color') {
+                    if (_print) {
+                        return _colorList[0];
+                    }
+                    return d3.select('.' + d.source.name).style('fill');
+                }
+            })
+            .style('stroke-width', function (d) { return Math.max(1, d.dy); })
+            .sort(function (a, b) { return b.dy - a.dy; })
 
         _local_svg.select('g.lasso').remove()
 
