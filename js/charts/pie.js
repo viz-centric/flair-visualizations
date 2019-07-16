@@ -1192,7 +1192,7 @@ function pie() {
         if (!arguments.length) {
             return _valueAsArc;
         }
-        _valueAsArc = value;
+        _valueAsArc = false;
         return chart;
     }
 
