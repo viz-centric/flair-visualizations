@@ -457,6 +457,12 @@ function sankey() {
             .style('visibility', function (d, i) {
                 return showLabels[dimension.indexOf(d.nodeType)];
             })
+            .style('visibility', function (d, i) {
+                var nodeHeight = d3.select(this.parentElement).select('rect').attr('height')
+                if (parseFloat(fontSize[dimension.indexOf(d.nodeType)]) > parseFloat(nodeHeight)) {
+                    return 'hidden';
+                }
+            })
             .style('font-style', function (d, i) {
                 return fontStyle[dimension.indexOf(d.nodeType)];
             })
@@ -774,6 +780,12 @@ function sankey() {
             .style('visibility', function (d, i) {
                 return showLabels[dimension.indexOf(d.nodeType)];
             })
+            .style('visibility', function (d, i) {
+                var nodeHeight = d3.select(this.parentElement).select('rect').attr('height')
+                if (parseFloat(fontSize[dimension.indexOf(d.nodeType)]) > parseFloat(nodeHeight)) {
+                    return 'hidden';
+                }
+            })
             .style('font-style', function (d, i) {
                 return fontStyle[dimension.indexOf(d.nodeType)];
             })
@@ -826,6 +838,12 @@ function sankey() {
             })
             .style('visibility', function (d, i) {
                 return showLabels[dimension.indexOf(d.nodeType)];
+            })
+            .style('visibility', function (d, i) {
+                var nodeHeight = d3.select(this.parentElement).select('rect').attr('height')
+                if (parseFloat(fontSize[dimension.indexOf(d.nodeType)]) > parseFloat(nodeHeight)) {
+                    return 'hidden';
+                }
             })
             .style('font-style', function (d, i) {
                 return fontStyle[dimension.indexOf(d.nodeType)];

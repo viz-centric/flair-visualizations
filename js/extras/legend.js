@@ -114,6 +114,9 @@ function legend() {
                     if (typeof d == 'string') {
                         return d;
                     }
+                    if (me.print() == false) {
+                        return d[me.dimension()]
+                    }
                     return d[me.dimension()].toString().substring(0, 5) + "...";
                 })
                 .text(function (d) {
@@ -166,6 +169,34 @@ function legend() {
 
             return 'translate(' + translate.toString() + ')';
         });
+        var legendBreak = 0,
+            legendBreakCount = 0;
+        if ((me.legendPosition().toUpperCase() == 'BOTTOM' || me.legendPosition().toUpperCase() == 'TOP') && me.print() == false) {
+            legendItem.attr('transform', function (d, i) {
+                var count = i,
+                    widthSum = 0
+                while (count-- != 0) {
+                    widthSum += d3.select('#' + me._getName() + '-legend-item' + count).node().getBBox().width + 16;
+                }
+                if ((widthSum + 100) > extraParams.width) {
+                    widthSum = 0;
+                    if (legendBreak == 0) {
+                        legendBreak = i;
+                        legendBreakCount = legendBreakCount + 1;
+                    }
+                    if (i == (legendBreak * (legendBreakCount + 1))) {
+                        legendBreakCount = legendBreakCount + 1;
+                    }
+                    var newcount = i - (legendBreak * legendBreakCount);
+                    while (newcount-- != 0) {
+                        widthSum += d3.select('#' + me._getName() + '-legend-item' + newcount).node().getBBox().width + 16;
+                    }
+                    return 'translate(' + widthSum + ', ' + legendBreakCount * 20 + ')';
+                }
+                return 'translate(' + widthSum + ', ' + (me.legendPosition().toUpperCase() == 'TOP' ? 0 : extraParams.height) + ')';
+            });
+            extraParams.height = extraParams.height - (20 * legendBreakCount);
+        }
 
         return {
             legendWidth: legend.node().getBBox().width,
