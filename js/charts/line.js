@@ -60,7 +60,7 @@ function line() {
         _localYGrid;
 
     var x = d3.scalePoint(), y = d3.scaleLinear();
-    var _x = d3.scalePoint(), _y = d3.scaleLinear(), brush = d3.brushX();
+    var _x = d3.scalePoint(), _y = d3.scaleLinear(), brush = d3.brushX();;
     var FilterControlHeight = 100;
 
     var areaGenerator = d3.area(), lineGenerator = d3.line();
