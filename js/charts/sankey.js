@@ -495,6 +495,7 @@ function sankey() {
                     return d3.select('.' + d.source.name).style('fill');
                 }
             })
+            .style('stroke-opacity', '0.5')
             .attr('d', path)
             .style('stroke-width', function (d) { return Math.max(1, d.dy); })
             .sort(function (a, b) { return b.dy - a.dy; })
