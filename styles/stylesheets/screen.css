@@ -126,12 +126,6 @@ text {
   fill-opacity: 0.5;
 }
 
-/* line 36, ../sass/partials/_grid.scss */
-.brush .handle {
-  fill: #9a9d9f;
-  fill-opacity: 1;
-}
-
 /* line 1, ../sass/partials/_infographics.scss */
 #infographics {
   border: 1px solid #999;

@@ -246,19 +246,19 @@ function kpi() {
             }
         });
 
-        // if (_print) {
+        if (_print) {
 
-        //     plot = parentContainer.append('svg')
-        //         .attr('class', 'KPI')
-        //         .attr('width', width - 2 * COMMON.PADDING)
-        //         .attr('height', height - 2 * COMMON.PADDING)
+            plot = parentContainer.append('svg')
+                .attr('class', 'KPI')
+                .attr('width', width - 2 * COMMON.PADDING)
+                .attr('height', height - 2 * COMMON.PADDING)
 
-        //     plot.append('foreignObject')
-        //         .attr('class', 'plot')
-        //         .html(_localDiv.node().outerHTML);
+            plot.append('foreignObject')
+                .attr('class', 'plot')
+                .html(_localDiv.node().outerHTML);
 
-        //     plot = d3.select('.KPI');
-        // }
+            plot = d3.select('.KPI');
+        }
     }
 
     chart._getName = function () {
@@ -266,7 +266,7 @@ function kpi() {
     }
 
     chart._getHTML = function () {
-        return _localDiv.node().outerHTML;
+        return plot.node().outerHTML;
     }
 
     chart.update = function (data) {
