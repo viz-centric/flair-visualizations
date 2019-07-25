@@ -1070,6 +1070,15 @@ function util() {
                 "#F3D047",
                 "#DA3579",
                 "#8EA4BF"];
+        },
+        sortDateRange: function (list) {
+            var sorttedList = list.sort(function (a, b) {
+                return new Date(b) - new Date(a);
+            });
+            sorttedList = sorttedList.map(function (val) {
+                return new Date(val);
+            });
+            return sorttedList;
         }
     }
 
