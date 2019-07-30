@@ -32,7 +32,8 @@ function rangefilter() {
         _lineType = [],
         _pointType = [],
         _data,
-        _tooltip;
+        _tooltip,
+        broadcast;
 
     var margin = {
         top: 0,
@@ -72,6 +73,14 @@ function rangefilter() {
 
         _local_svg.select('.dateRange')
             .text(formatDate(dates[0]) + " -> " + formatDate(dates[1]));
+
+        if (broadcast) {
+            var dateFilter = {};
+            dateFilter.startDate = dates[0];
+            dateFilter.endDate = dates[1];
+            broadcast.dateRange = dateFilter;
+            broadcast.$broadcast('FlairBi:date-range');
+        }
     }
 
     var _buildTooltipData = function (datum, chart) {
@@ -314,9 +323,9 @@ function rangefilter() {
                     + (x(d['data'][_dimension[0]]))
                     + ',' + y(d.data[_measure[0]]) + ')';
             })
-            // .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-            // .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-            // .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+        // .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+        // .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+        // .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
     }
 
     var mousemove = function () {

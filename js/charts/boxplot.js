@@ -23,6 +23,7 @@ function boxplot() {
         numberFormat = [],
         displayColor = [],
         _print,
+        _data,
         broadcast,
         filterParameters,
         _notification = false;
@@ -203,7 +204,7 @@ function boxplot() {
             var border = d3.select(this).attr('fill')
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container,  border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -214,7 +215,7 @@ function boxplot() {
         return function (d, i) {
             if (tooltip) {
                 var border = d3.select(this).attr('fill')
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container,  border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -257,376 +258,417 @@ function boxplot() {
     }
 
     function chart(selection) {
-        _local_svg = selection;
 
-        selection.each(function (data) {
-            data = UTIL.sortingData(data, _dimension[0]);
-           
-            _Local_data = _originalData = data;
-            div = d3.select(this).node().parentNode;
+        data = UTIL.sortingData(_data, _dimension[0])
+        _Local_data = _originalData = data;
 
-            var svg = d3.select(this);
-            width = +svg.attr('width');
+        if (_print && !_notification) {
+            parentContainer = selection;
+        }
+        else {
+            parentContainer = d3.select('#' + selection.id)
+        }
+
+        var svg = parentContainer.append('svg')
+            .attr('width', parentContainer.attr('width'))
+            .attr('height', parentContainer.attr('height'))
+
+        var width = +svg.attr('width'),
             height = +svg.attr('height');
 
-            _local_svg.attr("width", width).
-                attr("height", height);
+        _local_svg = svg;
 
-            var globalMin, globalMax, xLabels;
+        parentWidth = width - 2 * COMMON.PADDING;
+        parentHeight = height - 2 * COMMON.PADDING;
 
-            var minMax = getGlobalMinMax(data);
-            globalMin = minMax[0];
-            globalMax = minMax[1];
+        container = svg.append('g')
+            .attr("class", "focus")
+            .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
-            xLabels = getXLabels(data);
+        svg.attr('width', width)
+            .attr('height', height)
 
-            gWidth = width - margin.left - margin.right;
-            gHeight = height - margin.top - margin.bottom;
+        parentContainer.append('div')
+            .attr('class', 'custom_tooltip');
 
-            var barWidth = Math.floor(gWidth / data.length / 2);
-            var me = this;
-            if (_tooltip) {
-              tooltip = parentContainer.select('.custom_tooltip');
-            }
+        var globalMin, globalMax, xLabels;
 
-            x = d3
-                .scalePoint()
-                .domain(xLabels)
-                .rangeRound([0, gWidth])
-                .padding([0.5]);
+        var minMax = getGlobalMinMax(data);
+        globalMin = minMax[0];
+        globalMax = minMax[1];
 
-            y = d3
-                .scaleLinear()
-                .domain([globalMin, globalMax])
-                .range([gHeight, 0]);
+        xLabels = getXLabels(data);
 
-            var plot = svg
-                .append("g")
-                .attr("class", "plot")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        gWidth = width - margin.left - margin.right;
+        gHeight = height - margin.top - margin.bottom;
 
-            var boxPlot = plot
-                .append("g")
-                .attr("transform", "translate(0,0)");
+        var barWidth = Math.floor(gWidth / data.length / 2);
+        var me = this;
+        if (_tooltip) {
+            tooltip = parentContainer.select('.custom_tooltip');
+        }
 
-            var verticalLines = boxPlot
-                .selectAll(".verticalLines")
-                .data(data)
-                .enter()
-                .append("line")
-                .attr('class', 'verticalLines')
-                .attr("stroke", "#000")
-                .attr("stroke-width", 1)
-                .style("stroke-dasharray", 3)
-                .attr("fill", "none");
+        x = d3
+            .scalePoint()
+            .domain(xLabels)
+            .rangeRound([0, gWidth])
+            .padding([0.5]);
 
-            var box = boxPlot
-                .selectAll(".box")
-                .data(data)
-                .enter()
-                .append("g")
-                .attr('class', 'box')
-                .attr("id", function (d, i) {
-                    return "box" + i;
-                })
+        y = d3
+            .scaleLinear()
+            .domain([globalMin, globalMax])
+            .range([gHeight, 0]);
 
-            var lowerBox = box
-                .append("rect")
-                .attr("width", barWidth)
-                .attr('class', 'lowerBox')
-                .attr("x", function (d) {
-                    return (
-                        x(d[_dimension[0]]) -
-                        barWidth / 2
-                    );
-                })
-                .attr("y", function (d) {
-                    return y(d[_measure[2]]);
-                })
-                .attr("fill", displayColor[1])
-                .attr("stroke", function (d) {
-                    return d3
-                        .rgb(displayColor[1])
-                        .darker();
-                })
-                .attr("stroke-width", 1)
+        var plot = svg
+            .append("g")
+            .attr("class", "plot")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-            var upperBox = box
-                .append("rect")
-                .attr("width", barWidth)
-                .attr('class', 'upperBox')
-                .attr("x", function (d) {
-                    return (
-                        x(d[_dimension[0]]) -
-                        barWidth / 2
-                    );
-                })
-                .attr("fill", displayColor[3])
-                .attr("stroke", function (d) {
-                    return d3
-                        .rgb(displayColor[3])
-                        .darker();
-                })
-                .attr("stroke-width", 1)
-                .attr("y", function (d) {
-                    return y(d[_measure[2]]);
-                })
+        var verticalLines = plot
+            .selectAll(".verticalLines")
+            .data(data)
+            .enter()
+            .append("line")
+            .attr('class', 'verticalLines')
+            .attr("stroke", "#000")
+            .attr("stroke-width", 1)
+            .style("stroke-dasharray", 3)
+            .attr("fill", "none");
 
-            horizontalLineConfigs = [
-                {
-                    label: _measure[4],
-                    x1: function (d) {
-                        return (
-                            x(d[_dimension[0]]) -
-                            barWidth / 2
-                        );
-                    },
-                    y1: function (d) {
-                        return y(d[_measure[4]]);
-                    },
-                    x2: function (d) {
-                        return (
-                            x(d[_dimension[0]]) +
-                            barWidth / 2
-                        );
-                    },
-                    y2: function (d) {
-                        return y(d[_measure[4]]);
-                    }
-                },
-                {
-                    label: _measure[2],
-                    x1: function (d) {
-                        return (
-                            x(d[_dimension[0]]) -
-                            barWidth / 2
-                        );
-                    },
-                    y1: function (d) {
-                        return y(d[_measure[2]]);
-                    },
-                    x2: function (d) {
-                        return (
-                            x(d[_dimension[0]]) +
-                            barWidth / 2
-                        );
-                    },
-                    y2: function (d) {
-                        return y(d[_measure[2]]);
-                    }
-                },
-                {
-                    label: _measure[0],
-                    x1: function (d) {
-                        return (
-                            x(d[_dimension[0]]) -
-                            barWidth / 2
-                        );
-                    },
-                    y1: function (d) {
-                        return y(d[_measure[0]]);
-                    },
-                    x2: function (d) {
-                        return (
-                            x(d[_dimension[0]]) +
-                            barWidth / 2
-                        );
-                    },
-                    y2: function (d) {
-                        return y(d[_measure[0]]);
-                    }
+        var box = plot
+            .selectAll(".box")
+            .data(data)
+            .enter()
+            .append("g")
+            .attr('class', 'box')
+            .attr("id", function (d, i) {
+                return "box" + i;
+            })
+
+        var lowerBox = box
+            .append("rect")
+            .attr("width", barWidth)
+            .attr('class', 'lowerBox')
+            .attr("x", function (d) {
+                return (
+                    x(d[_dimension[0]]) -
+                    barWidth / 2
+                );
+            })
+            .attr("y", function (d) {
+                return y(d[_measure[2]]);
+            })
+            .attr("fill", function () {
+                if (displayColor[1]) {
+                    return displayColor[1];
                 }
-            ];
+                else {
+                    return COMMON.COLORSCALE(1);
+                }
 
-            function afterTransition() {
-                verticalLines
-                    .attr("x1", function (d) {
-                        return x(d[_dimension[0]]);
-                    })
-                    .attr("y1", function (d) {
-                        return y(d[_measure[0]]);
-                    })
-                    .attr("x2", function (d) {
-                        return x(d[_dimension[0]]);
-                    })
-                    .attr("y2", function (d) {
-                        return y(d[_measure[4]]);
-                    });
+            })
+            .attr("stroke", function (d) {
+                if (displayColor[1]) {
+                    return displayColor[1];
+                }
+                else {
+                    return COMMON.COLORSCALE(1);
+                }
 
-                horizontalLineConfigs.forEach(function (config) {
-                    plot
-                        .selectAll(".horizontalLines")
-                        .data(data)
-                        .enter()
-                        .append("line")
-                        .attr('class', 'horizontalLines')
-                        .attr("x1", config.x1)
-                        .attr("y1", config.y1)
-                        .attr("x2", config.x2)
-                        .attr("y2", config.y2)
-                        .attr("stroke", function (d) {
-                            return displayColor[_measure.indexOf(config.label)];
-                        })
-                        .attr("stroke-width", 2)
-                        .attr("fill", "none");
+            })
+            .attr("stroke-width", 1)
+
+        var upperBox = box
+            .append("rect")
+            .attr("width", barWidth)
+            .attr('class', 'upperBox')
+            .attr("x", function (d) {
+                return (
+                    x(d[_dimension[0]]) -
+                    barWidth / 2
+                );
+            })
+            .attr("fill", function () {
+                if (displayColor[3]) {
+                    return displayColor[3];
+                }
+                else {
+                    return COMMON.COLORSCALE(3);
+                }
+
+            })
+            .attr("stroke", function (d) {
+                if (displayColor[3]) {
+                    return displayColor[3];
+                }
+                else {
+                    return COMMON.COLORSCALE(3);
+                }
+
+            })
+            .attr("stroke-width", 1)
+            .attr("y", function (d) {
+                return y(d[_measure[2]]);
+            })
+
+        horizontalLineConfigs = [
+            {
+                label: _measure[4],
+                x1: function (d) {
+                    return (
+                        x(d[_dimension[0]]) -
+                        barWidth / 2
+                    );
+                },
+                y1: function (d) {
+                    return y(d[_measure[4]]);
+                },
+                x2: function (d) {
+                    return (
+                        x(d[_dimension[0]]) +
+                        barWidth / 2
+                    );
+                },
+                y2: function (d) {
+                    return y(d[_measure[4]]);
+                }
+            },
+            {
+                label: _measure[2],
+                x1: function (d) {
+                    return (
+                        x(d[_dimension[0]]) -
+                        barWidth / 2
+                    );
+                },
+                y1: function (d) {
+                    return y(d[_measure[2]]);
+                },
+                x2: function (d) {
+                    return (
+                        x(d[_dimension[0]]) +
+                        barWidth / 2
+                    );
+                },
+                y2: function (d) {
+                    return y(d[_measure[2]]);
+                }
+            },
+            {
+                label: _measure[0],
+                x1: function (d) {
+                    return (
+                        x(d[_dimension[0]]) -
+                        barWidth / 2
+                    );
+                },
+                y1: function (d) {
+                    return y(d[_measure[0]]);
+                },
+                x2: function (d) {
+                    return (
+                        x(d[_dimension[0]]) +
+                        barWidth / 2
+                    );
+                },
+                y2: function (d) {
+                    return y(d[_measure[0]]);
+                }
+            }
+        ];
+
+        function afterTransition() {
+            verticalLines
+                .attr("x1", function (d) {
+                    return x(d[_dimension[0]]);
+                })
+                .attr("y1", function (d) {
+                    return y(d[_measure[0]]);
+                })
+                .attr("x2", function (d) {
+                    return x(d[_dimension[0]]);
+                })
+                .attr("y2", function (d) {
+                    return y(d[_measure[4]]);
                 });
-            }
 
-            if (!_print) {
-                _local_svg.selectAll('.lowerBox')
-                    .attr("height", 0)
-                    .transition()
-                    .duration(COMMON.DURATION)
-                    .ease(d3.easeQuadIn)
-                    .attr("height", function (d) {
-                        return y(d[_measure[1]]) - y(d[_measure[2]]);
-                    });
-
-                _local_svg.selectAll('.upperBox')
-                    .attr("height", 0)
-                    .transition()
-                    .duration(COMMON.DURATION)
-                    .ease(d3.easeQuadIn)
-                    .attr("height", function (d) {
-                        var height =
-                            y(d[_measure[2]]) -
-                            y(d[_measure[3]]);
-                        return height;
+            horizontalLineConfigs.forEach(function (config) {
+                plot
+                    .selectAll(".horizontalLines")
+                    .data(data)
+                    .enter()
+                    .append("line")
+                    .attr('class', 'horizontalLines')
+                    .attr("x1", config.x1)
+                    .attr("y1", config.y1)
+                    .attr("x2", config.x2)
+                    .attr("y2", config.y2)
+                    .attr("stroke", function (d) {
+                        return displayColor[_measure.indexOf(config.label)];
                     })
-                    .attr("y", function (d) {
-                        return y(d[_measure[3]]);
+                    .attr("stroke-width", 2)
+                    .attr("fill", "none");
+            });
+        }
+
+        // if (!_print) {
+        //     _local_svg.selectAll('.lowerBox')
+        //         .attr("height", 0)
+        //         .transition()
+        //         .duration(COMMON.DURATION)
+        //         .ease(d3.easeQuadIn)
+        //         .attr("height", function (d) {
+        //             return y(d[_measure[1]]) - y(d[_measure[2]]);
+        //         });
+
+        //     _local_svg.selectAll('.upperBox')
+        //         .attr("height", 0)
+        //         .transition()
+        //         .duration(COMMON.DURATION)
+        //         .ease(d3.easeQuadIn)
+        //         .attr("height", function (d) {
+        //             var height =
+        //                 y(d[_measure[2]]) -
+        //                 y(d[_measure[3]]);
+        //             return height;
+        //         })
+        //         .attr("y", function (d) {
+        //             return y(d[_measure[3]]);
+        //         })
+        //         .on("end", afterTransition);
+
+        // }
+        // else {
+        _local_svg.selectAll('.lowerBox')
+            .attr("height", function (d) {
+                return y(d[_measure[1]]) - y(d[_measure[2]]);
+            });
+
+        _local_svg.selectAll('.upperBox')
+            .attr("height", function (d) {
+                var height =
+                    y(d[_measure[2]]) -
+                    y(d[_measure[3]]);
+                return height;
+            })
+            .attr("y", function (d) {
+                return y(d[_measure[3]]);
+            })
+        afterTransition();
+        // }
+        var isRotate = false;
+        plot.append("g")
+            .attr("class", "x_axis")
+            .attr("transform", "translate(0," + gHeight + ")")
+            .call(d3.axisBottom(x)
+                .tickSize(0)
+                .tickFormat(function (d) {
+                    if (isRotate == false) {
+                        isRotate = UTIL.getTickRotate(d, (gWidth) / (xLabels.length - 1), tickLength);
+                    }
+                    return UTIL.getTruncatedTick(d, (gWidth) / (xLabels.length - 1), tickLength);
+                })
+                .tickPadding(10))
+
+        plot.append("g")
+            .attr("class", "y_axis")
+            .call(d3.axisLeft(y).ticks(null, "s"))
+
+        if (isRotate) {
+            _local_svg.selectAll('.x_axis .tick text')
+                .attr("transform", "rotate(-15)");
+        }
+
+        // UTIL.setAxisColor(_local_svg, "", "", true, true, true, true);
+
+        UTIL.setAxisColor("", true, "", true, _local_svg);
+
+
+        if (!_print) {
+            var _filter = UTIL.createFilterElement()
+            $(div).append(_filter);
+
+            _local_svg.selectAll('g.box')
+                .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+                .on('click', function (d) {
+                    filter = false;
+                    var confirm = d3.select(div).select('.confirm')
+                        .style('visibility', 'visible');
+
+                    var _filter = _Local_data.filter(function (d1) {
+                        return d[_dimension[0]] === d1[_dimension[0]]
                     })
-                    .on("end", afterTransition);
-
-            }
-            else {
-                _local_svg.selectAll('.lowerBox')
-                    .attr("height", function (d) {
-                        return y(d[_measure[1]]) - y(d[_measure[2]]);
-                    });
-
-                _local_svg.selectAll('.upperBox')
-                    .attr("height", function (d) {
-                        var height =
-                            y(d[_measure[2]]) -
-                            y(d[_measure[3]]);
-                        return height;
-                    })
-                    .attr("y", function (d) {
-                        return y(d[_measure[3]]);
-                    })
-                afterTransition();
-            }
-            var isRotate = false;
-            plot.append("g")
-                .attr("class", "x_axis")
-                .attr("transform", "translate(0," + gHeight + ")")
-                .call(d3.axisBottom(x)
-                    .tickSize(0)
-                    .tickFormat(function (d) {
-                        if (isRotate == false) {
-                            isRotate = UTIL.getTickRotate(d, (gWidth) / (xLabels.length - 1), tickLength);
-                        }
-                        return UTIL.getTruncatedTick(d, (gWidth) / (xLabels.length - 1), tickLength);
-                    })
-                    .tickPadding(10))
-
-            plot.append("g")
-                .attr("class", "y_axis")
-                .call(d3.axisLeft(y).ticks(null, "s"))
-
-            if (isRotate) {
-                _local_svg.selectAll('.x_axis .tick text')
-                    .attr("transform", "rotate(-15)");
-            }
-
-            UTIL.setAxisColor(_local_svg, "", "", true, true, true, true);
-
-            if (!_print) {
-                var _filter = UTIL.createFilterElement()
-                $(div).append(_filter);
-
-                _local_svg.selectAll('g.box')
-                    .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-                    .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-                    .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
-                    .on('click', function (d) {
-                        filter = false;
-                        var confirm = d3.select(div).select('.confirm')
-                            .style('visibility', 'visible');
-
-                        var _filter = _Local_data.filter(function (d1) {
-                            return d[_dimension[0]] === d1[_dimension[0]]
+                    var rect = d3.select(this);
+                    if (rect.classed('selected')) {
+                        rect.classed('selected', false);
+                        filterData.map(function (val, i) {
+                            if (val[_dimension[0]] == d[_dimension[0]]) {
+                                filterData.splice(i, 1)
+                            }
                         })
-                        var rect = d3.select(this);
-                        if (rect.classed('selected')) {
-                            rect.classed('selected', false);
-                            filterData.map(function (val, i) {
-                                if (val[_dimension[0]] == d[_dimension[0]]) {
-                                    filterData.splice(i, 1)
-                                }
-                            })
-                        } else {
-                            rect.classed('selected', true);
-                            var isExist = filterData.filter(function (val) {
-                                if (val[_dimension[0]] == d[_dimension[0]]) {
-                                    return val
-                                }
-                            })
-                            if (isExist.length == 0) {
-                                filterData.push(_filter[0]);
+                    } else {
+                        rect.classed('selected', true);
+                        var isExist = filterData.filter(function (val) {
+                            if (val[_dimension[0]] == d[_dimension[0]]) {
+                                return val
                             }
+                        })
+                        if (isExist.length == 0) {
+                            filterData.push(_filter[0]);
                         }
+                    }
 
-                        var _filterDimension = {};
-                        if (broadcast.filterSelection.id) {
-                            _filterDimension = broadcast.filterSelection.filter;
+                    var _filterDimension = {};
+                    if (broadcast.filterSelection.id) {
+                        _filterDimension = broadcast.filterSelection.filter;
+                    } else {
+                        broadcast.filterSelection.id = $(div).attr('id');
+                    }
+                    var dimension = _dimension[0];
+                    if (_filterDimension[dimension]) {
+                        var temp = _filterDimension[dimension];
+                        if (temp.indexOf(d[_dimension[0]]) < 0) {
+                            temp.push(d[_dimension[0]]);
                         } else {
-                            broadcast.filterSelection.id = $(div).attr('id');
+                            temp.splice(temp.indexOf(d[_dimension[0]]), 1);
                         }
-                        var dimension = _dimension[0];
-                        if (_filterDimension[dimension]) {
-                            var temp = _filterDimension[dimension];
-                            if (temp.indexOf(d[_dimension[0]]) < 0) {
-                                temp.push(d[_dimension[0]]);
-                            } else {
-                                temp.splice(temp.indexOf(d[_dimension[0]]), 1);
-                            }
-                            _filterDimension[dimension] = temp;
-                        } else {
-                            _filterDimension[dimension] = [d[_dimension[0]]];
-                        }
+                        _filterDimension[dimension] = temp;
+                    } else {
+                        _filterDimension[dimension] = [d[_dimension[0]]];
+                    }
 
-                        var idWidget = broadcast.updateWidget[$(div).attr('id')];
-                        broadcast.updateWidget = {};
-                        broadcast.updateWidget[$(div).attr('id')] = idWidget;
-                        broadcast.filterSelection.filter = _filterDimension;
-                        var _filterParameters = filterParameters.get();
-                        _filterParameters[dimension] = _filterDimension[dimension];
-                        filterParameters.save(_filterParameters);
-                    })
+                    var idWidget = broadcast.updateWidget[$(div).attr('id')];
+                    broadcast.updateWidget = {};
+                    broadcast.updateWidget[$(div).attr('id')] = idWidget;
+                    broadcast.filterSelection.filter = _filterDimension;
+                    var _filterParameters = filterParameters.get();
+                    _filterParameters[dimension] = _filterDimension[dimension];
+                    filterParameters.save(_filterParameters);
+                })
 
-               parentContainer.select('.filterData')
+            parentContainer.select('.filterData')
                 .on('click', applyFilter());
 
-               parentContainer.select('.removeFilter')
+            parentContainer.select('.removeFilter')
                 .on('click', clearFilter(parentContainer));
 
-                var lasso = d3Lasso
-                    .lasso()
-                    .hoverSelect(true)
-                    .closePathSelect(true)
-                    .closePathDistance(100)
-                    .items(box)
-                    .targetArea(_local_svg);
+            var lasso = d3Lasso
+                .lasso()
+                .hoverSelect(true)
+                .closePathSelect(true)
+                .closePathDistance(100)
+                .items(box)
+                .targetArea(_local_svg);
 
-                lasso.on('start', onLassoStart(lasso, me))
-                    .on('draw', onLassoDraw(lasso, _local_svg))
-                    .on('end', onLassoEnd(lasso, _local_svg));
+            lasso.on('start', onLassoStart(lasso, me))
+                .on('draw', onLassoDraw(lasso, _local_svg))
+                .on('end', onLassoEnd(lasso, _local_svg));
 
-                _local_svg.call(lasso);
-            }
-        });
+            _local_svg.call(lasso);
+        }
+
     }
 
     chart._getName = function () {
@@ -640,7 +682,7 @@ function boxplot() {
     chart.update = function (data) {
         data = UTIL.sortingData(data, _dimension[0]);
         if (_tooltip) {
-          tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         _Local_data = data,
             filterData = [];
@@ -947,6 +989,14 @@ function boxplot() {
             return _print;
         }
         _print = value;
+        return chart;
+    }
+
+    chart.data = function (value) {
+        if (!arguments.length) {
+            return _data;
+        }
+        _data = value;
         return chart;
     }
 

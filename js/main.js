@@ -20,6 +20,7 @@ var sankey = require('./charts/sankey.js');
 var stackedhorizontalbar = require('./charts/stackedhorizontalbar.js');
 var stackedverticalbar = require('./charts/stackedverticalbar.js');
 var table = require('./charts/table.js');
+var textobject = require('./charts/textobject.js');
 var treemap = require('./charts/treemap.js');
 var wordcloud = require('./charts/wordcloud.js');
 
@@ -50,5 +51,6 @@ module.exports = {
 	stackedverticalbar: stackedverticalbar,
 	table: table,
 	treemap: treemap,
+	textobject: textobject,
 	wordcloud: wordcloud
 };

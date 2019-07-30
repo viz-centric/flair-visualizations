@@ -347,6 +347,8 @@ function chorddiagram() {
             chorddata.push(arr)
         })
 
+        //keep data for testing
+
         // var chorddata = [
         //     ['Lenovo', 'Vivo', 30],
         //     ['Vivo', 'Lenovo', 30],
@@ -384,7 +386,7 @@ function chorddiagram() {
             .sort(sort)
             .innerRadius(innerRadius)
             .outerRadius(outerRadius)
-            .duration(1000)
+            .duration(_print == true ? 0 : 1000)
             .chordOpacity(0.8)
             .labelPadding(.03)
             .fill(function (d) {
@@ -417,10 +419,6 @@ function chorddiagram() {
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
 
-        // parentContainer.selectAll('.chord')
-        //     .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-        //     .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-        //     .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
     }
 
 
