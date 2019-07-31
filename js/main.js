@@ -4,6 +4,7 @@ var boxplot = require('./charts/boxplot.js');
 var clusteredverticalbar = require('./charts/clusteredverticalbar.js');
 var clusteredhorizontalbar = require('./charts/clusteredhorizontalbar.js');
 var combo = require('./charts/combo.js');
+var chorddiagram = require('./charts/chorddiagram.js');
 var doughnut = require('./charts/doughnut.js');
 var gauge = require('./charts/gauge.js');
 var heatmap = require('./charts/heatmap.js');
@@ -13,11 +14,13 @@ var line = require('./charts/line.js');
 var map = require('./charts/map.js');
 var pie = require('./charts/pie.js');
 var pivot = require('./charts/pivottable.js');
+var rangefilter = require('./charts/rangefilter.js');
 var scatter = require('./charts/scatter.js');
 var sankey = require('./charts/sankey.js');
 var stackedhorizontalbar = require('./charts/stackedhorizontalbar.js');
 var stackedverticalbar = require('./charts/stackedverticalbar.js');
 var table = require('./charts/table.js');
+var textobject = require('./charts/textobject.js');
 var treemap = require('./charts/treemap.js');
 var wordcloud = require('./charts/wordcloud.js');
 
@@ -31,6 +34,7 @@ module.exports = {
 	clusteredverticalbar: clusteredverticalbar,
 	clusteredhorizontalbar: clusteredhorizontalbar,
 	combo: combo,
+	chorddiagram: chorddiagram,
 	doughnut: doughnut,
 	gauge: gauge,
 	heatmap: heatmap,
@@ -40,11 +44,13 @@ module.exports = {
 	map: map,
 	pie: pie,
 	pivot: pivot,
+	rangefilter: rangefilter,
 	scatter: scatter,
 	sankey: sankey,
 	stackedhorizontalbar: stackedhorizontalbar,
 	stackedverticalbar: stackedverticalbar,
 	table: table,
 	treemap: treemap,
+	textobject: textobject,
 	wordcloud: wordcloud
 };
