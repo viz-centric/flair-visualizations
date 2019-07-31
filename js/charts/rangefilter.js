@@ -98,44 +98,6 @@ function rangefilter() {
         return output;
     }
 
-    var _handleMouseOverFn = function (tooltip, container) {
-        var me = this;
-
-        return function (d, i) {
-            d3.select(this).style('cursor', 'pointer')
-                .style('fill', COMMON.HIGHLIGHTER);
-            var border = UTIL.getDisplayColor(0, _displayColor)
-            if (tooltip) {
-                UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
-            }
-        }
-    }
-    var _handleMouseMoveFn = function (tooltip, container) {
-        var me = this;
-
-        return function (d, i) {
-            if (tooltip) {
-                var border = UTIL.getDisplayColor(0, _displayColor)
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
-            }
-        }
-    }
-    var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
-
-        return function (d, i) {
-            d3.select(this).style('cursor', 'pointer')
-                .style('fill', function (d1, i) {
-                    return UTIL.getBorderColor(0, _borderColor);
-                })
-
-            if (tooltip) {
-                UTIL.hideTooltip(tooltip);
-            }
-        }
-    }
-
     function chart(selection) {
         data = _Local_data = _originalData = _data;
 

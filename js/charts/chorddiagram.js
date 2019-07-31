@@ -419,7 +419,7 @@ function chorddiagram() {
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
 
-    }
+    }  
 
 
     chart._legendInteraction = function (event, data, plot) {
