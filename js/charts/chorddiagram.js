@@ -334,6 +334,7 @@ function chorddiagram() {
             chorddata = [];
         data.map(function (val) {
             people.push(val[_dimension[0]]);
+            people.push(val[_dimension[1]]);
         })
         people = people.filter(function (item, i, ar) {
             return ar.indexOf(item) === i;

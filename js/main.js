@@ -12,7 +12,9 @@ var infographics = require('./charts/infographics.js');
 var kpi = require('./charts/kpi.js');
 var line = require('./charts/line.js');
 var map = require('./charts/map.js');
+var numbergrid = require('./charts/numbergrid.js');
 var pie = require('./charts/pie.js');
+var piegrid = require('./charts/piegrid.js');
 var pivot = require('./charts/pivottable.js');
 var rangefilter = require('./charts/rangefilter.js');
 var scatter = require('./charts/scatter.js');
@@ -42,7 +44,9 @@ module.exports = {
 	kpi: kpi,
 	line: line,
 	map: map,
+	numbergrid: numbergrid,
 	pie: pie,
+	piegrid, piegrid,
 	pivot: pivot,
 	rangefilter: rangefilter,
 	scatter: scatter,
