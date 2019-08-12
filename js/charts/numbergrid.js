@@ -273,7 +273,7 @@ function numbergrid() {
     }
 
     chart._getHTML = function () {
-        return _local_svg.node().outerHTML;
+        return parentContainer.node().outerHTML;
     }
 
     chart.update = function (data, filterConfig) {

@@ -142,7 +142,7 @@ function piegrid() {
                         r * 0.8)
                 }
                 else {
-                    return _Local_data[i][_dimension];
+                    return _Local_data[i][_dimension].substring(0,4);
                 }
             })
             .attr("x", 0)
@@ -300,7 +300,7 @@ function piegrid() {
     }
 
     chart._getHTML = function () {
-        return _local_svg.node().outerHTML;
+        return parentContainer.node().outerHTML;
     }
 
     chart.update = function (data, filterConfig) {
