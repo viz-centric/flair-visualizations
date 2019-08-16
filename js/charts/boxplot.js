@@ -22,7 +22,6 @@ function boxplot() {
         labelColor,
         colorPattern = 'single_color',//unique_color
         numberFormat = [],
-        displayColor = [],
         _print,
         _data,
         broadcast,
@@ -56,7 +55,6 @@ function boxplot() {
         this.showLabels(config.showLabels);
         this.labelColor(config.labelColor);
         this.numberFormat(config.numberFormat);
-        this.displayColor(config.displayColor);
         this.colorPattern(config.colorPattern);
     }
 
@@ -766,10 +764,6 @@ function boxplot() {
 
     chart.numberFormat = function (value, measure) {
         return UTIL.baseAccessor.call(numberFormat, value, measure, _measure);
-    }
-
-    chart.displayColor = function (value, measure) {
-        return UTIL.baseAccessor.call(displayColor, value, measure, _measure);
     }
 
     chart.broadcast = function (value) {

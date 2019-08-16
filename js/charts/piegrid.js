@@ -142,7 +142,7 @@ function piegrid() {
                         r * 0.8)
                 }
                 else {
-                    return _Local_data[i][_dimension].substring(0,4);
+                    return _Local_data[i][_dimension].substring(0, 4);
                 }
             })
             .attr("x", 0)
@@ -160,6 +160,21 @@ function piegrid() {
             .style('font-size', _fontSize + 'px')
             .style('font-weight', _fontWeight)
             .style('font-style', _fontStyle)
+    }
+
+    function SetRadius(width, height) {
+
+        var innerBoxLength = (r + m) * 2;
+        var columns = width / innerBoxLength;
+        var rows = height / innerBoxLength;
+        columns = parseInt(columns);
+        rows = parseInt(rows);
+
+        if (_data.length > (columns * rows)) {
+            r = r - 5;
+            SetRadius(width, height);
+        }
+        return parseInt(r);
     }
 
     function chart(selection) {
@@ -197,11 +212,12 @@ function piegrid() {
         var width = parentContainer.attr('width'),
             height = parentContainer.attr('height');
 
+
         var area = width * height
         var RR = area / (data.length + 1);
         r = Math.sqrt(RR);
-        r = (r - 60) / 2;
-
+        r = (r - 25) / 2;
+        r = SetRadius(width, height);
         var svg = parentContainer.selectAll("svg")
             .data(preData)
             .enter().append("svg")
@@ -312,7 +328,8 @@ function piegrid() {
         var area = width * height
         var RR = area / (data.length + 1);
         r = Math.sqrt(RR);
-        r = (r - 60) / 2;
+        r = (r - 25) / 2;
+        r = SetRadius(width, height);
         _Local_data = data;
 
         UTIL.sorter(_Local_data, _measure, -1);
