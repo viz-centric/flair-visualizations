@@ -114,7 +114,7 @@ function heatmap() {
             var border = d3.select(this).attr('fill');
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container,  border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -125,7 +125,7 @@ function heatmap() {
         return function (d, i) {
             if (tooltip) {
                 var border = getFillColor(d);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container,  border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -191,6 +191,16 @@ function heatmap() {
                     result = c.color;
                     return true;
                 }
+            }
+            else if (c.hasOwnProperty('below')) {
+                if (val < c.below) {
+                    result = c.color;
+                    return true;
+                }
+            }
+            else if (property.hasOwnProperty('default')) {
+                result = c.color;
+                return true;
             }
             else {
                 result = c.color;

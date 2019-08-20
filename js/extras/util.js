@@ -808,8 +808,17 @@ function util() {
                         break;
                     }
                 }
+                else if (property.hasOwnProperty('below')) {
+                    if (value < property.below) {
+                        result = property[key];
+                        break;
+                    }
+                }
+                else if (property.hasOwnProperty('default')) {
+                    result = property[key];
+                    break;
+                }
             }
-
             return result;
         },
 

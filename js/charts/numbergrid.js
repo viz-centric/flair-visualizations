@@ -26,8 +26,7 @@ function numbergrid() {
     var m = 10, r = 50;
 
     var colors = UTIL.defaultColours();
-
-
+    
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
         this.measure(config.measure);
@@ -154,14 +153,12 @@ function numbergrid() {
             .style('font-style', _fontStyle)
     }
 
-    function SetRadius(width, height, h) {
-        var w = r + (r / 2);
-        var h = r - (r / 2);
+    function SetRadius(width, height) {
+        var w = r + (r / 3);
+        var h = w / 2;
 
-        Math.pow(25, 1 / 2)
-
-        var innerBoxWidth = (w + m);
-        var innerBoxHeight = (h + m);
+        var innerBoxWidth = (w + 25);
+        var innerBoxHeight = (h + 25);
 
         var columns = width / innerBoxWidth;
         var rows = height / innerBoxHeight;
@@ -170,7 +167,6 @@ function numbergrid() {
 
         if (_data.length > (columns * rows)) {
             r = r - 2;
-            // h = h - 2;
             SetRadius(width, height);
         }
         return parseInt(r);
@@ -200,8 +196,9 @@ function numbergrid() {
         r = (r - 25) / 2;
 
         r = SetRadius(width, height);
-        var h = r - (r / 2);
-        var w = r + (r / 2);;
+        // var h = r - (r / 2);
+        var w = r + (r / 3);
+        var h = w / 2;
         var svg = parentContainer.selectAll("svg")
             .data(data)
             .enter().append("svg")
@@ -209,7 +206,7 @@ function numbergrid() {
                 return i;
             })
             .attr("width", (w + m) * 2)
-            .attr("height", (h + m) * 2)
+            .attr("height", (h + m) * 1.5)
             .append("g")
             .attr("transform", "translate(" + (0) + "," + (0) + ")");
 
@@ -217,7 +214,7 @@ function numbergrid() {
             .data(d3.pie())
             .enter().append("rect")
             .attr("width", (w + m) * 2)
-            .attr("height", (h + m) * 2)
+            .attr("height", (h + m) * 1.5)
             .style('fill', function (d, i) {
                 var path = d3.select(this.parentNode)
                 var index = d3.select(path.node().parentElement).attr('class')
