@@ -151,7 +151,7 @@ function piegrid() {
         var title_measure = svg.append("text")
             .attr("class", "title_measure")
             .text(function (d, i) {
-                return "Total: " + _Local_data[i][_measure];
+                return _Local_data[i][_measure];
             })
             .attr("y", (r + m))
             .attr("text-anchor", "middle")

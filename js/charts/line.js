@@ -44,7 +44,8 @@ function line() {
         filterParameters,
         _notification = false,
         _data,
-        _isFilterGrid = false;
+        _isFilterGrid = false,
+        _showSorting = true;
 
     var margin = {
         top: 0,
@@ -100,6 +101,7 @@ function line() {
         this.lineType(config.lineType);
         this.pointType(config.pointType);
         this.isFilterGrid(config.isFilterGrid);
+        this.showSorting(config.showSorting);
         setDefaultColorForChart()
         this.legendData(_displayColor, config.measure);
     }
@@ -860,7 +862,8 @@ function line() {
             })
 
             _local_svg.select('g.sort').remove();
-            UTIL.sortingView(container, parentHeight, parentWidth + (_showYaxis == true ? margin.left : 0), legendBreakCount, axisLabelSpace, offsetX);
+            UTIL.sortingView(container, parentHeight, parentWidth + (_showYaxis == true ? margin.left : 0), legendBreakCount, axisLabelSpace, offsetX, _showSorting);
+
 
             _local_svg.select('g.sort').selectAll('text')
                 .on('click', function () {
@@ -1410,7 +1413,18 @@ function line() {
         UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
 
         /* Update Axes Grid */
-        _localXGrid.ticks(x);
+        _localXGrid
+            .ticks(_localXLabels.length)
+            .tickFormat('')
+            .tickSize(-plotHeight);
+
+        _localYGrid
+            .tickFormat(function (d) {
+                UTIL.setAxisGridVisibility(this, _local_svg, _showGrid, d)
+            })
+            .tickSize(-plotWidth);
+
+        _localXGrid.scale(x);
         _localYGrid.scale(y);
 
         plot.select('.x.grid')
@@ -1424,6 +1438,9 @@ function line() {
 
         UTIL.displayThreshold(threshold, data, keys);
         _local_svg.select('g.lasso').remove()
+
+        _local_svg.select('g.sort')
+            .style('visibility', UTIL.getVisibility(_showSorting))
 
         var lasso = d3Lasso.lasso()
             .hoverSelect(true)
@@ -1679,6 +1696,13 @@ function line() {
             return _isFilterGrid;
         }
         _isFilterGrid = value;
+        return chart;
+    }
+    chart.showSorting = function (value) {
+        if (!arguments.length) {
+            return _showSorting;
+        }
+        _showSorting = value;
         return chart;
     }
     return chart;

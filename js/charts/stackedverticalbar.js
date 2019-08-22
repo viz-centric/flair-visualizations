@@ -45,7 +45,8 @@ function stackedverticalbar() {
         isAnimationDisable = false,
         _notification = false,
         _data,
-        _isFilterGrid = false;
+        _isFilterGrid = false,
+        _showSorting = true;
 
     var x = d3.scaleBand(), y = d3.scaleLinear();
 
@@ -103,6 +104,7 @@ function stackedverticalbar() {
         this.borderColor(config.borderColor);
         this.fontSize(config.fontSize);
         this.isFilterGrid(config.isFilterGrid);
+        this.showSorting(config.showSorting);
         setDefaultColorForChart()
         this.legendData(_displayColor, config.measure);
     }
@@ -795,7 +797,8 @@ function stackedverticalbar() {
                 .css('visibility', 'hidden');
 
             _local_svg.select('g.sort').remove();
-            UTIL.sortingView(container, parentHeight, parentWidth + (_showYaxis == true ? margin.left : 0), legendBreakCount, axisLabelSpace, offsetX);
+            UTIL.sortingView(container, parentHeight, parentWidth + (_showYaxis == true ? margin.left : 0), legendBreakCount, axisLabelSpace, offsetX, _showSorting);
+
 
             _local_svg.select('g.sort').selectAll('text')
                 .on('click', function () {
@@ -1323,6 +1326,18 @@ function stackedverticalbar() {
             .call(_localYAxis);
 
         /* Update Axes Grid */
+
+        _localXGrid
+            .ticks(_localXLabels.length)
+            .tickFormat('')
+            .tickSize(-plotHeight);
+
+        _localYGrid
+            .tickFormat(function (d) {
+                UTIL.setAxisGridVisibility(this, _local_svg, _showGrid, d)
+            })
+            .tickSize(-plotWidth);
+
         _localXGrid.scale(x);
         _localYGrid.scale(y);
 
@@ -1344,6 +1359,10 @@ function stackedverticalbar() {
         UTIL.displayThreshold(threshold, data, keys);
 
         _local_svg.select('g.lasso').remove()
+
+        _local_svg.select('g.sort')
+            .style('visibility', UTIL.getVisibility(_showSorting))
+
         var lasso = d3Lasso.lasso()
             .hoverSelect(true)
             .closePathSelect(true)
@@ -1579,6 +1598,13 @@ function stackedverticalbar() {
             return _isFilterGrid;
         }
         _isFilterGrid = value;
+        return chart;
+    }
+    chart.showSorting = function (value) {
+        if (!arguments.length) {
+            return _showSorting;
+        }
+        _showSorting = value;
         return chart;
     }
     return chart;
