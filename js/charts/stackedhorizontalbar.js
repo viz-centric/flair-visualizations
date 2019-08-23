@@ -99,7 +99,7 @@ function stackedhorizontalbar() {
         this.isFilterGrid(config.isFilterGrid);
         this.showSorting(config.showSorting);
         setDefaultColorForChart()
-        this.legendData(_displayColor, config.measure);
+        this.legendData(_displayColor, config.measure, config.displayNameForMeasure);
     }
 
     var setDefaultColorForChart = function () {
@@ -549,7 +549,7 @@ function stackedhorizontalbar() {
                 return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat, d.data[d.key]));
             })
             .attr('x', function (d, i) {
-                return y(d[1]) - 20;
+                return y(d[1]);
             })
             .attr('y', function (d, i) {
                 return x(d.data[_dimension[0]]) + x.bandwidth() / 2;
@@ -557,7 +557,7 @@ function stackedhorizontalbar() {
             .attr('dy', function (d, i) {
                 return offsetX / 4;
             })
-            .style('text-anchor', 'middle')
+            .style('text-anchor', 'end')
             .attr('visibility', function (d, i) {
                 return UTIL.getVisibility(_showValues[_measure.indexOf(d.key)]);
             })
@@ -611,7 +611,7 @@ function stackedhorizontalbar() {
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
-        x.rangeRound([0, plotHeight])
+        x.rangeRound([plotHeight, 0])
             .padding([0.5])
             .domain(data.map(function (d) { return d[_dimension[0]]; }));
 
@@ -1090,7 +1090,7 @@ function stackedhorizontalbar() {
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
-        x.rangeRound([0, plotHeight])
+        x.rangeRound([plotHeight, 0])
             .padding([0.5])
             .domain(data.map(function (d) { return d[_dimension[0]]; }));
 
@@ -1422,10 +1422,11 @@ function stackedhorizontalbar() {
         return chart;
     }
 
-    chart.legendData = function (measureConfig, measureName) {
+    chart.legendData = function (measureConfig, measureName, displayNameForMeasure) {
         _legendData = {
             measureConfig: measureConfig,
-            measureName: measureName
+            measureName: measureName,
+            displayName: displayNameForMeasure
         }
         return _legendData;
     }

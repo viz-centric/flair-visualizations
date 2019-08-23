@@ -102,7 +102,7 @@ function clusteredverticalbar() {
         this.isFilterGrid(config.isFilterGrid);
         this.showSorting(config.showSorting);
         setDefaultColorForChart();
-        this.legendData(_displayColor, config.measure);
+        this.legendData(_displayColor, config.measure, config.displayNameForMeasure);
     }
 
     var setDefaultColorForChart = function () {
@@ -428,7 +428,6 @@ function clusteredverticalbar() {
                 legend.attr('transform', function (d, i) {
                     if (_legendPosition.toUpperCase() == 'LEFT') {
                         return 'translate(0, ' + i * 20 + ')';
-
                     }
                     else if (_legendPosition.toUpperCase() == 'RIGHT') {
                         return 'translate(' + (parentWidth - legendSpace + axisLabelSpace + 10) + ', ' + i * 20 + ')';
@@ -545,9 +544,9 @@ function clusteredverticalbar() {
             .tickSize(0)
             .tickFormat(function (d) {
                 if (isRotate == false) {
-                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength);
             })
             .tickPadding(10);
 
@@ -1248,9 +1247,9 @@ function clusteredverticalbar() {
         _localXAxis
             .tickFormat(function (d) {
                 if (isRotate == false) {
-                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length ), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength);
             })
 
         xAxisGroup = plot.select('.x_axis')
@@ -1443,10 +1442,11 @@ function clusteredverticalbar() {
         return chart;
     }
 
-    chart.legendData = function (measureConfig, measureName) {
+    chart.legendData = function (measureConfig, measureName, displayNameForMeasure) {
         _legendData = {
             measureConfig: measureConfig,
-            measureName: measureName
+            measureName: measureName,
+            displayName: displayNameForMeasure,
         }
         return _legendData;
     }

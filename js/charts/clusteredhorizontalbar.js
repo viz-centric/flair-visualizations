@@ -102,7 +102,7 @@ function clusteredhorizontalbar() {
         this.isFilterGrid(config.isFilterGrid);
         this.showSorting(config.showSorting);
         setDefaultColorForChart()
-        this.legendData(_displayColor, config.measure);
+        this.legendData(_displayColor, config.measure, config.displayNameForMeasure);
     }
 
     var setDefaultColorForChart = function () {
@@ -905,7 +905,7 @@ function clusteredhorizontalbar() {
             .text(function (d, i) {
                 return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat, d[d.measure]));
             })
-            .style('text-anchor', 'middle')
+            .style('text-anchor', 'end')
             .attr('visibility', function (d, i) {
                 return UTIL.getVisibility(_showValues[i]);
             })
@@ -941,9 +941,9 @@ function clusteredhorizontalbar() {
                 if (this.getAttribute('visibility') == 'hidden') return 'hidden';
 
                 if (!_print) {
-                    if ((this.getComputedTextLength() + (offsetX / 2)) > parseFloat(plotWidth - rectWidth)) {
-                        return 'hidden';
-                    }
+                    // if ((this.getComputedTextLength() + (offsetX / 2)) > parseFloat(plotWidth - rectWidth)) {
+                    //     return 'hidden';
+                    // }
 
                     if (rectHeight < _fontSize[i] && _fontSize[i] >= rectHeight) {
                         d3.select(this).style('font-size', parseInt(rectHeight) - 2 + 'px')
@@ -961,23 +961,23 @@ function clusteredhorizontalbar() {
             .attr('dy', function (d, i) {
                 return x1.bandwidth() / 2 + d3.select(this).style('font-size').replace('px', '') / 2.5;
             })
-            .text(function (d, i) {
-                if (!_print) {
-                    var barLength;
+        // .text(function (d, i) {
+        //     if (!_print) {
+        //         var barLength;
 
-                    if ((d[d.measure] === null) || (isNaN(d[d.measure]))) {
-                        barLength = 0;
-                    } else {
-                        barLength = Math.abs(y(0) - y(d[d.measure]));
-                    }
+        //         if ((d[d.measure] === null) || (isNaN(d[d.measure]))) {
+        //             barLength = 0;
+        //         } else {
+        //             barLength = Math.abs(y(0) - y(d[d.measure]));
+        //         }
 
-                    return UTIL.getTruncatedLabel(this, d3.select(this).text(), plotWidth - barLength);
-                }
-                else {
-                    return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat, d[d.measure]));
-                }
+        //         return UTIL.getTruncatedLabel(this, d3.select(this).text(), plotWidth - barLength);
+        //     }
+        //     else {
+        //         return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat, d[d.measure]));
+        //     }
 
-            })
+        // })
     }
     /**
      * Builds the html data for the tooltip
@@ -1192,7 +1192,7 @@ function clusteredhorizontalbar() {
             .text(function (d, i) {
                 return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat, d[d.measure]));
             })
-            .style('text-anchor', 'middle')
+            .style('text-anchor', 'end')
             .attr('visibility', function (d, i) {
                 return UTIL.getVisibility(_showValues[i]);
             })
@@ -1227,9 +1227,9 @@ function clusteredhorizontalbar() {
 
                 if (this.getAttribute('visibility') == 'hidden') return 'hidden';
 
-                if ((this.getComputedTextLength() + (offsetX / 2)) > parseFloat(plotWidth - rectWidth)) {
-                    return 'hidden';
-                }
+                // if ((this.getComputedTextLength() + (offsetX / 2)) > parseFloat(plotWidth - rectWidth)) {
+                //     return 'hidden';
+                // }
 
                 if (rectHeight < _fontSize[i] && _fontSize[i] >= rectHeight) {
                     d3.select(this).style('font-size', parseInt(rectHeight) - 2 + 'px')
@@ -1455,10 +1455,11 @@ function clusteredhorizontalbar() {
         return chart;
     }
 
-    chart.legendData = function (measureConfig, measureName) {
+    chart.legendData = function (measureConfig, measureName, displayNameForMeasure) {
         _legendData = {
             measureConfig: measureConfig,
-            measureName: measureName
+            measureName: measureName,
+            displayName: displayNameForMeasure
         }
         return _legendData;
     }

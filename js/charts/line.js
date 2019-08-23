@@ -103,7 +103,7 @@ function line() {
         this.isFilterGrid(config.isFilterGrid);
         this.showSorting(config.showSorting);
         setDefaultColorForChart()
-        this.legendData(_displayColor, config.measure);
+        this.legendData(_displayColor, config.measure, config.displayNameForMeasure);
     }
     var getPointType = function (index) {
         var symbol = null;
@@ -740,9 +740,9 @@ function line() {
             .tickSize(0)
             .tickFormat(function (d) {
                 if (isRotate == false) {
-                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length ), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length ), tickLength);
             })
             .tickPadding(10);
 
@@ -1386,9 +1386,9 @@ function line() {
         _localXAxis
             .tickFormat(function (d) {
                 if (isRotate == false) {
-                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length ), tickLength);
             })
 
 
@@ -1602,10 +1602,11 @@ function line() {
         return chart;
     }
 
-    chart.legendData = function (measureConfig, measureName) {
+   chart.legendData = function (measureConfig, measureName, displayNameForMeasure) {
         _legendData = {
-            measureConfig: measureConfig,
-            measureName: measureName
+           measureConfig: measureConfig,
+            measureName: measureName,
+            displayName: displayNameForMeasure
         }
         return _legendData;
     }

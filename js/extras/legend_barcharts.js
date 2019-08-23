@@ -103,18 +103,18 @@ function legend() {
             .attr('x', 18)
             .attr('y', 10)
             .text(function (d, i) {
-                return measure.measureName[i];
+                return measure.displayName[i];
             })
             .text(function (d, i) {
                 if (me.print() == false) {
                     if ((me.legendPosition().toUpperCase() == 'TOP') || (me.legendPosition().toUpperCase() == 'BOTTOM')) {
-                        return UTIL.getTruncatedLabel(this, measure.measureName[i], Math.floor(extraParams.width / data.measureConfig.length) - 5);
+                        return UTIL.getTruncatedLabel(this, measure.displayName[i], Math.floor(extraParams.width / data.measureConfig.length) - 5);
                     } else if ((me.legendPosition().toUpperCase() == 'LEFT') || (me.legendPosition().toUpperCase() == 'RIGHT')) {
-                        return UTIL.getTruncatedLabel(this, measure.measureName[i], extraParams.width / 5);
+                        return UTIL.getTruncatedLabel(this, measure.displayName[i], extraParams.width / 5);
                     }
                 }
                 else {
-                    return measure.measureName[i].substring(0, 15) + "...";
+                    return measure.displayName[i].substring(0, 15) + "...";
                 }
             })
             .style('font-weight', 'bold')
@@ -127,7 +127,7 @@ function legend() {
                 var count = i,
                     widthSum = 0
                 while (count-- != 0) {
-                    widthSum += d3.select('#' + me._getName() + '-legend-item' + count).node().getBBox().width + 16;
+                    widthSum += selection.select('#' + me._getName() + '-legend-item' + count).node().getBBox().width + 16;
                 }
                 if ((widthSum + 100) > extraParams.width) {
                     widthSum = 0;

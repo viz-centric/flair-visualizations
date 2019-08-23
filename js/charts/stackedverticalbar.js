@@ -106,7 +106,7 @@ function stackedverticalbar() {
         this.isFilterGrid(config.isFilterGrid);
         this.showSorting(config.showSorting);
         setDefaultColorForChart()
-        this.legendData(_displayColor, config.measure);
+        this.legendData(_displayColor, config.measure, config.displayNameForMeasure);
     }
 
     var setDefaultColorForChart = function () {
@@ -734,9 +734,9 @@ function stackedverticalbar() {
             .tickSize(0)
             .tickFormat(function (d) {
                 if (isRotate == false) {
-                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength);
             })
             .tickPadding(10);
 
@@ -1302,9 +1302,9 @@ function stackedverticalbar() {
         _localXAxis
             .tickFormat(function (d) {
                 if (isRotate == false) {
-                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length ), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length ), tickLength);
             })
 
         xAxisGroup = plot.select('.x_axis')
@@ -1506,10 +1506,11 @@ function stackedverticalbar() {
         return chart;
     }
 
-    chart.legendData = function (measureConfig, measureName) {
+    chart.legendData = function (measureConfig, measureName, displayNameForMeasure) {
         _legendData = {
             measureConfig: measureConfig,
-            measureName: measureName
+            measureName: measureName,
+            displayName: displayNameForMeasure
         }
         return _legendData;
     }
