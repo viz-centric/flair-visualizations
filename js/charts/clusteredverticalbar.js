@@ -41,9 +41,10 @@ function clusteredverticalbar() {
         isAnimationDisable = false,
         _notification = false,
         _data,
-        _isFilterGrid;
+        _isFilterGrid = false,
+        _showSorting = true;
 
-    var _local_svg, svgFilter, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1, yScale = d3.scaleLinear();
+    var _local_svg, svgFilter, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1, _localXLabels;
     var _localXAxis,
         _localYAxis,
         _localXGrid,
@@ -99,8 +100,9 @@ function clusteredverticalbar() {
         this.borderColor(config.borderColor);
         this.fontSize(config.fontSize);
         this.isFilterGrid(config.isFilterGrid);
+        this.showSorting(config.showSorting);
         setDefaultColorForChart();
-        this.legendData(_displayColor, config.measure);
+        this.legendData(_displayColor, config.measure, config.displayNameForMeasure);
     }
 
     var setDefaultColorForChart = function () {
@@ -261,7 +263,7 @@ function clusteredverticalbar() {
             var border = UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor)
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container,  border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -272,7 +274,7 @@ function clusteredverticalbar() {
         return function (d, i) {
             if (tooltip) {
                 var border = UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor)
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container,  border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -426,7 +428,6 @@ function clusteredverticalbar() {
                 legend.attr('transform', function (d, i) {
                     if (_legendPosition.toUpperCase() == 'LEFT') {
                         return 'translate(0, ' + i * 20 + ')';
-
                     }
                     else if (_legendPosition.toUpperCase() == 'RIGHT') {
                         return 'translate(' + (parentWidth - legendSpace + axisLabelSpace + 10) + ', ' + i * 20 + ')';
@@ -474,7 +475,7 @@ function clusteredverticalbar() {
 
         drawPlotForFilter.call(this, data);
 
-        var _localXLabels = data.map(function (d) {
+        _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
         });
 
@@ -543,9 +544,9 @@ function clusteredverticalbar() {
             .tickSize(0)
             .tickFormat(function (d) {
                 if (isRotate == false) {
-                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength);
             })
             .tickPadding(10);
 
@@ -614,7 +615,8 @@ function clusteredverticalbar() {
             $('#' + parentContainer.attr('id')).append(_filter);
 
             _local_svg.select('g.sort').remove();
-            UTIL.sortingView(container, parentHeight, parentWidth + (_showYaxis == true ? margin.left : 0), legendBreakCount, axisLabelSpace, offsetX);
+            UTIL.sortingView(container, parentHeight, parentWidth + (_showYaxis == true ? margin.left : 0), legendBreakCount, axisLabelSpace, offsetX, _showSorting);
+
 
             _local_svg.select('g.sort').selectAll('text')
                 .on('click', function () {
@@ -828,7 +830,7 @@ function clusteredverticalbar() {
                 .on('click', function (d) {
                     if (!_print) {
                         if (broadcast != undefined && broadcast.isThresholdAlert) {
-                          
+
                             var ThresholdViz = {};
                             ThresholdViz.ID = parentContainer.attr('vizID');
                             ThresholdViz.measure = d.measure;
@@ -1081,11 +1083,12 @@ function clusteredverticalbar() {
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
-        var _localXLabels = data.map(function (d) {
+        _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
         });
 
-        _xDimensionGrid.domain([0, _localXLabels.length]);
+        _xDimensionGrid.domain([0, _localXLabels.length])
+            .range([0, plotWidth]);
 
         x0.rangeRound([0, plotWidth])
             .padding([0.2])
@@ -1244,9 +1247,9 @@ function clusteredverticalbar() {
         _localXAxis
             .tickFormat(function (d) {
                 if (isRotate == false) {
-                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length ), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength);
             })
 
         xAxisGroup = plot.select('.x_axis')
@@ -1270,7 +1273,18 @@ function clusteredverticalbar() {
         UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
 
         /* Update Axes Grid */
-        _localXGrid.ticks(_localXLabels.length);
+        _localXGrid.ticks(_localXLabels.length)
+            .tickFormat('')
+            .tickSize(-plotHeight);
+
+        _localYGrid
+            .tickFormat(function (d) {
+                UTIL.setAxisGridVisibility(this, _local_svg, _showGrid, d)
+            })
+            .tickSize(-plotWidth);
+
+        _localXGrid.scale(_xDimensionGrid);
+        _localYGrid.scale(y);
 
         plot.select('.x.grid')
             .attr('transform', 'translate(0, ' + plotHeight + ')')
@@ -1288,6 +1302,9 @@ function clusteredverticalbar() {
             })
 
         _local_svg.select('g.lasso').remove();
+
+        _local_svg.select('g.sort')
+            .style('visibility', UTIL.getVisibility(_showSorting))
 
         var lasso = d3Lasso.lasso()
             .hoverSelect(true)
@@ -1425,10 +1442,11 @@ function clusteredverticalbar() {
         return chart;
     }
 
-    chart.legendData = function (measureConfig, measureName) {
+    chart.legendData = function (measureConfig, measureName, displayNameForMeasure) {
         _legendData = {
             measureConfig: measureConfig,
-            measureName: measureName
+            measureName: measureName,
+            displayName: displayNameForMeasure,
         }
         return _legendData;
     }
@@ -1519,6 +1537,13 @@ function clusteredverticalbar() {
             return _isFilterGrid;
         }
         _isFilterGrid = value;
+        return chart;
+    }
+    chart.showSorting = function (value) {
+        if (!arguments.length) {
+            return _showSorting;
+        }
+        _showSorting = value;
         return chart;
     }
     return chart;

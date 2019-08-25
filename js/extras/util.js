@@ -808,8 +808,17 @@ function util() {
                         break;
                     }
                 }
+                else if (property.hasOwnProperty('below')) {
+                    if (value < property.below) {
+                        result = property[key];
+                        break;
+                    }
+                }
+                else if (property.hasOwnProperty('default')) {
+                    result = property[key];
+                    break;
+                }
             }
-
             return result;
         },
 
@@ -834,10 +843,11 @@ function util() {
             return _filter;
         },
 
-        sortingView: function (container, parentHeight, parentWidth, legendBreakCount, axisLabelSpace, offsetX) {
+        sortingView: function (container, parentHeight, parentWidth, legendBreakCount, axisLabelSpace, offsetX, visibility) {
 
             var sortButton = container.append('g')
                 .attr('class', 'sort')
+                .style('visibility', this.getVisibility(visibility))
                 .attr('transform', function () {
                     return 'translate(0, ' + parseInt((parentHeight - 2 * COMMON.PADDING + 20 + (legendBreakCount * 20))) + ')';
                 })
@@ -975,11 +985,11 @@ function util() {
             if (_legendPosition.toUpperCase() == 'TOP') {
                 position = 'translate(' + (_showYaxis == true ? margin : 0) + ', ' + parseInt(legendSpace * 2 + (20 * parseInt(legendBreakCount))) + ')';
             } else if (_legendPosition.toUpperCase() == 'BOTTOM') {
-                position = 'translate(' + margin + ', 0)';
+                position = 'translate(' + (_showYaxis == true ? margin : 0) + ', 0)';
             } else if (_legendPosition.toUpperCase() == 'LEFT') {
-                position = 'translate(' + (legendSpace + margin + axisLabelSpace) + ', 0)';
+                position = 'translate(' + (legendSpace + (_showYaxis == true ? margin : 0) + axisLabelSpace) + ', 0)';
             } else if (_legendPosition.toUpperCase() == 'RIGHT') {
-                position = 'translate(' + margin + ', 0)';
+                position = 'translate(' + (_showYaxis == true ? margin : 0) + ', 0)';
             }
 
             if (!_showLegend) {

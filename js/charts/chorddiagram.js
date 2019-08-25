@@ -30,19 +30,10 @@ function chorddiagram() {
         _data;
 
     var _local_svg, svgFilter, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1, yScale = d3.scaleLinear();
-    var _localXAxis,
-        _localYAxis,
-        _localXGrid,
-        _localYGrid;
-    var parentWidth, parentHeight, plotWidth, plotHeight, container, tooltip;
 
     var colors = UTIL.defaultColours();
 
-    var x0 = d3.scaleBand(), x1 = d3.scaleBand(), _xDimensionGrid = d3.scaleLinear(), y = d3.scaleLinear();
-
-    var _x0 = d3.scaleBand(), _x1 = d3.scaleBand(), _y = d3.scaleLinear(), brush = d3.brushX();
-
-    var gradientColor = d3.scaleOrdinal();
+    var gradientColor = d3.scaleLinear();
 
     var BASE_COLOR = "#aec7e8", GRADIENT_COLOR = ['#ff9696', '#bc2f2f'];
 
@@ -109,7 +100,7 @@ function chorddiagram() {
     var onLassoStart = function (lasso, scope) {
         return function () {
             if (filter) {
-                lasso.items().selectAll('rect')
+                lasso.items().selectAll('path')
                     .classed('not_possible', true)
                     .classed('selected', false);
             }
@@ -119,14 +110,14 @@ function chorddiagram() {
     var onLassoDraw = function (lasso, scope) {
         return function () {
             filter = true;
-            lasso.items().selectAll('rect')
+            lasso.items().selectAll('path')
                 .classed('selected', false);
 
-            lasso.possibleItems().selectAll('rect')
+            lasso.possibleItems().selectAll('path')
                 .classed('not_possible', false)
                 .classed('possible', true);
 
-            lasso.notPossibleItems().selectAll('rect')
+            lasso.notPossibleItems().selectAll('path')
                 .classed('not_possible', true)
                 .classed('possible', false);
         }
@@ -140,30 +131,23 @@ function chorddiagram() {
             }
 
             if (data.length > 0) {
-                lasso.items().selectAll('rect')
+                lasso.items().selectAll('path')
                     .classed('not_possible', false)
                     .classed('possible', false);
             }
 
-            lasso.selectedItems().selectAll('rect')
+            lasso.selectedItems().selectAll('path')
                 .classed('selected', true)
 
-            lasso.notSelectedItems().selectAll('rect');
+            lasso.notSelectedItems().selectAll('path');
 
             var confirm = d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
 
             var _filter = [];
             if (data.length > 0) {
-                var keys = UTIL.getMeasureList(data[0], _dimension);
                 data.forEach(function (d) {
-                    var obj = new Object();
-                    obj[_dimension[0]] = d[_dimension[0]];
-                    for (var index = 0; index < keys.length; index++) {
-                        obj[keys[index]] = d[keys[index]];
-                    }
-
-                    _filter.push(obj)
+                    _filter.push(d.source)
                 });
             }
             else {
@@ -181,9 +165,6 @@ function chorddiagram() {
 
                 var _filterList = {}, list = []
 
-                filterData.map(function (val) {
-                    list.push(val[_dimension[0]])
-                })
 
                 var _filterDimension = {};
                 if (broadcast.filterSelection.id) {
@@ -193,15 +174,39 @@ function chorddiagram() {
                 }
                 var dimension = _dimension[0];
 
-                _filterDimension[dimension] = filterData.map(function (d) {
-                    return d[_dimension[0]];
-                });
+                _filterDimension[dimension] = _filter;
 
                 broadcast.filterSelection.filter = _filterDimension;
                 var _filterParameters = filterParameters.get();
                 _filterParameters[dimension] = _filterDimension[dimension];
                 filterParameters.save(_filterParameters);
             }
+        }
+    }
+
+
+    var applyFilter = function () {
+        return function () {
+            //Viz renders twice issue
+            // chart.update(filterData);
+            if (broadcast) {
+                broadcast.updateWidget = {};
+                broadcast.filterSelection.id = null;
+                broadcast.$broadcast('flairbiApp:filter-input-refresh');
+                broadcast.$broadcast('flairbiApp:filter');
+                broadcast.$broadcast('flairbiApp:filter-add');
+                d3.select(this.parentNode)
+                    .style('visibility', 'hidden');
+
+            }
+        }
+    }
+
+    var clearFilter = function (div) {
+        return function () {
+            chart.update(_originalData);
+            d3.select(div).select('.confirm')
+                .style('visibility', 'hidden');
         }
     }
 
@@ -217,7 +222,7 @@ function chorddiagram() {
 
             filter.selectAll('path').style('opacity', 0);
 
-            var border = d3.select(this).attr('fill')
+            var border = d3.select(this).select('path').style('fill');
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
                 UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
@@ -230,7 +235,7 @@ function chorddiagram() {
 
         return function (d, i) {
             if (tooltip) {
-                var border = d3.select(this).attr('fill')
+                var border = d3.select(this).select('path').style('fill');
                 UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
@@ -250,42 +255,6 @@ function chorddiagram() {
             if (tooltip) {
                 UTIL.hideTooltip(tooltip);
             }
-        }
-    }
-
-    setColorDomain = function (groups) {
-        var values = groups.map(function (item) { return item.value; });
-
-        var domain = [],
-            range = [];
-
-        var color = d3.scaleLinear()
-            .domain([Math.min.apply(Math, values), Math.max.apply(Math, values)])
-            .range(GRADIENT_COLOR);
-
-        groups.sort(function (a, b) {
-            return (a.value > b.value) ? 1 : ((b.value > a.value) ? -1 : 0);
-        });
-
-        groups.forEach(function (item) {
-            domain.push(item.index);
-            range.push(color(item.value));
-        })
-
-        gradientColor.domain(domain);
-        gradientColor.range(range);
-    }
-
-    getFillColor = function (obj, index) {
-        if (_colorPattern == 'single_color') {
-            return colors[0];
-        } else if (_colorPattern == 'unique_color') {
-            var r = parseInt(Math.abs(Math.sin(2 * index + 100)) * 255),
-                g = parseInt(Math.abs(Math.cos(index + 75)) * 255),
-                b = parseInt(Math.abs(Math.sin(7 * index + 30)) * 255);
-            return d3.rgb(r, g, b);
-        } else if (_colorPattern == 'gradient_color') {
-            return gradientColor(index);
         }
     }
 
@@ -321,24 +290,49 @@ function chorddiagram() {
             tooltip = parentContainer.select('.custom_tooltip');
         }
 
-
         svg = svg.attr('width', width)
             .attr('height', height);
 
         var outerRadius = Math.min(width, height) * 0.5 - 15,
             innerRadius = outerRadius - 20;
 
-
-        //var people = ['Lenovo', 'Vivo', 'LG', 'Oppo', 'NOKIA', 'Samsung', 'OnePlus', 'Apple', 'HTC'];
-        var people = [],
+        var _keys = [],
             chorddata = [];
+
+        var gdata = []
+
         data.map(function (val) {
-            people.push(val[_dimension[0]]);
-            people.push(val[_dimension[1]]);
-        })
-        people = people.filter(function (item, i, ar) {
+            _keys.push(val[_dimension[0]]);
+            _keys.push(val[_dimension[1]]);
+        });
+
+        _keys = _keys.filter(function (item, i, ar) {
             return ar.indexOf(item) === i;
         });
+
+        for (var index = 0; index < _keys.length; index++) {
+            var filterData = data.filter(function (val) {
+                if (_keys[index] == val[_dimension[0]] || _keys[index] == val[_dimension[1]]) {
+                    return val;
+                }
+            })
+            var arr = new Object();
+            arr["key"] = _keys[index];
+            arr["value"] = d3.sum(filterData.map(function (d) {
+                return d[_measure];
+            }));
+            gdata.push(arr)
+
+        }
+
+        gradientColor.range([
+            d3.rgb(colors[0]).brighter(),
+            d3.rgb(colors[0]).darker()
+        ])
+
+        gradientColor.domain(d3.extent(gdata, function (d) {
+            return d["value"];
+        }));
 
         data.map(function (val) {
             var arr = []
@@ -348,39 +342,9 @@ function chorddiagram() {
             chorddata.push(arr)
         })
 
-        //keep data for testing
-
-        // var chorddata = [
-        //     ['Lenovo', 'Vivo', 30],
-        //     ['Vivo', 'Lenovo', 30],
-        //     ['LG', 'Oppo', 30],
-        //     ['Oppo', 'Samsung', 30],
-        //     ['NOKIA', 'OnePlus', 30],
-        //     ['NOKIA', 'Oppo', 30],
-        //     ['OnePlus', 'NOKIA', 30],
-        //     ['Samsung', 'NOKIA', 30],
-        //     ['Samsung', 'Oppo', 30],
-        //     ['Oppo', 'OnePlus', 30],
-        //     ['OnePlus', 'Oppo', 30],
-        //     ['Lenovo', 'Samsung', 30],
-        //     ['Samsung', 'Lenovo', 30],
-        //     ['Lenovo', 'Oppo', 30],
-        //     ['Oppo', 'Lenovo', 30],
-        //     ['Apple', 'Lenovo', 30],
-        //     ['Vivo', 'Samsung', 30],
-        //     ['Vivo', 'Oppo', 30],
-        //     ['Oppo', 'Vivo', 30],
-        //     ['Vivo', 'OnePlus', 30],
-        //     ['OnePlus', 'Vivo', 30],
-        //     ['HTC', 'Oppo', 30],
-        //     ['HTC', 'Vivo', 30],
-        //     ['Oppo', 'HTC', 30],
-        //     ['Oppo', 'Vivo', 30]
-        // ]
-
         function sort(a, b) { return d3.ascending(sortOrder.indexOf(a), sortOrder.indexOf(b)); }
 
-        var sortOrder = people.sort();
+        var sortOrder = _keys.sort();
         var i = 0;
         var ch = viz.ch().data(chorddata)
             .padding(.01)
@@ -397,8 +361,13 @@ function chorddiagram() {
                 else if (_colorPattern == "single_color") {
                     return colors[0];
                 }
-                else {
-
+                else if (_colorPattern == 'gradient_color') {
+                    var value = gdata.filter(function (val) {
+                        if (val["key"] == d) {
+                            return val;
+                        }
+                    })
+                    return gradientColor(value[0].value);
                 }
 
             });
@@ -408,19 +377,47 @@ function chorddiagram() {
             .attr('class', 'plot')
             .call(ch);
 
-        parentContainer.selectAll('.groups text')
+        var groups = parentContainer.selectAll('.groups')
+
+        groups.selectAll('text')
             .style('fill', _labelColor)
             .style('visibility', UTIL.getVisibility(_showLabels))
             .style('font-size', _fontSize)
             .style('font-style', _fontStyle)
             .style('font-weight', _fontWeight)
 
-        parentContainer.selectAll('.groups')
-            .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+        if (!_print) {
+            var _filter = UTIL.createFilterElement()
+            $('#' + parentContainer.attr('id')).append(_filter);
 
-    }  
+            parentContainer.select('.filterData')
+                .on('click', applyFilter());
+
+            parentContainer.select('.removeFilter')
+                .on('click', clearFilter(parentContainer));
+
+            groups
+                .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+
+            _local_svg.select('g.lasso').remove()
+
+            var lasso = d3Lasso.lasso()
+                .hoverSelect(true)
+                .closePathSelect(true)
+                .closePathDistance(100)
+                .items(groups)
+                .targetArea(_local_svg);
+
+            lasso.on('start', onLassoStart(lasso, _local_svg))
+                .on('draw', onLassoDraw(lasso, _local_svg))
+                .on('end', onLassoEnd(lasso, _local_svg));
+
+            _local_svg.call(lasso);
+        }
+
+    }
 
 
     chart._legendInteraction = function (event, data, plot) {
@@ -506,16 +503,43 @@ function chorddiagram() {
         var outerRadius = Math.min(width, height) * 0.5 - 15,
             innerRadius = outerRadius - 20;
 
-        //var people = ['Lenovo', 'Vivo', 'LG', 'Oppo', 'NOKIA', 'Samsung', 'OnePlus', 'Apple', 'HTC'];
-        var people = [],
+        var _keys = [],
             chorddata = [];
+
+        var gdata = []
+
         data.map(function (val) {
-            people.push(val[_dimension[0]]);
-        })
-        people = people.filter(function (item, i, ar) {
+            _keys.push(val[_dimension[0]]);
+            _keys.push(val[_dimension[1]]);
+        });
+
+        _keys = _keys.filter(function (item, i, ar) {
             return ar.indexOf(item) === i;
         });
 
+        for (var index = 0; index < _keys.length; index++) {
+            var filterData = data.filter(function (val) {
+                if (_keys[index] == val[_dimension[0]] || _keys[index] == val[_dimension[1]]) {
+                    return val;
+                }
+            })
+            var arr = new Object();
+            arr["key"] = _keys[index];
+            arr["value"] = d3.sum(filterData.map(function (d) {
+                return d[_measure];
+            }));
+            gdata.push(arr)
+
+        }
+
+        gradientColor.range([
+            d3.rgb(colors[0]).brighter(),
+            d3.rgb(colors[0]).darker()
+        ])
+
+        gradientColor.domain(d3.extent(gdata, function (d) {
+            return d["value"];
+        }));
         data.map(function (val) {
             var arr = []
             arr.push(val[_dimension[0]])
@@ -526,7 +550,7 @@ function chorddiagram() {
 
         function sort(a, b) { return d3.ascending(sortOrder.indexOf(a), sortOrder.indexOf(b)); }
 
-        var sortOrder = people.sort();
+        var sortOrder = _keys.sort();
 
         var i = 0;
         var ch = viz.ch().data(chorddata)
@@ -544,13 +568,30 @@ function chorddiagram() {
                 else if (_colorPattern == "single_color") {
                     return colors[0];
                 }
-                else {
-
+                else if (_colorPattern == 'gradient_color') {
+                    var value = gdata.filter(function (val) {
+                        if (val["key"] == d) {
+                            return val;
+                        }
+                    })
+                    return gradientColor(value[0].value);
                 }
 
             });
 
         plot.call(ch);
+
+        parentContainer.selectAll('.groups text')
+            .style('fill', _labelColor)
+            .style('visibility', UTIL.getVisibility(_showLabels))
+            .style('font-size', _fontSize)
+            .style('font-style', _fontStyle)
+            .style('font-weight', _fontWeight)
+
+        parentContainer.selectAll('.groups')
+            .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
 
     }
 

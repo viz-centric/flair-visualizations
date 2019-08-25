@@ -47,12 +47,11 @@ function heatmap() {
         top: 30,
         right: 15,
         bottom: 15,
-        left: 55
+        left: 70
     };
 
     var yScale = d3.scaleBand(),
         xScale = d3.scaleBand();
-
 
     var filter = false, filterData = [];
 
@@ -114,7 +113,7 @@ function heatmap() {
             var border = d3.select(this).attr('fill');
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container,  border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -125,7 +124,7 @@ function heatmap() {
         return function (d, i) {
             if (tooltip) {
                 var border = getFillColor(d);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container,  border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -191,6 +190,16 @@ function heatmap() {
                     result = c.color;
                     return true;
                 }
+            }
+            else if (c.hasOwnProperty('below')) {
+                if (val < c.below) {
+                    result = c.color;
+                    return true;
+                }
+            }
+            else if (property.hasOwnProperty('default')) {
+                result = c.color;
+                return true;
             }
             else {
                 result = c.color;
@@ -398,8 +407,8 @@ function heatmap() {
             .attr('width', parentContainer.attr('width'))
             .attr('height', parentContainer.attr('height'))
 
-        width = +svg.attr('width'),
-            height = +svg.attr('height');
+        width = +svg.attr('width');
+        height = +svg.attr('height');
 
         parentContainer.append('div')
             .attr('class', 'custom_tooltip');
@@ -407,16 +416,7 @@ function heatmap() {
         _local_svg = svg;
 
         svg.selectAll('g').remove();
-
-        var plot = svg.attr('width', width)
-            .attr('height', height)
-            .append('g')
-            .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
-
-        /* store the data in local variable */
-        _localData = _originalData = data;
         var me = this;
-        svg.selectAll('g').remove();
 
         var plot = svg.attr('width', width)
             .attr('height', height)
@@ -431,8 +431,9 @@ function heatmap() {
             xElement.set(i, _measure[i]);
         }
 
-        cellWidth = parseInt((width - margin.left - margin.right) / _measure.length),
-            cellHeight = parseInt((height - margin.top - margin.bottom) / data.length);
+        cellWidth = parseInt((width - margin.left - margin.right) / _measure.length);
+        cellHeight = parseInt((height - margin.top - margin.bottom) / data.length);
+
         var offset = 6;
         var dimLabel = plot.selectAll('.dimLabel')
             .data(yElement)
@@ -440,15 +441,10 @@ function heatmap() {
             .attr('class', 'dimLabel')
             .text(function (d) { return d; })
             .text(function (d) {
-                if (!_print) {
-                    return UTIL.getTruncatedLabel(this, d, (margin.left));
+                if (d.length > 4) {
+                    return d.substring(0, 4) + '...';
                 }
-                else {
-                    if (d.length > 3) {
-                        return d.substring(0, 3) + '...';
-                    }
-                    return d;
-                }
+                return d;
             })
             .attr('x', 0)
             .attr('y', function (d, i) { return i * cellHeight; })
@@ -698,6 +694,9 @@ function heatmap() {
             .attr('class', 'dimLabel')
             .text(function (d) { return d; })
             .text(function (d) {
+                if (d.length > 4) {
+                    return d.substring(0, 4) + '...';
+                }
                 return d;
             })
             .attr('x', 0)
