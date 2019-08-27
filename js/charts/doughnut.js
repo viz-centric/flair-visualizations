@@ -26,6 +26,7 @@ function doughnut() {
         _sort,
         _tooltip,
         _print,
+        _numberFormat,
         broadcast,
         filterParameters,
         _measureDisplayName,
@@ -82,6 +83,7 @@ function doughnut() {
         this.fontWeight(config.fontWeight);
         this.fontColor(config.fontColor);
         this.measureDisplayName(config.measureDisplayName);
+        this.numberFormat(config.numberFormat);
     }
 
     /**
@@ -599,13 +601,10 @@ function doughnut() {
             .append("tspan")
             .text(function () {
                 if (!_print) {
-                    return UTIL.getTruncatedLabel(
-                        this,
-                        _localTotal,
-                        outerRadius * 0.8)
+                    return UTIL.getTruncatedLabel(this, UTIL.getFormattedValue(_localTotal, UTIL.getNumberFormatterFn(_numberFormat, _localTotal)), outerRadius * 0.8);
                 }
                 else {
-                    return _localTotal;
+                    return UTIL.getFormattedValue(_localTotal, UTIL.getNumberFormatterFn(_numberFormat, _localTotal));
                 }
             })
             .attr("x", 0)
@@ -1120,6 +1119,46 @@ function doughnut() {
                 });
         }
 
+        var plot = _local_svg.select('.plot')
+
+        plot.select('#measure-value').remove();
+
+        _localTotal = d3.sum(data.map(function (d) { return d[_measure[0]]; }));
+
+        var centerText = plot.append('text')
+            .attr('id', 'measure-value')
+            .style('text-anchor', 'middle')
+            .style('fill', _fontColor)
+            .style('font-size', _fontSize + 'px')
+            .style('font-weight', _fontWeight)
+            .style('font-style', _fontStyle)
+            .attr('visibility', _showLabel == true ? 'visible' : 'hidden')
+            .append("tspan")
+            .text(function () {
+                if (!_print) {
+                    return UTIL.getTruncatedLabel(
+                        this,
+                        _measureDisplayName,
+                        outerRadius * 0.8)
+                }
+                else {
+                    return _measureDisplayName;
+                }
+
+            })
+            .attr("x", 0)
+            .append("tspan")
+            .text(function () {
+                if (!_print) {
+                    return UTIL.getTruncatedLabel(this, UTIL.getFormattedValue(_localTotal, UTIL.getNumberFormatterFn(_numberFormat, _localTotal)), outerRadius * 0.8);
+                }
+                else {
+                    return UTIL.getFormattedValue(_localTotal, UTIL.getNumberFormatterFn(_numberFormat, _localTotal));
+                }
+            })
+            .attr("x", 0)
+            .attr("dy", _fontSize + 5);
+
         _local_svg.select('g.lasso').remove();
 
         var lasso = d3Lasso.lasso()
@@ -1277,6 +1316,14 @@ function doughnut() {
             return broadcast;
         }
         broadcast = value;
+        return chart;
+    }
+
+    chart.numberFormat = function (value) {
+        if (!arguments.length) {
+            return _numberFormat;
+        }
+        _numberFormat = value;
         return chart;
     }
 
