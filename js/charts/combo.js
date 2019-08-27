@@ -303,18 +303,15 @@ function combo() {
 
     var applyFilter = function () {
         return function () {
-            if (filterData.length > 0) {
-                //Viz renders twice issue
-                // chart.update(filterData);
-                if (broadcast) {
-                    broadcast.updateWidget = {};
-                    broadcast.filterSelection.id = null;
-                    broadcast.$broadcast('flairbiApp:filter-input-refresh');
-                    broadcast.$broadcast('flairbiApp:filter');
-                    broadcast.$broadcast('flairbiApp:filter-add');
-                    d3.select(this.parentNode)
-                        .style('visibility', 'hidden');
-                }
+            if (broadcast) {
+                broadcast.updateWidget = {};
+                broadcast.filterSelection.id = null;
+                broadcast.$broadcast('flairbiApp:filter-input-refresh');
+                broadcast.$broadcast('flairbiApp:filter');
+                broadcast.$broadcast('flairbiApp:filter-add');
+                d3.select(this.parentNode)
+                    .style('visibility', 'hidden');
+
             }
         }
     }
@@ -743,6 +740,46 @@ function combo() {
                             ThresholdViz.dimensionValue = d.data[_dimension[0]];
                             broadcast.ThresholdViz = ThresholdViz;
                             broadcast.$broadcast('FlairBi:threshold-dialog');
+                        }
+                        else {
+                            filter = false;
+                            var confirm = parentContainer.select('.confirm')
+                                .style('visibility', 'visible');
+
+                            var rect = d3.select(this);
+                            if (rect.classed('selected')) {
+                                rect.classed('selected', false);
+
+                            } else {
+                                rect.classed('selected', true);
+                            }
+
+                            var _filterDimension = {};
+                            if (broadcast.filterSelection.id) {
+                                _filterDimension = broadcast.filterSelection.filter;
+                            } else {
+                                broadcast.filterSelection.id = parentContainer.attr('id');
+                            }
+                            var dimension = _dimension[0];
+                            if (_filterDimension[dimension]) {
+                                var temp = _filterDimension[dimension];
+                                if (temp.indexOf(d.data[_dimension[0]]) < 0) {
+                                    temp.push(d.data[_dimension[0]]);
+                                } else {
+                                    temp.splice(temp.indexOf(d.data[_dimension[0]]), 1);
+                                }
+                                _filterDimension[dimension] = temp;
+                            } else {
+                                _filterDimension[dimension] = [d.data[_dimension[0]]];
+                            }
+
+                            var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
+                            broadcast.updateWidget = {};
+                            broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
+                            broadcast.filterSelection.filter = _filterDimension;
+                            var _filterParameters = filterParameters.get();
+                            _filterParameters[dimension] = _filterDimension[dimension];
+                            filterParameters.save(_filterParameters);
                         }
                     }
                 })
@@ -1230,11 +1267,15 @@ function combo() {
                             }
                             var dimension = _dimension[0];
                             if (_filterDimension[dimension]) {
-                                _filterDimension[dimension] = filterData.map(function (d) {
-                                    return d[_dimension[0]];
-                                });
+                                var temp = _filterDimension[dimension];
+                                if (temp.indexOf(d.data[[_dimension[0]]]) < 0) {
+                                    temp.push(d.data[[_dimension[0]]]);
+                                } else {
+                                    temp.splice(temp.indexOf(d.data[[_dimension[0]]]), 1);
+                                }
+                                _filterDimension[dimension] = temp;
                             } else {
-                                _filterDimension[dimension] = [d[_dimension[0]]];
+                                _filterDimension[dimension] = [d.data[[_dimension[0]]]];
                             }
 
                             var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
@@ -1636,6 +1677,46 @@ function combo() {
                         ThresholdViz.dimensionValue = d.data[_dimension[0]];
                         broadcast.ThresholdViz = ThresholdViz;
                         broadcast.$broadcast('FlairBi:threshold-dialog');
+                    }
+                    else {
+                        filter = false;
+                        var confirm = parentContainer.select('.confirm')
+                            .style('visibility', 'visible');
+
+                        var rect = d3.select(this);
+                        if (rect.classed('selected')) {
+                            rect.classed('selected', false);
+
+                        } else {
+                            rect.classed('selected', true);
+                        }
+
+                        var _filterDimension = {};
+                        if (broadcast.filterSelection.id) {
+                            _filterDimension = broadcast.filterSelection.filter;
+                        } else {
+                            broadcast.filterSelection.id = parentContainer.attr('id');
+                        }
+                        var dimension = _dimension[0];
+                        if (_filterDimension[dimension]) {
+                            var temp = _filterDimension[dimension];
+                            if (temp.indexOf(d.data[_dimension[0]]) < 0) {
+                                temp.push(d.data[_dimension[0]]);
+                            } else {
+                                temp.splice(temp.indexOf(d.data[_dimension[0]]), 1);
+                            }
+                            _filterDimension[dimension] = temp;
+                        } else {
+                            _filterDimension[dimension] = [d.data[_dimension[0]]];
+                        }
+
+                        var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
+                        broadcast.updateWidget = {};
+                        broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
+                        broadcast.filterSelection.filter = _filterDimension;
+                        var _filterParameters = filterParameters.get();
+                        _filterParameters[dimension] = _filterDimension[dimension];
+                        filterParameters.save(_filterParameters);
                     }
                 }
             })
