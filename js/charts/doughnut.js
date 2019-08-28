@@ -25,7 +25,8 @@ function doughnut() {
         _tooltip,
         _print,
         _numberFormat,
-        broadcast,
+        _valuePosition = 'inside'
+    broadcast,
         filterParameters,
         _measureDisplayName,
         _showLabel,
