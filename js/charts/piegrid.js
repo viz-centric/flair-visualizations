@@ -16,6 +16,7 @@ function piegrid() {
         filterParameters,
         _measureDisplayName,
         _showLabel,
+        _showValue,
         _fontSize,
         _fontStyle,
         _fontWeight,
@@ -35,6 +36,7 @@ function piegrid() {
         this.measure(config.measure);
         this.tooltip(config.tooltip);
         this.showLabel(config.showLabel);
+        this.showValue(config.showValue);
         this.fontSize(config.fontSize);
         this.fontStyle(config.fontStyle);
         this.fontWeight(config.fontWeight);
@@ -113,12 +115,34 @@ function piegrid() {
         }
     }
 
-    var addText = function (svg) {
-        var title_dimension = svg.append("svg:text")
+    var addText = function (svg, data) {
+        var title_dimension = svg.append("text")
             .attr("class", "title_dimension")
-            .append("tspan")
             .text(function (d, i) {
-                return d[0] + "% " + _Local_data[i][_dimension];
+                return d[0] + "% ";
+            })
+            .style('text-anchor', 'middle')
+            .style('fill', _fontColor)
+            .style('font-size', _fontSize + 'px')
+            .style('font-weight', _fontWeight)
+            .style('font-style', _fontStyle)
+            .attr('visibility', _showValue == true ? 'visible' : 'hidden')
+
+        svg.append("text")
+            .attr("x", 0)
+            .text(function (d, i) {
+                return data[i][_measure];
+            })
+            .text(function (d, i) {
+                if (!_print) {
+                    return UTIL.getTruncatedLabel(
+                        this,
+                        data[i][_measure],
+                        r * 0.8)
+                }
+                else {
+                    return data[i][_measure];
+                }
             })
             .style('text-anchor', 'middle')
             .style('fill', _fontColor)
@@ -126,32 +150,27 @@ function piegrid() {
             .style('font-weight', _fontWeight)
             .style('font-style', _fontStyle)
             .attr('visibility', _showLabel == true ? 'visible' : 'hidden')
-            .text(function (d, i) {
-                return d[0] + "% ";
-            })
-            .attr("x", 0)
-            .append("tspan")
-            .text(function (d, i) {
-                return _Local_data[i][_dimension];
-            })
-            .text(function (d, i) {
-                if (!_print) {
-                    return UTIL.getTruncatedLabel(
-                        this,
-                        _Local_data[i][_dimension],
-                        r * 0.8)
-                }
-                else {
-                    return _Local_data[i][_dimension].substring(0, 4);
-                }
-            })
             .attr("x", 0)
             .attr("dy", _fontSize + 5);
 
         var title_measure = svg.append("text")
             .attr("class", "title_measure")
+            // .text(function (d, i) {
+            //     return _Local_data[i][_measure];
+            // })
             .text(function (d, i) {
-                return _Local_data[i][_measure];
+                return data[i][_dimension];
+            })
+            .text(function (d, i) {
+                if (!_print) {
+                    return UTIL.getTruncatedLabel(
+                        this,
+                        data[i][_dimension],
+                        (r + m) * 2)
+                }
+                else {
+                    return data[i][_dimension].substring(0, 4);
+                }
             })
             .attr("y", (r + m))
             .attr("text-anchor", "middle")
@@ -162,7 +181,7 @@ function piegrid() {
             .style('font-style', _fontStyle)
     }
 
-    function SetRadius(width, height) {
+    function SetRadius(width, height, data) {
 
         var innerBoxLength = (r + m) * 2;
         var columns = width / innerBoxLength;
@@ -170,9 +189,9 @@ function piegrid() {
         columns = parseInt(columns);
         rows = parseInt(rows);
 
-        if (_data.length > (columns * rows)) {
+        if (data.length > (columns * rows)) {
             r = r - 5;
-            SetRadius(width, height);
+            SetRadius(width, height, data);
         }
         return parseInt(r);
     }
@@ -217,7 +236,7 @@ function piegrid() {
         var RR = area / (data.length + 1);
         r = Math.sqrt(RR);
         r = (r - 25) / 2;
-        r = SetRadius(width, height);
+        r = SetRadius(width, height, data);
         var svg = parentContainer.selectAll("svg")
             .data(preData)
             .enter().append("svg")
@@ -308,7 +327,7 @@ function piegrid() {
             })
             .style("stroke-opacity", 0.5);
 
-        addText(svg);
+        addText(svg, data);
     }
 
     chart._getName = function () {
@@ -319,25 +338,23 @@ function piegrid() {
         return parentContainer.node().outerHTML;
     }
 
-    chart.update = function (data, filterConfig) {
+    chart.update = function (data) {
 
         var width = parentContainer.attr('width'),
             height = parentContainer.attr('height');
-        r = 50;
 
         var area = width * height
         var RR = area / (data.length + 1);
         r = Math.sqrt(RR);
         r = (r - 25) / 2;
-        r = SetRadius(width, height);
-        _Local_data = data;
+        r = SetRadius(width, height, data);
 
-        UTIL.sorter(_Local_data, _measure, -1);
+        UTIL.sorter(data, _measure, -1);
 
         var _localTotal = d3.sum(data.map(function (d) { return d[_measure]; }));
 
         var preData = []
-        _Local_data.map(function (val) {
+        data.map(function (val) {
             var temp = [];
             temp[0] = parseFloat(val[_measure] * 100 / _localTotal).toFixed(2);
             temp[1] = parseFloat(100 - val[_measure] * 100 / _localTotal).toFixed(2);
@@ -430,7 +447,7 @@ function piegrid() {
                 .on('click', clearFilter(parentContainer));
         }
 
-        addText(svg);
+        addText(svg, data);
 
     }
 
@@ -480,6 +497,14 @@ function piegrid() {
             return _showLabel;
         }
         _showLabel = value;
+        return chart;
+    }
+
+    chart.showValue = function (value) {
+        if (!arguments.length) {
+            return _showValue;
+        }
+        _showValue = value;
         return chart;
     }
 
