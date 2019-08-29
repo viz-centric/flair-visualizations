@@ -176,7 +176,7 @@ function legend() {
                 var count = i,
                     widthSum = 0
                 while (count-- != 0) {
-                    widthSum += d3.select('#' + me._getName() + '-legend-item' + count).node().getBBox().width + 16;
+                    widthSum += selection.select('#' + me._getName() + '-legend-item' + count).node().getBBox().width + 16;
                 }
                 if ((widthSum + 100) > extraParams.width) {
                     widthSum = 0;
@@ -200,7 +200,8 @@ function legend() {
 
         return {
             legendWidth: legend.node().getBBox().width,
-            legendHeight: height
+            legendHeight: height,
+            legendBreakCount: legendBreakCount
         }
     }
 }

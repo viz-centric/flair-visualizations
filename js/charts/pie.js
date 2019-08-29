@@ -20,6 +20,7 @@ function pie() {
         _measure,
         _legend,
         _legendPosition,
+        _valuePosition = 'outside',
         _valueAs,
         _sort,
         _tooltip,
@@ -44,7 +45,7 @@ function pie() {
         _Local_data,
         _originalData;
 
-    var filter = false, filterData = [], parentContainer, plotWidth, plotHeight;
+    var filter = false, filterData = [], parentContainer, plotWidth, plotHeight, legendBreakCount = 1;;
 
     /* These are the common private functions that is shared across the different private/public
      * methods but is initialized beforehand.
@@ -498,16 +499,18 @@ function pie() {
 
             var result = _localLegend(data, container, {
                 width: parentWidth,
-                height: parentHeight
+                height: parentHeight,
+                legendBreakCount: legendBreakCount
             });
 
             legendWidth = result.legendWidth;
             legendHeight = result.legendHeight;
+            legendBreakCount = result.legendBreakCount;
 
             switch (_legendPosition.toUpperCase()) {
                 case 'TOP':
                 case 'BOTTOM':
-                    plotHeight = plotHeight - legendHeight;
+                    plotHeight = plotHeight - parseFloat((20 * parseFloat(legendBreakCount)) + 20);
                     break;
                 case 'RIGHT':
                 case 'LEFT':
@@ -541,7 +544,7 @@ function pie() {
 
                 switch (_legendPosition.toUpperCase()) {
                     case 'TOP':
-                        translate = [(plotWidth / 2), legendHeight + (plotHeight / 2)];
+                        translate = [(plotWidth / 2), 20 * parseFloat(legendBreakCount + 1) + (plotHeight / 2)];
                         break;
                     case 'BOTTOM':
                     case 'RIGHT':
@@ -643,6 +646,17 @@ function pie() {
                 }
             })
             .text(_labelFn())
+            .transition()
+            .delay(_delayFn(200))
+            .on('start', function () {
+                d3.select(this).text(_labelFn())
+                    .filter(function (d) {
+                        /* length of arc = angle in radians * radius */
+                        var diff = d.endAngle - d.startAngle;
+                        return outerRadius * diff < this.getComputedTextLength();
+                    })
+                    .remove();
+            });
 
         if (!_print) {
 
@@ -985,6 +999,20 @@ function pie() {
                 }
             })
             .text(_labelFn())
+            .text(function () {
+                return UTIL.title(UTIL.getTruncatedLabel(this, _labelFn(), this));
+            })
+            .transition()
+            .delay(_delayFn(200))
+            .on('start', function () {
+                d3.select(this).text(_labelFn())
+                    .filter(function (d) {
+                        /* length of arc = angle in radians * radius */
+                        var diff = d.endAngle - d.startAngle;
+                        return outerRadius * diff < this.getComputedTextLength();
+                    })
+                    .remove();
+            });
 
         _local_svg.select('g.lasso').remove()
 
