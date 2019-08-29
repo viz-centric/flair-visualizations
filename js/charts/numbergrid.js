@@ -18,6 +18,7 @@ function numbergrid() {
         _fontStyle,
         _fontWeight,
         _fontColor,
+        _fontSizeforDisplayName,
         _notification = false,
         _data;
 
@@ -26,7 +27,7 @@ function numbergrid() {
     var m = 10, r = 50;
 
     var colors = UTIL.defaultColours();
-    
+
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
         this.measure(config.measure);
@@ -37,6 +38,7 @@ function numbergrid() {
         this.fontWeight(config.fontWeight);
         this.fontColor(config.fontColor);
         this.measureDisplayName(config.measureDisplayName);
+        this.fontSizeforDisplayName(colors.fontSizeforDisplayName);
     }
 
     var _buildTooltipData = function (datum, chart) {
@@ -148,7 +150,7 @@ function numbergrid() {
             .attr('y', (r + m) - 10)
             .attr('x', 10)
             .style('fill', _fontColor)
-            .style('font-size', '9px')
+            .style('font-size', _fontSizeforDisplayName + 'px')
             .style('font-weight', _fontWeight)
             .style('font-style', _fontStyle)
     }
@@ -206,7 +208,7 @@ function numbergrid() {
                 return i;
             })
             .attr("width", (w + m) * 2)
-            .attr("height", (h + m) * 1.5)
+            .attr("height", (h + m) * 1.7)
             .append("g")
             .attr("transform", "translate(" + (0) + "," + (0) + ")");
 
@@ -214,7 +216,7 @@ function numbergrid() {
             .data(d3.pie())
             .enter().append("rect")
             .attr("width", (w + m) * 2)
-            .attr("height", (h + m) * 1.5)
+            .attr("height", (h + m) * 1.7)
             .style('fill', function (d, i) {
                 var path = d3.select(this.parentNode)
                 var index = d3.select(path.node().parentElement).attr('class')
@@ -308,7 +310,12 @@ function numbergrid() {
         var area = width * height
         var RR = area / (data.length + 1);
         r = Math.sqrt(RR);
-        r = (r / 2 + 5);
+        r = (r - 25) / 2;
+
+        r = SetRadius(width, height);
+        // var h = r - (r / 2);
+        var w = r + (r / 3);
+        var h = w / 2;
 
         UTIL.sorter(data, _measure, -1);
 
@@ -320,16 +327,16 @@ function numbergrid() {
             .attr("class", function (d, i) {
                 return i;
             })
-            .attr("width", (r + m) * 2)
-            .attr("height", (r + m))
+            .attr("width", (w + m) * 2)
+            .attr("height", (h + m) * 1.7)
             .append("g")
             .attr("transform", "translate(" + (0) + "," + (0) + ")");
 
         var rect = svg.selectAll("g")
             .data(d3.pie())
             .enter().append("rect")
-            .attr("width", (r + m) * 2)
-            .attr("height", (r + m))
+            .attr("width", (w + m) * 2)
+            .attr("height", (h + m) * 1.7)
             .style('fill', function (d, i) {
                 var path = d3.select(this.parentNode)
                 var index = d3.select(path.node().parentElement).attr('class')
@@ -435,6 +442,14 @@ function numbergrid() {
             return _measureDisplayName;
         }
         _measureDisplayName = value;
+        return chart;
+    }
+
+    chart.fontSizeforDisplayName = function (value) {
+        if (!arguments.length) {
+            return _fontSizeforDisplayName;
+        }
+        _fontSizeforDisplayName = value;
         return chart;
     }
 

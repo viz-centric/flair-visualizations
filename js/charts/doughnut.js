@@ -21,12 +21,11 @@ function doughnut() {
         _legend,
         _legendPosition,
         _valueAs,
-        _valueAsArc,
-        _valuePosition,
         _sort,
         _tooltip,
         _print,
         _numberFormat,
+        _valuePosition = 'outside',
         broadcast,
         filterParameters,
         _measureDisplayName,
@@ -74,8 +73,6 @@ function doughnut() {
         this.legend(config.legend);
         this.legendPosition(config.legendPosition);
         this.valueAs(config.valueAs);
-        this.valueAsArc(config.valueAsArc);
-        this.valuePosition(config.valuePosition);
         this.tooltip(config.tooltip);
         this.showLabel(config.showLabel);
         this.fontSize(config.fontSize);
@@ -467,7 +464,6 @@ function doughnut() {
             parentContainer = d3.select('#' + selection.id)
         }
 
-
         var svg = parentContainer.append('svg')
             .attr('width', parentContainer.attr('width'))
             .attr('height', parentContainer.attr('height'))
@@ -655,124 +651,48 @@ function doughnut() {
             .each(function (d) {
                 this._current = d;
             })
+            .attr('d', _arc)
 
-        if (!_print) {
-            doughnutArcPath.transition()
-                .duration(_durationFn())
-                .delay(_delayFn())
-                .attrTween('d', function (d) {
-                    var i = d3.interpolate(d.startAngle + 0.1, d.endAngle);
-                    return function (t) {
-                        d.endAngle = i(t);
-                        return _arc(d)
-                    }
-                });
-        }
-        else {
-            doughnutArcPath.attr('d', _arc)
-        }
+        var doughnutArcTextGroup = plot.selectAll('.arc-text')
+            .data(_doughnut(data))
+            .enter().append('g')
+            .attr('id', function (d, i) {
+                return 'arc-text-group-' + i;
+            })
+            .classed('arc-text', true);
 
-        var doughnutLabel;
+        var doughnutLabel = doughnutArcTextGroup.append('text')
+            .attr('transform', function (d) {
+                var centroid = _labelArc.centroid(d),
+                    x = centroid[0],
+                    y = centroid[1],
+                    h = _pythagorousTheorem(x, y);
 
-        if (_valueAsArc) {
-            doughnutLabel = doughnutArcGroup.append('text')
-                .attr('dy', function (d, i) {
-                    if (_valuePosition == 'inside') {
-                        return 10;
-                    } else {
-                        return -5;
-                    }
-                })
-
-            var textPath = doughnutLabel.append('textPath')
-                .attr('xlink:href', function (d, i) {
-                    return '#arc-path-' + i;
-                })
-                .attr('text-anchor', function () {
+                if (_valuePosition == 'inside') {
+                    return 'translate('
+                        + outerRadius * (x / h) * 0.85
+                        + ', '
+                        + outerRadius * (y / h) * 0.85
+                        + ')';
+                } else {
+                    return 'translate('
+                        + outerRadius * (x / h) * 1.05
+                        + ', '
+                        + outerRadius * (y / h) * 1.05
+                        + ')';
+                }
+            })
+            .attr('dy', '0.35em')
+            .attr('text-anchor', function (d) {
+                if (_valuePosition == 'inside') {
                     return 'middle';
-                })
-
-            if (!_print) {
-                textPath.transition()
-                    .delay(_delayFn(200))
-                    .on('start', function () {
-                        d3.select(this).attr('startOffset', function (d) {
-                            var length = doughnutArcPath.nodes()[d.index].getTotalLength(),
-                                diff = d.endAngle - d.startAngle,
-                                x = 2 * (outerRadius - (outerRadius * 0.8)) + diff * (outerRadius * 0.8);
-
-                            return 50 * (length - x) / length + "%";
-                        })
-                            .text(_labelFn())
-                            .filter(function (d, i) {
-                                var diff = d.endAngle - d.startAngle;
-                                return outerRadius * diff - 5 < this.getComputedTextLength();
-                            })
-                            .remove();
-
-                    });
-            }
-            else {
-                textPath.text(_labelFn())
-            }
-        } else {
-            var doughnutArcTextGroup = plot.selectAll('.arc-text')
-                .data(_doughnut(data))
-                .enter().append('g')
-                .attr('id', function (d, i) {
-                    return 'arc-text-group-' + i;
-                })
-                .classed('arc-text', true);
-
-            doughnutLabel = doughnutArcTextGroup.append('text')
-                .attr('transform', function (d) {
-                    var centroid = _labelArc.centroid(d),
-                        x = centroid[0],
-                        y = centroid[1],
-                        h = _pythagorousTheorem(x, y);
-
-                    if (_valuePosition == 'inside') {
-                        return 'translate('
-                            + outerRadius * (x / h) * 0.85
-                            + ', '
-                            + outerRadius * (y / h) * 0.85
-                            + ')';
-                    } else {
-                        return 'translate('
-                            + outerRadius * (x / h) * 1.05
-                            + ', '
-                            + outerRadius * (y / h) * 1.05
-                            + ')';
-                    }
-                })
-                .attr('dy', '0.35em')
-                .attr('text-anchor', function (d) {
-                    if (_valuePosition == 'inside') {
-                        return 'middle';
-                    } else {
-                        return (d.endAngle + d.startAngle) / 2 > Math.PI
-                            ? 'end' : (d.endAngle + d.startAngle) / 2 < Math.PI
-                                ? 'start' : 'middle';
-                    }
-                })
-
-            if (!_print) {
-                doughnutLabel.transition()
-                    .delay(_delayFn(200))
-                    .on('start', function () {
-                        d3.select(this).text(_labelFn())
-                            .filter(function (d) {
-                                /* length of arc = angle in radians * radius */
-                                var diff = d.endAngle - d.startAngle;
-                                return outerRadius * diff < this.getComputedTextLength();
-                            })
-                            .remove();
-                    });
-            }
-            else {
-                doughnutLabel.text(_labelFn())
-            }
-        }
+                } else {
+                    return (d.endAngle + d.startAngle) / 2 > Math.PI
+                        ? 'end' : (d.endAngle + d.startAngle) / 2 < Math.PI
+                            ? 'start' : 'middle';
+                }
+            })
+            .text(_labelFn())
 
         if (!_print) {
 
@@ -1081,45 +1001,50 @@ function doughnut() {
                 filterParameters.save(_filterParameters);
             });
 
-        if (_valueAsArc) {
-
-            doughnutLabel = doughnutArcGroup.append('text')
-                .attr('dy', function (d, i) {
-                    if (_valuePosition == 'inside') {
-                        return 10;
-                    } else {
-                        return -5;
-                    }
-                })
-
-            doughnutLabel.append('textPath')
-                .attr('xlink:href', function (d, i) {
-                    return '#arc-path-' + i;
-                })
-                .attr('text-anchor', function () {
-                    return 'middle';
-                })
-                .transition()
-                .delay(_delayFn(200))
-                .on('start', function () {
-                    d3.select(this).attr('startOffset', function (d) {
-                        var length = doughnutArcPath.nodes()[d.index] == undefined ? 10 : doughnutArcPath.nodes()[d.index].getTotalLength(),
-                            diff = d.endAngle - d.startAngle,
-                            x = 2 * (outerRadius - (outerRadius * 0.8)) + diff * (outerRadius * 0.8);
-
-                        return 50 * (length - x) / length + "%";
-                    })
-                        .text(_labelFn())
-                        .filter(function (d, i) {
-                            var diff = d.endAngle - d.startAngle;
-                            return outerRadius * diff - 5 < this.getComputedTextLength();
-                        })
-                        .remove();
-
-                });
-        }
-
         var plot = _local_svg.select('.plot')
+
+        plot.selectAll('.arc-text').remove();
+
+        var doughnutArcTextGroup = plot.selectAll('.arc-text')
+            .data(_doughnut(data))
+            .enter().append('g')
+            .attr('id', function (d, i) {
+                return 'arc-text-group-' + i;
+            })
+            .classed('arc-text', true);
+
+        var doughnutLabel = doughnutArcTextGroup.append('text')
+            .attr('transform', function (d) {
+                var centroid = _labelArc.centroid(d),
+                    x = centroid[0],
+                    y = centroid[1],
+                    h = _pythagorousTheorem(x, y);
+
+                if (_valuePosition == 'inside') {
+                    return 'translate('
+                        + outerRadius * (x / h) * 0.85
+                        + ', '
+                        + outerRadius * (y / h) * 0.85
+                        + ')';
+                } else {
+                    return 'translate('
+                        + outerRadius * (x / h) * 1.05
+                        + ', '
+                        + outerRadius * (y / h) * 1.05
+                        + ')';
+                }
+            })
+            .attr('dy', '0.35em')
+            .attr('text-anchor', function (d) {
+                if (_valuePosition == 'inside') {
+                    return 'middle';
+                } else {
+                    return (d.endAngle + d.startAngle) / 2 > Math.PI
+                        ? 'end' : (d.endAngle + d.startAngle) / 2 < Math.PI
+                            ? 'start' : 'middle';
+                }
+            })
+            .text(_labelFn())
 
         plot.select('#measure-value').remove();
 
@@ -1230,22 +1155,6 @@ function doughnut() {
             return _valueAs;
         }
         _valueAs = value;
-        return chart;
-    }
-
-    chart.valueAsArc = function (value) {
-        if (!arguments.length) {
-            return _valueAsArc;
-        }
-        _valueAsArc = false;
-        return chart;
-    }
-
-    chart.valuePosition = function (value) {
-        if (!arguments.length) {
-            return _valuePosition;
-        }
-        _valuePosition = value;
         return chart;
     }
 
