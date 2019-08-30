@@ -1,15 +1,6 @@
 var d3 = require('d3');
 var COMMON = require('../extras/common.js')();
-var d3layoutcloud = require("../../d3-libs/d3.layout.cloud.js");
-var Seedrandom = require("../../d3-libs/seedrandom.min.js");
-
 var UTIL = require('../extras/util.js')();
-var LEGEND = require('../extras/legend_barcharts.js')();
-
-try {
-    var d3Lasso = require("d3-lasso");
-
-} catch (ex) { }
 
 
 function rangefilter() {
@@ -19,6 +10,7 @@ function rangefilter() {
     var _config,
         _dimension,
         _measure,
+        _dateFormat,
         _colorSet = [],
         _print,
         _displayNameForMeasure = [],
@@ -33,7 +25,8 @@ function rangefilter() {
         _pointType = [],
         _data,
         _tooltip,
-        broadcast;
+        broadcast,
+        filterParameters;
 
     var margin = {
         top: 0,
@@ -44,13 +37,14 @@ function rangefilter() {
 
     var x = d3.scaleTime(), y = d3.scaleLinear();
 
-    var _local_svg, data, _Local_data, _originalData, tooltip;
+    var _local_svg, data, parseTime, _Local_data, _originalData, tooltip;
 
     var parentWidth, parentHeight, container, brush = d3.brushX(), focus;
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
         this.measure(config.measure);
+        this.dateFormat(config.dateFormat);
         this.colorSet(config.colorSet);
         this.labelColor(config.labelColor);
         this.displayNameForMeasure(config.displayNameForMeasure);
@@ -69,7 +63,7 @@ function rangefilter() {
 
         var dates = s.map(x.invert, x)
 
-        var formatDate = d3.timeFormat("%Y-%m-%d")
+        var formatDate = parseTime;
 
         _local_svg.select('.dateRange')
             .text(formatDate(dates[0]) + " -> " + formatDate(dates[1]));
@@ -78,8 +72,13 @@ function rangefilter() {
             var dateFilter = {};
             dateFilter.startDate = dates[0];
             dateFilter.endDate = dates[1];
-            broadcast.dateRange = dateFilter;
-            broadcast.$broadcast('FlairBi:date-range');
+            var filter = {};
+            filter["data-range:" + _dimension[0]] = [dateFilter.startDate.toString(), dateFilter.endDate.toString()];
+
+            broadcast.filterSelection.filter = filter;
+            var _filterParameters = filterParameters.get();
+            _filterParameters["data-range:" + _dimension[0]] = filter
+            filterParameters.save(_filterParameters);
         }
     }
 
@@ -118,12 +117,46 @@ function rangefilter() {
         _local_svg = svg;
 
         parentWidth = (width - 2 * COMMON.PADDING);
-        parentHeight = (height - 2 * COMMON.PADDING) //* 70 / 100;
+        parentHeight = (height - 2 * COMMON.PADDING)
 
         svg.attr('width', width)
             .attr('height', height)
 
-        var parseTime = d3.timeParse("%Y-%m-%d %H:%M:%S")
+        parseTime = d3.timeParse("%Y-%m-%d %H:%M:%S")
+
+        if (_dateFormat == "year") {
+            parseTime = d3.timeFormat("%Y");
+        }
+        else if (_dateFormat == "month") {
+            parseTime = d3.timeFormat("%m");
+        }
+        else if (_dateFormat == "week") {
+            parseTime = d3.timeFormat("%b %d");
+        }
+        else if (_dateFormat == "day") {
+            parseTime = d3.timeFormat("%a %d");
+        }
+        else if (_dateFormat == "yearmonth") {
+            parseTime = d3.timeFormat("%Y");
+        }
+        else if (_dateFormat == "quarter") {
+            parseTime = d3.timeFormat("%Y");
+        }
+        else if (_dateFormat == "yearquarter") {
+            parseTime = d3.timeFormat("%Y");
+        }
+        else if (_dateFormat == "yearweek") {
+            parseTime = d3.timeFormat("%Y");
+        }
+        // else if(_dateFormat == "yearmonth"){
+        //     parseTime = d3.timeFormat("%Y");
+        // }
+        else {
+            data.forEach(function (d) {
+                d[_dimension[0]] = parseTime(d[_dimension[0]]);
+                d[_measure[0]] = +d[_measure[0]];
+            });
+        }
         bisectDate = d3.bisector(function (d) { return d[_dimension[0]]; }).left;
 
         var line = d3.line()
@@ -147,10 +180,6 @@ function rangefilter() {
         var g = svg.append("g")
             .attr("transform", "translate(" + COMMON.PADDING + "," + COMMON.PADDING + ")");
 
-        data.forEach(function (d) {
-            d[_dimension[0]] = parseTime(d[_dimension[0]]);
-            d[_measure[0]] = +d[_measure[0]];
-        });
 
         x.domain(d3.extent(data, function (d) { return d[_dimension[0]]; }));
         y.domain([d3.min(data, function (d) { return d[_measure[0]]; }) / 1.005, d3.max(data, function (d) { return d[_measure[0]]; }) * 1.005]);
@@ -401,6 +430,14 @@ function rangefilter() {
 
     chart.fontSize = function (value, measure) {
         return UTIL.baseAccessor.call(_fontSize, value, measure, _measure);
+    }
+
+    chart.dateFormat = function (value) {
+        if (!arguments.length) {
+            return _dateFormat;
+        }
+        _dateFormat = value;
+        return chart;
     }
 
     chart.print = function (value) {
