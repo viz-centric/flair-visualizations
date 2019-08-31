@@ -69,15 +69,24 @@ function rangefilter() {
             .text(formatDate(dates[0]) + " -> " + formatDate(dates[1]));
 
         if (broadcast) {
+
             var dateFilter = {};
             dateFilter.startDate = dates[0];
             dateFilter.endDate = dates[1];
-            var filter = {};
-            filter["data-range:" + _dimension[0]] = [dateFilter.startDate.toString(), dateFilter.endDate.toString()];
 
-            broadcast.filterSelection.filter = filter;
+            var _filterDimension = {};
+            if (broadcast.filterSelection.id) {
+                _filterDimension = broadcast.filterSelection.filter;
+            } else {
+                broadcast.filterSelection.id = parentContainer.attr('id');
+            }
+            var dimension = _dimension[0];
+            _filterDimension["data-range:" + dimension] = dateFilter;
+
             var _filterParameters = filterParameters.get();
-            _filterParameters["data-range:" + _dimension[0]] = filter
+
+            _filterParameters["data-range:" + dimension] = dateFilter;
+
             filterParameters.save(_filterParameters);
         }
     }
