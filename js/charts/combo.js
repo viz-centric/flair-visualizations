@@ -1142,53 +1142,6 @@ function combo() {
     var drawViz = function (element, keys) {
         var me = this;
         var rect;
-        var text = element.append('text')
-            .text(function (d, i) {
-                return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(i, _numberFormat, d.data[d.tag]));
-            })
-            .attr('x', function (d, i) {
-                return x1(measuresBar[i]);
-            })
-            .attr('dy', function (d, i) {
-                return COMMON.OFFSET;
-            })
-            .attr('y', function (d, i) {
-                if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
-                    return contentHeight;
-                } else if (d['data'][measuresBar[i]] > 0) {
-                    return y(d['data'][measuresBar[i]]);
-                }
-
-                return y(0);
-            })
-            .attr('dx', function (d, i) {
-                return x1.bandwidth() / 2;
-            })
-            .style('text-anchor', 'middle')
-            .attr('visibility', function (d, i) {
-                if (_notification) {
-                    return 'hidden';
-                }
-                return UTIL.getVisibility(_showValues[i]);
-            })
-            .style('font-style', function (d, i) {
-                return _fontStyle[i];
-            })
-            .style('font-weight', function (d, i) {
-                return _fontWeight[i];
-            })
-            .style('font-size', function (d, i) {
-                return _fontSize[i] + 'px';
-            })
-            .style('fill', function (d, i) {
-                return _textColor[i];
-            })
-            .text(function (d, i) {
-                var barWidth = (1 - x0.padding()) * plotWidth / (_Local_data.length - 1);
-                barWidth = (1 - x1.padding()) * barWidth / keys.length;
-                return UTIL.getTruncatedTick(d3.select(this).text(), barWidth, tickLength);
-            });
-
         rect = element.append('rect')
             .attr('width', x1.bandwidth())
             .style('fill', function (d, i) {
@@ -1290,6 +1243,53 @@ function combo() {
 
                 })
         }
+
+        var text = element.append('text')
+            .text(function (d, i) {
+                return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(i, _numberFormat, d.data[d.tag]));
+            })
+            .attr('x', function (d, i) {
+                return x1(measuresBar[i]);
+            })
+            .attr('dy', function (d, i) {
+                return COMMON.OFFSET;
+            })
+            .attr('y', function (d, i) {
+                if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
+                    return contentHeight;
+                } else if (d['data'][measuresBar[i]] > 0) {
+                    return y(d['data'][measuresBar[i]]);
+                }
+
+                return y(0);
+            })
+            .attr('dx', function (d, i) {
+                return x1.bandwidth() / 2;
+            })
+            .style('text-anchor', 'middle')
+            .attr('visibility', function (d, i) {
+                if (_notification) {
+                    return 'hidden';
+                }
+                return UTIL.getVisibility(_showValues[i]);
+            })
+            .style('font-style', function (d, i) {
+                return _fontStyle[i];
+            })
+            .style('font-weight', function (d, i) {
+                return _fontWeight[i];
+            })
+            .style('font-size', function (d, i) {
+                return _fontSize[i] + 'px';
+            })
+            .style('fill', function (d, i) {
+                return _textColor[i];
+            })
+            .text(function (d, i) {
+                var barWidth = (1 - x0.padding()) * plotWidth / (_Local_data.length - 1);
+                barWidth = (1 - x1.padding()) * barWidth / keys.length;
+                return UTIL.getTruncatedTick(d3.select(this).text(), barWidth, tickLength);
+            });
     }
     chart._legendInteraction = function (event, data, plot) {
         if (_print) {
@@ -1519,6 +1519,9 @@ function combo() {
             .attr('x', function (d, i) {
                 return x1(measuresBar[i]);
             })
+            .attr('dy', function (d, i) {
+                return COMMON.OFFSET;
+            })
             .attr('y', function (d, i) {
                 if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
                     return contentHeight;
@@ -1531,12 +1534,30 @@ function combo() {
             .attr('dx', function (d, i) {
                 return x1.bandwidth() / 2;
             })
+            .style('text-anchor', 'middle')
+            .attr('visibility', function (d, i) {
+                if (_notification) {
+                    return 'hidden';
+                }
+                return UTIL.getVisibility(_showValues[i]);
+            })
+            .style('font-style', function (d, i) {
+                return _fontStyle[i];
+            })
+            .style('font-weight', function (d, i) {
+                return _fontWeight[i];
+            })
+            .style('font-size', function (d, i) {
+                return _fontSize[i] + 'px';
+            })
+            .style('fill', function (d, i) {
+                return _textColor[i];
+            })
             .text(function (d, i) {
                 var barWidth = (1 - x0.padding()) * plotWidth / (_Local_data.length - 1);
                 barWidth = (1 - x1.padding()) * barWidth / keys.length;
                 return UTIL.getTruncatedTick(d3.select(this).text(), barWidth, tickLength);
             });
-
 
         var newBars = bar.enter().append('g')
             .attr('class', 'bar');
