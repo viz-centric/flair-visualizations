@@ -69,11 +69,6 @@ function rangefilter() {
             .text(formatDate(dates[0]) + " -> " + formatDate(dates[1]));
 
         if (broadcast) {
-
-            var dateFilter = {};
-            dateFilter.startDate = dates[0];
-            dateFilter.endDate = dates[1];
-
             var _filterDimension = {};
             if (broadcast.filterSelection.id) {
                 _filterDimension = broadcast.filterSelection.filter;
@@ -81,13 +76,14 @@ function rangefilter() {
                 broadcast.filterSelection.id = parentContainer.attr('id');
             }
             var dimension = _dimension[0];
-            _filterDimension["data-range:" + dimension] = dateFilter;
+            _filterDimension["data-range|" + dimension] = [dates[0], dates[1]];
 
             var _filterParameters = filterParameters.get();
 
-            _filterParameters["data-range:" + dimension] = dateFilter;
-
             filterParameters.save(_filterParameters);
+
+            broadcast.$broadcast('flairbiApp:filter');
+            broadcast.$broadcast('flairbiApp:filter-add');
         }
     }
 
