@@ -61,6 +61,10 @@ function rangefilter() {
     var brushed = function () {
         var s = d3.event.selection;
 
+        if (s[0] == x.range()[0] && s[1] == x.range()[1]) {
+            return;
+        }
+
         var dates = s.map(x.invert, x)
 
         var formatDate = parseTime;
@@ -76,9 +80,10 @@ function rangefilter() {
                 broadcast.filterSelection.id = parentContainer.attr('id');
             }
             var dimension = _dimension[0];
-            _filterDimension["data-range|" + dimension] = [dates[0], dates[1]];
 
             var _filterParameters = filterParameters.get();
+
+            _filterParameters["data-range|" + dimension] = [dates[0], dates[1]];
 
             filterParameters.save(_filterParameters);
 
@@ -268,7 +273,7 @@ function rangefilter() {
             .attr("dy", ".31em");
 
         brush.extent([[0, 0], [parentWidth, parentHeight]])
-            .on("brush", brushed);
+            .on("end", brushed);
 
         svg.append("g")
             //.attr("transform", "translate(" + COMMON.PADDING + "," + height * 70 / 100 + ")")
