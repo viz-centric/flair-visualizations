@@ -166,7 +166,7 @@ function piegrid() {
                     return UTIL.getTruncatedLabel(
                         this,
                         data[i][_dimension],
-                        (r + m) * 2)
+                        (r + m) )
                 }
                 else {
                     return data[i][_dimension].substring(0, 4);
