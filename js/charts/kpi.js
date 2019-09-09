@@ -33,6 +33,7 @@ function kpi() {
         _kpiIconExpression = [],
         _FontsizeForDisplayName = [],
         _showIcon = [],
+        _iconSize = [],
         _print,
         _notification = false,
         _data;
@@ -71,6 +72,7 @@ function kpi() {
         this.kpiIconExpression(config.kpiIconExpression);
         this.FontsizeForDisplayName(config.FontSizeforDisplayName);
         this.showIcon(config.showIcon)
+        this.iconSize(config.iconSize)
     }
 
     /**
@@ -120,7 +122,7 @@ function kpi() {
         var iconStyle = {
             'font-weight': _kpiIconFontWeight[index] || COMMON.DEFAULT_FONTWEIGHT,
             'color': _kpiIconColor[index] || (endValue > 0 ? COMMON.POSITIVE_KPI_COLOR : COMMON.NEGATIVE_KPI_COLOR),
-            'font-size': _kpiFontSize[index] + 'px' || COMMON.DEFAULT_FONTSIZE,
+            'font-size': _iconSize[index] + 'px' || COMMON.DEFAULT_FONTSIZE,
             'display': _showIcon[index] == true ? 'inline-block' : 'none'
         };
 
@@ -325,6 +327,10 @@ function kpi() {
         }
         _measure = value;
         return chart;
+    }
+
+    chart.iconSize = function (value, measure) {
+        return UTIL.baseAccessor.call(_iconSize, value, measure, _measure);
     }
 
     /**

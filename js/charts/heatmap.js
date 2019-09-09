@@ -33,6 +33,7 @@ function heatmap() {
         fontWeightForMeasure = [],
         numberFormat = [],
         fontSizeForMeasure = [],
+        iconExpression = [],
         _tooltip,
         _print,
         broadcast,
@@ -79,6 +80,7 @@ function heatmap() {
         this.numberFormat(config.numberFormat);
         this.fontSizeForMeasure(config.fontSizeForMeasure);
         this.displayColor(config.displayColor);
+        this.iconExpression(config.iconExpression);
         setDefaultColorForChart();
     }
 
@@ -145,6 +147,36 @@ function heatmap() {
         }
     }
 
+    var getIconName = function (index) {
+        return iconName[index];
+    }
+
+    var getIcon = function (index, endValue) {
+        var iconOutput = "";
+
+        var iconStyle = {
+            'font-weight': iconFontWeight[index] || COMMON.DEFAULT_FONTWEIGHT,
+            'color': valueTextColour[index] || COMMON.DEFAULT_COLOR,
+            'font-size': fontSizeForMeasure[index] || COMMON.DEFAULT_FONTSIZE + 'px',
+            //   'text-align': getIconPosition(index),
+            'padding-right': '15px'
+        };
+
+        if (iconExpression[index].length) {
+            iconName[index] = UTIL.expressionEvaluator(iconExpression[index], endValue, 'icon');
+            iconStyle['color'] = UTIL.expressionEvaluator(iconExpression[index], endValue, 'color');
+        }
+
+        iconStyle = JSON.stringify(iconStyle);
+        iconStyle = iconStyle.replace(/["{}]/g, '').replace(/,/g, ';');
+
+        iconOutput += "<i  class=\"" + iconName[index] + "\" style=\"" + iconStyle + "\" aria-hidden=\"true\"></i>";
+
+        if (getIconName(index) !== "") {
+            return iconOutput;
+        }
+        return "";
+    }
 
     var transformData = function (data) {
         var me = this;
@@ -661,7 +693,9 @@ function heatmap() {
             .attr('width', cellWidth - 1)
             .attr('height', cellHeight - 1)
             .html(function (d) {
-                return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + ';font-size:' + fontSizeForMeasure[_measure.indexOf(d.x)] + 'px;"></i>';
+                //return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + ';font-size:' + fontSizeForMeasure[_measure.indexOf(d.x)] + 'px;"></i>';
+
+                return getIcon(_measure.indexOf(d.x), d.val)
             });
 
     }
@@ -801,7 +835,9 @@ function heatmap() {
             .attr('width', cellWidth - 1)
             .attr('height', cellHeight - 1)
             .html(function (d) {
-                return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + ';font-size:' + fontSizeForMeasure[_measure.indexOf(d.x)] + 'px;"></i>';
+                //return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + ';font-size:' + fontSizeForMeasure[_measure.indexOf(d.x)] + 'px;"></i>';
+
+                return getIcon(_measure.indexOf(d.x), d.val)
             });
 
         newCell.append('rect')
@@ -922,7 +958,9 @@ function heatmap() {
             .attr('width', cellWidth - 1)
             .attr('height', cellHeight - 1)
             .html(function (d) {
-                return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + ';font-size:' + fontSizeForMeasure[_measure.indexOf(d.x)] + 'px;"></i>';
+                //return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + ';font-size:' + fontSizeForMeasure[_measure.indexOf(d.x)] + 'px;"></i>';
+
+                return getIcon(_measure.indexOf(d.x), d.val)
             });
 
         //   drawViz(newCell)
@@ -1106,6 +1144,49 @@ function heatmap() {
     }
     chart.fontSizeForMeasure = function (value, measure) {
         return UTIL.baseAccessor.call(fontSizeForMeasure, value, measure, _measure);
+    }
+
+    chart.iconExpression = function (value, measure) {
+        if (!arguments.length) {
+            /**
+             * Getter method call with no arguments
+             * E.g. <chart>.kpiIconExpression() ==> [<item1>, <item2>]
+             */
+            return iconExpression;
+        }
+
+        if (value instanceof Array && measure == void 0) {
+            /**
+             * Setter method call with only value argument
+             * E.g. <chart>.kpiIconExpression([<item1>, <item2>]) ==> <chart_function>
+             */
+            iconExpression = value.map(function (v) {
+                return UTIL.getExpressionConfig(v, ['icon', 'color']);
+            });
+            return chart;
+        }
+
+        var index = _measure.indexOf(measure);
+
+        if (index === -1) {
+            throw new Error('Invalid measure provided');
+        }
+
+        if (value == void 0) {
+            /**
+             * Getter method call with only measure argument
+             * E.g. <chart>.kpiIconExpression(<measure>) ==> <item>
+             */
+            return iconExpression[index];
+        } else {
+            /**
+             * Setter method call with both value and measure arguments
+             * E.g. <chart>.kpiIconExpression(<item>, <measure>) ==> <chart_function>
+             */
+            iconExpression[index] = UTIL.getExpressionConfig(value, ['icon', 'color']);
+        }
+
+        return chart;
     }
 
     chart.broadcast = function (value) {

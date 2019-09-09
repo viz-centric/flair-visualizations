@@ -61,10 +61,6 @@ function rangefilter() {
     var brushed = function () {
         var s = d3.event.selection;
 
-        if (s[0] == x.range()[0] && s[1] == x.range()[1]) {
-            return;
-        }
-
         var dates = s.map(x.invert, x)
 
         var formatDate = parseTime;
@@ -83,7 +79,7 @@ function rangefilter() {
 
             var _filterParameters = filterParameters.get();
 
-            _filterParameters["data-range|" + dimension] = [dates[0], dates[1]];
+            _filterParameters["date-range|" + dimension] = [dates[0], dates[1]];
 
             filterParameters.save(_filterParameters);
 
