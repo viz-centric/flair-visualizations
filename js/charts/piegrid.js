@@ -21,15 +21,13 @@ function piegrid() {
         _fontStyle,
         _fontWeight,
         _fontColor,
+        _colorSet = [],
         _notification = false,
         _data;
 
-    var _local_svg, _Local_data, tooltip, parentContainer;
+    var _Local_data, tooltip, parentContainer;
 
     var m = 20, r = 50;
-
-    var colors = UTIL.defaultColours();
-
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
@@ -42,6 +40,7 @@ function piegrid() {
         this.fontWeight(config.fontWeight);
         this.fontColor(config.fontColor);
         this.measureDisplayName(config.measureDisplayName);
+        this.colorSet(config.colorSet);
     }
 
     var _buildTooltipData = function (datum, chart, data) {
@@ -63,7 +62,7 @@ function piegrid() {
 
         return function (d, i) {
             var position = d3.select(this.parentNode).attr('class');
-            var border = colors[parseInt(position)];
+            var border = _colorSet[parseInt(position)];
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
                 UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, position), container, border);
@@ -77,7 +76,7 @@ function piegrid() {
         return function (d, i) {
             if (tooltip) {
                 var position = d3.select(this.parentNode).attr('class');
-                var border = colors[parseInt(position)];
+                var border = _colorSet[parseInt(position)];
                 UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, position), container, border);
             }
         }
@@ -166,7 +165,7 @@ function piegrid() {
                     return UTIL.getTruncatedLabel(
                         this,
                         data[i][_dimension],
-                        (r + m) )
+                        (r + m))
                 }
                 else {
                     return data[i][_dimension].substring(0, 4);
@@ -318,12 +317,12 @@ function piegrid() {
                 if (i == 1) {
                     d3.select(this).style('fill-opacity', 0.5)
                 }
-                return colors[parseInt(index)];
+                return _colorSet[parseInt(index)];
             })
             .style("stroke", function (d, i) {
                 var path = d3.select(this.parentNode)
                 var index = d3.select(path.node().parentElement).attr('class')
-                return colors[parseInt(index)];
+                return _colorSet[parseInt(index)];
             })
             .style("stroke-opacity", 0.5);
 
@@ -386,12 +385,12 @@ function piegrid() {
                 if (i == 1) {
                     d3.select(this).style('fill-opacity', 0.5)
                 }
-                return colors[parseInt(index)];
+                return _colorSet[parseInt(index)];
             })
             .style("stroke", function (d, i) {
                 var path = d3.select(this.parentNode)
                 var index = d3.select(path.node().parentElement).attr('class')
-                return colors[parseInt(index)];
+                return _colorSet[parseInt(index)];
             })
             .style("stroke-opacity", 0.5);
 
@@ -559,6 +558,13 @@ function piegrid() {
             return broadcast;
         }
         broadcast = value;
+        return chart;
+    }
+    chart.colorSet = function (value) {
+        if (!arguments.length) {
+            return _colorSet;
+        }
+        _colorSet = value;
         return chart;
     }
 

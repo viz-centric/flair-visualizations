@@ -37,6 +37,8 @@ function stackedhorizontalbar() {
         _textColor = [],
         _displayColor = [],
         _borderColor = [],
+        _displayColorExpression = [],
+        _textColorExpression = [], 
         _fontSize = [],
         _print,
         broadcast,
@@ -98,6 +100,8 @@ function stackedhorizontalbar() {
         this.fontSize(config.fontSize);
         this.isFilterGrid(config.isFilterGrid);
         this.showSorting(config.showSorting);
+        this.displayColorExpression(config.displayColorExpression);
+        this.textColorExpression(config.textColorExpression);
         setDefaultColorForChart()
         this.legendData(_displayColor, config.measure, config.displayNameForMeasure);
     }
@@ -283,8 +287,13 @@ function stackedhorizontalbar() {
         return function (d, i) {
             d3.select(this).style('cursor', 'default')
                 .style('fill', function (d, i) {
-                    if (d.data[d.key] < 0) {
-                        return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
+                    if (_displayColorExpression[_measure.indexOf(d.key)].length) {
+                        if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color').length > 0) {
+                            return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color')
+                        }
+                        else {
+                            return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
+                        }
                     }
                     else {
                         return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
@@ -447,8 +456,13 @@ function stackedhorizontalbar() {
 
         rect = element.append('rect')
             .style('fill', function (d, i) {
-                if (d.data[d.key] < 0) {
-                    return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
+                if (_displayColorExpression[_measure.indexOf(d.key)].length) {
+                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color')
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
+                    }
                 }
                 else {
                     return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
@@ -592,7 +606,17 @@ function stackedhorizontalbar() {
                 return _fontWeight[_measure.indexOf(d.key)];
             })
             .style('fill', function (d, i) {
-                return _textColor[_measure.indexOf(d.key)];
+                if (_textColorExpression[_measure.indexOf(d.key)].length) {
+                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color')
+                    }
+                    else {
+                        return _textColor[_measure.indexOf(d.key)];
+                    }
+                }
+                else {
+                    return _textColor[_measure.indexOf(d.key)];
+                }
             });
 
     }
@@ -946,8 +970,13 @@ function stackedhorizontalbar() {
 
             stackedhorizontalbarFilter.append('rect')
                 .style('fill', function (d, i) {
-                    if (d.data[d.key] < 0) {
-                        return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
+                    if (_displayColorExpression[_measure.indexOf(d.key)].length) {
+                        if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color').length > 0) {
+                            return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color')
+                        }
+                        else {
+                            return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
+                        }
                     }
                     else {
                         return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
@@ -1018,8 +1047,13 @@ function stackedhorizontalbar() {
             })
             .select('rect')
             .style('fill', function (d, i) {
-                if (d.data[d.key] < 0) {
-                    return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
+                if (_displayColorExpression[_measure.indexOf(d.key)].length) {
+                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color')
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
+                    }
                 }
                 else {
                     return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
@@ -1155,8 +1189,13 @@ function stackedhorizontalbar() {
 
         stackedhorizontalbar.select('rect')
             .style('fill', function (d, i) {
-                if (d.data[d.key] < 0) {
-                    return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
+                if (_displayColorExpression[_measure.indexOf(d.key)].length) {
+                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color')
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
+                    }
                 }
                 else {
                     return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
@@ -1480,6 +1519,56 @@ function stackedhorizontalbar() {
         }
         broadcast = value;
         return chart;
+    }
+
+    chart.textColorExpression = function (value, measure) {
+        if (!arguments.length) {
+            return _textColorExpression;
+        }
+
+        if (value instanceof Array && measure == void 0) {
+            _textColorExpression = value.map(function (v) {
+                return UTIL.getExpressionConfig(v, ['color']);
+            });
+            return chart;
+        }
+
+        var index = _measure.indexOf(measure);
+
+        if (index === -1) {
+            throw new Error('Invalid measure provided');
+        }
+
+        if (value == void 0) {
+            return _textColorExpression[index];
+        } else {
+            _textColorExpression[index] = UTIL.getExpressionConfig(value, ['color']);
+        }
+    }
+
+    chart.displayColorExpression = function (value, measure) {
+        if (!arguments.length) {
+            return _displayColorExpression;
+        }
+
+        if (value instanceof Array && measure == void 0) {
+            _displayColorExpression = value.map(function (v) {
+                return UTIL.getExpressionConfig(v, ['color']);
+            });
+            return chart;
+        }
+
+        var index = _measure.indexOf(measure);
+
+        if (index === -1) {
+            throw new Error('Invalid measure provided');
+        }
+
+        if (value == void 0) {
+            return _displayColorExpression[index];
+        } else {
+            _displayColorExpression[index] = UTIL.getExpressionConfig(value, ['color']);
+        }
     }
 
     chart.filterParameters = function (value) {
