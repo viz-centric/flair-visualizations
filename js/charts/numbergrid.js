@@ -19,14 +19,13 @@ function numbergrid() {
         _fontWeight,
         _fontColor,
         _fontSizeforDisplayName,
+        _colorSet = [],
         _notification = false,
         _data;
 
     var _local_svg, _Local_data, tooltip, parentContainer;
 
     var m = 10, r = 50;
-
-    var colors = UTIL.defaultColours();
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
@@ -39,6 +38,7 @@ function numbergrid() {
         this.fontColor(config.fontColor);
         this.measureDisplayName(config.measureDisplayName);
         this.fontSizeforDisplayName(colors.fontSizeforDisplayName);
+        this.colorSet(config.colorSet);
     }
 
     var _buildTooltipData = function (datum, chart) {
@@ -220,7 +220,7 @@ function numbergrid() {
             .style('fill', function (d, i) {
                 var path = d3.select(this.parentNode)
                 var index = d3.select(path.node().parentElement).attr('class')
-                return colors[parseInt(index)];
+                return _colorSet[parseInt(index)];
             })
             .style('stroke', '#FFFFFF')
             .attr("rx", 10)
@@ -340,12 +340,12 @@ function numbergrid() {
             .style('fill', function (d, i) {
                 var path = d3.select(this.parentNode)
                 var index = d3.select(path.node().parentElement).attr('class')
-                return colors[parseInt(index)];
+                return _colorSet[parseInt(index)];
             })
             .style('stroke', function (d, i) {
                 var path = d3.select(this.parentNode)
                 var index = d3.select(path.node().parentElement).attr('class')
-                return colors[parseInt(index)];
+                return _colorSet[parseInt(index)];
             })
             .style('stroke', '#FFFFFF')
             .attr("rx", 10)
@@ -504,6 +504,14 @@ function numbergrid() {
             return _tooltip;
         }
         _tooltip = value;
+        return chart;
+    }
+
+    chart.colorSet = function (value) {
+        if (!arguments.length) {
+            return _colorSet;
+        }
+        _colorSet = value;
         return chart;
     }
 

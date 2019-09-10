@@ -38,6 +38,8 @@ function combo() {
         _textColor = [],
         _displayColor = [],
         _borderColor = [],
+        _displayColorExpression = [],
+        _textColorExpression = [],
         _fontSize = [],
         _lineType = [],
         _pointType = [],
@@ -114,6 +116,8 @@ function combo() {
         this.pointType(config.pointType);
         this.isFilterGrid(config.isFilterGrid);
         this.showSorting(config.showSorting);
+        this.displayColorExpression(config.displayColorExpression);
+        this.textColorExpression(config.textColorExpression);
         setDefaultColorForChart()
         this.legendData(_displayColor, config.measure, config.displayNameForMeasure);
     }
@@ -356,7 +360,17 @@ function combo() {
         return function (d, i) {
             d3.select(this).style('cursor', 'default')
                 .style('fill', function (d1, i) {
-                    return UTIL.getDisplayColor(_measure.indexOf(d1.tag), _displayColor);
+                    if (_displayColorExpression[_measure.indexOf(d['tag'])].length) {
+                        if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d['tag'])], d['data'][measuresBar[i]], 'color').length > 0) {
+                            return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d['tag'])], d['data'][measuresBar[i]], 'color')
+                        }
+                        else {
+                            return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                        }
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                    }
                 })
                 .style('stroke', function (d1, i) {
                     return UTIL.getBorderColor(_measure.indexOf(d1.tag), _borderColor);
@@ -669,7 +683,30 @@ function combo() {
             .enter().append('path')
             .attr('class', 'point')
             .attr('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+                if (_displayColorExpression[_measure.indexOf(d.tag)].length) {
+                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.tag)], d['data'][d['tag']], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.tag)], d['data'][d['tag']], 'color')
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+                    }
+                }
+                else {
+                    return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+                }
+            })
+            .attr('stroke', function (d, i) {
+                if (_displayColorExpression[_measure.indexOf(d.tag)].length) {
+                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.tag)], d['data'][d['tag']], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.tag)], d['data'][d['tag']], 'color')
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+                    }
+                }
+                else {
+                    return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+                }
             })
             .attr('d', function (d, i) {
                 return d3.symbol()
@@ -723,7 +760,17 @@ function combo() {
                 return _fontSize[_measure.indexOf(d['tag'])];
             })
             .style('fill', function (d, i) {
-                return _textColor[_measure.indexOf(d['tag'])];
+                if (_textColorExpression[_measure.indexOf(d['tag'])].length) {
+                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d['tag'])], d['data'][d['tag']], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d['tag'])], d['data'][d['tag']], 'color')
+                    }
+                    else {
+                        return _textColor[_measure.indexOf(d['tag'])];
+                    }
+                }
+                else {
+                    return _textColor[_measure.indexOf(d['tag'])];
+                }
             });
         if (!_print || _notification) {
             point.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
@@ -1068,7 +1115,17 @@ function combo() {
             bar.append('rect')
                 .attr('width', x1.bandwidth())
                 .style('fill', function (d, i) {
-                    return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                    if (_displayColorExpression[_measure.indexOf(d['tag'])].length) {
+                        if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d['tag'])], d['data'][measuresBar[i]], 'color').length > 0) {
+                            return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d['tag'])], d['data'][measuresBar[i]], 'color')
+                        }
+                        else {
+                            return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                        }
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                    }
                 })
                 .style('stroke', function (d, i) {
                     return UTIL.getBorderColor(_measure.indexOf(d['tag']), _borderColor);
@@ -1145,7 +1202,17 @@ function combo() {
         rect = element.append('rect')
             .attr('width', x1.bandwidth())
             .style('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                if (_displayColorExpression[_measure.indexOf(d['tag'])].length) {
+                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d['tag'])], d['data'][measuresBar[i]], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d['tag'])], d['data'][measuresBar[i]], 'color')
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                    }
+                }
+                else {
+                    return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                }
             })
             .style('stroke', function (d, i) {
                 return UTIL.getBorderColor(_measure.indexOf(d['tag']), _borderColor);
@@ -1283,7 +1350,17 @@ function combo() {
                 return _fontSize[i] + 'px';
             })
             .style('fill', function (d, i) {
-                return _textColor[i];
+                if (_textColorExpression[_measure.indexOf(d['tag'])].length) {
+                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d['tag'])], d['data'][d['tag']], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d['tag'])], d['data'][d['tag']], 'color')
+                    }
+                    else {
+                        return _textColor[_measure.indexOf(d['tag'])];
+                    }
+                }
+                else {
+                    return _textColor[_measure.indexOf(d['tag'])];
+                }
             })
             .text(function (d, i) {
                 var barWidth = (1 - x0.padding()) * plotWidth / (_Local_data.length - 1);
@@ -1347,7 +1424,17 @@ function combo() {
 
         clustered.select('rect')
             .style('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+                if (_displayColorExpression[_measure.indexOf(d['tag'])].length) {
+                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d['tag'])], d['data'][measuresBar[i]], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d['tag'])], d['data'][measuresBar[i]], 'color')
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                    }
+                }
+                else {
+                    return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                }
             });
         line
             .style("stroke-width", "1.5px")
@@ -1487,7 +1574,17 @@ function combo() {
         bar.select('rect')
             .attr('width', x1.bandwidth())
             .style('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                if (_displayColorExpression[_measure.indexOf(d['tag'])].length) {
+                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d['tag'])], d['data'][measuresBar[i]], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d['tag'])], d['data'][measuresBar[i]], 'color')
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                    }
+                }
+                else {
+                    return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                }
             })
             .style('stroke', function (d, i) {
                 return UTIL.getBorderColor(_measure.indexOf(d['tag']), _borderColor);
@@ -1551,7 +1648,17 @@ function combo() {
                 return _fontSize[i] + 'px';
             })
             .style('fill', function (d, i) {
-                return _textColor[i];
+                if (_textColorExpression[_measure.indexOf(d['tag'])].length) {
+                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d['tag'])], d['data'][d['tag']], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d['tag'])], d['data'][d['tag']], 'color')
+                    }
+                    else {
+                        return _textColor[_measure.indexOf(d['tag'])];
+                    }
+                }
+                else {
+                    return _textColor[_measure.indexOf(d['tag'])];
+                }
             })
             .text(function (d, i) {
                 var barWidth = (1 - x0.padding()) * plotWidth / (_Local_data.length - 1);
@@ -1611,7 +1718,17 @@ function combo() {
                 return _fontSize[_measure.indexOf(d['tag'])];
             })
             .style('fill', function (d, i) {
-                return _textColor[_measure.indexOf(d['tag'])];
+                if (_textColorExpression[_measure.indexOf(d['tag'])].length) {
+                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d['tag'])], d['data'][d['tag']], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d['tag'])], d['data'][d['tag']], 'color')
+                    }
+                    else {
+                        return _textColor[_measure.indexOf(d['tag'])];
+                    }
+                }
+                else {
+                    return _textColor[_measure.indexOf(d['tag'])];
+                }
             });
 
         lineText
@@ -2095,6 +2212,56 @@ function combo() {
     }
     chart.pointType = function (value, measure) {
         return UTIL.baseAccessor.call(_pointType, value, measure, _measure, chart);
+    }
+
+    chart.textColorExpression = function (value, measure) {
+        if (!arguments.length) {
+            return _textColorExpression;
+        }
+
+        if (value instanceof Array && measure == void 0) {
+            _textColorExpression = value.map(function (v) {
+                return UTIL.getExpressionConfig(v, ['color']);
+            });
+            return chart;
+        }
+
+        var index = _measure.indexOf(measure);
+
+        if (index === -1) {
+            throw new Error('Invalid measure provided');
+        }
+
+        if (value == void 0) {
+            return _textColorExpression[index];
+        } else {
+            _textColorExpression[index] = UTIL.getExpressionConfig(value, ['color']);
+        }
+    }
+
+    chart.displayColorExpression = function (value, measure) {
+        if (!arguments.length) {
+            return _displayColorExpression;
+        }
+
+        if (value instanceof Array && measure == void 0) {
+            _displayColorExpression = value.map(function (v) {
+                return UTIL.getExpressionConfig(v, ['color']);
+            });
+            return chart;
+        }
+
+        var index = _measure.indexOf(measure);
+
+        if (index === -1) {
+            throw new Error('Invalid measure provided');
+        }
+
+        if (value == void 0) {
+            return _displayColorExpression[index];
+        } else {
+            _displayColorExpression[index] = UTIL.getExpressionConfig(value, ['color']);
+        }
     }
 
     chart.broadcast = function (value) {
