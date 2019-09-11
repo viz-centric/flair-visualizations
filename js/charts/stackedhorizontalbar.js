@@ -38,7 +38,7 @@ function stackedhorizontalbar() {
         _displayColor = [],
         _borderColor = [],
         _displayColorExpression = [],
-        _textColorExpression = [], 
+        _textColorExpression = [],
         _fontSize = [],
         _print,
         broadcast,
@@ -1227,7 +1227,7 @@ function stackedhorizontalbar() {
                 return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat, d.data[d.key]));
             })
             .attr('x', function (d, i) {
-                return y(d[1]) - 20;
+                return y(d[1]);
             })
             .attr('y', function (d, i) {
                 return x(d.data[_dimension[0]]) + x.bandwidth() / 2;
@@ -1235,7 +1235,7 @@ function stackedhorizontalbar() {
             .attr('dy', function (d, i) {
                 return offsetX / 4;
             })
-            .style('text-anchor', 'middle')
+            .style('text-anchor', 'end')
             .attr('visibility', function (d, i) {
                 return UTIL.getVisibility(_showValues[_measure.indexOf(d.key)]);
             })
@@ -1263,6 +1263,26 @@ function stackedhorizontalbar() {
                     }
                 }
             })
+            .style('font-style', function (d, i) {
+                return _fontStyle[_measure.indexOf(d.key)];
+            })
+            .style('font-weight', function (d, i) {
+                return _fontWeight[_measure.indexOf(d.key)];
+            })
+            .style('fill', function (d, i) {
+                if (_textColorExpression[_measure.indexOf(d.key)].length) {
+                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color')
+                    }
+                    else {
+                        return _textColor[_measure.indexOf(d.key)];
+                    }
+                }
+                else {
+                    return _textColor[_measure.indexOf(d.key)];
+                }
+            });
+
 
         var newBars = stackedhorizontalbar.enter().append('g')
             .attr('class', 'stackedhorizontalbar');
