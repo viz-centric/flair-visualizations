@@ -37,7 +37,7 @@ function numbergrid() {
         this.fontWeight(config.fontWeight);
         this.fontColor(config.fontColor);
         this.measureDisplayName(config.measureDisplayName);
-        this.fontSizeforDisplayName(colors.fontSizeforDisplayName);
+        this.fontSizeforDisplayName(config.fontSizeforDisplayName);
         this.colorSet(config.colorSet);
     }
 

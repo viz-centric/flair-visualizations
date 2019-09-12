@@ -1263,9 +1263,6 @@ function stackedverticalbar() {
             })
             .style('opacity', 1)
             .style('stroke-width', 1)
-            .transition()
-            .duration(DURATION)
-            .style('opacity', 1)
 
 
         stackedverticalbar.select('text')
@@ -1327,15 +1324,10 @@ function stackedverticalbar() {
                         if (this.getComputedTextLength() > parseFloat(rectWidth)) {
                             return 'hidden';
                         }
-
                     }
                 }
-                return 'visible';
-            })
-            .style('font-size', function (d, i) {
-                return _fontSize[_measure.indexOf(d.key)] + 'px';
-            })
 
+            })
         var newBars = stackedverticalbar.enter().append('g')
             .attr('class', 'stackedverticalbar');
 

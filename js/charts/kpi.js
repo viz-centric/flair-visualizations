@@ -15,11 +15,11 @@ function kpi() {
     var _config,
         _dimension,
         _measure,
+        _kpiAlignment,
         /* Initialization of these variable is important, otherwise Windows object
          * will be sent during calling of baseAccessor function
          */
         _kpiDisplayName = [],
-        _kpiAlignment = [],
         _kpiBackgroundColor = [],
         _kpiNumberFormat = [],
         _kpiFontStyle = [],
@@ -172,19 +172,36 @@ function kpi() {
 
         var container = parentContainer.append('div')
             .classed('_container', true)
+            .style('position', 'absolute')
+
             .style('width', width - 2 * COMMON.PADDING)
             .style('height', height - 2 * COMMON.PADDING)
             .style('padding', COMMON.PADDING);
+
+        if (_kpiAlignment == "Center") {
+            container.style('top', '50%')
+                .style('left', '50%')
+                .style('transform', 'translate(-50%, -50%)')
+        }
+        else if (_kpiAlignment == "Left") {
+            container.style('top', '50%')
+                .style('left', 0)
+                .style('transform', 'translate(0, -50%)')
+        }
+        else {
+            container.style('top', '50%')
+                .style('right', 0)
+                .style('transform', 'translate(-5%, -50%)')
+        }
 
         _measure.forEach(function (m, i) {
             var measure = container.append('div')
                 .classed('measure', true)
                 .style('display', 'flex')
                 .style('height', '50%')
-                .style('align-items', function (d, i1) {
+                .style('align-items', function (d, i) {
                     return i ? 'center' : 'flex-end';
                 })
-                .style('justify-content', _kpiAlignment[i])
                 .append('div')
                 .classed('parent', true)
                 .style('display', 'block')
@@ -198,7 +215,7 @@ function kpi() {
                 .style('display', 'block')
                 .classed('child', true)
                 .html(_getKpiDisplayName(i))
-                .style('font-size', function (d, i1) {
+                .style('font-size', function (d, i) {
                     return _FontsizeForDisplayName[i] + 'px';
                 })
                 .style('padding-left', '5px')
@@ -329,6 +346,14 @@ function kpi() {
         return chart;
     }
 
+    chart.kpiAlignment = function (value) {
+        if (!arguments.length) {
+            return _kpiAlignment;
+        }
+        _kpiAlignment = value;
+        return chart;
+    }
+
     chart.iconSize = function (value, measure) {
         return UTIL.baseAccessor.call(_iconSize, value, measure, _measure);
     }
@@ -345,23 +370,12 @@ function kpi() {
     }
 
     /**
-     * KPI Alignment accessor function
-     *
-     * @param {string|array(string)|null} value Alignment value for the measure(s)
-     * @param {string|null} measure Measure for which the value is to be set or retrieved
-     * @return {string|array(string)|function}
-     */
-    chart.kpiAlignment = function (value, measure) {
-        return UTIL.baseAccessor.call(_kpiAlignment, value, measure, _measure);
-    }
-
-    /**
-     * KPI Background Color accessor function
-     *
-     * @param {string|array(string)|null} value Background Color value for the measure(s)
-     * @param {string|null} measure Measure for which the value is to be set or retrieved
-     * @return {string|array(string)|function}
- */
+ * KPI Background Color accessor function
+ *
+ * @param {string|array(string)|null} value Background Color value for the measure(s)
+ * @param {string|null} measure Measure for which the value is to be set or retrieved
+ * @return {string|array(string)|function}
+*/
     chart.kpiBackgroundColor = function (value, measure) {
         return UTIL.baseAccessor.call(_kpiBackgroundColor, value, measure, _measure);
     }

@@ -685,11 +685,11 @@ function line() {
                         return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag)], d.data[d.tag], 'color')
                     }
                     else {
-                        return  _textColor[_measure.indexOf(d.tag)];
+                        return _textColor[_measure.indexOf(d.tag)];
                     }
                 }
                 else {
-                    return  _textColor[_measure.indexOf(d.tag)];
+                    return _textColor[_measure.indexOf(d.tag)];
                 }
             });
 
@@ -1217,15 +1217,6 @@ function line() {
             .attr('stroke', 'none')
             .style('stroke-width', 0)
             .style('opacity', 0)
-            .transition()
-            .duration(COMMON.DURATION)
-            .styleTween('opacity', function () {
-                var interpolator = d3.interpolateNumber(0, 1);
-
-                return function (t) {
-                    return interpolator(t);
-                }
-            });
 
         plot.selectAll('path.point').remove()
 
@@ -1372,11 +1363,11 @@ function line() {
                         return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag)], d.data[d.tag], 'color')
                     }
                     else {
-                        return  _textColor[_measure.indexOf(d.tag)];
+                        return _textColor[_measure.indexOf(d.tag)];
                     }
                 }
                 else {
-                    return  _textColor[_measure.indexOf(d.tag)];
+                    return _textColor[_measure.indexOf(d.tag)];
                 }
             });
 
@@ -1424,11 +1415,11 @@ function line() {
                         return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag)], d.data[d.tag], 'color')
                     }
                     else {
-                        return  _textColor[_measure.indexOf(d.tag)];
+                        return _textColor[_measure.indexOf(d.tag)];
                     }
                 }
                 else {
-                    return  _textColor[_measure.indexOf(d.tag)];
+                    return _textColor[_measure.indexOf(d.tag)];
                 }
             });
 
