@@ -29,28 +29,12 @@ function chorddiagram() {
         _notification = false,
         _data;
 
-    var _local_svg, svgFilter, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1, yScale = d3.scaleLinear();
+    var _local_svg, _Local_data, _originalData, _localLabelStack = [], parentContainer;
 
     var colors = UTIL.defaultColours();
 
     var gradientColor = d3.scaleLinear();
 
-    var BASE_COLOR = "#aec7e8", GRADIENT_COLOR = ['#ff9696', '#bc2f2f'];
-
-    var margin = {
-        top: 0,
-        right: 0,
-        bottom: 0,
-        left: 45
-    };
-
-    var tickLength = d3.scaleLinear()
-        .domain([22, 34])
-        .range([2, 4]);
-
-    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, parentContainer;
-
-    var threshold = [];
     var filter = false, filterData = [];
 
     var _setConfigParams = function (config) {
@@ -66,29 +50,18 @@ function chorddiagram() {
         this.fontSize(config.fontSize);
     }
 
-    var setDefaultColorForChart = function () {
-        for (let index = 0; index < _measure.length; index++) {
-            if (_displayColor[index] == null || _displayColor[index] == undefined) {
-                _displayColor[index] = COMMON.COLORSCALE(index);
-            }
-            if (_borderColor[index] == null || _borderColor[index] == undefined) {
-                _borderColor[index] = COMMON.COLORSCALE(index);
-            }
-        }
-    }
-
     var _buildTooltipData = function (datum, chart) {
         var output = "";
 
-        var filter = _local_svg.selectAll('.chord')
+        var _filter = _local_svg.selectAll('.chord')
             .filter(function (d1) {
                 return (d1.source == datum.source || d1.target == datum.source)
             })
         output += "<table>";
-        for (let index = 0; index < filter.data().length; index++) {
-            if (filter.data()[index].value > 0) {
+        for (let index = 0; index < _filter.data().length; index++) {
+            if (_filter.data()[index].value > 0) {
                 output += "<tr>";
-                output += "<td>" + filter.data()[index].source + "</td><td>" + filter.data()[index].target + "</td><td>" + filter.data()[index].value + "</td>";
+                output += "<td>" + _filter.data()[index].source + "</td><td>" + _filter.data()[index].target + "</td><td>" + _filter.data()[index].value + "</td>";
                 output += "</tr>";
             }
         }
@@ -163,9 +136,6 @@ function chorddiagram() {
                 broadcast.updateWidget = {};
                 broadcast.updateWidget[scope.node().parentNode.id] = idWidget;
 
-                var _filterList = {}, list = []
-
-
                 var _filterDimension = {};
                 if (broadcast.filterSelection.id) {
                     _filterDimension = broadcast.filterSelection.filter;
@@ -215,7 +185,7 @@ function chorddiagram() {
 
         return function (d, i) {
 
-            filter = container.selectAll('.chord')
+            var filter = container.selectAll('.chord')
                 .filter(function (d1) {
                     return !(d1.source == d.source || d1.target == d.source)
                 })
@@ -245,7 +215,7 @@ function chorddiagram() {
         var me = this;
 
         return function (d, i) {
-            filter = container.selectAll('.chord')
+            var filter = container.selectAll('.chord')
                 .filter(function (d1) {
                     return !(d1.source == d.source || d1.target == d.source)
                 })
@@ -400,6 +370,44 @@ function chorddiagram() {
                 .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+                .on('click', function (d, i) {
+                    var confirm = parentContainer.select('.confirm')
+                        .style('visibility', 'visible');
+                    filter = false;
+
+                    var point = d3.select(this).select('path');
+                    if (point.classed('selected')) {
+                        point.classed('selected', false);
+                    } else {
+                        point.classed('selected', true);
+                    }
+                    var _filterDimension = {};
+                    if (broadcast.filterSelection.id) {
+                        _filterDimension = broadcast.filterSelection.filter;
+                    } else {
+                        broadcast.filterSelection.id = parentContainer.attr('id');
+                    }
+                    var dimension = _dimension[0];
+                    if (_filterDimension[dimension]) {
+                        var temp = _filterDimension[dimension];
+                        if (temp.indexOf(d.source) < 0) {
+                            temp.push(d.source);
+                        } else {
+                            temp.splice(temp.indexOf(d.source), 1);
+                        }
+                        _filterDimension[dimension] = temp;
+                    } else {
+                        _filterDimension[dimension] = [d.source];
+                    }
+
+                    var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
+                    broadcast.updateWidget = {};
+                    broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
+                    broadcast.filterSelection.filter = _filterDimension;
+                    var _filterParameters = filterParameters.get();
+                    _filterParameters[dimension] = _filterDimension[dimension];
+                    filterParameters.save(_filterParameters);
+                });
 
             _local_svg.select('g.lasso').remove()
 

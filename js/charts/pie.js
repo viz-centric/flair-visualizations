@@ -646,17 +646,21 @@ function pie() {
                 }
             })
             .text(_labelFn())
-            .transition()
-            .delay(_delayFn(200))
-            .on('start', function () {
-                d3.select(this).text(_labelFn())
-                    .filter(function (d) {
-                        /* length of arc = angle in radians * radius */
-                        var diff = d.endAngle - d.startAngle;
-                        return outerRadius * diff < this.getComputedTextLength();
-                    })
-                    .remove();
-            });
+
+        if (!_print) {
+            pieLabel.transition()
+                .delay(_delayFn(200))
+                .on('start', function () {
+                    d3.select(this).text(_labelFn())
+                        .filter(function (d) {
+                            /* length of arc = angle in radians * radius */
+                            var diff = d.endAngle - d.startAngle;
+                            return outerRadius * diff < this.getComputedTextLength();
+                        })
+                        .remove();
+                });
+
+        }
 
         if (!_print) {
 
