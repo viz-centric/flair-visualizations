@@ -66,7 +66,7 @@ function rangefilter() {
         var formatDate = parseTime;
 
         _local_svg.select('.dateRange')
-            .text(formatDate(dates[0]) + " -> " + formatDate(dates[1]));
+            .text((dates[0]).toDateString() + " -> " + (dates[1]).toDateString());
 
         if (broadcast) {
             var _filterDimension = {};

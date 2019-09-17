@@ -463,7 +463,7 @@ function clusteredhorizontalbar() {
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
-        x0.rangeRound([plotHeight, 0])
+        x0.rangeRound([0, plotHeight])
             .paddingInner(0.1)
             .padding([0.1])
             .domain(data.map(function (d) { return d[_dimension[0]]; }));
@@ -687,7 +687,7 @@ function clusteredhorizontalbar() {
                 .attr('class', 'filterElement')
                 .style('visibility', UTIL.getVisibility(_isFilterGrid));
 
-            _x0.rangeRound([parseInt(_local_svg.attr('height') - 2 * COMMON.PADDING), 0])
+            _x0.rangeRound([0, parseInt(_local_svg.attr('height') - 2 * COMMON.PADDING)])
                 .paddingInner(0.1)
                 .padding([0.1])
                 .domain(data.map(function (d) { return d[_dimension[0]]; }));
@@ -1141,7 +1141,7 @@ function clusteredhorizontalbar() {
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
-        x0.rangeRound([plotHeight, 0])
+        x0.rangeRound([0, plotHeight])
             .paddingInner(0.1)
             .padding([0.1])
             .domain(data.map(function (d) { return d[_dimension[0]]; }));

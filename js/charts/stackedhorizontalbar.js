@@ -635,13 +635,13 @@ function stackedhorizontalbar() {
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
-        x.rangeRound([plotHeight, 0])
+        x.rangeRound([0,plotHeight])
             .padding([0.5])
             .domain(data.map(function (d) { return d[_dimension[0]]; }));
 
         var range = UTIL.getMinMax(data, keys);
 
-        y.rangeRound([0, plotWidth])
+        y.rangeRound([0,plotWidth])
             .domain([range[0], range[1]])
             .nice();
 
@@ -871,7 +871,7 @@ function stackedhorizontalbar() {
 
             var keys = UTIL.getMeasureList(data[0], _dimension);
 
-            _x.rangeRound([parseInt(_local_svg.attr('height') - 2 * COMMON.PADDING), 0])
+            _x.rangeRound([0,parseInt(_local_svg.attr('height') - 2 * COMMON.PADDING)])
                 .padding([0.5])
                 .domain(data.map(function (d) { return d[_dimension[0]]; }));
 
@@ -1124,13 +1124,13 @@ function stackedhorizontalbar() {
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
-        x.rangeRound([plotHeight, 0])
+        x.rangeRound([0,plotHeight])
             .padding([0.5])
             .domain(data.map(function (d) { return d[_dimension[0]]; }));
 
         var range = UTIL.getMinMax(data, keys);
 
-        y.rangeRound([0, plotWidth])
+        y.rangeRound([0,plotWidth])
             .domain([range[0], range[1]])
             .nice();
 
