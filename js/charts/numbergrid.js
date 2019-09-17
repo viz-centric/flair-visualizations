@@ -25,7 +25,7 @@ function numbergrid() {
 
     var _local_svg, _Local_data, tooltip, parentContainer;
 
-    var m = 10, r = 50;
+    var m = 10, r = 50, h, w;
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
@@ -153,9 +153,20 @@ function numbergrid() {
             .style('font-size', _fontSizeforDisplayName + 'px')
             .style('font-weight', _fontWeight)
             .style('font-style', _fontStyle)
+            .text(function (d, i) {
+                if (!_print) {
+                    return UTIL.getTruncatedLabel(
+                        this,
+                        d[_dimension],
+                        parseFloat((w + m) * 2) - 20)
+                }
+                else {
+                    return d[_dimension].substring(0, 4);
+                }
+            })
     }
 
-    function SetRadius(width, height) {
+    function setRadius(width, height) {
         var w = r + (r / 3);
         var h = w / 2;
 
@@ -169,7 +180,7 @@ function numbergrid() {
 
         if (_data.length > (columns * rows)) {
             r = r - 2;
-            SetRadius(width, height);
+            setRadius(width, height);
         }
         return parseInt(r);
     }
@@ -197,10 +208,10 @@ function numbergrid() {
         r = Math.sqrt(RR);
         r = (r - 25) / 2;
 
-        r = SetRadius(width, height);
+        r = setRadius(width, height);
         // var h = r - (r / 2);
-        var w = r + (r / 3);
-        var h = w / 2;
+        w = r + (r / 3);
+        h = w / 2;
         var svg = parentContainer.selectAll("svg")
             .data(data)
             .enter().append("svg")
@@ -312,10 +323,10 @@ function numbergrid() {
         r = Math.sqrt(RR);
         r = (r - 25) / 2;
 
-        r = SetRadius(width, height);
+        r = setRadius(width, height);
         // var h = r - (r / 2);
-        var w = r + (r / 3);
-        var h = w / 2;
+        w = r + (r / 3);
+        h = w / 2;
 
         UTIL.sorter(data, _measure, -1);
 
