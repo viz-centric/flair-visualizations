@@ -145,7 +145,7 @@ function wordcloud() {
         }
     }
 
-    var getFillColor = function (obj, index,words) {
+    var getFillColor = function (obj, index, words) {
         if (_labelColor == 'single_color') {
             return _colorSet[0];
         } else if (_labelColor == 'unique_color') {
@@ -155,9 +155,9 @@ function wordcloud() {
             return d3.rgb(r, g, b);
         } else if (_labelColor == 'gradient_color') {
             var color;
-            words.map(function(val){
-                if(val[_dimension]==obj.text){
-                    color= gradientColor(val[_measure]);
+            words.map(function (val) {
+                if (val[_dimension] == obj.text) {
+                    color = gradientColor(val[_measure]);
                 }
             });
             return color;
@@ -235,8 +235,9 @@ function wordcloud() {
             .size([parentWidth, parentHeight])
             .words(words)
             .rotate(0)
-            .padding(5)
-            .fontSize(function (d) { return d.size; })
+            .padding(10)
+            .fontSize(60)
+
             .on("end", drawSkillCloud)
             .start();
 
@@ -247,18 +248,16 @@ function wordcloud() {
                 .selectAll("text")
                 .data(words)
                 .enter().append("text")
-                .style("font-size", function (d) {
-                    return d.size + "px";
-                })
-                .style("font-family", "Impact")
-                .style("fill", function (d, i) {
-                    return getFillColor(d, i, data);
-                })
+                .style("font-size", function (d) { return d.size + "px"; })
                 .attr("text-anchor", "middle")
                 .attr("transform", function (d) {
                     return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
                 })
                 .text(function (d) { return d.text; })
+                .style("fill", function (d, i) {
+                    return getFillColor(d, i, data);
+                })
+
             if (!_print) {
 
                 var _filter = UTIL.createFilterElement()
