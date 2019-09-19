@@ -26,6 +26,8 @@ function rangefilter() {
         _data,
         _tooltip,
         broadcast,
+        _showXaxis,
+        _showYaxis,
         filterParameters;
 
     var margin = {
@@ -35,9 +37,14 @@ function rangefilter() {
         left: 45
     };
 
-    var x = d3.scaleTime(), y = d3.scaleLinear();
+    var x = d3.scalePoint(), y = d3.scaleLinear();
 
     var _local_svg, data, parseTime, _Local_data, _originalData, tooltip;
+
+    var tickLength = d3.scaleLinear()
+        .domain([22, 34])
+        .range([2, 4]);
+
 
     var parentWidth, parentHeight, container, brush = d3.brushX(), focus;
 
@@ -55,36 +62,84 @@ function rangefilter() {
         this.displayColor(config.displayColor);
         this.borderColor(config.borderColor);
         this.fontSize(config.fontSize);
+        this.showXaxis(config.showXaxis);
+        this.showYaxis(config.showYaxis);
 
     }
 
-    var brushed = function () {
-        var s = d3.event.selection;
+    var _handleMouseOverFn = function (tooltip, container) {
+        var me = this;
 
-        var dates = s.map(x.invert, x)
-
-        var formatDate = parseTime;
-
-        _local_svg.select('.dateRange')
-            .text((dates[0]).toDateString() + " -> " + (dates[1]).toDateString());
-
-        if (broadcast) {
-            var _filterDimension = {};
-            if (broadcast.filterSelection.id) {
-                _filterDimension = broadcast.filterSelection.filter;
-            } else {
-                broadcast.filterSelection.id = parentContainer.attr('id');
+        return function (d, i) {
+            d3.select(this).style('cursor', 'pointer')
+                .style('fill', COMMON.HIGHLIGHTER);
+            var border = UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor)
+            if (tooltip) {
+                UTIL.showTooltip(tooltip);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
-            var dimension = _dimension[0];
+        }
+    }
+    var _handleMouseMoveFn = function (tooltip, container) {
+        var me = this;
 
-            var _filterParameters = filterParameters.get();
+        return function (d, i) {
+            if (tooltip) {
+                var border = UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor)
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
+            }
+        }
+    }
+    var _handleMouseOutFn = function (tooltip, container) {
+        var me = this;
 
-            _filterParameters["date-range|" + dimension] = [dates[0], dates[1]];
+        return function (d, i) {
+            d3.select(this).style('cursor', 'pointer')
+                .style('fill', function (d1, i) {
+                    return UTIL.getBorderColor(_measure.indexOf(d.tag), _borderColor);
+                })
 
-            filterParameters.save(_filterParameters);
+            if (tooltip) {
+                UTIL.hideTooltip(tooltip);
+            }
+        }
+    }
 
-            broadcast.$broadcast('flairbiApp:filter');
-            broadcast.$broadcast('flairbiApp:filter-add');
+    var brushed = function () {
+        if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return; // ignore brush-by-zoom
+
+        var s = d3.event.selection,
+            filterList = [];
+        x.domain().forEach((d) => {
+            var pos = x(d) + x.bandwidth() / 2;
+            if (pos > s[0] && pos < s[1]) {
+                filterList.push(d);
+            }
+        });
+
+        if (filterList.length >= 2) {
+            var dates = [filterList[0], filterList[filterList.length - 1]]
+            _local_svg.select('.dateRange')
+                .text(dates[0] + " -> " + dates[1]);
+
+            if (broadcast) {
+                var _filterDimension = {};
+                if (broadcast.filterSelection.id) {
+                    _filterDimension = broadcast.filterSelection.filter;
+                } else {
+                    broadcast.filterSelection.id = parentContainer.attr('id');
+                }
+                var dimension = _dimension[0];
+
+                var _filterParameters = filterParameters.get();
+
+                _filterParameters["date-range|" + dimension] = [dates[0], dates[1]];
+
+                filterParameters.save(_filterParameters);
+
+                broadcast.$broadcast('flairbiApp:filter');
+                broadcast.$broadcast('flairbiApp:filter-add');
+            }
         }
     }
 
@@ -104,6 +159,10 @@ function rangefilter() {
     }
 
     function chart(selection) {
+        var dateList = _data.map(function (v) {
+            return v[_dimension[0]];
+        })
+        dateList = UTIL.sortDateRange(dateList);
         data = _Local_data = _originalData = _data;
 
         if (_print) {
@@ -123,58 +182,10 @@ function rangefilter() {
         _local_svg = svg;
 
         parentWidth = (width - 2 * COMMON.PADDING);
-        parentHeight = (height - 2 * COMMON.PADDING)
+        parentHeight = (height - 2 * COMMON.PADDING - 15);
 
         svg.attr('width', width)
             .attr('height', height)
-
-        parseTime = d3.timeParse("%Y-%m-%d %H:%M:%S")
-
-        if (_dateFormat == "year") {
-            parseTime = d3.timeFormat("%Y");
-        }
-        else if (_dateFormat == "month") {
-            parseTime = d3.timeFormat("%m");
-        }
-        else if (_dateFormat == "week") {
-            parseTime = d3.timeFormat("%b %d");
-        }
-        else if (_dateFormat == "day") {
-            parseTime = d3.timeFormat("%a %d");
-        }
-        else if (_dateFormat == "yearmonth") {
-            parseTime = d3.timeFormat("%Y");
-        }
-        else if (_dateFormat == "quarter") {
-            parseTime = d3.timeFormat("%Y");
-        }
-        else if (_dateFormat == "yearquarter") {
-            parseTime = d3.timeFormat("%Y");
-        }
-        else if (_dateFormat == "yearweek") {
-            parseTime = d3.timeFormat("%Y");
-        }
-        // else if(_dateFormat == "yearmonth"){
-        //     parseTime = d3.timeFormat("%Y");
-        // }
-        else {
-            data.forEach(function (d) {
-                d[_dimension[0]] = parseTime(d[_dimension[0]]);
-                d[_measure[0]] = +d[_measure[0]];
-            });
-        }
-        bisectDate = d3.bisector(function (d) { return d[_dimension[0]]; }).left;
-
-        var line = d3.line()
-            .x(function (d) {
-                return x(d[_dimension[0]]);
-            })
-            .y(function (d) {
-                return y(d[_measure[0]]);
-            });
-
-        x.range([0, parentWidth]);
-        y.range([parentHeight, 0]);
 
         parentContainer.append('div')
             .attr('class', 'custom_tooltip');
@@ -183,162 +194,130 @@ function rangefilter() {
             tooltip = parentContainer.select('.custom_tooltip');
         }
 
-        var g = svg.append("g")
-            .attr("transform", "translate(" + COMMON.PADDING + "," + COMMON.PADDING + ")");
+        var plot = svg.append('g')
+            .attr('class', 'daterange-plot')
+            .classed('plot', true)
+            .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
+        var labelStack = [];
+        var keys = UTIL.getMeasureList(data[0], _dimension);
 
-        x.domain(d3.extent(data, function (d) { return d[_dimension[0]]; }));
-        y.domain([d3.min(data, function (d) { return d[_measure[0]]; }) / 1.005, d3.max(data, function (d) { return d[_measure[0]]; }) * 1.005]);
+        x.rangeRound([0, parentWidth])
+            .padding([0.5])
+            .domain(data.map(function (d) { return d[_dimension[0]]; }));
 
-        g.append("g")
-            .attr("class", "axis axis--x")
-            .attr("transform", "translate(0," + parentHeight + ")")
-            .call(d3.axisBottom(x));
+        var range = UTIL.getMinMax(data, keys);
 
-        g.append('text')
-            .style("text-anchor", "middle")
-            .attr("class", 'dateRange')
-            .attr("x", parentWidth / 2)
-            .attr("y", 5)
-            .attr("dy", ".31em");
-
-        g.append("path")
-            .datum(data)
-            .attr("class", "line")
-            .attr('stroke-dasharray', 'none')
-            .style('fill', 'none')
-            .attr('stroke', function (d, i) {
-                return UTIL.getDisplayColor(0, _displayColor);
-            })
-            .attr('stroke-linejoin', 'round')
-            .attr('stroke-linecap', 'round')
-            .attr('stroke-width', 1)
-            .attr("d", line);
-
-        g.append("path")
-            .datum(data)
-            .attr("class", "line")
-            .attr('stroke-dasharray', 'none')
-            .style('fill', 'none')
-            .attr('stroke', function (d, i) {
-                return UTIL.getDisplayColor(0, _displayColor);
-            })
-            .attr('stroke-linejoin', 'round')
-            .attr('stroke-linecap', 'round')
-            .attr('stroke-width', 1)
-            .attr("d", line);
-
-
-
-        focus = g.append("g")
-            .attr("class", "focus")
-            .style("display", "none");
-
-        focus.append("line")
-            .attr("class", "x-hover-line hover-line")
-            .style('stroke', function (d, i) {
-                return UTIL.getDisplayColor(0, _displayColor);
-            })
-            .style('stroke-width', 2)
-            .attr("y1", 0)
-            .attr("y2", parentHeight);
-
-
-        focus.append("line")
-            .attr("class", "y-hover-line hover-line")
-            .style('stroke', function (d, i) {
-                return UTIL.getDisplayColor(0, _displayColor);
-            })
-            .style('stroke-width', 2)
-            .attr("x1", parentWidth)
-            .attr("x2", parentWidth);
-
-        focus.append("circle")
-            .style('fill', function (d, i) {
-                return UTIL.getDisplayColor(0, _displayColor);
-            })
-            .style('stroke', function (d, i) {
-                return UTIL.getDisplayColor(0, _displayColor);
-            })
-            .style('fill-opacity', 0.5)
-            .style('stroke-width', '2xp')
-            .attr("r", 5);
-
-        focus.append("text")
-            .attr("x", 15)
-            .attr("dy", ".31em");
+        y.rangeRound([parentHeight, 0])
+            .domain([range[0], range[1]])
+            .nice();
 
         brush.extent([[0, 0], [parentWidth, parentHeight]])
-            .on("end", brushed);
+            .on("brush", brushed);
 
-        svg.append("g")
-            //.attr("transform", "translate(" + COMMON.PADDING + "," + height * 70 / 100 + ")")
-            .attr("transform", "translate(" + COMMON.PADDING + "," + COMMON.PADDING + ")")
-            .attr("class", "brush")
+        var _localXLabels = data.map(function (d) {
+            return d[_dimension[0]];
+        });
+
+        lineGenerator = d3.line()
+            .curve(d3.curveLinear)
+            .x(function (d, i) {
+                return x(d['data'][_dimension[0]]) + x.bandwidth() / 2;
+            })
+            .y(function (d, i) {
+                return y(d['data'][d['tag']]);
+            });
+
+        /* Axes */
+        var xAxisGroup;
+        var isRotate = false;
+
+        _localXAxis = d3.axisBottom(x)
+            .tickSize(0)
+            .tickFormat(function (d) {
+                if (isRotate == false) {
+                    isRotate = UTIL.getTickRotate(d, (parentWidth) / (_localXLabels.length - 1), tickLength);
+                }
+                return UTIL.getTruncatedTick(d, (parentWidth) / (_localXLabels.length - 1), tickLength);
+            })
+            .tickPadding(10);
+
+        if (isRotate) {
+            _local_svg.selectAll('.x_axis .tick text')
+                .attr("transform", "rotate(-15)");
+        }
+
+        xAxisGroup = plot.append('g')
+            .attr('class', 'x_axis')
+            .attr('visibility', UTIL.getVisibility(_showXaxis))
+            .attr('transform', 'translate(0, ' + parentHeight + ')')
+            .call(_localXAxis);
+
+        plot.append("g")
+            .attr("class", "x_brush")
             .call(brush)
-            .call(brush.move, x.range())
             .selectAll("rect")
-            //.attr("y", -6)
+            .attr("y", -6)
             .attr("height", parentHeight);
 
-        svg.append("rect")
-            .attr("transform", "translate(" + COMMON.PADDING + "," + COMMON.PADDING + ")")
-            .attr("class", "overlay")
-            .style("fill", "none")
-            .style("pointer-events", "all")
-            .attr("width", parentWidth)
-            .attr("height", 10)
-            .on("mouseover", function () {
-                focus.style("display", null);
-            })
-            .on("mouseout", function () {
-                focus.style("display", "none");
-            })
-            .on("mousemove", mousemove);
+        var clusterLine = plot.selectAll('.cluster_line')
+            .data(keys.filter(function (m) { return labelStack.indexOf(m) == -1; }))
+            .enter().append('g')
+            .attr('class', 'cluster_line');
 
-        svg.selectAll('.axis--x .tick').style('visibility', 'hidden');
+        var line = clusterLine.append('path')
+            .classed('line-path', true)
+            .datum(function (d, i) {
+                return data.map(function (datum) { return { "tag": d, "data": datum }; });
+            })
+            .attr('class', 'line')
+            .attr('stroke-dasharray', 'none')
+            .style('fill', 'none')
+            .attr('stroke', function (d, i) {
+                return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
+            })
+            // .attr("stroke", function (d) {
+            //     return (d.x > 50) ? 'red' : 'blue';
+            // })
+            .attr('stroke-linejoin', 'round')
+            .attr('stroke-linecap', 'round')
+            .attr('stroke-width', 1)
+            .attr('d', lineGenerator)
 
-        var point = g.selectAll('point')
+        var point = clusterLine.selectAll('point')
             .data(function (d, i) {
                 return data.map(function (datum) { return { "tag": d, "data": datum }; });
             })
             .enter().append('path')
             .attr('class', 'point')
             .attr('stroke', function (d, i) {
-                return UTIL.getDisplayColor(0, _displayColor);
+                return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
             })
             .attr('fill', function (d, i) {
-                return UTIL.getBorderColor(0, _borderColor);
+                return UTIL.getBorderColor(_measure.indexOf(d.tag), _borderColor);
             })
             .attr('d', function (d, i) {
                 return d3.symbol()
                     .type(d3.symbolCircle)
-                    .size(20)();
+                    .size(10)();
             })
             .attr('transform', function (d) {
                 return 'translate('
-                    + (x(d['data'][_dimension[0]]))
-                    + ',' + y(d.data[_measure[0]]) + ')';
+                    + (x(d['data'][_dimension[0]]) + x.bandwidth() / 2)
+                    + ',' + y(d['data'][d['tag']]) + ')';
             })
-        // .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-        // .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-        // .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+            .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+
+        plot.append('text')
+            .style("text-anchor", "middle")
+            .attr("class", 'dateRange')
+            .attr("x", parentWidth / 2)
+            .attr("y", 5)
+            .attr("dy", ".31em");
     }
 
-    var mousemove = function () {
-
-        var x0 = x.invert(d3.mouse(this)[0]),
-            i = bisectDate(data, x0, 1),
-            d0 = data[i - 1],
-            d1 = data[i],
-            d = x0 - d0[_dimension[0]] > d1[_dimension[0]] - x0 ? d1 : d0;
-
-        var formatDate = d3.timeFormat("%Y-%m-%d")
-        focus.attr("transform", "translate(" + x(d[_dimension[0]]) + "," + y(d[_measure[0]]) + ")");
-        focus.select("text").text(function () { return formatDate(d["order_date"]); });
-        focus.select(".x-hover-line").attr("y2", parentHeight - y(d[_measure[0]]));
-        focus.select(".y-hover-line").attr("x2", parentWidth + parentWidth);
-    }
 
     chart._getName = function () {
         return _NAME;
@@ -402,6 +381,23 @@ function rangefilter() {
         _tooltip = value;
         return chart;
     }
+
+    chart.showXaxis = function (value) {
+        if (!arguments.length) {
+            return _showXaxis;
+        }
+        _showXaxis = value;
+        return chart;
+    }
+
+    chart.showYaxis = function (value) {
+        if (!arguments.length) {
+            return _showYaxis;
+        }
+        _showYaxis = value;
+        return chart;
+    }
+
     chart.showValues = function (value, measure) {
         return UTIL.baseAccessor.call(_showValues, value, measure, _measure);
     }

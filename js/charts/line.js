@@ -90,7 +90,6 @@ function line() {
         this.yAxisColor(config.yAxisColor);
         this.displayName(config.displayName);
         this.showGrid(config.showGrid);
-        this.showXaxisLabel(config.showXaxisLabel);
         this.showValues(config.showValues);
         this.displayNameForMeasure(config.displayNameForMeasure);
         this.fontStyle(config.fontStyle);
