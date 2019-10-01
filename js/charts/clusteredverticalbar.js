@@ -1344,7 +1344,6 @@ function clusteredverticalbar() {
             .attr('visibility', 'visible')
             .call(_localYGrid);
 
-        UTIL.displayThreshold(threshold, data, keys);
         _local_svg.select('.sort')
             .attr('transform', function () {
                 return 'translate(0, ' + parseInt((parentHeight - 2 * COMMON.PADDING + 20 + (legendBreakCount * 20))) + ')';

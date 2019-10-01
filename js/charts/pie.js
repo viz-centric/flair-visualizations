@@ -151,7 +151,7 @@ function pie() {
                     result = d.data[_dimension[0]];
                     break;
                 case 'value':
-                    result = d.data[_measure[0]];
+                    result = UTIL.getFormattedValue(d.data[_measure[0]], UTIL.getNumberFormatterFn('Actual', d.data[_measure[0]]));
                     break;
                 case 'percentage':
                     result = (100 * d.data[_measure[0]] / _localTotal).toFixed(2) + ' %';
@@ -646,6 +646,24 @@ function pie() {
                 }
             })
             .text(_labelFn())
+            .text(function (d) {
+                if (!_print) {
+                    var centroid = _labelArc.centroid(d),
+                        x = centroid[0],
+                        y = centroid[1],
+                        h = _pythagorousTheorem(x, y);
+
+                    if ($(this).attr('text-anchor') == "start") {
+                        size = parentWidth / 2 - outerRadius * (x / h) * 1.05
+                    }
+                    else {
+                        size = parentWidth / 2 - Math.abs(outerRadius * (x / h) * 1.05);
+
+                    }
+                    return UTIL.getTruncatedLabel(this, this.textContent, size);
+                }
+            })
+
 
         if (!_print) {
             pieLabel.transition()
@@ -1003,9 +1021,25 @@ function pie() {
                 }
             })
             .text(_labelFn())
-            .text(function () {
-                return UTIL.title(UTIL.getTruncatedLabel(this, _labelFn(), this));
+            .text(function (d) {
+                if (!_print) {
+                    var centroid = _labelArc.centroid(d),
+                        x = centroid[0],
+                        y = centroid[1],
+                        h = _pythagorousTheorem(x, y);
+
+                    if ($(this).attr('text-anchor') == "start") {
+                        size = parentWidth / 2 - outerRadius * (x / h) * 1.05
+                    }
+                    else {
+                        size = parentWidth / 2 - Math.abs(outerRadius * (x / h) * 1.05);
+
+                    }
+                    return UTIL.getTruncatedLabel(this, this.textContent, size);
+                }
+
             })
+
             .transition()
             .delay(_delayFn(200))
             .on('start', function () {

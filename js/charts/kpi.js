@@ -46,7 +46,8 @@ function kpi() {
         _Local_data,
         _localLabelFontSize = [1.2, 0.9],
         parentContainer,
-        plot;
+        plot,
+        height, width;
 
     /* These are the common private functions that is shared across the different private/public
      * methods but is initialized beforehand.
@@ -108,6 +109,14 @@ function kpi() {
             'color': _kpiColor[index] || COMMON.DEFAULT_COLOR
         };
 
+
+        if (parseFloat(width)<=700) {
+            style['font-size'] = _kpiFontSize[index] / 2 + 'px'
+        }
+        else {
+            style['font-size'] = _kpiFontSize[index] + 'px'
+        }
+
         if (_kpiColorExpression[index].length) {
             style['color'] = UTIL.expressionEvaluator(_kpiColorExpression[index], endValue, 'color');
         }
@@ -125,6 +134,13 @@ function kpi() {
             'font-size': _iconSize[index] + 'px' || COMMON.DEFAULT_FONTSIZE,
             'display': _showIcon[index] == true ? 'inline-block' : 'none'
         };
+
+         if (parseFloat(width)<=700) {
+            iconStyle['font-size'] = _iconSize[index] / 2 + 'px'
+        }
+        else {
+            iconStyle['font-size'] = _iconSize[index] + 'px'
+        }
 
         if (_kpiIconExpression[index].length) {
             _kpiIcon[index] = UTIL.expressionEvaluator(_kpiIconExpression[index], endValue, 'icon');
@@ -160,8 +176,8 @@ function kpi() {
             parentContainer = d3.select('#' + selection.id)
         }
 
-        var width = parentContainer.attr('width'),
-            height = parentContainer.attr('height')
+        width = parentContainer.attr('width')
+        height = parentContainer.attr('height')
 
         _localDiv = parentContainer
 
@@ -182,6 +198,8 @@ function kpi() {
             container.style('top', '50%')
                 .style('left', '50%')
                 .style('transform', 'translate(-50%, -50%)')
+
+
         }
         else if (_kpiAlignment == "Left") {
             container.style('top', '50%')
@@ -190,7 +208,8 @@ function kpi() {
         }
         else {
             container.style('top', '50%')
-                .style('right', 0)
+                .style('right', '0px')
+                .style('left', 'unset')
                 .style('transform', 'translate(-5%, -50%)')
         }
 
@@ -216,7 +235,12 @@ function kpi() {
                 .classed('child', true)
                 .html(_getKpiDisplayName(i))
                 .style('font-size', function (d, i) {
-                    return _FontsizeForDisplayName[i] + 'px';
+                     if (parseFloat(width)<=700) {
+                        return _FontsizeForDisplayName[i] + 'px'
+                    }
+                    else {
+                        return _FontsizeForDisplayName[i] + 'px'
+                    }
                 })
                 .style('padding-left', '5px')
                 .style('text-align', function (d, i1) {
@@ -230,7 +254,14 @@ function kpi() {
                     return 'kpi-measure-' + i;
                 })
                 .classed('child', true)
-                .style('font-size', _kpiFontSize[i] + 'px')
+                .style('font-size', function () {
+                     if (parseFloat(width)<=700) {
+                        return _kpiFontSize[i] / 2 + 'px'
+                    }
+                    else {
+                        return _kpiFontSize[i] + 'px'
+                    }
+                })
                 .style('border-radius', function (d, i1) {
                     return COMMON.BORDER_RADIUS + 'px';
                 })
@@ -262,6 +293,15 @@ function kpi() {
                             me.html(_getKpi(interpolator(t), _localTotal[i], i));
                         }
                     });
+
+                kpiMeasure.style('font-size', function () {
+                     if (parseFloat(width)<=700) {
+                        return _kpiFontSize[i] / 2 + 'px'
+                    }
+                    else {
+                        return _kpiFontSize[i] + 'px'
+                    }
+                })
             }
             else {
                 kpiMeasure.html(_getKpi(_localTotal[i], _localTotal[i], 0));
@@ -319,6 +359,25 @@ function kpi() {
                     }
                 });
         });
+
+        var container = parentContainer.select('._container');
+
+        if (_kpiAlignment == "Center") {
+            container.style('top', '50%')
+                .style('left', '50%')
+                .style('transform', 'translate(-50%, -50%)')
+        }
+        else if (_kpiAlignment == "Left") {
+            container.style('top', '50%')
+                .style('left', 0)
+                .style('transform', 'translate(0, -50%)')
+        }
+        else {
+            container.style('top', '50%')
+                .style('right', '0px')
+                .style('left', 'unset')
+                .style('transform', 'translate(-5%, -50%)')
+        }
     }
 
     chart.config = function (value) {
