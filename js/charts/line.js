@@ -1144,6 +1144,9 @@ function line() {
         parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
         parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
 
+        parentContainer.select('.filterElement')
+            .style('visibility', UTIL.getVisibility(_isFilterGrid));
+
         drawLegend.call(this);
 
         var plot = _local_svg.select('.plot')
@@ -1473,7 +1476,7 @@ function line() {
 
         plot.select('.x.grid')
             .attr('transform', 'translate(0, ' + plotHeight + ')')
-            .attr('visibility', 'visible')
+            .attr('visibility', UTIL.getVisibility(_showGrid))
             .call(_localXGrid);
 
         plot.select('.y.grid')
@@ -1635,14 +1638,6 @@ function line() {
             return _displayName;
         }
         _displayName = value;
-        return chart;
-    }
-
-    chart.showGrid = function (value) {
-        if (!arguments.length) {
-            return _showGrid;
-        }
-        _showGrid = value;
         return chart;
     }
 

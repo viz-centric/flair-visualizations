@@ -978,14 +978,14 @@ function clusteredhorizontalbar() {
                         d3.select(this).style('font-size', parseInt(rectHeight) - 2 + 'px')
                     }
 
-                    if (this.getComputedTextLength() >= rectWidth) {
+                    if ((this.getComputedTextLength() + 10) >= rectWidth) {
                         return 'hidden';
                     }
                 }
                 return 'visible';
             })
             .attr('dx', function (d, i) {
-                return -offsetX;
+                return -offsetX / 2.5;
             })
             .attr('dy', function (d, i) {
                 return x1.bandwidth() / 2 + d3.select(this).style('font-size').replace('px', '') / 2.5;
@@ -1108,6 +1108,9 @@ function clusteredhorizontalbar() {
 
         parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
         parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
+
+        parentContainer.select('.filterElement')
+            .style('visibility', UTIL.getVisibility(_isFilterGrid));
 
         drawLegend.call(this);
 
@@ -1284,13 +1287,13 @@ function clusteredhorizontalbar() {
                     d3.select(this).style('font-size', parseInt(rectHeight) - 2 + 'px')
                 }
 
-                if (this.getComputedTextLength() >= rectWidth) {
+                if ((this.getComputedTextLength() + 10) >= rectWidth) {
                     return 'hidden';
                 }
                 return 'visible';
             })
             .attr('dx', function (d, i) {
-                return -offsetX;
+                return -offsetX / 2.5;
             })
             .attr('dy', function (d, i) {
                 return x1.bandwidth() / 2 + d3.select(this).style('font-size').replace('px', '') / 2.5;
@@ -1332,7 +1335,7 @@ function clusteredhorizontalbar() {
         _localYGrid.scale(y);
 
         plot.select('.x.grid')
-            .attr('visibility', 'visible')
+            .attr('visibility', UTIL.getVisibility(_showGrid))
             .call(_localXGrid);
 
         plot.select('.y.grid')
