@@ -634,9 +634,16 @@ function stackedverticalbar() {
                             return 'hidden';
                         }
                     }
+
                 }
+                var height = y(d[0]) - y(d[1]);
+                if (height <= 25) {
+                    return 'hidden';
+                }
+
                 return 'visible';
             })
+
     }
     var drawPlot = function (data) {
         var me = this;

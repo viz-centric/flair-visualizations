@@ -52,7 +52,7 @@ function doughnut() {
         _localData,
         _originalData;
 
-    var filter = false, filterData = [], parentContainer;
+    var filter = false, filterData = [], parentContainer, plotWidth, plotHeight, legendBreakCount = 1;;
 
     /* These are the common private functions that is shared across the different private/public
      * methods but is initialized beforehand.
@@ -507,25 +507,27 @@ function doughnut() {
             .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
         var legendWidth = 0,
-            legendHeight = 0,
-            plotWidth = parentWidth,
-            plotHeight = parentHeight;
+            legendHeight = 0;
+        plotWidth = parentWidth;
+        plotHeight = parentHeight;
 
         if (_legend) {
             _localLegend = LEGEND.bind(chart);
 
             var result = _localLegend(data, container, {
                 width: parentWidth,
-                height: parentHeight
+                height: parentHeight,
+                legendBreakCount: legendBreakCount
             });
 
             legendWidth = result.legendWidth;
             legendHeight = result.legendHeight;
+            legendBreakCount = result.legendBreakCount;
 
             switch (_legendPosition.toUpperCase()) {
                 case 'TOP':
                 case 'BOTTOM':
-                    plotHeight = plotHeight - legendHeight;
+                    plotHeight = plotHeight - parseFloat((20 * parseFloat(legendBreakCount)) + 20);
                     break;
                 case 'RIGHT':
                 case 'LEFT':
@@ -555,7 +557,7 @@ function doughnut() {
 
                 switch (_legendPosition.toUpperCase()) {
                     case 'TOP':
-                        translate = [(plotWidth / 2), legendHeight + (plotHeight / 2)];
+                        translate = [(plotWidth / 2), 20 * parseFloat(legendBreakCount + 1) + (plotHeight / 2)];
                         break;
                     case 'BOTTOM':
                     case 'RIGHT':
@@ -707,9 +709,22 @@ function doughnut() {
                         size = plotWidth / 2 - Math.abs(outerRadius * (x / h) * 1.05);
 
                     }
+                    var diff = d.endAngle - d.startAngle;
+                    if (diff <= 0.2) {
+
+                    }
                     return UTIL.getTruncatedLabel(this, this.textContent, size);
                 }
 
+            })
+            .text(function (d) {
+                var diff = d.endAngle - d.startAngle;
+                if (diff <= 0.2) {
+                    return ''
+                }
+                else {
+                    return this.textContent
+                }
             })
 
         if (!_print) {
@@ -1063,20 +1078,37 @@ function doughnut() {
                 }
             })
             .text(_labelFn())
+            .text(_labelFn())
             .text(function (d) {
-                var centroid = _labelArc.centroid(d),
-                    x = centroid[0],
-                    y = centroid[1],
-                    h = _pythagorousTheorem(x, y);
+                if (!_print) {
+                    var centroid = _labelArc.centroid(d),
+                        x = centroid[0],
+                        y = centroid[1],
+                        h = _pythagorousTheorem(x, y);
 
-                if ($(this).attr('text-anchor') == "start") {
-                    size = parentWidth / 2 - outerRadius * (x / h) * 1.05
+                    if ($(this).attr('text-anchor') == "start") {
+                        size = plotWidth / 2 - outerRadius * (x / h) * 1.05
+                    }
+                    else {
+                        size = plotWidth / 2 - Math.abs(outerRadius * (x / h) * 1.05);
+
+                    }
+                    var diff = d.endAngle - d.startAngle;
+                    if (diff <= 0.2) {
+
+                    }
+                    return UTIL.getTruncatedLabel(this, this.textContent, size);
+                }
+
+            })
+            .text(function (d) {
+                var diff = d.endAngle - d.startAngle;
+                if (diff <= 0.2) {
+                    return ''
                 }
                 else {
-                    size = parentWidth / 2 - Math.abs(outerRadius * (x / h) * 1.05);
-
+                    return this.textContent
                 }
-                return UTIL.getTruncatedLabel(this, this.textContent, size);
             })
 
         plot.select('#measure-value').remove();

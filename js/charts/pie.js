@@ -45,7 +45,7 @@ function pie() {
         _Local_data,
         _originalData;
 
-    var filter = false, filterData = [], parentContainer, plotWidth, plotHeight, legendBreakCount = 1;;
+    var filter = false, filterData = [], container, parentContainer, plotWidth, plotHeight, legendBreakCount = 1;;
 
     /* These are the common private functions that is shared across the different private/public
      * methods but is initialized beforehand.
@@ -485,7 +485,7 @@ function pie() {
         /* extracting measure values only from the data */
         _localSortedMeasureValue = data.map(function (d) { return +d[_measure[0]]; })
 
-        var container = svg.append('g')
+        container = svg.append('g')
             .classed('container', true)
             .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
@@ -517,6 +517,9 @@ function pie() {
                     plotWidth = plotWidth - legendWidth;
                     break;
             }
+        }
+        else {
+            legendBreakCount = 0;
         }
 
         if (_tooltip) {
@@ -663,22 +666,16 @@ function pie() {
                     return UTIL.getTruncatedLabel(this, this.textContent, size);
                 }
             })
+            .text(function (d) {
+                var diff = d.endAngle - d.startAngle;
+                if (diff <= 0.2) {
+                    return ''
+                }
+                else {
+                    return this.textContent;
+                }
+            })
 
-
-        if (!_print) {
-            pieLabel.transition()
-                .delay(_delayFn(200))
-                .on('start', function () {
-                    d3.select(this).text(_labelFn())
-                        .filter(function (d) {
-                            /* length of arc = angle in radians * radius */
-                            var diff = d.endAngle - d.startAngle;
-                            return outerRadius * diff < this.getComputedTextLength();
-                        })
-                        .remove();
-                });
-
-        }
 
         if (!_print) {
 
@@ -837,14 +834,30 @@ function pie() {
         var oldFilteredData = _mergeForTransition(filteredData, prevData),
             newFilteredData = _mergeForTransition(prevData, filteredData);
 
+        _local_svg.select('.legend').remove();
         if (_legend) {
-            svg.select('.legend').remove();
+            _localLegend = LEGEND.bind(chart);
 
-            _localLegend(data, svg.select('g'), {
+            var result = _localLegend(data, container, {
                 width: parentWidth,
                 height: parentHeight,
-                labelStack: _localLabelStack
+                legendBreakCount: legendBreakCount
             });
+
+            legendWidth = result.legendWidth;
+            legendHeight = result.legendHeight;
+            legendBreakCount = result.legendBreakCount;
+
+            switch (_legendPosition.toUpperCase()) {
+                case 'TOP':
+                case 'BOTTOM':
+                    plotHeight = plotHeight - parseFloat((20 * parseFloat(legendBreakCount)) + 20);
+                    break;
+                case 'RIGHT':
+                case 'LEFT':
+                    plotWidth = plotWidth - legendWidth;
+                    break;
+            }
         }
 
         var pieMask = svg.select('#arc-mask-group')
@@ -1037,20 +1050,16 @@ function pie() {
                     }
                     return UTIL.getTruncatedLabel(this, this.textContent, size);
                 }
-
             })
-
-            .transition()
-            .delay(_delayFn(200))
-            .on('start', function () {
-                d3.select(this).text(_labelFn())
-                    .filter(function (d) {
-                        /* length of arc = angle in radians * radius */
-                        var diff = d.endAngle - d.startAngle;
-                        return outerRadius * diff < this.getComputedTextLength();
-                    })
-                    .remove();
-            });
+            .text(function (d) {
+                var diff = d.endAngle - d.startAngle;
+                if (diff <= 0.2) {
+                    return ''
+                }
+                else {
+                    return this.textContent;
+                }
+            })
 
         _local_svg.select('g.lasso').remove()
 
