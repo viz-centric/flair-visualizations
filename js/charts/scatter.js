@@ -248,7 +248,7 @@ function scatter() {
             var border = d3.select(this).style('fill');
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border, _notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container,  border);
             }
         }
     }
@@ -259,7 +259,7 @@ function scatter() {
         return function (d, i) {
             if (tooltip) {
                 var border = d3.select(this).style('fill');
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border, _notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container,  border);
             }
         }
     }
@@ -489,9 +489,9 @@ function scatter() {
                 .tickSize(0)
                 .tickFormat(function (d) {
                     if (isRotate == false) {
-                        isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                        isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length ), tickLength);
                     }
-                    return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                    return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length ), tickLength);
                 })
                 .tickPadding(10);
 
@@ -928,9 +928,9 @@ function scatter() {
 
         _localXAxis.tickFormat(function (d) {
             if (isRotate == false) {
-                isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length ), tickLength);
             }
-            return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+            return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length ), tickLength);
         })
 
         if (_showXaxis) {

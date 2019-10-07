@@ -20,9 +20,8 @@ function pie() {
         _measure,
         _legend,
         _legendPosition,
+        _valuePosition = 'outside',
         _valueAs,
-        _valueAsArc,
-        _valuePosition,
         _sort,
         _tooltip,
         _print,
@@ -43,10 +42,10 @@ function pie() {
         _localKey,
         _localLegend,
         _localLabelStack = [],
-        _localData,
+        _Local_data,
         _originalData;
 
-    var filter = false, filterData = [], parentContainer, plotWidth, plotHeight;
+    var filter = false, filterData = [], container, parentContainer, plotWidth, plotHeight, legendBreakCount = 1;;
 
     /* These are the common private functions that is shared across the different private/public
      * methods but is initialized beforehand.
@@ -68,8 +67,6 @@ function pie() {
         this.legend(config.legend);
         this.legendPosition(config.legendPosition);
         this.valueAs(config.valueAs);
-        this.valueAsArc(config.valueAsArc);
-        this.valuePosition(config.valuePosition);
         this.tooltip(config.tooltip);
     }
 
@@ -154,7 +151,7 @@ function pie() {
                     result = d.data[_dimension[0]];
                     break;
                 case 'value':
-                    result = d.data[_measure[0]];
+                    result = UTIL.getFormattedValue(d.data[_measure[0]], UTIL.getNumberFormatterFn('Actual', d.data[_measure[0]]));
                     break;
                 case 'percentage':
                     result = (100 * d.data[_measure[0]] / _localTotal).toFixed(2) + ' %';
@@ -168,12 +165,12 @@ function pie() {
     }
 
     /**
-     * Builds the html data for the tooltip
-     *
-     * @param {object} datum Datum forming the arc
-     * @param {function} chart Pie chart function
-     * @return {string} String encoded HTML data
-     */
+   * Builds the html data for the tooltip
+   *
+   * @param {object} datum Datum forming the arc
+   * @param {function} chart Pie chart function
+   * @return {string} String encoded HTML data
+   */
     var _buildTooltipData = function (datum, chart) {
         var output = "";
 
@@ -415,7 +412,7 @@ function pie() {
             _localLabelStack.splice(_localLabelStack.indexOf(data[_dimension[0]]), 1);
         }
 
-        chart.update(_localData);
+        chart.update(_Local_data);
     }
 
     var _mergeForTransition = function (fData, sData) {
@@ -478,17 +475,17 @@ function pie() {
         /* total sum of the measure values */
         _localTotal = d3.sum(data.map(function (d) { return d[_measure[0]]; }));
 
-        /* applying sort operation to the data */
-        // UTIL.sorter(data, _measure, _sort);
+        // /* applying sort operation to the data */
+        // UTIL.sorter(data, _measure, -1);
 
         data.sort(function (a, b) {
-            return d3.ascending(a[_dimension[0]], b[_dimension[0]]);
+            return d3.descending(a[_dimension[0]], b[_dimension[0]]);
         });
 
         /* extracting measure values only from the data */
         _localSortedMeasureValue = data.map(function (d) { return +d[_measure[0]]; })
 
-        var container = svg.append('g')
+        container = svg.append('g')
             .classed('container', true)
             .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
@@ -502,22 +499,27 @@ function pie() {
 
             var result = _localLegend(data, container, {
                 width: parentWidth,
-                height: parentHeight
+                height: parentHeight,
+                legendBreakCount: legendBreakCount
             });
 
             legendWidth = result.legendWidth;
             legendHeight = result.legendHeight;
+            legendBreakCount = result.legendBreakCount;
 
             switch (_legendPosition.toUpperCase()) {
                 case 'TOP':
                 case 'BOTTOM':
-                    plotHeight = plotHeight - legendHeight;
+                    plotHeight = plotHeight - parseFloat((20 * parseFloat(legendBreakCount)) + 20);
                     break;
                 case 'RIGHT':
                 case 'LEFT':
                     plotWidth = plotWidth - legendWidth;
                     break;
             }
+        }
+        else {
+            legendBreakCount = 0;
         }
 
         if (_tooltip) {
@@ -545,7 +547,7 @@ function pie() {
 
                 switch (_legendPosition.toUpperCase()) {
                     case 'TOP':
-                        translate = [(plotWidth / 2), legendHeight + (plotHeight / 2)];
+                        translate = [(plotWidth / 2), 20 * parseFloat(legendBreakCount + 1) + (plotHeight / 2)];
                         break;
                     case 'BOTTOM':
                     case 'RIGHT':
@@ -601,120 +603,79 @@ function pie() {
             .style('fill', function (d) {
                 return COMMON.COLORSCALE(d.data[_dimension[0]]);
             })
+            .style('stroke', '#FFFFFF')
             .each(function (d) {
                 this._current = d;
             })
+            .attr('d', _arc);
 
-        if (!_print) {
-            // Interaction only when print disabled
-            pieArcPath.on('mouseover', _handleMouseOverFn.call(chart, tooltip, svg))
-                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg))
-                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg))
-                .on('click', function (d, i) {
+        var pieArcTextGroup = plot.selectAll('.arc-text')
+            .data(_pie(data))
+            .enter().append('g')
+            .attr('id', function (d, i) {
+                return 'arc-text-group-' + i;
+            })
+            .classed('arc-text', true);
 
-                });
-        }
+        var pieLabel = pieArcTextGroup.append('text')
+            .attr('transform', function (d) {
+                var centroid = _labelArc.centroid(d),
+                    x = centroid[0],
+                    y = centroid[1],
+                    h = _pythagorousTheorem(x, y);
 
-        pieArcPath.transition()
-            .duration(_durationFn())
-            .delay(_delayFn())
-            .attrTween('d', function (d) {
-                var i = d3.interpolate(d.startAngle + 0.1, d.endAngle);
-                return function (t) {
-                    d.endAngle = i(t);
-                    return _arc(d)
+                if (_valuePosition == 'inside') {
+                    return 'translate('
+                        + outerRadius * (x / h) * 0.85
+                        + ', '
+                        + outerRadius * (y / h) * 0.85
+                        + ')';
+                } else {
+                    return 'translate('
+                        + outerRadius * (x / h) * 1.05
+                        + ', '
+                        + outerRadius * (y / h) * 1.05
+                        + ')';
                 }
-            });
+            })
+            .attr('dy', '0.35em')
+            .attr('text-anchor', function (d) {
+                if (_valuePosition == 'inside') {
+                    return 'middle';
+                } else {
+                    return (d.endAngle + d.startAngle) / 2 > Math.PI
+                        ? 'end' : (d.endAngle + d.startAngle) / 2 < Math.PI
+                            ? 'start' : 'middle';
+                }
+            })
+            .text(_labelFn())
+            .text(function (d) {
+                if (!_print) {
+                    var centroid = _labelArc.centroid(d),
+                        x = centroid[0],
+                        y = centroid[1],
+                        h = _pythagorousTheorem(x, y);
 
-        var pieLabel;
+                    if ($(this).attr('text-anchor') == "start") {
+                        size = parentWidth / 2 - outerRadius * (x / h) * 1.05
+                    }
+                    else {
+                        size = parentWidth / 2 - Math.abs(outerRadius * (x / h) * 1.05);
 
+                    }
+                    return UTIL.getTruncatedLabel(this, this.textContent, size);
+                }
+            })
+            .text(function (d) {
+                var diff = d.endAngle - d.startAngle;
+                if (diff <= 0.2) {
+                    return ''
+                }
+                else {
+                    return this.textContent;
+                }
+            })
 
-        /*remove for now*/
-
-        // if (_valueAsArc) {
-        //     pieLabel = pieArcGroup.append('text')
-        //         .attr('dy', function (d, i) {
-        //             if (_valuePosition == 'inside') {
-        //                 return 10;
-        //             } else {
-        //                 return -5;
-        //             }
-        //         })
-
-        //     pieLabel.append('textPath')
-        //         .attr('xlink:href', function (d, i) {
-        //             return '#arc-path-' + i;
-        //         })
-        //         .attr('text-anchor', function () {
-        //             return 'middle';
-        //         })
-        //         .transition()
-        //         .delay(_delayFn(200))
-        //         .on('start', function () {
-        //             d3.select(this).attr('startOffset', function (d) {
-        //                 var length = pieArcPath.nodes()[d.index].getTotalLength();
-        //                 return 50 * (length - 2 * outerRadius) / length + '%';
-        //             })
-        //                 .text(_labelFn())
-        //                 .filter(function (d, i) {
-        //                     /* length of arc = angle in radians * radius */
-        //                     var diff = d.endAngle - d.startAngle;
-        //                     return outerRadius * diff < this.getComputedTextLength();
-        //                 })
-        //                 .remove();
-        //         });
-        // } else {
-        //     var pieArcTextGroup = plot.selectAll('.arc-text')
-        //         .data(_pie(data))
-        //         .enter().append('g')
-        //         .attr('id', function (d, i) {
-        //             return 'arc-text-group-' + i;
-        //         })
-        //         .classed('arc-text', true);
-
-        //     pieLabel = pieArcTextGroup.append('text')
-        //         .attr('transform', function (d) {
-        //             var centroid = _labelArc.centroid(d),
-        //                 x = centroid[0],
-        //                 y = centroid[1],
-        //                 h = _pythagorousTheorem(x, y);
-
-        //             if (_valuePosition == 'inside') {
-        //                 return 'translate('
-        //                     + outerRadius * (x / h) * 0.85
-        //                     + ', '
-        //                     + outerRadius * (y / h) * 0.85
-        //                     + ')';
-        //             } else {
-        //                 return 'translate('
-        //                     + outerRadius * (x / h) * 1.05
-        //                     + ', '
-        //                     + outerRadius * (y / h) * 1.05
-        //                     + ')';
-        //             }
-        //         })
-        //         .attr('dy', '0.35em')
-        //         .attr('text-anchor', function (d) {
-        //             if (_valuePosition == 'inside') {
-        //                 return 'middle';
-        //             } else {
-        //                 return (d.endAngle + d.startAngle) / 2 > Math.PI
-        //                     ? 'end' : (d.endAngle + d.startAngle) / 2 < Math.PI
-        //                         ? 'start' : 'middle';
-        //             }
-        //         })
-        //         .transition()
-        //         .delay(_delayFn(200))
-        //         .on('start', function () {
-        //             d3.select(this).text(_labelFn())
-        //                 .filter(function (d) {
-        //                     /* length of arc = angle in radians * radius */
-        //                     var diff = d.endAngle - d.startAngle;
-        //                     return outerRadius * diff < this.getComputedTextLength();
-        //                 })
-        //                 .remove();
-        //         });
-        // }
 
         if (!_print) {
 
@@ -838,7 +799,7 @@ function pie() {
         data = UTIL.sortingData(data, _dimension[0])
 
         /* store the data in local variable */
-        _localData = data;
+        _Local_data = data;
         data.map(function (d) {
             d[_measure[0]] = Math.abs(d[_measure[0]]);
         })
@@ -873,14 +834,30 @@ function pie() {
         var oldFilteredData = _mergeForTransition(filteredData, prevData),
             newFilteredData = _mergeForTransition(prevData, filteredData);
 
+        _local_svg.select('.legend').remove();
         if (_legend) {
-            svg.select('.legend').remove();
+            _localLegend = LEGEND.bind(chart);
 
-            _localLegend(data, svg.select('g'), {
+            var result = _localLegend(data, container, {
                 width: parentWidth,
                 height: parentHeight,
-                labelStack: _localLabelStack
+                legendBreakCount: legendBreakCount
             });
+
+            legendWidth = result.legendWidth;
+            legendHeight = result.legendHeight;
+            legendBreakCount = result.legendBreakCount;
+
+            switch (_legendPosition.toUpperCase()) {
+                case 'TOP':
+                case 'BOTTOM':
+                    plotHeight = plotHeight - parseFloat((20 * parseFloat(legendBreakCount)) + 20);
+                    break;
+                case 'RIGHT':
+                case 'LEFT':
+                    plotWidth = plotWidth - legendWidth;
+                    break;
+            }
         }
 
         var pieMask = svg.select('#arc-mask-group')
@@ -922,9 +899,6 @@ function pie() {
             .data(_pie(filteredData), _localKey);
 
         pieMask.exit()
-            .transition()
-            .delay(1000)
-            .duration(0)
             .remove();
 
         var pieArcGroup = svg.select('#arc-group')
@@ -944,6 +918,7 @@ function pie() {
             .style('fill', function (d) {
                 return COMMON.COLORSCALE(d.data[_dimension[0]]);
             })
+            .style('stroke', '#FFFFFF')
             .each(function (d) {
                 this._current = d;
             })
@@ -966,47 +941,8 @@ function pie() {
             .data(_pie(filteredData), _localKey);
 
         pieArcGroup.exit()
-            .transition()
-            .delay(1000)
-            .duration(0)
             .remove();
 
-        // if (_valueAsArc) {
-        //     var pieLabel = pieArcGroup.append('text')
-        //         .attr('dy', function (d, i) {
-        //             if (_valuePosition == 'inside') {
-        //                 return 10;
-        //             } else {
-        //                 return -5;
-        //             }
-        //         })
-
-        //     pieLabel.append('textPath')
-        //         .attr('xlink:href', function (d, i) {
-        //             return '#arc-path-' + i;
-        //         })
-        //         .attr('text-anchor', function () {
-        //             return 'middle';
-        //         })
-        //         .transition()
-        //         .delay(_delayFn(200))
-        //         .on('start', function () {
-        //             d3.select(this).attr('startOffset', function (d) {
-        //                 var length = 1
-        //                 if (pieArcPath.nodes()[d.index]) {
-        //                     length = pieArcPath.nodes()[d.index].getTotalLength();
-        //                 }
-        //                 return 50 * (length - 2 * outerRadius) / length + '%';
-        //             })
-        //                 .text(_labelFn())
-        //                 .filter(function (d, i) {
-        //                     /* length of arc = angle in radians * radius */
-        //                     var diff = d.endAngle - d.startAngle;
-        //                     return outerRadius * diff < this.getComputedTextLength();
-        //                 })
-        //                 .remove();
-        //         });
-        // }
         pieArcPath.on('mouseover', _handleMouseOverFn.call(chart, tooltip, svg))
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg))
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg))
@@ -1053,6 +989,78 @@ function pie() {
                 _filterParameters[dimension] = _filterDimension[dimension];
                 filterParameters.save(_filterParameters);
             });
+
+        var plot = _local_svg.select('.plot')
+
+        plot.selectAll('.arc-text').remove();
+
+        var pieArcTextGroup = plot.selectAll('.arc-text')
+            .data(_pie(data))
+            .enter().append('g')
+            .attr('id', function (d, i) {
+                return 'arc-text-group-' + i;
+            })
+            .classed('arc-text', true);
+
+        var pieLabel = pieArcTextGroup.append('text')
+            .attr('transform', function (d) {
+                var centroid = _labelArc.centroid(d),
+                    x = centroid[0],
+                    y = centroid[1],
+                    h = _pythagorousTheorem(x, y);
+
+                if (_valuePosition == 'inside') {
+                    return 'translate('
+                        + outerRadius * (x / h) * 0.85
+                        + ', '
+                        + outerRadius * (y / h) * 0.85
+                        + ')';
+                } else {
+                    return 'translate('
+                        + outerRadius * (x / h) * 1.05
+                        + ', '
+                        + outerRadius * (y / h) * 1.05
+                        + ')';
+                }
+            })
+            .attr('dy', '0.35em')
+            .attr('text-anchor', function (d) {
+                if (_valuePosition == 'inside') {
+                    return 'middle';
+                } else {
+                    return (d.endAngle + d.startAngle) / 2 > Math.PI
+                        ? 'end' : (d.endAngle + d.startAngle) / 2 < Math.PI
+                            ? 'start' : 'middle';
+                }
+            })
+            .text(_labelFn())
+            .text(function (d) {
+                if (!_print) {
+                    var centroid = _labelArc.centroid(d),
+                        x = centroid[0],
+                        y = centroid[1],
+                        h = _pythagorousTheorem(x, y);
+
+                    if ($(this).attr('text-anchor') == "start") {
+                        size = parentWidth / 2 - outerRadius * (x / h) * 1.05
+                    }
+                    else {
+                        size = parentWidth / 2 - Math.abs(outerRadius * (x / h) * 1.05);
+
+                    }
+                    return UTIL.getTruncatedLabel(this, this.textContent, size);
+                }
+            })
+            .text(function (d) {
+                var diff = d.endAngle - d.startAngle;
+                if (diff <= 0.2) {
+                    return ''
+                }
+                else {
+                    return this.textContent;
+                }
+            })
+
         _local_svg.select('g.lasso').remove()
 
         var lasso = d3Lasso.lasso()
@@ -1117,22 +1125,6 @@ function pie() {
             return _valueAs;
         }
         _valueAs = value;
-        return chart;
-    }
-
-    chart.valueAsArc = function (value) {
-        if (!arguments.length) {
-            return _valueAsArc;
-        }
-        _valueAsArc = value;
-        return chart;
-    }
-
-    chart.valuePosition = function (value) {
-        if (!arguments.length) {
-            return _valuePosition;
-        }
-        _valuePosition = value;
         return chart;
     }
 

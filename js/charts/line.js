@@ -36,6 +36,8 @@ function line() {
         _textColor = [],
         _displayColor = [],
         _borderColor = [],
+        _displayColorExpression = [],
+        _textColorExpression = [],
         _fontSize = [],
         _lineType = [],
         _pointType = [],
@@ -44,7 +46,8 @@ function line() {
         filterParameters,
         _notification = false,
         _data,
-        _isFilterGrid = false;
+        _isFilterGrid = false,
+        _showSorting = true;
 
     var margin = {
         top: 0,
@@ -60,7 +63,7 @@ function line() {
         _localYGrid;
 
     var x = d3.scalePoint(), y = d3.scaleLinear();
-    var _x = d3.scalePoint(), _y = d3.scaleLinear(), brush = d3.brushX();;
+    var _x = d3.scalePoint(), _y = d3.scaleLinear(), brush = d3.brushX();
     var FilterControlHeight = 100;
 
     var areaGenerator = d3.area(), lineGenerator = d3.line();
@@ -87,7 +90,6 @@ function line() {
         this.yAxisColor(config.yAxisColor);
         this.displayName(config.displayName);
         this.showGrid(config.showGrid);
-        this.showXaxisLabel(config.showXaxisLabel);
         this.showValues(config.showValues);
         this.displayNameForMeasure(config.displayNameForMeasure);
         this.fontStyle(config.fontStyle);
@@ -100,7 +102,11 @@ function line() {
         this.lineType(config.lineType);
         this.pointType(config.pointType);
         this.isFilterGrid(config.isFilterGrid);
-        this.legendData(config.displayColor, config.measure);
+        this.showSorting(config.showSorting);
+        this.displayColorExpression(config.displayColorExpression);
+        this.textColorExpression(config.textColorExpression);
+        setDefaultColorForChart()
+        this.legendData(_displayColor, config.measure, config.displayNameForMeasure);
     }
     var getPointType = function (index) {
         var symbol = null;
@@ -152,6 +158,18 @@ function line() {
 
         return symbol;
     }
+
+    var setDefaultColorForChart = function () {
+        for (let index = 0; index < _measure.length; index++) {
+            if (_displayColor[index] == null || _displayColor[index] == undefined) {
+                _displayColor[index] = COMMON.COLORSCALE(index);
+            }
+            if (_borderColor[index] == null || _borderColor[index] == undefined) {
+                _borderColor[index] = COMMON.COLORSCALE(index);
+            }
+        }
+    }
+
     var _buildTooltipData = function (datum, chart) {
         var output = "";
         output += "<table><tr>"
@@ -293,7 +311,7 @@ function line() {
             var border = UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor)
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border, _notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -303,7 +321,7 @@ function line() {
         return function (d, i) {
             if (tooltip) {
                 var border = UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor)
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border, _notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -582,10 +600,30 @@ function line() {
             .enter().append('path')
             .attr('class', 'point')
             .attr('stroke', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+                if (_displayColorExpression[_measure.indexOf(d.tag)].length) {
+                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.tag)], d['data'][d['tag']], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.tag)], d['data'][d['tag']], 'color')
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+                    }
+                }
+                else {
+                    return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+                }
             })
             .attr('fill', function (d, i) {
-                return UTIL.getBorderColor(_measure.indexOf(d.tag), _borderColor);
+                if (_displayColorExpression[_measure.indexOf(d.tag)].length) {
+                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.tag)], d['data'][d['tag']], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.tag)], d['data'][d['tag']], 'color')
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+                    }
+                }
+                else {
+                    return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+                }
             })
             .attr('d', function (d, i) {
                 return d3.symbol()
@@ -641,7 +679,17 @@ function line() {
                 return _fontSize[_measure.indexOf(d.tag)];
             })
             .style('fill', function (d, i) {
-                return _textColor[_measure.indexOf(d.tag)];
+                if (_textColorExpression[_measure.indexOf(d.tag)].length) {
+                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag)], d.data[d.tag], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag)], d.data[d.tag], 'color')
+                    }
+                    else {
+                        return _textColor[_measure.indexOf(d.tag)];
+                    }
+                }
+                else {
+                    return _textColor[_measure.indexOf(d.tag)];
+                }
             });
 
         if (!_print || _notification) {
@@ -650,11 +698,15 @@ function line() {
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
                     if (!_print) {
-                        if ($("#myonoffswitch").prop('checked') == false) {
-                            $('#Modal_' + parentContainer.attr('id') + ' .measure').val(d.measure);
-                            $('#Modal_' + parentContainer.attr('id') + ' .threshold').val('');
-                            $('#Modal_' + parentContainer.attr('id') + ' .measure').attr('disabled', true);;
-                            $('#Modal_' + parentContainer.attr('id')).modal('toggle');
+                        if (broadcast != undefined && broadcast.isThresholdAlert) {
+                            var ThresholdViz = {};
+                            ThresholdViz.ID = parentContainer.attr('vizID');
+                            ThresholdViz.measure = d.tag;
+                            ThresholdViz.measureValue = d.data[d.tag];
+                            ThresholdViz.dimension = _dimension[0];
+                            ThresholdViz.dimensionValue = d.data[_dimension[0]];
+                            broadcast.ThresholdViz = ThresholdViz;
+                            broadcast.$broadcast('FlairBi:threshold-dialog');
                         }
                         else {
                             filter = false;
@@ -721,9 +773,9 @@ function line() {
             .tickSize(0)
             .tickFormat(function (d) {
                 if (isRotate == false) {
-                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength);
             })
             .tickPadding(10);
 
@@ -843,7 +895,8 @@ function line() {
             })
 
             _local_svg.select('g.sort').remove();
-            UTIL.sortingView(container, parentHeight, parentWidth + (_showYaxis == true ? margin.left : 0), legendBreakCount, axisLabelSpace, offsetX);
+            UTIL.sortingView(container, parentHeight, parentWidth + (_showYaxis == true ? margin.left : 0), legendBreakCount, axisLabelSpace, offsetX, _showSorting);
+
 
             _local_svg.select('g.sort').selectAll('text')
                 .on('click', function () {
@@ -942,7 +995,7 @@ function line() {
                 .call(_localXAxisForFilter);
 
             context.append("g")
-                .attr("class", "x brush")
+                .attr("class", "x_brush")
                 .call(brush)
                 .selectAll("rect")
                 .attr("y", -6)
@@ -1091,6 +1144,9 @@ function line() {
         parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
         parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
 
+        parentContainer.select('.filterElement')
+            .style('visibility', UTIL.getVisibility(_isFilterGrid));
+
         drawLegend.call(this);
 
         var plot = _local_svg.select('.plot')
@@ -1163,15 +1219,6 @@ function line() {
             .attr('stroke', 'none')
             .style('stroke-width', 0)
             .style('opacity', 0)
-            .transition()
-            .duration(COMMON.DURATION)
-            .styleTween('opacity', function () {
-                var interpolator = d3.interpolateNumber(0, 1);
-
-                return function (t) {
-                    return interpolator(t);
-                }
-            });
 
         plot.selectAll('path.point').remove()
 
@@ -1202,11 +1249,15 @@ function line() {
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
             .on('click', function (d) {
                 if (!_print) {
-                    if ($("#myonoffswitch").prop('checked') == false) {
-                        $('#Modal_' + parentContainer.attr('id') + ' .measure').val(d.measure);
-                        $('#Modal_' + parentContainer.attr('id') + ' .threshold').val('');
-                        $('#Modal_' + parentContainer.attr('id') + ' .measure').attr('disabled', true);;
-                        $('#Modal_' + parentContainer.attr('id')).modal('toggle');
+                    if (broadcast != undefined && broadcast.isThresholdAlert) {
+                        var ThresholdViz = {};
+                        ThresholdViz.ID = parentContainer.attr('vizID');
+                        ThresholdViz.measure = d.tag;
+                        ThresholdViz.measureValue = d.data[d.tag];
+                        ThresholdViz.dimension = _dimension[0];
+                        ThresholdViz.dimensionValue = d.data[_dimension[0]];
+                        broadcast.ThresholdViz = ThresholdViz;
+                        broadcast.$broadcast('FlairBi:threshold-dialog');
                     }
                     else {
                         filter = false;
@@ -1309,7 +1360,17 @@ function line() {
                 return _fontSize[_measure.indexOf(d.tag)];
             })
             .style('fill', function (d, i) {
-                return _textColor[_measure.indexOf(d.tag)];
+                if (_textColorExpression[_measure.indexOf(d.tag)].length) {
+                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag)], d.data[d.tag], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag)], d.data[d.tag], 'color')
+                    }
+                    else {
+                        return _textColor[_measure.indexOf(d.tag)];
+                    }
+                }
+                else {
+                    return _textColor[_measure.indexOf(d.tag)];
+                }
             });
 
         lineText
@@ -1351,7 +1412,17 @@ function line() {
                 return _fontSize[_measure.indexOf(d.tag)];
             })
             .style('fill', function (d, i) {
-                return _textColor[_measure.indexOf(d.tag)];
+                if (_textColorExpression[_measure.indexOf(d.tag)].length) {
+                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag)], d.data[d.tag], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag)], d.data[d.tag], 'color')
+                    }
+                    else {
+                        return _textColor[_measure.indexOf(d.tag)];
+                    }
+                }
+                else {
+                    return _textColor[_measure.indexOf(d.tag)];
+                }
             });
 
         var xAxisGroup,
@@ -1362,9 +1433,9 @@ function line() {
         _localXAxis
             .tickFormat(function (d) {
                 if (isRotate == false) {
-                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength);
             })
 
 
@@ -1389,12 +1460,23 @@ function line() {
         UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
 
         /* Update Axes Grid */
-        _localXGrid.ticks(x);
+        _localXGrid
+            .ticks(_localXLabels.length)
+            .tickFormat('')
+            .tickSize(-plotHeight);
+
+        _localYGrid
+            .tickFormat(function (d) {
+                UTIL.setAxisGridVisibility(this, _local_svg, _showGrid, d)
+            })
+            .tickSize(-plotWidth);
+
+        _localXGrid.scale(x);
         _localYGrid.scale(y);
 
         plot.select('.x.grid')
             .attr('transform', 'translate(0, ' + plotHeight + ')')
-            .attr('visibility', 'visible')
+            .attr('visibility', UTIL.getVisibility(_showGrid))
             .call(_localXGrid);
 
         plot.select('.y.grid')
@@ -1403,6 +1485,9 @@ function line() {
 
         UTIL.displayThreshold(threshold, data, keys);
         _local_svg.select('g.lasso').remove()
+
+        _local_svg.select('g.sort')
+            .style('visibility', UTIL.getVisibility(_showSorting))
 
         var lasso = d3Lasso.lasso()
             .hoverSelect(true)
@@ -1556,18 +1641,11 @@ function line() {
         return chart;
     }
 
-    chart.showGrid = function (value) {
-        if (!arguments.length) {
-            return _showGrid;
-        }
-        _showGrid = value;
-        return chart;
-    }
-
-    chart.legendData = function (measureConfig, measureName) {
+    chart.legendData = function (measureConfig, measureName, displayNameForMeasure) {
         _legendData = {
             measureConfig: measureConfig,
-            measureName: measureName
+            measureName: measureName,
+            displayName: displayNameForMeasure
         }
         return _legendData;
     }
@@ -1624,6 +1702,56 @@ function line() {
         return UTIL.baseAccessor.call(_pointType, value, measure, _measure);
     }
 
+    chart.textColorExpression = function (value, measure) {
+        if (!arguments.length) {
+            return _textColorExpression;
+        }
+
+        if (value instanceof Array && measure == void 0) {
+            _textColorExpression = value.map(function (v) {
+                return UTIL.getExpressionConfig(v, ['color']);
+            });
+            return chart;
+        }
+
+        var index = _measure.indexOf(measure);
+
+        if (index === -1) {
+            throw new Error('Invalid measure provided');
+        }
+
+        if (value == void 0) {
+            return _textColorExpression[index];
+        } else {
+            _textColorExpression[index] = UTIL.getExpressionConfig(value, ['color']);
+        }
+    }
+
+    chart.displayColorExpression = function (value, measure) {
+        if (!arguments.length) {
+            return _displayColorExpression;
+        }
+
+        if (value instanceof Array && measure == void 0) {
+            _displayColorExpression = value.map(function (v) {
+                return UTIL.getExpressionConfig(v, ['color']);
+            });
+            return chart;
+        }
+
+        var index = _measure.indexOf(measure);
+
+        if (index === -1) {
+            throw new Error('Invalid measure provided');
+        }
+
+        if (value == void 0) {
+            return _displayColorExpression[index];
+        } else {
+            _displayColorExpression[index] = UTIL.getExpressionConfig(value, ['color']);
+        }
+    }
+
     chart.broadcast = function (value) {
         if (!arguments.length) {
             return broadcast;
@@ -1658,6 +1786,13 @@ function line() {
             return _isFilterGrid;
         }
         _isFilterGrid = value;
+        return chart;
+    }
+    chart.showSorting = function (value) {
+        if (!arguments.length) {
+            return _showSorting;
+        }
+        _showSorting = value;
         return chart;
     }
     return chart;

@@ -4,13 +4,6 @@ var d3layoutcloud = require("../../d3-libs/d3.layout.cloud.js");
 var Seedrandom = require("../../d3-libs/seedrandom.min.js");
 
 var UTIL = require('../extras/util.js')();
-var LEGEND = require('../extras/legend_barcharts.js')();
-
-try {
-    var d3Lasso = require("d3-lasso");
-
-} catch (ex) { }
-
 
 function wordcloud() {
 
@@ -29,32 +22,27 @@ function wordcloud() {
         _notification = false,
         _data;
 
-    var gradientColor;
-
-    var margin = {
-        top: 0,
-        right: 0,
-        bottom: 0,
-        left: 45
-    };
+    var gradientColor = d3.scaleLinear();
 
     var _local_svg, _Local_data, _originalData
 
-    var tickLength = d3.scaleLinear()
-        .domain([22, 34])
-        .range([2, 4]);
-
-    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, parentContainer;
-    var parentWidth, parentHeight, plotWidth, plotHeight, container;
-
-    var filter = false, filterData = [];
-    var threshold = [];
+    var parentContainer, parentWidth, parentHeight;
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
         this.measure(config.measure);
         this.colorSet(config.colorSet);
         this.labelColor(config.labelColor);
+        setDefaultColorForChart();
+    }
+
+    var setDefaultColorForChart = function () {
+        if (_labelColor == null && _labelColor == undefined) {
+            _labelColor = COMMON.COLORSCALE(0);
+        }
+        if (_colorSet.length == 0) {
+            _colorSet = UTIL.defaultColours();
+        }
     }
 
     var _buildTooltipData = function (datum, chart) {
@@ -103,7 +91,7 @@ function wordcloud() {
 
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border, _notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -114,7 +102,7 @@ function wordcloud() {
         return function (d, i) {
             if (tooltip) {
                 var border = d3.select(this).style('fill')
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border, _notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -157,7 +145,7 @@ function wordcloud() {
         }
     }
 
-    var getFillColor = function (obj, index) {
+    var getFillColor = function (obj, index, words) {
         if (_labelColor == 'single_color') {
             return _colorSet[0];
         } else if (_labelColor == 'unique_color') {
@@ -166,14 +154,19 @@ function wordcloud() {
                 b = parseInt(Math.abs(Math.sin(7 * index - 100)) * 255);
             return d3.rgb(r, g, b);
         } else if (_labelColor == 'gradient_color') {
-            return gradientColor(obj[_measure]);
+            var color;
+            words.map(function (val) {
+                if (val[_dimension] == obj.text) {
+                    color = gradientColor(val[_measure]);
+                }
+            });
+            return color;
         }
     }
-    var setColorDomain = function (values) {
-        var min = Math.min.apply(Math, values),
-            max = Math.max.apply(Math, values);
 
-        gradientColor.domain([min, max]);
+    var setColorDomain = function (values) {
+        gradientColor.domain([Math.min.apply(Math, values), Math.max.apply(Math, values)]);
+        gradientColor.range([d3.rgb(_colorSet[0]).brighter(), d3.rgb(_colorSet[0]).darker()])
     }
 
 
@@ -214,9 +207,6 @@ function wordcloud() {
     var drawPlot = function (data) {
         var me = this;
 
-        gradientColor = d3.scaleLinear()
-            .range(['#ff9696', '#bc2f2f']);
-
         _Local_data = data;
         if (_tooltip) {
             tooltip = parentContainer.select('.custom_tooltip');
@@ -230,6 +220,9 @@ function wordcloud() {
 
         data.map(function (val) {
             val[_measure] = val[_measure] * 100 / _localTotal;
+            if (val[_measure] < 10) {
+                val[_measure] = 10;
+            }
         })
 
         var values = data.map(function (d) { return d[_measure]; });
@@ -238,21 +231,14 @@ function wordcloud() {
 
         var words = setData(data);
 
-        var maxSize = d3.max(words, function (d) { return d.size; });
-        var minSize = d3.min(words, function (d) { return d.size; });
-        var fontSizeScale = d3.scalePow().exponent(5).domain([0, 1]).range([10, 50]);
-
         d3layoutcloud()
             .size([parentWidth, parentHeight])
             .words(words)
-            .rotate(function () { return ~~(Math.random() * 2) * 90; })
-            .font("Impact")
-            .fontSize(function (d) {
-                return fontSizeScale(d.size / maxSize);;
-            })
+            .rotate(0)
+            .padding(10)
+            .fontSize(60)
+
             .on("end", drawSkillCloud)
-            .fontWeight(['bold'])
-            .spiral("rectangular")
             .start();
 
         function drawSkillCloud(words) {
@@ -262,28 +248,16 @@ function wordcloud() {
                 .selectAll("text")
                 .data(words)
                 .enter().append("text")
-                .style("font-size", function (d) {
-                    return d.size + "px";
-                })
-                .style("-webkit-touch-callout", "none")
-                .style("-webkit-user-select", "none")
-                .style("-khtml-user-select", "none")
-                .style("-moz-user-select", "none")
-                .style("-ms-user-select", "none")
-                .style("user-select", "none")
-                .style("cursor", "default")
-                .style("font-family", "Impact")
-                .style("fill", function (d, i) {
-                    return getFillColor(d, i);
-                })
-                .attr("class", "wordcloud")
+                .style("font-size", function (d) { return d.size + "px"; })
                 .attr("text-anchor", "middle")
                 .attr("transform", function (d) {
                     return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
                 })
-                .text(function (d) {
-                    return d.text;
+                .text(function (d) { return d.text; })
+                .style("fill", function (d, i) {
+                    return getFillColor(d, i, data);
                 })
+
             if (!_print) {
 
                 var _filter = UTIL.createFilterElement()
@@ -389,7 +363,7 @@ function wordcloud() {
         _colorSet = value;
         return chart;
     }
-    
+
     chart.labelColor = function (value) {
         if (!arguments.length) {
             return _labelColor;

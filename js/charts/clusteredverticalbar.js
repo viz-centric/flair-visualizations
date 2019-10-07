@@ -34,6 +34,8 @@ function clusteredverticalbar() {
         _textColor = [],
         _displayColor = [],
         _borderColor = [],
+        _displayColorExpression = [],
+        _textColorExpression = [],
         _fontSize = [],
         _print,
         broadcast,
@@ -41,9 +43,10 @@ function clusteredverticalbar() {
         isAnimationDisable = false,
         _notification = false,
         _data,
-        _isFilterGrid;
+        _isFilterGrid = false,
+        _showSorting = true;
 
-    var _local_svg, svgFilter, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1, yScale = d3.scaleLinear();
+    var _local_svg, svgFilter, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1, _localXLabels;
     var _localXAxis,
         _localYAxis,
         _localXGrid,
@@ -99,7 +102,22 @@ function clusteredverticalbar() {
         this.borderColor(config.borderColor);
         this.fontSize(config.fontSize);
         this.isFilterGrid(config.isFilterGrid);
-        this.legendData(config.displayColor, config.measure);
+        this.showSorting(config.showSorting);
+        this.displayColorExpression(config.displayColorExpression)
+        this.textColorExpression(config.textColorExpression)
+        setDefaultColorForChart();
+        this.legendData(_displayColor, config.measure, config.displayNameForMeasure);
+    }
+
+    var setDefaultColorForChart = function () {
+        for (let index = 0; index < _measure.length; index++) {
+            if (_displayColor[index] == null || _displayColor[index] == undefined) {
+                _displayColor[index] = COMMON.COLORSCALE(index);
+            }
+            if (_borderColor[index] == null || _borderColor[index] == undefined) {
+                _borderColor[index] = COMMON.COLORSCALE(index);
+            }
+        }
     }
 
     var _buildTooltipData = function (datum, chart) {
@@ -249,7 +267,7 @@ function clusteredverticalbar() {
             var border = UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor)
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border, _notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -260,7 +278,7 @@ function clusteredverticalbar() {
         return function (d, i) {
             if (tooltip) {
                 var border = UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor)
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border, _notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -271,8 +289,13 @@ function clusteredverticalbar() {
         return function (d, i) {
             d3.select(this).style('cursor', 'default')
                 .style('fill', function (d1, i) {
-                    if (d1[d1.measure] < 0) {
-                        return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                    if (_displayColorExpression[_measure.indexOf(d.measure)].length) {
+                        if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.measure)], d1[d1.measure], 'color').length > 0) {
+                            return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color')
+                        }
+                        else {
+                            return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                        }
                     }
                     else {
                         return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
@@ -414,7 +437,6 @@ function clusteredverticalbar() {
                 legend.attr('transform', function (d, i) {
                     if (_legendPosition.toUpperCase() == 'LEFT') {
                         return 'translate(0, ' + i * 20 + ')';
-
                     }
                     else if (_legendPosition.toUpperCase() == 'RIGHT') {
                         return 'translate(' + (parentWidth - legendSpace + axisLabelSpace + 10) + ', ' + i * 20 + ')';
@@ -462,7 +484,7 @@ function clusteredverticalbar() {
 
         drawPlotForFilter.call(this, data);
 
-        var _localXLabels = data.map(function (d) {
+        _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
         });
 
@@ -531,9 +553,9 @@ function clusteredverticalbar() {
             .tickSize(0)
             .tickFormat(function (d) {
                 if (isRotate == false) {
-                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength);
             })
             .tickPadding(10);
 
@@ -597,44 +619,13 @@ function clusteredverticalbar() {
             var confirm = $(_local_svg).parent().find('div.confirm')
                 .css('visibility', 'hidden');
 
-            _local_svg.attr('class', 'chartSvg_' + parentContainer.attr('id'));
-
-            //remove Threshold popup icon
-            // var AlertElement = UTIL.createAlertElement();
-            // $(div).append(AlertElement);
-
-            //remove Threshold modal popup 
-            // var str = UTIL.createAlert($(div).attr('id'), _measure);
-            // $('body').append(str);
-
             var _filter = UTIL.createFilterElement()
-            //$(div).append(_filter);
+
             $('#' + parentContainer.attr('id')).append(_filter);
 
-
-            $(document).on('click', plot, function (e) {
-                if ($(parentContainer).find('.alert').prop('checked') == false) {
-                    var element = e.target.classList.value.split(' ')
-                    if (element.indexOf("chartSvg_" + parentContainer.attr('id')) >= 0) {
-                        $('#Modal_' + parentContainer.attr('id') + ' .measure').val('')
-                        $('#Modal_' + parentContainer.attr('id') + ' .threshold').val('')
-                        $('#Modal_' + parentContainer.attr('id') + ' .measure').attr('disabled', false)
-                        $('#Modal_' + parentContainer.attr('id')).modal('show');
-                    }
-                }
-            })
-
-            $(document).on('click', '#Modal_' + parentContainer.attr('id') + ' .ThresholdSubmit', function (e) {
-                var newValue = $('#Modal_' + parentContainer.attr('id') + ' .threshold').val();
-                var obj = new Object()
-                obj.measure = $('#Modal_' + parentContainer.attr('id') + ' .measure').val()
-                obj.threshold = newValue;
-                threshold.push(obj);
-                $('#Modal_' + parentContainer.attr('id')).modal('toggle');
-            })
-
             _local_svg.select('g.sort').remove();
-            UTIL.sortingView(container, parentHeight, parentWidth + (_showYaxis == true ? margin.left : 0), legendBreakCount, axisLabelSpace, offsetX);
+            UTIL.sortingView(container, parentHeight, parentWidth + (_showYaxis == true ? margin.left : 0), legendBreakCount, axisLabelSpace, offsetX, _showSorting);
+
 
             _local_svg.select('g.sort').selectAll('text')
                 .on('click', function () {
@@ -732,7 +723,7 @@ function clusteredverticalbar() {
                 .call(_localXAxisForFilter);
 
             context.append("g")
-                .attr("class", "x brush")
+                .attr("class", "x_brush")
                 .call(brush)
                 .selectAll("rect")
                 .attr("y", -6)
@@ -765,8 +756,13 @@ function clusteredverticalbar() {
 
             clusteredverticalbarFilter.append('rect')
                 .style('fill', function (d, i) {
-                    if (d[d.measure] < 0) {
-                        return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                    if (_displayColorExpression[_measure.indexOf(d.measure)].length) {
+                        if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color').length > 0) {
+                            return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color')
+                        }
+                        else {
+                            return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                        }
                     }
                     else {
                         return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
@@ -808,8 +804,13 @@ function clusteredverticalbar() {
         rect = element.append('rect')
             .attr('class', 'bar')
             .style('fill', function (d, i) {
-                if (d[d.measure] < 0) {
-                    return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                if (_displayColorExpression[_measure.indexOf(d.measure)].length) {
+                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color')
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                    }
                 }
                 else {
                     return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
@@ -834,7 +835,6 @@ function clusteredverticalbar() {
                 } else if (d[d.measure] > 0) {
                     return y(d[d.measure]);
                 }
-
                 return y(0);
             })
             .attr("width", x1.bandwidth())
@@ -848,11 +848,16 @@ function clusteredverticalbar() {
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
                     if (!_print) {
-                        if ($(parentContainer).find('.alert').prop('checked') == true) {
-                            $('#Modal_' + parentContainer.attr('id') + ' .measure').val(d.measure);
-                            $('#Modal_' + parentContainer.attr('id') + ' .threshold').val('');
-                            $('#Modal_' + parentContainer.attr('id') + ' .measure').attr('disabled', true);;
-                            $('#Modal_' + parentContainer.attr('id')).modal('toggle');
+                        if (broadcast != undefined && broadcast.isThresholdAlert) {
+
+                            var ThresholdViz = {};
+                            ThresholdViz.ID = parentContainer.attr('vizID');
+                            ThresholdViz.measure = d.measure;
+                            ThresholdViz.measureValue = d[d.measure];
+                            ThresholdViz.dimension = d.dimension;
+                            ThresholdViz.dimensionValue = d[d.dimension];
+                            broadcast.ThresholdViz = ThresholdViz;
+                            broadcast.$broadcast('FlairBi:threshold-dialog');
                         }
                         else {
                             filter = false;
@@ -880,30 +885,30 @@ function clusteredverticalbar() {
                                     filterData.push(_filter[0]);
                                 }
                             }
-                        }
 
-                        var _filterDimension = {};
-                        if (broadcast.filterSelection.id) {
-                            _filterDimension = broadcast.filterSelection.filter;
-                        } else {
-                            broadcast.filterSelection.id = parentContainer.attr('id');
-                        }
-                        var dimension = _dimension[0];
-                        if (_filterDimension[dimension]) {
-                            _filterDimension[dimension] = filterData.map(function (d) {
-                                return d[_dimension[0]];
-                            });
-                        } else {
-                            _filterDimension[dimension] = [d[dimension]];
-                        }
+                            var _filterDimension = {};
+                            if (broadcast.filterSelection.id) {
+                                _filterDimension = broadcast.filterSelection.filter;
+                            } else {
+                                broadcast.filterSelection.id = parentContainer.attr('id');
+                            }
+                            var dimension = _dimension[0];
+                            if (_filterDimension[dimension]) {
+                                _filterDimension[dimension] = filterData.map(function (d) {
+                                    return d[_dimension[0]];
+                                });
+                            } else {
+                                _filterDimension[dimension] = [d[dimension]];
+                            }
 
-                        var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
-                        broadcast.updateWidget = {};
-                        broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
-                        broadcast.filterSelection.filter = _filterDimension;
-                        var _filterParameters = filterParameters.get();
-                        _filterParameters[dimension] = _filterDimension[dimension];
-                        filterParameters.save(_filterParameters);
+                            var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
+                            broadcast.updateWidget = {};
+                            broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
+                            broadcast.filterSelection.filter = _filterDimension;
+                            var _filterParameters = filterParameters.get();
+                            _filterParameters[dimension] = _filterDimension[dimension];
+                            filterParameters.save(_filterParameters);
+                        }
                     }
 
                 })
@@ -941,7 +946,17 @@ function clusteredverticalbar() {
                 return _fontSize[i] + 'px';
             })
             .style('fill', function (d, i) {
-                return _textColor[i];
+                if (_textColorExpression[_measure.indexOf(d.measure)].length) {
+                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color')
+                    }
+                    else {
+                        return _textColor[_measure.indexOf(d.measure)];
+                    }
+                }
+                else {
+                    return _textColor[_measure.indexOf(d.measure)];
+                }
             })
             .attr('visibility', function (d, i) {
                 var rect = d3.select(this.previousElementSibling).node(),
@@ -964,6 +979,9 @@ function clusteredverticalbar() {
                             return 'hidden';
                         }
                     }
+                }
+                if (rectHeight <= ((offsetX / 2) + parseFloat(d3.select(this).style('font-size').replace('px', '')))) {
+                    return 'hidden';
                 }
                 return 'visible';
             })
@@ -1012,8 +1030,13 @@ function clusteredverticalbar() {
             })
             .select('rect')
             .style('fill', function (d, i) {
-                if (d[d.measure] < 0) {
-                    return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                if (_displayColorExpression[_measure.indexOf(d.measure)].length) {
+                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color')
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                    }
                 }
                 else {
                     return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
@@ -1094,11 +1117,12 @@ function clusteredverticalbar() {
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
 
-        var _localXLabels = data.map(function (d) {
+        _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
         });
 
-        _xDimensionGrid.domain([0, _localXLabels.length]);
+        _xDimensionGrid.domain([0, _localXLabels.length])
+            .range([0, plotWidth]);
 
         x0.rangeRound([0, plotWidth])
             .padding([0.2])
@@ -1162,8 +1186,13 @@ function clusteredverticalbar() {
             })
             .attr('class', 'bar')
             .style('fill', function (d, i) {
-                if (d[d.measure] < 0) {
-                    return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                if (_displayColorExpression[_measure.indexOf(d.measure)].length) {
+                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color')
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
+                    }
                 }
                 else {
                     return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
@@ -1217,7 +1246,17 @@ function clusteredverticalbar() {
                 return _fontSize[i] + 'px';
             })
             .style('fill', function (d, i) {
-                return _textColor[i];
+                if (_textColorExpression[_measure.indexOf(d.measure)].length) {
+                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color')
+                    }
+                    else {
+                        return _textColor[_measure.indexOf(d.measure)];
+                    }
+                }
+                else {
+                    return _textColor[_measure.indexOf(d.measure)];
+                }
             })
             .attr('visibility', function (d, i) {
                 var rect = d3.select(this.previousElementSibling).node(),
@@ -1257,9 +1296,9 @@ function clusteredverticalbar() {
         _localXAxis
             .tickFormat(function (d) {
                 if (isRotate == false) {
-                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength);
             })
 
         xAxisGroup = plot.select('.x_axis')
@@ -1283,7 +1322,18 @@ function clusteredverticalbar() {
         UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
 
         /* Update Axes Grid */
-        _localXGrid.ticks(_localXLabels.length);
+        _localXGrid.ticks(_localXLabels.length)
+            .tickFormat('')
+            .tickSize(-plotHeight);
+
+        _localYGrid
+            .tickFormat(function (d) {
+                UTIL.setAxisGridVisibility(this, _local_svg, _showGrid, d)
+            })
+            .tickSize(-plotWidth);
+
+        _localXGrid.scale(_xDimensionGrid);
+        _localYGrid.scale(y);
 
         plot.select('.x.grid')
             .attr('transform', 'translate(0, ' + plotHeight + ')')
@@ -1294,13 +1344,15 @@ function clusteredverticalbar() {
             .attr('visibility', 'visible')
             .call(_localYGrid);
 
-        UTIL.displayThreshold(threshold, data, keys);
         _local_svg.select('.sort')
             .attr('transform', function () {
                 return 'translate(0, ' + parseInt((parentHeight - 2 * COMMON.PADDING + 20 + (legendBreakCount * 20))) + ')';
             })
 
         _local_svg.select('g.lasso').remove();
+
+        _local_svg.select('g.sort')
+            .style('visibility', UTIL.getVisibility(_showSorting))
 
         var lasso = d3Lasso.lasso()
             .hoverSelect(true)
@@ -1438,10 +1490,11 @@ function clusteredverticalbar() {
         return chart;
     }
 
-    chart.legendData = function (measureConfig, measureName) {
+    chart.legendData = function (measureConfig, measureName, displayNameForMeasure) {
         _legendData = {
             measureConfig: measureConfig,
-            measureName: measureName
+            measureName: measureName,
+            displayName: displayNameForMeasure,
         }
         return _legendData;
     }
@@ -1490,6 +1543,56 @@ function clusteredverticalbar() {
         return UTIL.baseAccessor.call(_fontSize, value, measure, _measure, chart);
     }
 
+    chart.textColorExpression = function (value, measure) {
+        if (!arguments.length) {
+            return _textColorExpression;
+        }
+
+        if (value instanceof Array && measure == void 0) {
+            _textColorExpression = value.map(function (v) {
+                return UTIL.getExpressionConfig(v, ['color']);
+            });
+            return chart;
+        }
+
+        var index = _measure.indexOf(measure);
+
+        if (index === -1) {
+            throw new Error('Invalid measure provided');
+        }
+
+        if (value == void 0) {
+            return _textColorExpression[index];
+        } else {
+            _textColorExpression[index] = UTIL.getExpressionConfig(value, ['color']);
+        }
+    }
+
+    chart.displayColorExpression = function (value, measure) {
+        if (!arguments.length) {
+            return _displayColorExpression;
+        }
+
+        if (value instanceof Array && measure == void 0) {
+            _displayColorExpression = value.map(function (v) {
+                return UTIL.getExpressionConfig(v, ['color']);
+            });
+            return chart;
+        }
+
+        var index = _measure.indexOf(measure);
+
+        if (index === -1) {
+            throw new Error('Invalid measure provided');
+        }
+
+        if (value == void 0) {
+            return _displayColorExpression[index];
+        } else {
+            _displayColorExpression[index] = UTIL.getExpressionConfig(value, ['color']);
+        }
+    }
+
     chart.broadcast = function (value) {
         if (!arguments.length) {
             return broadcast;
@@ -1532,6 +1635,13 @@ function clusteredverticalbar() {
             return _isFilterGrid;
         }
         _isFilterGrid = value;
+        return chart;
+    }
+    chart.showSorting = function (value) {
+        if (!arguments.length) {
+            return _showSorting;
+        }
+        _showSorting = value;
         return chart;
     }
     return chart;

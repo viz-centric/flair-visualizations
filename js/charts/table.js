@@ -301,7 +301,7 @@ function table() {
 
                 style = JSON.stringify(style);
                 style = style.replace(/","/g, ';').replace(/["{}]/g, '');
-                tbody += "<td id=\"" + item + "\" style=\"" + style + "\">" + getIcon(index, d[_measure[index]]) + UTIL.getFormattedValue(d[_measure[index]], UTIL.getValueNumberFormat(index, _numberFormatForMeasure)) + "</td>";
+                tbody += "<td id=\"" + item + "\" style=\"" + style + "\">" + getIcon(index, d[_measure[index]]) + UTIL.getFormattedValue(d[_measure[index]], UTIL.getValueNumberFormat(index, _numberFormatForMeasure, d[_measure[index]])) + "</td>";
                 //  tbody += "<td onClick=\"readerTableChart('" + d[_measure[index]] + "',this,_local_svg,'" + item + "')\" style=\"" + style + "\">" + getIcon(index, d[_measure[index]]) + UTIL.getFormattedValue(d[_measure[index]], UTIL.getValueNumberFormat(index, _numberFormatForMeasure)) + "</td>";
 
             });
@@ -315,7 +315,7 @@ function table() {
 
         data = UTIL.sortingData(_data, _dimension[0])
         _Local_data = _originalData = data;
-        if (_print && !_notification) {
+        if (_print) {
             parentContainer = selection;
         }
         else {
@@ -323,6 +323,8 @@ function table() {
         }
 
         var svg = parentContainer;
+
+        _local_svg = svg;
 
         var id = svg.attr('id');
 

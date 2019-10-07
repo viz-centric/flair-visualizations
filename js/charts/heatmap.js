@@ -33,6 +33,8 @@ function heatmap() {
         fontWeightForMeasure = [],
         numberFormat = [],
         fontSizeForMeasure = [],
+        iconExpression = [],
+        _tooltip,
         _print,
         broadcast,
         filterParameters,
@@ -46,12 +48,11 @@ function heatmap() {
         top: 30,
         right: 15,
         bottom: 15,
-        left: 55
+        left: 70
     };
 
     var yScale = d3.scaleBand(),
         xScale = d3.scaleBand();
-
 
     var filter = false, filterData = [];
 
@@ -79,6 +80,16 @@ function heatmap() {
         this.numberFormat(config.numberFormat);
         this.fontSizeForMeasure(config.fontSizeForMeasure);
         this.displayColor(config.displayColor);
+        this.iconExpression(config.iconExpression);
+        setDefaultColorForChart();
+    }
+
+    var setDefaultColorForChart = function () {
+        for (let index = 0; index < _measure.length; index++) {
+            if (displayColor[index] == null || displayColor[index] == undefined) {
+                displayColor[index] = COMMON.COLORSCALE(index);
+            }
+        }
     }
 
     var _buildTooltipData = function (datum, chart) {
@@ -104,7 +115,7 @@ function heatmap() {
             var border = d3.select(this).attr('fill');
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border, _notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -115,7 +126,7 @@ function heatmap() {
         return function (d, i) {
             if (tooltip) {
                 var border = getFillColor(d);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border, _notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -136,6 +147,36 @@ function heatmap() {
         }
     }
 
+    var getIconName = function (index) {
+        return iconName[index];
+    }
+
+    var getIcon = function (index, endValue) {
+        var iconOutput = "";
+
+        var iconStyle = {
+            'font-weight': iconFontWeight[index] || COMMON.DEFAULT_FONTWEIGHT,
+            'color': valueTextColour[index] || COMMON.DEFAULT_COLOR,
+            'font-size': fontSizeForMeasure[index] || COMMON.DEFAULT_FONTSIZE + 'px',
+            //   'text-align': getIconPosition(index),
+            'padding-right': '15px'
+        };
+
+        if (iconExpression[index].length) {
+            iconName[index] = UTIL.expressionEvaluator(iconExpression[index], endValue, 'icon');
+            iconStyle['color'] = UTIL.expressionEvaluator(iconExpression[index], endValue, 'color');
+        }
+
+        iconStyle = JSON.stringify(iconStyle);
+        iconStyle = iconStyle.replace(/["{}]/g, '').replace(/,/g, ';');
+
+        iconOutput += "<i  class=\"" + iconName[index] + "\" style=\"" + iconStyle + "\" aria-hidden=\"true\"></i>";
+
+        if (getIconName(index) !== "") {
+            return iconOutput;
+        }
+        return "";
+    }
 
     var transformData = function (data) {
         var me = this;
@@ -181,6 +222,16 @@ function heatmap() {
                     result = c.color;
                     return true;
                 }
+            }
+            else if (c.hasOwnProperty('below')) {
+                if (val < c.below) {
+                    result = c.color;
+                    return true;
+                }
+            }
+            else if (property.hasOwnProperty('default')) {
+                result = c.color;
+                return true;
             }
             else {
                 result = c.color;
@@ -388,8 +439,8 @@ function heatmap() {
             .attr('width', parentContainer.attr('width'))
             .attr('height', parentContainer.attr('height'))
 
-        width = +svg.attr('width'),
-            height = +svg.attr('height');
+        width = +svg.attr('width');
+        height = +svg.attr('height');
 
         parentContainer.append('div')
             .attr('class', 'custom_tooltip');
@@ -397,16 +448,7 @@ function heatmap() {
         _local_svg = svg;
 
         svg.selectAll('g').remove();
-
-        var plot = svg.attr('width', width)
-            .attr('height', height)
-            .append('g')
-            .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
-
-        /* store the data in local variable */
-        _localData = _originalData = data;
         var me = this;
-        svg.selectAll('g').remove();
 
         var plot = svg.attr('width', width)
             .attr('height', height)
@@ -421,8 +463,9 @@ function heatmap() {
             xElement.set(i, _measure[i]);
         }
 
-        cellWidth = parseInt((width - margin.left - margin.right) / _measure.length),
-            cellHeight = parseInt((height - margin.top - margin.bottom) / data.length);
+        cellWidth = parseInt((width - margin.left - margin.right) / _measure.length);
+        cellHeight = parseInt((height - margin.top - margin.bottom) / data.length);
+
         var offset = 6;
         var dimLabel = plot.selectAll('.dimLabel')
             .data(yElement)
@@ -430,15 +473,10 @@ function heatmap() {
             .attr('class', 'dimLabel')
             .text(function (d) { return d; })
             .text(function (d) {
-                if (!_print) {
-                    return UTIL.getTruncatedLabel(this, d, (margin.left));
+                if (d.length > 4) {
+                    return d.substring(0, 4) + '...';
                 }
-                else {
-                    if (d.length > 3) {
-                        return d.substring(0, 3) + '...';
-                    }
-                    return d;
-                }
+                return d;
             })
             .attr('x', 0)
             .attr('y', function (d, i) { return i * cellHeight; })
@@ -457,7 +495,12 @@ function heatmap() {
             .attr('class', 'mesLabel')
             .text(function (d) { return d; })
             .text(function (d) {
-                return UTIL.title(UTIL.getTruncatedLabel(this, d, cellWidth));
+                if (!_print) {
+                    return UTIL.title(UTIL.getTruncatedLabel(this, d, cellWidth));
+                }
+                else {
+                    return d.substring(0, 15)
+                }
             })
             .attr('x', function (d, i) { return i * cellWidth; })
             .attr('y', 0)
@@ -602,11 +645,11 @@ function heatmap() {
             })
             .text(function (d) {
                 var si = numberFormat[_measure.indexOf(d.x)],
-                    nf = UTIL.getNumberFormatter(si),
+                    nf = UTIL.getNumberFormatterFn(si, d.val),
                     value;
 
                 if (si == "Percent") {
-                    // value = nf(d.val / me.helper.measuresTotal[d.x]);
+                    value = nf(d.val / me.helper.measuresTotal[d.x]);
                 } else {
                     value = nf(d.val);
                 }
@@ -650,7 +693,9 @@ function heatmap() {
             .attr('width', cellWidth - 1)
             .attr('height', cellHeight - 1)
             .html(function (d) {
-                return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + ';font-size:' + fontSizeForMeasure[_measure.indexOf(d.x)] + 'px;"></i>';
+                //return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + ';font-size:' + fontSizeForMeasure[_measure.indexOf(d.x)] + 'px;"></i>';
+
+                return getIcon(_measure.indexOf(d.x), d.val)
             });
 
     }
@@ -683,6 +728,9 @@ function heatmap() {
             .attr('class', 'dimLabel')
             .text(function (d) { return d; })
             .text(function (d) {
+                if (d.length > 4) {
+                    return d.substring(0, 4) + '...';
+                }
                 return d;
             })
             .attr('x', 0)
@@ -740,11 +788,11 @@ function heatmap() {
             })
             .text(function (d) {
                 var si = numberFormat[_measure.indexOf(d.x)],
-                    nf = UTIL.getNumberFormatter(si),
+                    nf = UTIL.getNumberFormatterFn(si, d.val),
                     value;
 
                 if (si == "Percent") {
-                    // value = nf(d.val / me.helper.measuresTotal[d.x]);
+                    value = nf(d.val / me.helper.measuresTotal[d.x]);
                 } else {
                     value = nf(d.val);
                 }
@@ -787,7 +835,9 @@ function heatmap() {
             .attr('width', cellWidth - 1)
             .attr('height', cellHeight - 1)
             .html(function (d) {
-                return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + ';font-size:' + fontSizeForMeasure[_measure.indexOf(d.x)] + 'px;"></i>';
+                //return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + ';font-size:' + fontSizeForMeasure[_measure.indexOf(d.x)] + 'px;"></i>';
+
+                return getIcon(_measure.indexOf(d.x), d.val)
             });
 
         newCell.append('rect')
@@ -861,11 +911,11 @@ function heatmap() {
             })
             .text(function (d) {
                 var si = numberFormat[_measure.indexOf(d.x)],
-                    nf = UTIL.getNumberFormatter(si),
+                    nf = UTIL.getNumberFormatterFn(si, d.val),
                     value;
 
                 if (si == "Percent") {
-                    // value = nf(d.val / me.helper.measuresTotal[d.x]);
+                    value = nf(d.val / me.helper.measuresTotal[d.x]);
                 } else {
                     value = nf(d.val);
                 }
@@ -908,7 +958,9 @@ function heatmap() {
             .attr('width', cellWidth - 1)
             .attr('height', cellHeight - 1)
             .html(function (d) {
-                return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + ';font-size:' + fontSizeForMeasure[_measure.indexOf(d.x)] + 'px;"></i>';
+                //return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + ';font-size:' + fontSizeForMeasure[_measure.indexOf(d.x)] + 'px;"></i>';
+
+                return getIcon(_measure.indexOf(d.x), d.val)
             });
 
         //   drawViz(newCell)
@@ -1092,6 +1144,49 @@ function heatmap() {
     }
     chart.fontSizeForMeasure = function (value, measure) {
         return UTIL.baseAccessor.call(fontSizeForMeasure, value, measure, _measure);
+    }
+
+    chart.iconExpression = function (value, measure) {
+        if (!arguments.length) {
+            /**
+             * Getter method call with no arguments
+             * E.g. <chart>.kpiIconExpression() ==> [<item1>, <item2>]
+             */
+            return iconExpression;
+        }
+
+        if (value instanceof Array && measure == void 0) {
+            /**
+             * Setter method call with only value argument
+             * E.g. <chart>.kpiIconExpression([<item1>, <item2>]) ==> <chart_function>
+             */
+            iconExpression = value.map(function (v) {
+                return UTIL.getExpressionConfig(v, ['icon', 'color']);
+            });
+            return chart;
+        }
+
+        var index = _measure.indexOf(measure);
+
+        if (index === -1) {
+            throw new Error('Invalid measure provided');
+        }
+
+        if (value == void 0) {
+            /**
+             * Getter method call with only measure argument
+             * E.g. <chart>.kpiIconExpression(<measure>) ==> <item>
+             */
+            return iconExpression[index];
+        } else {
+            /**
+             * Setter method call with both value and measure arguments
+             * E.g. <chart>.kpiIconExpression(<item>, <measure>) ==> <chart_function>
+             */
+            iconExpression[index] = UTIL.getExpressionConfig(value, ['icon', 'color']);
+        }
+
+        return chart;
     }
 
     chart.broadcast = function (value) {

@@ -38,6 +38,8 @@ function combo() {
         _textColor = [],
         _displayColor = [],
         _borderColor = [],
+        _displayColorExpression = [],
+        _textColorExpression = [],
         _fontSize = [],
         _lineType = [],
         _pointType = [],
@@ -47,7 +49,8 @@ function combo() {
         isAnimationDisable = false,
         _notification = false,
         _data,
-        _isFilterGrid = false;
+        _isFilterGrid = false,
+        _showSorting = true;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
     var x0 = d3.scaleBand(), x1 = d3.scaleBand(), _xDimensionGrid = d3.scaleLinear(), y = d3.scaleLinear();
@@ -112,7 +115,11 @@ function combo() {
         this.lineType(config.lineType);
         this.pointType(config.pointType);
         this.isFilterGrid(config.isFilterGrid);
-        this.legendData(config.displayColor, config.measure);
+        this.showSorting(config.showSorting);
+        this.displayColorExpression(config.displayColorExpression);
+        this.textColorExpression(config.textColorExpression);
+        setDefaultColorForChart()
+        this.legendData(_displayColor, config.measure, config.displayNameForMeasure);
     }
     var getPointType = function (index) {
         var symbol = null;
@@ -167,6 +174,17 @@ function combo() {
 
     var getXLabels = function (data) {
         return data.map(function (d) { return d[_dimension[0]]; })
+    }
+
+    var setDefaultColorForChart = function () {
+        for (let index = 0; index < _measure.length; index++) {
+            if (_displayColor[index] == null || _displayColor[index] == undefined) {
+                _displayColor[index] = COMMON.COLORSCALE(index);
+            }
+            if (_borderColor[index] == null || _borderColor[index] == undefined) {
+                _borderColor[index] = COMMON.COLORSCALE(index);
+            }
+        }
     }
 
     var _buildTooltipData = function (datum, chart) {
@@ -289,18 +307,15 @@ function combo() {
 
     var applyFilter = function () {
         return function () {
-            if (filterData.length > 0) {
-                //Viz renders twice issue
-                // chart.update(filterData);
-                if (broadcast) {
-                    broadcast.updateWidget = {};
-                    broadcast.filterSelection.id = null;
-                    broadcast.$broadcast('flairbiApp:filter-input-refresh');
-                    broadcast.$broadcast('flairbiApp:filter');
-                    broadcast.$broadcast('flairbiApp:filter-add');
-                    d3.select(this.parentNode)
-                        .style('visibility', 'hidden');
-                }
+            if (broadcast) {
+                broadcast.updateWidget = {};
+                broadcast.filterSelection.id = null;
+                broadcast.$broadcast('flairbiApp:filter-input-refresh');
+                broadcast.$broadcast('flairbiApp:filter');
+                broadcast.$broadcast('flairbiApp:filter-add');
+                d3.select(this.parentNode)
+                    .style('visibility', 'hidden');
+
             }
         }
     }
@@ -345,7 +360,17 @@ function combo() {
         return function (d, i) {
             d3.select(this).style('cursor', 'default')
                 .style('fill', function (d1, i) {
-                    return UTIL.getDisplayColor(_measure.indexOf(d1.tag), _displayColor);
+                    if (_displayColorExpression[_measure.indexOf(d['tag'])].length) {
+                        if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d['tag'])], d['data'][measuresBar[i]], 'color').length > 0) {
+                            return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d['tag'])], d['data'][measuresBar[i]], 'color')
+                        }
+                        else {
+                            return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                        }
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                    }
                 })
                 .style('stroke', function (d1, i) {
                     return UTIL.getBorderColor(_measure.indexOf(d1.tag), _borderColor);
@@ -658,7 +683,30 @@ function combo() {
             .enter().append('path')
             .attr('class', 'point')
             .attr('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+                if (_displayColorExpression[_measure.indexOf(d.tag)].length) {
+                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.tag)], d['data'][d['tag']], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.tag)], d['data'][d['tag']], 'color')
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+                    }
+                }
+                else {
+                    return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+                }
+            })
+            .attr('stroke', function (d, i) {
+                if (_displayColorExpression[_measure.indexOf(d.tag)].length) {
+                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.tag)], d['data'][d['tag']], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.tag)], d['data'][d['tag']], 'color')
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+                    }
+                }
+                else {
+                    return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+                }
             })
             .attr('d', function (d, i) {
                 return d3.symbol()
@@ -712,12 +760,76 @@ function combo() {
                 return _fontSize[_measure.indexOf(d['tag'])];
             })
             .style('fill', function (d, i) {
-                return _textColor[_measure.indexOf(d['tag'])];
+                if (_textColorExpression[_measure.indexOf(d['tag'])].length) {
+                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d['tag'])], d['data'][d['tag']], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d['tag'])], d['data'][d['tag']], 'color')
+                    }
+                    else {
+                        return _textColor[_measure.indexOf(d['tag'])];
+                    }
+                }
+                else {
+                    return _textColor[_measure.indexOf(d['tag'])];
+                }
             });
         if (!_print || _notification) {
             point.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+                .on('click', function (d) {
+                    if (!_print) {
+                        if (broadcast != undefined && broadcast.isThresholdAlert) {
+                            var ThresholdViz = {};
+                            ThresholdViz.ID = parentContainer.attr('vizID');
+                            ThresholdViz.measure = d.tag;
+                            ThresholdViz.measureValue = d.data[d.tag];
+                            ThresholdViz.dimension = _dimension[0];
+                            ThresholdViz.dimensionValue = d.data[_dimension[0]];
+                            broadcast.ThresholdViz = ThresholdViz;
+                            broadcast.$broadcast('FlairBi:threshold-dialog');
+                        }
+                        else {
+                            filter = false;
+                            var confirm = parentContainer.select('.confirm')
+                                .style('visibility', 'visible');
+
+                            var rect = d3.select(this);
+                            if (rect.classed('selected')) {
+                                rect.classed('selected', false);
+
+                            } else {
+                                rect.classed('selected', true);
+                            }
+
+                            var _filterDimension = {};
+                            if (broadcast.filterSelection.id) {
+                                _filterDimension = broadcast.filterSelection.filter;
+                            } else {
+                                broadcast.filterSelection.id = parentContainer.attr('id');
+                            }
+                            var dimension = _dimension[0];
+                            if (_filterDimension[dimension]) {
+                                var temp = _filterDimension[dimension];
+                                if (temp.indexOf(d.data[_dimension[0]]) < 0) {
+                                    temp.push(d.data[_dimension[0]]);
+                                } else {
+                                    temp.splice(temp.indexOf(d.data[_dimension[0]]), 1);
+                                }
+                                _filterDimension[dimension] = temp;
+                            } else {
+                                _filterDimension[dimension] = [d.data[_dimension[0]]];
+                            }
+
+                            var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
+                            broadcast.updateWidget = {};
+                            broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
+                            broadcast.filterSelection.filter = _filterDimension;
+                            var _filterParameters = filterParameters.get();
+                            _filterParameters[dimension] = _filterDimension[dimension];
+                            filterParameters.save(_filterParameters);
+                        }
+                    }
+                })
         }
         if (!_print) {
             area.transition()
@@ -768,9 +880,9 @@ function combo() {
             .tickSize(0)
             .tickFormat(function (d) {
                 if (isRotate == false) {
-                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength);
             })
             .tickPadding(10);
 
@@ -856,7 +968,8 @@ function combo() {
             });
 
             _local_svg.select('g.sort').remove();
-            UTIL.sortingView(container, parentHeight, parentWidth + (_showYaxis == true ? margin.left : 0), legendBreakCount, axisLabelSpace, offsetX);
+            UTIL.sortingView(container, parentHeight, parentWidth + (_showYaxis == true ? margin.left : 0), legendBreakCount, axisLabelSpace, offsetX, _showSorting);
+
 
             _local_svg.select('g.sort').selectAll('text')
                 .on('click', function () {
@@ -915,7 +1028,7 @@ function combo() {
                 .domain(data.map(function (d) { return d[_dimension[0]]; }));
 
             _x1.padding([0.2])
-                .domain(keys).rangeRound([0, _x0.bandwidth()]);
+                .domain(measuresBar).rangeRound([0, _x0.bandwidth()]);
 
             _y.rangeRound([FilterControlHeight - COMMON.PADDING, 0])
                 .domain([range[0], range[1]])
@@ -951,19 +1064,11 @@ function combo() {
                 .call(_localXAxisForFilter);
 
             context.append("g")
-                .attr("class", "x brush")
+                .attr("class", "x_brush")
                 .call(brush)
                 .selectAll("rect")
                 .attr("y", -6)
                 .attr("height", FilterControlHeight + 7);
-
-            var clusterFilter = context.selectAll('.clusterFilter')
-                .data(data)
-                .enter().append('g')
-                .attr('class', 'clusterFilter')
-                .attr('transform', function (d) {
-                    return 'translate(' + _x0(d[_dimension[0]]) + ', 0)';
-                });
 
             var labelStack = [];
             var _areaGenerator = d3.area()
@@ -987,10 +1092,68 @@ function combo() {
                     return _y(d['data'][d['tag']]);
                 });
 
-            var cluster_lineFilter = context.selectAll('.cluster_lineFilter')
-                .data(keys.filter(function (m) { return labelStack.indexOf(m) == -1; }))
+            var labelStack = [];
+
+            var cluster_barFiltet = context.selectAll('.cluster_barFiltet')
+                .data(data)
                 .enter().append('g')
-                .attr('class', 'cluster_lineFilter');
+                .attr('class', 'cluster_barFiltet')
+                .attr('transform', function (d) {
+                    return 'translate(' + _x0(d[_dimension[0]]) + ', 0)';
+                });
+
+            var bar = cluster_barFiltet.selectAll('g.bar')
+                .data(function (d) {
+                    return measuresBar
+                        .filter(function (m) { return labelStack.indexOf(m) == -1; })
+                        .map(function (m) { return { "tag": m, "data": d }; });
+                })
+                .enter().append('g')
+                .attr('class', 'bar');
+
+
+            bar.append('rect')
+                .attr('width', x1.bandwidth())
+                .style('fill', function (d, i) {
+                    if (_displayColorExpression[_measure.indexOf(d['tag'])].length) {
+                        if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d['tag'])], d['data'][measuresBar[i]], 'color').length > 0) {
+                            return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d['tag'])], d['data'][measuresBar[i]], 'color')
+                        }
+                        else {
+                            return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                        }
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                    }
+                })
+                .style('stroke', function (d, i) {
+                    return UTIL.getBorderColor(_measure.indexOf(d['tag']), _borderColor);
+                })
+                .style('stroke-width', 1)
+                .attr('x', function (d, i) {
+                    return _x1(measuresBar[i]);
+                })
+                .attr('y', function (d, i) {
+                    if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
+                        return 0;
+                    } else if (d['data'][measuresBar[i]] > 0) {
+                        return _y(d['data'][measuresBar[i]]);
+                    }
+
+                    return _y(0);
+                })
+                .attr('height', function (d, i) {
+                    if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) return 0;
+                    return Math.abs(_y(0) - _y(d['data'][measuresBar[i]]));
+                })
+
+            labelStack = [];
+
+            var cluster_lineFilter = context.selectAll('.cluster_lineFiltet')
+                .data(measuresLine.filter(function (m) { return labelStack.indexOf(m) == -1; }))
+                .enter().append('g')
+                .attr('class', 'cluster_lineFiltet');
 
             var areaFilter = cluster_lineFilter.append('path')
                 .datum(function (d, i) {
@@ -1030,185 +1193,64 @@ function combo() {
                 .attr('stroke-width', 1)
                 .style('stroke-opacity', 0.6)
                 .attr('d', _lineGenerator)
-
-            var labelStack = []
-            var clusteredverticalbarFilter = clusterFilter.selectAll('g.clusteredverticalbarFilter')
-                .data(function (d) {
-                    return keys.filter(function (m) {
-                        return labelStack.indexOf(m) == -1;
-                    }).map(function (m) {
-                        var obj = {};
-                        obj[_dimension[0]] = d[_dimension[0]];
-                        obj[m] = d[m];
-                        obj['dimension'] = _dimension[0];
-                        obj['measure'] = m;
-                        return obj;
-                    });
-                })
-                .enter().append('g')
-                .attr('class', 'clusteredverticalbarFilter');
-
-            clusteredverticalbarFilter.append('rect')
-                .style('fill', function (d, i) {
-                    if (d[d.measure] < 0) {
-                        return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
-                    }
-                    else {
-                        return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
-                    }
-                })
-                .style('stroke', function (d, i) {
-                    if (d[d.measure] < 0) {
-                        return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
-                    }
-                    else {
-                        return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
-                    }
-                })
-                .style('fill-opacity', 0.6)
-                .style('stroke-opacity', 0.6)
-                .style('stroke-width', 1)
-                .attr("height", function (d, i) {
-                    if ((d[d.measure] === null) || (isNaN(d[d.measure]))) return 0;
-                    return Math.abs(_y(0) - _y(d[d.measure]));
-                })
-                .attr("y", function (d, i) {
-                    if ((d[d.measure] === null) || (isNaN(d[d.measure]))) {
-                        return plotHeight;
-                    } else if (d[d.measure] > 0) {
-                        return _y(d[d.measure]);
-                    }
-
-                    return _y(0);
-                })
-                .attr("width", _x1.bandwidth())
-                .attr("x", function (d, i) {
-                    return _x1(d.measure);;
-                })
         }
     }
 
     var drawViz = function (element, keys) {
         var me = this;
         var rect;
-        if (!_print) {
-            rect = element.append('rect')
-                .attr('width', x1.bandwidth())
-                .style('fill', function (d, i) {
+        rect = element.append('rect')
+            .attr('width', x1.bandwidth())
+            .style('fill', function (d, i) {
+                if (_displayColorExpression[_measure.indexOf(d['tag'])].length) {
+                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d['tag'])], d['data'][measuresBar[i]], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d['tag'])], d['data'][measuresBar[i]], 'color')
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                    }
+                }
+                else {
                     return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
-                })
-                .style('stroke', function (d, i) {
-                    return UTIL.getBorderColor(_measure.indexOf(d['tag']), _borderColor);
-                })
-                .style('stroke-width', 1)
-                .attr('x', function (d, i) {
-                    return x1(measuresBar[i]);
-                })
-                .attr('y', function (d, i) {
-                    if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
-                        return 0;
-                    } else if (d['data'][measuresBar[i]] > 0) {
-                        return y(d['data'][measuresBar[i]]);
-                    }
+                }
+            })
+            .style('stroke', function (d, i) {
+                return UTIL.getBorderColor(_measure.indexOf(d['tag']), _borderColor);
+            })
+            .style('stroke-width', 1)
+            .attr('x', function (d, i) {
+                return x1(measuresBar[i]);
+            })
+            .attr('y', function (d, i) {
+                if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
+                    return 0;
+                } else if (d['data'][measuresBar[i]] > 0) {
+                    return y(d['data'][measuresBar[i]]);
+                }
 
-                    return y(0);
-                })
-                .attr('height', function (d, i) {
-                    if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) return 0;
-                    return Math.abs(y(0) - y(d['data'][measuresBar[i]]));
-                })
-                .style('opacity', 1);
+                return y(0);
+            })
+            .attr('height', function (d, i) {
+                if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) return 0;
+                return Math.abs(y(0) - y(d['data'][measuresBar[i]]));
+            })
 
-            rect.transition()
-                .duration(COMMON.DURATION)
-                .style('opacity', 1)
 
-            var text = element.append('text')
-                .text(function (d, i) {
-                    return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(i, _numberFormat, d.data[d.tag]));
-                })
-                .attr('x', function (d, i) {
-                    return x1(measuresBar[i]);
-                })
-                .attr('dy', function (d, i) {
-                    return COMMON.OFFSET;
-                })
-                .attr('y', function (d, i) {
-                    if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
-                        return contentHeight;
-                    } else if (d['data'][measuresBar[i]] > 0) {
-                        return y(d['data'][measuresBar[i]]);
-                    }
-
-                    return y(0);
-                })
-                .attr('dx', function (d, i) {
-                    return x1.bandwidth() / 2;
-                })
-                .style('text-anchor', 'middle')
-                .attr('visibility', function (d, i) {
-                    if (_notification) {
-                        return 'hidden';
-                    }
-                    return UTIL.getVisibility(_showValues[i]);
-                })
-                .style('font-style', function (d, i) {
-                    return _fontStyle[i];
-                })
-                .style('font-weight', function (d, i) {
-                    return _fontWeight[i];
-                })
-                .style('font-size', function (d, i) {
-                    return _fontSize[i] + 'px';
-                })
-                .style('fill', function (d, i) {
-                    return _textColor[i];
-                })
-                .text(function (d, i) {
-                    var barWidth = (1 - x0.padding()) * plotWidth / (_Local_data.length - 1);
-                    barWidth = (1 - x1.padding()) * barWidth / keys.length;
-                    return UTIL.getTruncatedTick(d3.select(this).text(), barWidth, tickLength);
-                });
-        }
-        else {
-            rect = element.append('rect')
-                .attr('width', x1.bandwidth())
-                .style('fill', function (d, i) {
-                    return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
-                })
-                .style('stroke', function (d, i) {
-                    return UTIL.getBorderColor(_measure.indexOf(d['tag']), _borderColor);
-                })
-                .style('stroke-width', 1)
-                .attr('x', function (d, i) {
-                    return x1(measuresBar[i]);
-                })
-                .attr('y', function (d, i) {
-                    if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
-                        return 0;
-                    } else if (d['data'][measuresBar[i]] > 0) {
-                        return y(d['data'][measuresBar[i]]);
-                    }
-
-                    return y(0);
-                })
-                .attr('height', function (d, i) {
-                    if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) return 0;
-                    return Math.abs(y(0) - y(d['data'][measuresBar[i]]));
-                })
-
-        }
         if (!_print || _notification) {
             rect.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
                     if (!_print) {
-                        if ($("#myonoffswitch").prop('checked') == false) {
-                            $('#Modal_' + parentContainer.attr('id') + ' .measure').val(d.measure);
-                            $('#Modal_' + parentContainer.attr('id') + ' .threshold').val('');
-                            $('#Modal_' + parentContainer.attr('id') + ' .measure').attr('disabled', true);;
-                            $('#Modal_' + parentContainer.attr('id')).modal('toggle');
+                        if (broadcast != undefined && broadcast.isThresholdAlert) {
+                            var ThresholdViz = {};
+                            ThresholdViz.ID = parentContainer.attr('vizID');
+                            ThresholdViz.measure = d.tag;
+                            ThresholdViz.measureValue = d.data[d.tag];
+                            ThresholdViz.dimension = _dimension[0];
+                            ThresholdViz.dimensionValue = d.data[_dimension[0]];
+                            broadcast.ThresholdViz = ThresholdViz;
+                            broadcast.$broadcast('FlairBi:threshold-dialog');
                         }
                         else {
                             filter = false;
@@ -1245,11 +1287,15 @@ function combo() {
                             }
                             var dimension = _dimension[0];
                             if (_filterDimension[dimension]) {
-                                _filterDimension[dimension] = filterData.map(function (d) {
-                                    return d[_dimension[0]];
-                                });
+                                var temp = _filterDimension[dimension];
+                                if (temp.indexOf(d.data[[_dimension[0]]]) < 0) {
+                                    temp.push(d.data[[_dimension[0]]]);
+                                } else {
+                                    temp.splice(temp.indexOf(d.data[[_dimension[0]]]), 1);
+                                }
+                                _filterDimension[dimension] = temp;
                             } else {
-                                _filterDimension[dimension] = [d[_dimension[0]]];
+                                _filterDimension[dimension] = [d.data[[_dimension[0]]]];
                             }
 
                             var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
@@ -1264,6 +1310,63 @@ function combo() {
 
                 })
         }
+
+        var text = element.append('text')
+            .text(function (d, i) {
+                return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(i, _numberFormat, d.data[d.tag]));
+            })
+            .attr('x', function (d, i) {
+                return x1(measuresBar[i]);
+            })
+            .attr('dy', function (d, i) {
+                return COMMON.OFFSET;
+            })
+            .attr('y', function (d, i) {
+                if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
+                    return contentHeight;
+                } else if (d['data'][measuresBar[i]] > 0) {
+                    return y(d['data'][measuresBar[i]]);
+                }
+
+                return y(0);
+            })
+            .attr('dx', function (d, i) {
+                return x1.bandwidth() / 2;
+            })
+            .style('text-anchor', 'middle')
+            .attr('visibility', function (d, i) {
+                if (_notification) {
+                    return 'hidden';
+                }
+                return UTIL.getVisibility(_showValues[i]);
+            })
+            .style('font-style', function (d, i) {
+                return _fontStyle[i];
+            })
+            .style('font-weight', function (d, i) {
+                return _fontWeight[i];
+            })
+            .style('font-size', function (d, i) {
+                return _fontSize[i] + 'px';
+            })
+            .style('fill', function (d, i) {
+                if (_textColorExpression[_measure.indexOf(d['tag'])].length) {
+                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d['tag'])], d['data'][d['tag']], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d['tag'])], d['data'][d['tag']], 'color')
+                    }
+                    else {
+                        return _textColor[_measure.indexOf(d['tag'])];
+                    }
+                }
+                else {
+                    return _textColor[_measure.indexOf(d['tag'])];
+                }
+            })
+            .text(function (d, i) {
+                var barWidth = (1 - x0.padding()) * plotWidth / (_Local_data.length - 1);
+                barWidth = (1 - x1.padding()) * barWidth / keys.length;
+                return UTIL.getTruncatedTick(d3.select(this).text(), barWidth, tickLength);
+            });
     }
     chart._legendInteraction = function (event, data, plot) {
         if (_print) {
@@ -1321,7 +1424,17 @@ function combo() {
 
         clustered.select('rect')
             .style('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+                if (_displayColorExpression[_measure.indexOf(d['tag'])].length) {
+                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d['tag'])], d['data'][measuresBar[i]], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d['tag'])], d['data'][measuresBar[i]], 'color')
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                    }
+                }
+                else {
+                    return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                }
             });
         line
             .style("stroke-width", "1.5px")
@@ -1368,6 +1481,9 @@ function combo() {
 
         parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
         parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
+
+        parentContainer.select('.filterElement')
+            .style('visibility', UTIL.getVisibility(_isFilterGrid));
 
         drawLegend.call(this);
 
@@ -1430,7 +1546,8 @@ function combo() {
             return d[_dimension[0]];
         });
 
-        _xDimensionGrid.domain([0, _localXLabels.length]);
+        _xDimensionGrid.domain([0, _localXLabels.length])
+            .range([0, plotWidth]);
 
         var chartploat = svg.select('.chart')
         var labelStack = [];
@@ -1460,7 +1577,17 @@ function combo() {
         bar.select('rect')
             .attr('width', x1.bandwidth())
             .style('fill', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                if (_displayColorExpression[_measure.indexOf(d['tag'])].length) {
+                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d['tag'])], d['data'][measuresBar[i]], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d['tag'])], d['data'][measuresBar[i]], 'color')
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                    }
+                }
+                else {
+                    return UTIL.getDisplayColor(_measure.indexOf(d['tag']), _displayColor);
+                }
             })
             .style('stroke', function (d, i) {
                 return UTIL.getBorderColor(_measure.indexOf(d['tag']), _borderColor);
@@ -1492,6 +1619,9 @@ function combo() {
             .attr('x', function (d, i) {
                 return x1(measuresBar[i]);
             })
+            .attr('dy', function (d, i) {
+                return COMMON.OFFSET;
+            })
             .attr('y', function (d, i) {
                 if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
                     return contentHeight;
@@ -1504,12 +1634,40 @@ function combo() {
             .attr('dx', function (d, i) {
                 return x1.bandwidth() / 2;
             })
+            .style('text-anchor', 'middle')
+            .attr('visibility', function (d, i) {
+                if (_notification) {
+                    return 'hidden';
+                }
+                return UTIL.getVisibility(_showValues[i]);
+            })
+            .style('font-style', function (d, i) {
+                return _fontStyle[i];
+            })
+            .style('font-weight', function (d, i) {
+                return _fontWeight[i];
+            })
+            .style('font-size', function (d, i) {
+                return _fontSize[i] + 'px';
+            })
+            .style('fill', function (d, i) {
+                if (_textColorExpression[_measure.indexOf(d['tag'])].length) {
+                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d['tag'])], d['data'][d['tag']], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d['tag'])], d['data'][d['tag']], 'color')
+                    }
+                    else {
+                        return _textColor[_measure.indexOf(d['tag'])];
+                    }
+                }
+                else {
+                    return _textColor[_measure.indexOf(d['tag'])];
+                }
+            })
             .text(function (d, i) {
                 var barWidth = (1 - x0.padding()) * plotWidth / (_Local_data.length - 1);
                 barWidth = (1 - x1.padding()) * barWidth / keys.length;
                 return UTIL.getTruncatedTick(d3.select(this).text(), barWidth, tickLength);
             });
-
 
         var newBars = bar.enter().append('g')
             .attr('class', 'bar');
@@ -1563,7 +1721,17 @@ function combo() {
                 return _fontSize[_measure.indexOf(d['tag'])];
             })
             .style('fill', function (d, i) {
-                return _textColor[_measure.indexOf(d['tag'])];
+                if (_textColorExpression[_measure.indexOf(d['tag'])].length) {
+                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d['tag'])], d['data'][d['tag']], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d['tag'])], d['data'][d['tag']], 'color')
+                    }
+                    else {
+                        return _textColor[_measure.indexOf(d['tag'])];
+                    }
+                }
+                else {
+                    return _textColor[_measure.indexOf(d['tag'])];
+                }
             });
 
         lineText
@@ -1591,11 +1759,25 @@ function combo() {
                 return data.map(function (datum) { return { "tag": d, "data": datum }; });
             })
             .attr('stroke-dasharray', 'none')
+            .attr('stroke', function (d, i) {
+                return UTIL.getBorderColor(_measure.indexOf(d[0]['tag']), _borderColor);
+            })
             .attr('d', lineGenerator)
 
         var area = clusterLine.select('path.area')
             .datum(function (d, i) {
                 return data.map(function (datum) { return { "tag": d, "data": datum }; });
+            })
+            .attr('fill', function (d, i) {
+                return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
+            })
+            .attr('visibility', function (d, i) {
+                if (_lineType[(_measure.indexOf(d[0]['tag']))].toUpperCase() == "AREA") {
+                    return 'visible'
+                }
+                else {
+                    return 'hidden';
+                }
             })
             .attr('d', areaGenerator)
             .style('fill-opacity', 0.5)
@@ -1625,6 +1807,60 @@ function combo() {
             .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+            .on('click', function (d) {
+                if (!_print) {
+                    if (broadcast != undefined && broadcast.isThresholdAlert) {
+                        var ThresholdViz = {};
+                        ThresholdViz.ID = parentContainer.attr('vizID');
+                        ThresholdViz.measure = d.tag;
+                        ThresholdViz.measureValue = d.data[d.tag];
+                        ThresholdViz.dimension = _dimension[0];
+                        ThresholdViz.dimensionValue = d.data[_dimension[0]];
+                        broadcast.ThresholdViz = ThresholdViz;
+                        broadcast.$broadcast('FlairBi:threshold-dialog');
+                    }
+                    else {
+                        filter = false;
+                        var confirm = parentContainer.select('.confirm')
+                            .style('visibility', 'visible');
+
+                        var rect = d3.select(this);
+                        if (rect.classed('selected')) {
+                            rect.classed('selected', false);
+
+                        } else {
+                            rect.classed('selected', true);
+                        }
+
+                        var _filterDimension = {};
+                        if (broadcast.filterSelection.id) {
+                            _filterDimension = broadcast.filterSelection.filter;
+                        } else {
+                            broadcast.filterSelection.id = parentContainer.attr('id');
+                        }
+                        var dimension = _dimension[0];
+                        if (_filterDimension[dimension]) {
+                            var temp = _filterDimension[dimension];
+                            if (temp.indexOf(d.data[_dimension[0]]) < 0) {
+                                temp.push(d.data[_dimension[0]]);
+                            } else {
+                                temp.splice(temp.indexOf(d.data[_dimension[0]]), 1);
+                            }
+                            _filterDimension[dimension] = temp;
+                        } else {
+                            _filterDimension[dimension] = [d.data[_dimension[0]]];
+                        }
+
+                        var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
+                        broadcast.updateWidget = {};
+                        broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
+                        broadcast.filterSelection.filter = _filterDimension;
+                        var _filterParameters = filterParameters.get();
+                        _filterParameters[dimension] = _filterDimension[dimension];
+                        filterParameters.save(_filterParameters);
+                    }
+                }
+            })
 
         var xAxisGroup,
             yAxisGroup;
@@ -1634,9 +1870,9 @@ function combo() {
         _localXAxis
             .tickFormat(function (d) {
                 if (isRotate == false) {
-                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                    isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length - 1), tickLength);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength);
             })
 
         xAxisGroup = plot.select('.x_axis')
@@ -1660,7 +1896,19 @@ function combo() {
         UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
 
         /* Update Axes Grid */
-        _localXGrid.ticks(_localXLabels.length);
+        _localXGrid
+            .ticks(_localXLabels.length)
+            .tickFormat('')
+            .tickSize(-plotHeight);
+
+        _localYGrid
+            .tickFormat(function (d) {
+                UTIL.setAxisGridVisibility(this, _local_svg, _showGrid, d)
+            })
+            .tickSize(-plotWidth);
+
+        _localXGrid.scale(_xDimensionGrid);
+        _localYGrid.scale(y);
 
         plot.select('.x.grid')
             .attr('transform', 'translate(0, ' + plotHeight + ')')
@@ -1673,6 +1921,10 @@ function combo() {
 
         UTIL.displayThreshold(threshold, data, keys);
         _local_svg.select('g.lasso').remove()
+
+        _local_svg.select('g.sort')
+            .style('visibility', UTIL.getVisibility(_showSorting))
+
         var lasso = d3Lasso.lasso()
             .hoverSelect(true)
             .closePathSelect(true)
@@ -1824,10 +2076,11 @@ function combo() {
         return chart;
     }
 
-    chart.legendData = function (measureConfig, measureName) {
+    chart.legendData = function (measureConfig, measureName, displayNameForMeasure) {
         _legendData = {
             measureConfig: measureConfig,
-            measureName: measureName
+            measureName: measureName,
+            displayName: displayNameForMeasure
         }
         return _legendData;
     }
@@ -1964,6 +2217,56 @@ function combo() {
         return UTIL.baseAccessor.call(_pointType, value, measure, _measure, chart);
     }
 
+    chart.textColorExpression = function (value, measure) {
+        if (!arguments.length) {
+            return _textColorExpression;
+        }
+
+        if (value instanceof Array && measure == void 0) {
+            _textColorExpression = value.map(function (v) {
+                return UTIL.getExpressionConfig(v, ['color']);
+            });
+            return chart;
+        }
+
+        var index = _measure.indexOf(measure);
+
+        if (index === -1) {
+            throw new Error('Invalid measure provided');
+        }
+
+        if (value == void 0) {
+            return _textColorExpression[index];
+        } else {
+            _textColorExpression[index] = UTIL.getExpressionConfig(value, ['color']);
+        }
+    }
+
+    chart.displayColorExpression = function (value, measure) {
+        if (!arguments.length) {
+            return _displayColorExpression;
+        }
+
+        if (value instanceof Array && measure == void 0) {
+            _displayColorExpression = value.map(function (v) {
+                return UTIL.getExpressionConfig(v, ['color']);
+            });
+            return chart;
+        }
+
+        var index = _measure.indexOf(measure);
+
+        if (index === -1) {
+            throw new Error('Invalid measure provided');
+        }
+
+        if (value == void 0) {
+            return _displayColorExpression[index];
+        } else {
+            _displayColorExpression[index] = UTIL.getExpressionConfig(value, ['color']);
+        }
+    }
+
     chart.broadcast = function (value) {
         if (!arguments.length) {
             return broadcast;
@@ -2005,6 +2308,13 @@ function combo() {
             return _isFilterGrid;
         }
         _isFilterGrid = value;
+        return chart;
+    }
+    chart.showSorting = function (value) {
+        if (!arguments.length) {
+            return _showSorting;
+        }
+        _showSorting = value;
         return chart;
     }
     return chart;

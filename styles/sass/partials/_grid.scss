@@ -9,3 +9,32 @@
     shape-rendering: crispEdges;
   }
 }
+
+.x_brush,
+.y_brush {
+  rect.overlay {
+    fill: #e5e5e5;
+  }
+  rect.selection {
+    fill: #ffffff;
+    fill-opacity: 1;
+  }
+  .handle {
+    fill: #9a9d9f;
+    fill-opacity: 0.5;
+  }
+}
+
+.brush {
+  rect.overlay {
+    // fill: #676a6c;
+    // fill-opacity: 0.3;
+  }
+  // rect.selection {
+  //   fill: #ffffff;
+  // }
+  .handle {
+    fill: #9a9d9f;
+    fill-opacity: 1;
+  }
+}

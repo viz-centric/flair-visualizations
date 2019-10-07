@@ -21,11 +21,11 @@ function doughnut() {
         _legend,
         _legendPosition,
         _valueAs,
-        _valueAsArc,
-        _valuePosition,
         _sort,
         _tooltip,
         _print,
+        _numberFormat,
+        _valuePosition = 'outside',
         broadcast,
         filterParameters,
         _measureDisplayName,
@@ -52,7 +52,7 @@ function doughnut() {
         _localData,
         _originalData;
 
-    var filter = false, filterData = [], parentContainer;
+    var filter = false, filterData = [], parentContainer, plotWidth, plotHeight, legendBreakCount = 1;;
 
     /* These are the common private functions that is shared across the different private/public
      * methods but is initialized beforehand.
@@ -73,8 +73,6 @@ function doughnut() {
         this.legend(config.legend);
         this.legendPosition(config.legendPosition);
         this.valueAs(config.valueAs);
-        this.valueAsArc(config.valueAsArc);
-        this.valuePosition(config.valuePosition);
         this.tooltip(config.tooltip);
         this.showLabel(config.showLabel);
         this.fontSize(config.fontSize);
@@ -82,6 +80,7 @@ function doughnut() {
         this.fontWeight(config.fontWeight);
         this.fontColor(config.fontColor);
         this.measureDisplayName(config.measureDisplayName);
+        this.numberFormat(config.numberFormat);
     }
 
     /**
@@ -165,7 +164,7 @@ function doughnut() {
                     result = d.data[_dimension[0]];
                     break;
                 case 'value':
-                    result = d.data[_measure[0]];
+                    result = UTIL.getFormattedValue(d.data[_measure[0]], UTIL.getNumberFormatterFn('Actual', d.data[_measure[0]]));
                     break;
                 case 'percentage':
                     result = (100 * d.data[_measure[0]] / _localTotal).toFixed(2) + ' %';
@@ -465,7 +464,6 @@ function doughnut() {
             parentContainer = d3.select('#' + selection.id)
         }
 
-
         var svg = parentContainer.append('svg')
             .attr('width', parentContainer.attr('width'))
             .attr('height', parentContainer.attr('height'))
@@ -509,25 +507,27 @@ function doughnut() {
             .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
         var legendWidth = 0,
-            legendHeight = 0,
-            plotWidth = parentWidth,
-            plotHeight = parentHeight;
+            legendHeight = 0;
+        plotWidth = parentWidth;
+        plotHeight = parentHeight;
 
         if (_legend) {
             _localLegend = LEGEND.bind(chart);
 
             var result = _localLegend(data, container, {
                 width: parentWidth,
-                height: parentHeight
+                height: parentHeight,
+                legendBreakCount: legendBreakCount
             });
 
             legendWidth = result.legendWidth;
             legendHeight = result.legendHeight;
+            legendBreakCount = result.legendBreakCount;
 
             switch (_legendPosition.toUpperCase()) {
                 case 'TOP':
                 case 'BOTTOM':
-                    plotHeight = plotHeight - legendHeight;
+                    plotHeight = plotHeight - parseFloat((20 * parseFloat(legendBreakCount)) + 20);
                     break;
                 case 'RIGHT':
                 case 'LEFT':
@@ -557,7 +557,7 @@ function doughnut() {
 
                 switch (_legendPosition.toUpperCase()) {
                     case 'TOP':
-                        translate = [(plotWidth / 2), legendHeight + (plotHeight / 2)];
+                        translate = [(plotWidth / 2), 20 * parseFloat(legendBreakCount + 1) + (plotHeight / 2)];
                         break;
                     case 'BOTTOM':
                     case 'RIGHT':
@@ -599,13 +599,10 @@ function doughnut() {
             .append("tspan")
             .text(function () {
                 if (!_print) {
-                    return UTIL.getTruncatedLabel(
-                        this,
-                        _localTotal,
-                        outerRadius * 0.8)
+                    return UTIL.getTruncatedLabel(this, UTIL.getFormattedValue(_localTotal, UTIL.getNumberFormatterFn(_numberFormat, _localTotal)), outerRadius * 0.8);
                 }
                 else {
-                    return _localTotal;
+                    return UTIL.getFormattedValue(_localTotal, UTIL.getNumberFormatterFn(_numberFormat, _localTotal));
                 }
             })
             .attr("x", 0)
@@ -656,124 +653,79 @@ function doughnut() {
             .each(function (d) {
                 this._current = d;
             })
+            .attr('d', _arc)
 
-        if (!_print) {
-            doughnutArcPath.transition()
-                .duration(_durationFn())
-                .delay(_delayFn())
-                .attrTween('d', function (d) {
-                    var i = d3.interpolate(d.startAngle + 0.1, d.endAngle);
-                    return function (t) {
-                        d.endAngle = i(t);
-                        return _arc(d)
+        var doughnutArcTextGroup = plot.selectAll('.arc-text')
+            .data(_doughnut(data))
+            .enter().append('g')
+            .attr('id', function (d, i) {
+                return 'arc-text-group-' + i;
+            })
+            .classed('arc-text', true);
+
+        var doughnutLabel = doughnutArcTextGroup.append('text')
+            .attr('transform', function (d) {
+                var centroid = _labelArc.centroid(d),
+                    x = centroid[0],
+                    y = centroid[1],
+                    h = _pythagorousTheorem(x, y);
+
+                if (_valuePosition == 'inside') {
+                    return 'translate('
+                        + outerRadius * (x / h) * 0.85
+                        + ', '
+                        + outerRadius * (y / h) * 0.85
+                        + ')';
+                } else {
+                    return 'translate('
+                        + outerRadius * (x / h) * 1.05
+                        + ', '
+                        + outerRadius * (y / h) * 1.05
+                        + ')';
+                }
+            })
+            .attr('dy', '0.35em')
+            .attr('text-anchor', function (d) {
+                if (_valuePosition == 'inside') {
+                    return 'middle';
+                } else {
+                    return (d.endAngle + d.startAngle) / 2 > Math.PI
+                        ? 'end' : (d.endAngle + d.startAngle) / 2 < Math.PI
+                            ? 'start' : 'middle';
+                }
+            })
+            .text(_labelFn())
+            .text(function (d) {
+                if (!_print) {
+                    var centroid = _labelArc.centroid(d),
+                        x = centroid[0],
+                        y = centroid[1],
+                        h = _pythagorousTheorem(x, y);
+
+                    if ($(this).attr('text-anchor') == "start") {
+                        size = plotWidth / 2 - outerRadius * (x / h) * 1.05
                     }
-                });
-        }
-        else {
-            doughnutArcPath.attr('d', _arc)
-        }
+                    else {
+                        size = plotWidth / 2 - Math.abs(outerRadius * (x / h) * 1.05);
 
-        var doughnutLabel;
+                    }
+                    var diff = d.endAngle - d.startAngle;
+                    if (diff <= 0.2) {
 
-        // if (_valueAsArc) {
-        //     doughnutLabel = doughnutArcGroup.append('text')
-        //         .attr('dy', function (d, i) {
-        //             if (_valuePosition == 'inside') {
-        //                 return 10;
-        //             } else {
-        //                 return -5;
-        //             }
-        //         })
+                    }
+                    return UTIL.getTruncatedLabel(this, this.textContent, size);
+                }
 
-        //     var textPath = doughnutLabel.append('textPath')
-        //         .attr('xlink:href', function (d, i) {
-        //             return '#arc-path-' + i;
-        //         })
-        //         .attr('text-anchor', function () {
-        //             return 'middle';
-        //         })
-
-        //     if (!_print) {
-        //         textPath.transition()
-        //             .delay(_delayFn(200))
-        //             .on('start', function () {
-        //                 d3.select(this).attr('startOffset', function (d) {
-        //                     var length = doughnutArcPath.nodes()[d.index].getTotalLength(),
-        //                         diff = d.endAngle - d.startAngle,
-        //                         x = 2 * (outerRadius - (outerRadius * 0.8)) + diff * (outerRadius * 0.8);
-
-        //                     return 50 * (length - x) / length + "%";
-        //                 })
-        //                     .text(_labelFn())
-        //                     .filter(function (d, i) {
-        //                         var diff = d.endAngle - d.startAngle;
-        //                         return outerRadius * diff - 5 < this.getComputedTextLength();
-        //                     })
-        //                     .remove();
-
-        //             });
-        //     }
-        //     else {
-        //         textPath.text(_labelFn())
-        //     }
-        // } else {
-        //     var doughnutArcTextGroup = plot.selectAll('.arc-text')
-        //         .data(_doughnut(data))
-        //         .enter().append('g')
-        //         .attr('id', function (d, i) {
-        //             return 'arc-text-group-' + i;
-        //         })
-        //         .classed('arc-text', true);
-
-        //     doughnutLabel = doughnutArcTextGroup.append('text')
-        //         .attr('transform', function (d) {
-        //             var centroid = _labelArc.centroid(d),
-        //                 x = centroid[0],
-        //                 y = centroid[1],
-        //                 h = _pythagorousTheorem(x, y);
-
-        //             if (_valuePosition == 'inside') {
-        //                 return 'translate('
-        //                     + outerRadius * (x / h) * 0.85
-        //                     + ', '
-        //                     + outerRadius * (y / h) * 0.85
-        //                     + ')';
-        //             } else {
-        //                 return 'translate('
-        //                     + outerRadius * (x / h) * 1.05
-        //                     + ', '
-        //                     + outerRadius * (y / h) * 1.05
-        //                     + ')';
-        //             }
-        //         })
-        //         .attr('dy', '0.35em')
-        //         .attr('text-anchor', function (d) {
-        //             if (_valuePosition == 'inside') {
-        //                 return 'middle';
-        //             } else {
-        //                 return (d.endAngle + d.startAngle) / 2 > Math.PI
-        //                     ? 'end' : (d.endAngle + d.startAngle) / 2 < Math.PI
-        //                         ? 'start' : 'middle';
-        //             }
-        //         })
-
-        //     if (!_print) {
-        //         doughnutLabel.transition()
-        //             .delay(_delayFn(200))
-        //             .on('start', function () {
-        //                 d3.select(this).text(_labelFn())
-        //                     .filter(function (d) {
-        //                         /* length of arc = angle in radians * radius */
-        //                         var diff = d.endAngle - d.startAngle;
-        //                         return outerRadius * diff < this.getComputedTextLength();
-        //                     })
-        //                     .remove();
-        //             });
-        //     }
-        //     else {
-        //         doughnutLabel.text(_labelFn())
-        //     }
-        // }
+            })
+            .text(function (d) {
+                var diff = d.endAngle - d.startAngle;
+                if (diff <= 0.2) {
+                    return ''
+                }
+                else {
+                    return this.textContent
+                }
+            })
 
         if (!_print) {
 
@@ -1082,43 +1034,120 @@ function doughnut() {
                 filterParameters.save(_filterParameters);
             });
 
-        // if (_valueAsArc) {
+        var plot = _local_svg.select('.plot')
 
-        //     doughnutLabel = doughnutArcGroup.append('text')
-        //         .attr('dy', function (d, i) {
-        //             if (_valuePosition == 'inside') {
-        //                 return 10;
-        //             } else {
-        //                 return -5;
-        //             }
-        //         })
+        plot.selectAll('.arc-text').remove();
 
-        //     doughnutLabel.append('textPath')
-        //         .attr('xlink:href', function (d, i) {
-        //             return '#arc-path-' + i;
-        //         })
-        //         .attr('text-anchor', function () {
-        //             return 'middle';
-        //         })
-        //         .transition()
-        //         .delay(_delayFn(200))
-        //         .on('start', function () {
-        //             d3.select(this).attr('startOffset', function (d) {
-        //                 var length = doughnutArcPath.nodes()[d.index] == undefined ? 10 : doughnutArcPath.nodes()[d.index].getTotalLength(),
-        //                     diff = d.endAngle - d.startAngle,
-        //                     x = 2 * (outerRadius - (outerRadius * 0.8)) + diff * (outerRadius * 0.8);
+        var doughnutArcTextGroup = plot.selectAll('.arc-text')
+            .data(_doughnut(data))
+            .enter().append('g')
+            .attr('id', function (d, i) {
+                return 'arc-text-group-' + i;
+            })
+            .classed('arc-text', true);
 
-        //                 return 50 * (length - x) / length + "%";
-        //             })
-        //                 .text(_labelFn())
-        //                 .filter(function (d, i) {
-        //                     var diff = d.endAngle - d.startAngle;
-        //                     return outerRadius * diff - 5 < this.getComputedTextLength();
-        //                 })
-        //                 .remove();
+        var doughnutLabel = doughnutArcTextGroup.append('text')
+            .attr('transform', function (d) {
+                var centroid = _labelArc.centroid(d),
+                    x = centroid[0],
+                    y = centroid[1],
+                    h = _pythagorousTheorem(x, y);
 
-        //         });
-        // }
+                if (_valuePosition == 'inside') {
+                    return 'translate('
+                        + outerRadius * (x / h) * 0.85
+                        + ', '
+                        + outerRadius * (y / h) * 0.85
+                        + ')';
+                } else {
+                    return 'translate('
+                        + outerRadius * (x / h) * 1.05
+                        + ', '
+                        + outerRadius * (y / h) * 1.05
+                        + ')';
+                }
+            })
+            .attr('dy', '0.35em')
+            .attr('text-anchor', function (d) {
+                if (_valuePosition == 'inside') {
+                    return 'middle';
+                } else {
+                    return (d.endAngle + d.startAngle) / 2 > Math.PI
+                        ? 'end' : (d.endAngle + d.startAngle) / 2 < Math.PI
+                            ? 'start' : 'middle';
+                }
+            })
+            .text(_labelFn())
+            .text(_labelFn())
+            .text(function (d) {
+                if (!_print) {
+                    var centroid = _labelArc.centroid(d),
+                        x = centroid[0],
+                        y = centroid[1],
+                        h = _pythagorousTheorem(x, y);
+
+                    if ($(this).attr('text-anchor') == "start") {
+                        size = plotWidth / 2 - outerRadius * (x / h) * 1.05
+                    }
+                    else {
+                        size = plotWidth / 2 - Math.abs(outerRadius * (x / h) * 1.05);
+
+                    }
+                    var diff = d.endAngle - d.startAngle;
+                    if (diff <= 0.2) {
+
+                    }
+                    return UTIL.getTruncatedLabel(this, this.textContent, size);
+                }
+
+            })
+            .text(function (d) {
+                var diff = d.endAngle - d.startAngle;
+                if (diff <= 0.2) {
+                    return ''
+                }
+                else {
+                    return this.textContent
+                }
+            })
+
+        plot.select('#measure-value').remove();
+
+        _localTotal = d3.sum(data.map(function (d) { return d[_measure[0]]; }));
+
+        var centerText = plot.append('text')
+            .attr('id', 'measure-value')
+            .style('text-anchor', 'middle')
+            .style('fill', _fontColor)
+            .style('font-size', _fontSize + 'px')
+            .style('font-weight', _fontWeight)
+            .style('font-style', _fontStyle)
+            .attr('visibility', _showLabel == true ? 'visible' : 'hidden')
+            .append("tspan")
+            .text(function () {
+                if (!_print) {
+                    return UTIL.getTruncatedLabel(
+                        this,
+                        _measureDisplayName,
+                        outerRadius * 0.8)
+                }
+                else {
+                    return _measureDisplayName;
+                }
+
+            })
+            .attr("x", 0)
+            .append("tspan")
+            .text(function () {
+                if (!_print) {
+                    return UTIL.getTruncatedLabel(this, UTIL.getFormattedValue(_localTotal, UTIL.getNumberFormatterFn(_numberFormat, _localTotal)), outerRadius * 0.8);
+                }
+                else {
+                    return UTIL.getFormattedValue(_localTotal, UTIL.getNumberFormatterFn(_numberFormat, _localTotal));
+                }
+            })
+            .attr("x", 0)
+            .attr("dy", _fontSize + 5);
 
         _local_svg.select('g.lasso').remove();
 
@@ -1194,22 +1223,6 @@ function doughnut() {
         return chart;
     }
 
-    chart.valueAsArc = function (value) {
-        if (!arguments.length) {
-            return _valueAsArc;
-        }
-        _valueAsArc = value;
-        return chart;
-    }
-
-    chart.valuePosition = function (value) {
-        if (!arguments.length) {
-            return _valuePosition;
-        }
-        _valuePosition = value;
-        return chart;
-    }
-
     chart.measureDisplayName = function (value) {
         if (!arguments.length) {
             return _measureDisplayName;
@@ -1277,6 +1290,14 @@ function doughnut() {
             return broadcast;
         }
         broadcast = value;
+        return chart;
+    }
+
+    chart.numberFormat = function (value) {
+        if (!arguments.length) {
+            return _numberFormat;
+        }
+        _numberFormat = value;
         return chart;
     }
 

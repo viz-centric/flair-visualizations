@@ -15,11 +15,11 @@ function kpi() {
     var _config,
         _dimension,
         _measure,
+        _kpiAlignment,
         /* Initialization of these variable is important, otherwise Windows object
          * will be sent during calling of baseAccessor function
          */
         _kpiDisplayName = [],
-        _kpiAlignment = [],
         _kpiBackgroundColor = [],
         _kpiNumberFormat = [],
         _kpiFontStyle = [],
@@ -32,6 +32,8 @@ function kpi() {
         _kpiIconColor = [],
         _kpiIconExpression = [],
         _FontsizeForDisplayName = [],
+        _showIcon = [],
+        _iconSize = [],
         _print,
         _notification = false,
         _data;
@@ -43,7 +45,9 @@ function kpi() {
         _localPrevKpiValue = [0, 0],
         _Local_data,
         _localLabelFontSize = [1.2, 0.9],
-        parentContainer;
+        parentContainer,
+        plot,
+        height, width, container;
 
     /* These are the common private functions that is shared across the different private/public
      * methods but is initialized beforehand.
@@ -68,6 +72,8 @@ function kpi() {
         this.kpiIconColor(config.kpiIconColor);
         this.kpiIconExpression(config.kpiIconExpression);
         this.FontsizeForDisplayName(config.FontSizeforDisplayName);
+        this.showIcon(config.showIcon)
+        this.iconSize(config.iconSize)
     }
 
     /**
@@ -82,6 +88,21 @@ function kpi() {
         }
 
         return _kpiDisplayName[index];
+    }
+
+    setFont = function () {
+        var containerSize = parseInt(d3.select(container).node().style('width')) + 100;
+        if (width - 2 * COMMON.PADDING < containerSize) {
+            var newFontSize = parseInt(container.selectAll('.child span').style('font-size')) - 5;
+
+
+            container.selectAll('.child span').style('font-size', newFontSize + 'px')
+            container.selectAll('.child i').style('font-size', newFontSize + 'px')
+            setFont();
+        }
+        else {
+            return true;
+        }
     }
 
     /**
@@ -103,6 +124,8 @@ function kpi() {
             'color': _kpiColor[index] || COMMON.DEFAULT_COLOR
         };
 
+
+
         if (_kpiColorExpression[index].length) {
             style['color'] = UTIL.expressionEvaluator(_kpiColorExpression[index], endValue, 'color');
         }
@@ -117,8 +140,12 @@ function kpi() {
         var iconStyle = {
             'font-weight': _kpiIconFontWeight[index] || COMMON.DEFAULT_FONTWEIGHT,
             'color': _kpiIconColor[index] || (endValue > 0 ? COMMON.POSITIVE_KPI_COLOR : COMMON.NEGATIVE_KPI_COLOR),
-            'font-size': _kpiFontSize[index] + 'px' || COMMON.DEFAULT_FONTSIZE
+            'font-size': _iconSize[index] + 'px' || COMMON.DEFAULT_FONTSIZE,
+            'display': _showIcon[index] == true ? 'inline-block' : 'none',
+            // 'float': index == 0 ? 'right' : 'left'
         };
+
+
 
         if (_kpiIconExpression[index].length) {
             _kpiIcon[index] = UTIL.expressionEvaluator(_kpiIconExpression[index], endValue, 'icon');
@@ -139,6 +166,8 @@ function kpi() {
 
         return index ? (iconOutput + "&nbsp;" + numberOutput)
             : (numberOutput + "&nbsp;" + iconOutput);
+
+
     }
 
     function chart(selection) {
@@ -154,8 +183,8 @@ function kpi() {
             parentContainer = d3.select('#' + selection.id)
         }
 
-        var width = parentContainer.attr('width'),
-            height = parentContainer.attr('height')
+        width = parentContainer.attr('width')
+        height = parentContainer.attr('height')
 
         _localDiv = parentContainer
 
@@ -164,21 +193,41 @@ function kpi() {
             return d3.sum(_data.map(function (d) { return d[m]; }));
         });
 
-        var container = parentContainer.append('div')
+        container = parentContainer.append('div')
             .classed('_container', true)
+            .style('position', 'absolute')
+
             .style('width', width - 2 * COMMON.PADDING)
             .style('height', height - 2 * COMMON.PADDING)
             .style('padding', COMMON.PADDING);
+
+        if (_kpiAlignment == "Center") {
+            container.style('top', '50%')
+                .style('left', '50%')
+                .style('transform', 'translate(-50%, -50%)')
+
+
+        }
+        else if (_kpiAlignment == "Left") {
+            container.style('top', '50%')
+                .style('left', 0)
+                .style('transform', 'translate(0, -50%)')
+        }
+        else {
+            container.style('top', '50%')
+                .style('right', '0px')
+                .style('left', 'unset')
+                .style('transform', 'translate(-5%, -50%)')
+        }
 
         _measure.forEach(function (m, i) {
             var measure = container.append('div')
                 .classed('measure', true)
                 .style('display', 'flex')
                 .style('height', '50%')
-                .style('align-items', function (d, i1) {
+                .style('align-items', function (d, i) {
                     return i ? 'center' : 'flex-end';
                 })
-                .style('justify-content', _kpiAlignment[i])
                 .append('div')
                 .classed('parent', true)
                 .style('display', 'block')
@@ -192,8 +241,10 @@ function kpi() {
                 .style('display', 'block')
                 .classed('child', true)
                 .html(_getKpiDisplayName(i))
-                .style('font-size', function (d, i1) {
-                    return _FontsizeForDisplayName[i] + 'px';
+                .style('font-size', function (d, i) {
+
+                    return _FontsizeForDisplayName[i] + 'px'
+
                 })
                 .style('padding-left', '5px')
                 .style('text-align', function (d, i1) {
@@ -207,7 +258,11 @@ function kpi() {
                     return 'kpi-measure-' + i;
                 })
                 .classed('child', true)
-                .style('font-size', _kpiFontSize[i] + 'px')
+                .style('font-size', function () {
+
+                    return _kpiFontSize[i] + 'px'
+
+                })
                 .style('border-radius', function (d, i1) {
                     return COMMON.BORDER_RADIUS + 'px';
                 })
@@ -237,14 +292,32 @@ function kpi() {
 
                         return function (t) {
                             me.html(_getKpi(interpolator(t), _localTotal[i], i));
+                            setFont()
                         }
                     });
             }
             else {
-                kpiMeasure.html(_getKpi(_localTotal[i], _localTotal[i], 0));
+                kpiMeasure.html(_getKpi(_localTotal[i], _localTotal[i], i));
             }
         });
+
+        if (_print) {
+
+            plot = parentContainer.append('svg')
+                .attr('class', 'KPI')
+                .attr('width', width - 2 * COMMON.PADDING)
+                .attr('height', height - 2 * COMMON.PADDING)
+
+            plot.append('foreignObject')
+                .attr('class', 'plot')
+                .html(_localDiv.node().outerHTML);
+
+            plot = d3.select('.KPI');
+
+        }
     }
+
+
 
     chart._getName = function () {
         return _NAME;
@@ -267,6 +340,8 @@ function kpi() {
 
         _measure.forEach(function (m, i) {
             div.select('#kpi-measure-' + i)
+
+                // kpiMeasure.html(_getKpi(_localTotal[i], _localTotal[i], 0));
                 .transition()
                 .ease(d3.easeQuadIn)
                 .duration(500)
@@ -279,9 +354,31 @@ function kpi() {
 
                     return function (t) {
                         me.html(_getKpi(interpolator(t), _localTotal[i], i));
+                        setFont()
                     }
-                });
+                }).on("end", setFont);
         });
+
+        var container = parentContainer.select('._container');
+
+        if (_kpiAlignment == "Center") {
+            container.style('top', '50%')
+                .style('left', '50%')
+                .style('transform', 'translate(-50%, -50%)')
+        }
+        else if (_kpiAlignment == "Left") {
+            container.style('top', '50%')
+                .style('left', 0)
+                .style('transform', 'translate(0, -50%)')
+        }
+        else {
+            container.style('top', '50%')
+                .style('right', '0px')
+                .style('left', 'unset')
+                .style('transform', 'translate(-5%, -50%)')
+        }
+
+        //  setFont();
     }
 
     chart.config = function (value) {
@@ -309,6 +406,18 @@ function kpi() {
         return chart;
     }
 
+    chart.kpiAlignment = function (value) {
+        if (!arguments.length) {
+            return _kpiAlignment;
+        }
+        _kpiAlignment = value;
+        return chart;
+    }
+
+    chart.iconSize = function (value, measure) {
+        return UTIL.baseAccessor.call(_iconSize, value, measure, _measure);
+    }
+
     /**
      * KPI Displayname accessor function
      *
@@ -321,23 +430,12 @@ function kpi() {
     }
 
     /**
-     * KPI Alignment accessor function
-     *
-     * @param {string|array(string)|null} value Alignment value for the measure(s)
-     * @param {string|null} measure Measure for which the value is to be set or retrieved
-     * @return {string|array(string)|function}
-     */
-    chart.kpiAlignment = function (value, measure) {
-        return UTIL.baseAccessor.call(_kpiAlignment, value, measure, _measure);
-    }
-
-    /**
-     * KPI Background Color accessor function
-     *
-     * @param {string|array(string)|null} value Background Color value for the measure(s)
-     * @param {string|null} measure Measure for which the value is to be set or retrieved
-     * @return {string|array(string)|function}
- */
+ * KPI Background Color accessor function
+ *
+ * @param {string|array(string)|null} value Background Color value for the measure(s)
+ * @param {string|null} measure Measure for which the value is to be set or retrieved
+ * @return {string|array(string)|function}
+*/
     chart.kpiBackgroundColor = function (value, measure) {
         return UTIL.baseAccessor.call(_kpiBackgroundColor, value, measure, _measure);
     }
@@ -527,6 +625,14 @@ function kpi() {
             _kpiIconExpression[index] = UTIL.getExpressionConfig(value, ['icon', 'color']);
         }
 
+        return chart;
+    }
+
+    chart.showIcon = function (value) {
+        if (!arguments.length) {
+            return _showIcon;
+        }
+        _showIcon = value;
         return chart;
     }
 

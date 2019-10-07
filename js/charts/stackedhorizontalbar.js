@@ -37,6 +37,8 @@ function stackedhorizontalbar() {
         _textColor = [],
         _displayColor = [],
         _borderColor = [],
+        _displayColorExpression = [],
+        _textColorExpression = [],
         _fontSize = [],
         _print,
         broadcast,
@@ -44,7 +46,8 @@ function stackedhorizontalbar() {
         isAnimationDisable = false,
         _notification = false,
         _data,
-        _isFilterGrid = false;
+        _isFilterGrid = false,
+        _showSorting = true;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
     var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, parentContainer;
@@ -57,7 +60,7 @@ function stackedhorizontalbar() {
     var x = d3.scaleBand(), y = d3.scaleLinear();
     var _x = d3.scaleBand(), _y = d3.scaleLinear(), brush = d3.brushY();
 
-    var FilterControlHeight = 100, FilterControlWidth;
+    var FilterControlHeight = 100, FilterControlWidth = 100;
 
     var margin = {
         top: 0,
@@ -96,7 +99,22 @@ function stackedhorizontalbar() {
         this.borderColor(config.borderColor);
         this.fontSize(config.fontSize);
         this.isFilterGrid(config.isFilterGrid);
-        this.legendData(config.displayColor, config.measure);
+        this.showSorting(config.showSorting);
+        this.displayColorExpression(config.displayColorExpression);
+        this.textColorExpression(config.textColorExpression);
+        setDefaultColorForChart()
+        this.legendData(_displayColor, config.measure, config.displayNameForMeasure);
+    }
+
+    var setDefaultColorForChart = function () {
+        for (let index = 0; index < _measure.length; index++) {
+            if (_displayColor[index] == null || _displayColor[index] == undefined) {
+                _displayColor[index] = COMMON.COLORSCALE(index);
+            }
+            if (_borderColor[index] == null || _borderColor[index] == undefined) {
+                _borderColor[index] = COMMON.COLORSCALE(index);
+            }
+        }
     }
 
     var _buildTooltipData = function (datum, chart) {
@@ -247,7 +265,7 @@ function stackedhorizontalbar() {
             var border = UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor)
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border, _notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -258,7 +276,7 @@ function stackedhorizontalbar() {
         return function (d, i) {
             if (tooltip) {
                 var border = UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor)
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border, _notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -269,8 +287,13 @@ function stackedhorizontalbar() {
         return function (d, i) {
             d3.select(this).style('cursor', 'default')
                 .style('fill', function (d, i) {
-                    if (d.data[d.key] < 0) {
-                        return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
+                    if (_displayColorExpression[_measure.indexOf(d.key)].length) {
+                        if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color').length > 0) {
+                            return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color')
+                        }
+                        else {
+                            return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
+                        }
                     }
                     else {
                         return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
@@ -391,8 +414,8 @@ function stackedhorizontalbar() {
 
         var containerWidth = parentContainer.attr('width');
         if (_isFilterGrid) {
-            containerWidth = containerWidth * 80 / 100;
-            FilterControlWidth = containerWidth * 20 / 100;
+            containerWidth = containerWidth * 90 / 100;
+            FilterControlWidth = containerWidth * 10 / 100;
         }
 
         var svg = parentContainer.append('svg')
@@ -433,8 +456,13 @@ function stackedhorizontalbar() {
 
         rect = element.append('rect')
             .style('fill', function (d, i) {
-                if (d.data[d.key] < 0) {
-                    return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
+                if (_displayColorExpression[_measure.indexOf(d.key)].length) {
+                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color')
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
+                    }
                 }
                 else {
                     return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
@@ -466,11 +494,15 @@ function stackedhorizontalbar() {
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
                     if (!_print) {
-                        if ($("#myonoffswitch").prop('checked') == false) {
-                            $('#Modal_' + parentContainer.attr('id') + ' .measure').val(d.key);
-                            $('#Modal_' + parentContainer.attr('id') + ' .threshold').val('');
-                            $('#Modal_' + parentContainer.attr('id') + ' .measure').attr('disabled', true);;
-                            $('#Modal_' + parentContainer.attr('id')).modal('toggle');
+                        if (broadcast != undefined && broadcast.isThresholdAlert) {
+                            var ThresholdViz = {};
+                            ThresholdViz.ID = parentContainer.attr('vizID');
+                            ThresholdViz.measure = d.key;
+                            ThresholdViz.measureValue = d.data[d.key];
+                            ThresholdViz.dimension = _dimension[0];
+                            ThresholdViz.dimensionValue = d.data[_dimension[0]];
+                            broadcast.ThresholdViz = ThresholdViz;
+                            broadcast.$broadcast('FlairBi:threshold-dialog');
                         }
                         else {
                             filter = false;
@@ -531,7 +563,7 @@ function stackedhorizontalbar() {
                 return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat, d.data[d.key]));
             })
             .attr('x', function (d, i) {
-                return y(d[1]) - 20;
+                return y(d[1]);
             })
             .attr('y', function (d, i) {
                 return x(d.data[_dimension[0]]) + x.bandwidth() / 2;
@@ -539,7 +571,7 @@ function stackedhorizontalbar() {
             .attr('dy', function (d, i) {
                 return offsetX / 4;
             })
-            .style('text-anchor', 'middle')
+            .style('text-anchor', 'end')
             .attr('visibility', function (d, i) {
                 return UTIL.getVisibility(_showValues[_measure.indexOf(d.key)]);
             })
@@ -574,7 +606,17 @@ function stackedhorizontalbar() {
                 return _fontWeight[_measure.indexOf(d.key)];
             })
             .style('fill', function (d, i) {
-                return _textColor[_measure.indexOf(d.key)];
+                if (_textColorExpression[_measure.indexOf(d.key)].length) {
+                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color')
+                    }
+                    else {
+                        return _textColor[_measure.indexOf(d.key)];
+                    }
+                }
+                else {
+                    return _textColor[_measure.indexOf(d.key)];
+                }
             });
 
     }
@@ -686,11 +728,8 @@ function stackedhorizontalbar() {
 
         _localXAxis = d3.axisBottom(y)
             .tickFormat(function (d) {
-                var format = d3.format(".0s")
-                return this.textContent || format(d);
+                return UTIL.shortScale(2)(d);
             })
-        // .tickSize(0)
-        // .tickPadding(10);
 
         xAxisGroup = plot.append('g')
             .attr('class', 'x_axis')
@@ -708,7 +747,9 @@ function stackedhorizontalbar() {
             .style('font-weight', 'bold')
             .style('fill', _xAxisColor)
             .attr('visibility', UTIL.getVisibility(_showXaxisLabel))
-            .text(_displayName);
+            .text(function () {
+                return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+            });
 
         _localYAxis = d3.axisLeft(x)
             .tickSize(0)
@@ -736,9 +777,7 @@ function stackedhorizontalbar() {
             .style('font-weight', 'bold')
             .style('fill', _yAxisColor)
             .attr('visibility', UTIL.getVisibility(_showYaxisLabel))
-            .text(function () {
-                return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
-            });
+            .text(_displayName);
 
         UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
 
@@ -776,17 +815,18 @@ function stackedhorizontalbar() {
             })
 
             _local_svg.select('g.sort').remove();
-            UTIL.sortingView(container, parentHeight, parentWidth + (_showYaxis == true ? margin.left : 0), legendBreakCount, axisLabelSpace, offsetX);
+            UTIL.sortingView(container, parentHeight, parentWidth + (_showYaxis == true ? margin.left : 0), legendBreakCount, axisLabelSpace, offsetX, _showSorting);
+
 
             _local_svg.select('g.sort').selectAll('text')
                 .on('click', function () {
                     var order = d3.select(this).attr('class')
                     switch (order) {
                         case 'ascending':
-                            UTIL.toggleSortSelection('ascending', chart.update, _local_svg, keys, _Local_data, _isFilterGrid);
+                            UTIL.toggleSortSelection('ascending', chart.update, _local_svg, keys, _Local_data, _isFilterGrid, "horizontal");
                             break;
                         case 'descending':
-                            UTIL.toggleSortSelection('descending', chart.update, _local_svg, keys, _Local_data, _isFilterGrid);
+                            UTIL.toggleSortSelection('descending', chart.update, _local_svg, keys, _Local_data, _isFilterGrid, "horizontal");
                             break;
                         case 'reset': {
                             chart.update.call(me, _Local_data);
@@ -831,7 +871,7 @@ function stackedhorizontalbar() {
 
             var keys = UTIL.getMeasureList(data[0], _dimension);
 
-            _x.rangeRound([parseInt(_local_svg.attr('height') - 2 * COMMON.PADDING), 0])
+            _x.rangeRound([0, parseInt(_local_svg.attr('height') - 2 * COMMON.PADDING)])
                 .padding([0.5])
                 .domain(data.map(function (d) { return d[_dimension[0]]; }));
 
@@ -899,7 +939,7 @@ function stackedhorizontalbar() {
                 .call(_localYAxisFilter);
 
             context.append("g")
-                .attr("class", "y brush")
+                .attr("class", "y_brush")
                 .call(brush)
                 .selectAll("rect")
                 .attr("y", -6)
@@ -930,8 +970,13 @@ function stackedhorizontalbar() {
 
             stackedhorizontalbarFilter.append('rect')
                 .style('fill', function (d, i) {
-                    if (d.data[d.key] < 0) {
-                        return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
+                    if (_displayColorExpression[_measure.indexOf(d.key)].length) {
+                        if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color').length > 0) {
+                            return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color')
+                        }
+                        else {
+                            return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
+                        }
                     }
                     else {
                         return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
@@ -1002,8 +1047,13 @@ function stackedhorizontalbar() {
             })
             .select('rect')
             .style('fill', function (d, i) {
-                if (d.data[d.key] < 0) {
-                    return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
+                if (_displayColorExpression[_measure.indexOf(d.key)].length) {
+                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color')
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
+                    }
                 }
                 else {
                     return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
@@ -1027,8 +1077,8 @@ function stackedhorizontalbar() {
 
         var containerWidth = parentContainer.attr('width');
         if (_isFilterGrid) {
-            containerWidth = containerWidth * 80 / 100;
-            FilterControlWidth = containerWidth * 20 / 100;
+            containerWidth = containerWidth * 90 / 100;
+            FilterControlWidth = containerWidth * 10 / 100;
         }
 
         var svg = _local_svg
@@ -1041,6 +1091,9 @@ function stackedhorizontalbar() {
 
         parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
         parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
+
+        parentContainer.select('.filterElement')
+            .style('visibility', UTIL.getVisibility(_isFilterGrid));
 
         drawLegend.call(this);
 
@@ -1139,8 +1192,13 @@ function stackedhorizontalbar() {
 
         stackedhorizontalbar.select('rect')
             .style('fill', function (d, i) {
-                if (d.data[d.key] < 0) {
-                    return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
+                if (_displayColorExpression[_measure.indexOf(d.key)].length) {
+                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color')
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
+                    }
                 }
                 else {
                     return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
@@ -1172,7 +1230,7 @@ function stackedhorizontalbar() {
                 return UTIL.getFormattedValue(d.data[d.key], UTIL.getValueNumberFormat(_measure.indexOf(d.key), _numberFormat, d.data[d.key]));
             })
             .attr('x', function (d, i) {
-                return y(d[1]) - 20;
+                return y(d[1]);
             })
             .attr('y', function (d, i) {
                 return x(d.data[_dimension[0]]) + x.bandwidth() / 2;
@@ -1180,7 +1238,7 @@ function stackedhorizontalbar() {
             .attr('dy', function (d, i) {
                 return offsetX / 4;
             })
-            .style('text-anchor', 'middle')
+            .style('text-anchor', 'end')
             .attr('visibility', function (d, i) {
                 return UTIL.getVisibility(_showValues[_measure.indexOf(d.key)]);
             })
@@ -1208,13 +1266,41 @@ function stackedhorizontalbar() {
                     }
                 }
             })
-
+            .style('font-style', function (d, i) {
+                return _fontStyle[_measure.indexOf(d.key)];
+            })
+            .style('font-weight', function (d, i) {
+                return _fontWeight[_measure.indexOf(d.key)];
+            })
+            .style('fill', function (d, i) {
+                if (_textColorExpression[_measure.indexOf(d.key)].length) {
+                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color')
+                    }
+                    else {
+                        return _textColor[_measure.indexOf(d.key)];
+                    }
+                }
+                else {
+                    return _textColor[_measure.indexOf(d.key)];
+                }
+            });
 
 
         var newBars = stackedhorizontalbar.enter().append('g')
             .attr('class', 'stackedhorizontalbar');
 
         drawViz(newBars);
+
+        _localYGrid
+            .tickFormat(function (d) {
+                UTIL.setAxisGridVisibility(this, _local_svg, _showGrid, d)
+            })
+            .tickSize(-plotHeight);
+
+        _localXGrid
+            .tickFormat('')
+            .tickSize(-plotWidth);
 
         _localXGrid.scale(x);
         _localYGrid.scale(y);
@@ -1245,6 +1331,9 @@ function stackedhorizontalbar() {
         UTIL.displayThreshold(threshold, data, keys);
 
         _local_svg.select('g.lasso').remove()
+
+        _local_svg.select('g.sort')
+            .style('visibility', UTIL.getVisibility(_showSorting))
 
         var lasso = d3Lasso.lasso()
             .hoverSelect(true)
@@ -1395,10 +1484,11 @@ function stackedhorizontalbar() {
         return chart;
     }
 
-    chart.legendData = function (measureConfig, measureName) {
+    chart.legendData = function (measureConfig, measureName, displayNameForMeasure) {
         _legendData = {
             measureConfig: measureConfig,
-            measureName: measureName
+            measureName: measureName,
+            displayName: displayNameForMeasure
         }
         return _legendData;
     }
@@ -1454,6 +1544,56 @@ function stackedhorizontalbar() {
         return chart;
     }
 
+    chart.textColorExpression = function (value, measure) {
+        if (!arguments.length) {
+            return _textColorExpression;
+        }
+
+        if (value instanceof Array && measure == void 0) {
+            _textColorExpression = value.map(function (v) {
+                return UTIL.getExpressionConfig(v, ['color']);
+            });
+            return chart;
+        }
+
+        var index = _measure.indexOf(measure);
+
+        if (index === -1) {
+            throw new Error('Invalid measure provided');
+        }
+
+        if (value == void 0) {
+            return _textColorExpression[index];
+        } else {
+            _textColorExpression[index] = UTIL.getExpressionConfig(value, ['color']);
+        }
+    }
+
+    chart.displayColorExpression = function (value, measure) {
+        if (!arguments.length) {
+            return _displayColorExpression;
+        }
+
+        if (value instanceof Array && measure == void 0) {
+            _displayColorExpression = value.map(function (v) {
+                return UTIL.getExpressionConfig(v, ['color']);
+            });
+            return chart;
+        }
+
+        var index = _measure.indexOf(measure);
+
+        if (index === -1) {
+            throw new Error('Invalid measure provided');
+        }
+
+        if (value == void 0) {
+            return _displayColorExpression[index];
+        } else {
+            _displayColorExpression[index] = UTIL.getExpressionConfig(value, ['color']);
+        }
+    }
+
     chart.filterParameters = function (value) {
         if (!arguments.length) {
             return filterParameters;
@@ -1487,6 +1627,13 @@ function stackedhorizontalbar() {
             return _isFilterGrid;
         }
         _isFilterGrid = value;
+        return chart;
+    }
+    chart.showSorting = function (value) {
+        if (!arguments.length) {
+            return _showSorting;
+        }
+        _showSorting = value;
         return chart;
     }
     return chart;

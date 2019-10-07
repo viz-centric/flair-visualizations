@@ -200,19 +200,22 @@ function util() {
                 });
             }
         },
-        positionDownArrow: function (container, arrowDom, sortType, isFilter) {
+        positionDownArrow: function (container, arrowDom, sortType, isFilter, chartType) {
             var left = container.offsetLeft,
                 width = container.offsetWidth,
                 height = container.offsetHeight,
                 top = 0;
 
+            if (chartType == null || chartType == undefined) {
+                chartType = "vertical";
+            }
+
             var offsetLeft,
                 offsetTop = 40;
 
-            if (isFilter) {
+            if (isFilter && chartType == "vertical") {
                 offsetTop = offsetTop + COMMON.PADDING + parseInt(d3.select(container).select('.filterElement').attr('height'));
             }
-
             switch (sortType.toLowerCase()) {
                 case "ascending":
                     offsetLeft = 78;
@@ -223,23 +226,37 @@ function util() {
                     break;
             }
 
+            if (isFilter && chartType == "horizontal" && sortType.toLowerCase() == "ascending") {
+                offsetLeft = 78 + parseInt(d3.select(container).select('.filterElement').attr('width'));
+            }
+
+            if (isFilter && chartType == "horizontal" && sortType.toLowerCase() == "descending") {
+                offsetLeft = 54 + parseInt(d3.select(container).select('.filterElement').attr('width'));
+            }
+
             arrowDom.style.left = (left + width - offsetLeft) + 'px';
             arrowDom.style.top = (top + height - offsetTop) + 'px';
         },
-        positionSortSelection: function (container, sortSelectDom, isFilter) {
+        positionSortSelection: function (container, sortSelectDom, isFilter, chartType) {
             var left = container.offsetLeft,
                 width = container.offsetWidth,
                 height = container.offsetHeight,
                 top = 0;
 
+            if (chartType == null || chartType == undefined) {
+                chartType = "vertical";
+            }
             var tipWidth = sortSelectDom.offsetWidth,
                 tipHeight = sortSelectDom.offsetHeight;
 
             var offsetLeft = 11,
                 offsetTop = 40;
 
-            if (isFilter) {
+            if (isFilter && chartType == "vertical") {
                 offsetTop = offsetTop + COMMON.PADDING + parseInt(d3.select(container).select('.filterElement').attr('height'));
+            }
+            if (isFilter && chartType == "horizontal") {
+                offsetLeft = offsetLeft + COMMON.PADDING + parseInt(d3.select(container).select('.filterElement').attr('width'));
             }
 
             sortSelectDom.style.left = (left + width - tipWidth - offsetLeft) + 'px';
@@ -614,7 +631,7 @@ function util() {
             return sortedData;
         },
 
-        toggleSortSelection: function (sortType, callback, _local_svg, _measure, _Local_data, isFilter) {
+        toggleSortSelection: function (sortType, callback, _local_svg, _measure, _Local_data, isFilter, chartType) {
             var me = this;
             var _onRadioButtonClick = function (event) {
                 //  $(this).closest('.sort_selection').parent().find('.plot').remove();
@@ -658,8 +675,8 @@ function util() {
                 }, _onRadioButtonClick);
             }
 
-            this.positionDownArrow(div, downArrow.node(), sortType, isFilter);
-            this.positionSortSelection(div, sortWindow.node(), isFilter);
+            this.positionDownArrow(div, downArrow.node(), sortType, isFilter, chartType);
+            this.positionSortSelection(div, sortWindow.node(), isFilter, chartType);
 
         },
 
@@ -791,8 +808,17 @@ function util() {
                         break;
                     }
                 }
+                else if (property.hasOwnProperty('below')) {
+                    if (value < property.below) {
+                        result = property[key];
+                        break;
+                    }
+                }
+                else if (property.hasOwnProperty('default')) {
+                    result = property[key];
+                    break;
+                }
             }
-
             return result;
         },
 
@@ -817,10 +843,11 @@ function util() {
             return _filter;
         },
 
-        sortingView: function (container, parentHeight, parentWidth, legendBreakCount, axisLabelSpace, offsetX) {
+        sortingView: function (container, parentHeight, parentWidth, legendBreakCount, axisLabelSpace, offsetX, visibility) {
 
             var sortButton = container.append('g')
                 .attr('class', 'sort')
+                .style('visibility', this.getVisibility(visibility))
                 .attr('transform', function () {
                     return 'translate(0, ' + parseInt((parentHeight - 2 * COMMON.PADDING + 20 + (legendBreakCount * 20))) + ')';
                 })
@@ -958,11 +985,11 @@ function util() {
             if (_legendPosition.toUpperCase() == 'TOP') {
                 position = 'translate(' + (_showYaxis == true ? margin : 0) + ', ' + parseInt(legendSpace * 2 + (20 * parseInt(legendBreakCount))) + ')';
             } else if (_legendPosition.toUpperCase() == 'BOTTOM') {
-                position = 'translate(' + margin + ', 0)';
+                position = 'translate(' + (_showYaxis == true ? margin : 0) + ', 0)';
             } else if (_legendPosition.toUpperCase() == 'LEFT') {
-                position = 'translate(' + (legendSpace + margin + axisLabelSpace) + ', 0)';
+                position = 'translate(' + (legendSpace + (_showYaxis == true ? margin : 0) + axisLabelSpace) + ', 0)';
             } else if (_legendPosition.toUpperCase() == 'RIGHT') {
-                position = 'translate(' + margin + ', 0)';
+                position = 'translate(' + (_showYaxis == true ? margin : 0) + ', 0)';
             }
 
             if (!_showLegend) {
@@ -999,6 +1026,10 @@ function util() {
             _local_svg.selectAll('g.y_axis .tick text')
                 .style('fill', _yAxisColor);
 
+            _local_svg.selectAll('.grid line')
+                .style('stroke', '#787878')
+                .style('stroke-opacity', '0.5');
+
         },
         setAxisGridVisibility: function (tickLine, _local_svg, _showGrid, d) {
             if (d == 0) {
@@ -1029,8 +1060,36 @@ function util() {
                 }
             })
             return filterData;
+        },
+        defaultColours: function () {
+            return ["#439dd3",
+                "#0CC69A",
+                "#556080",
+                "#F0785A",
+                "#F0C419",
+                "#DBCBD8",
+                "#D10257",
+                "#BDDBFF",
+                "#9BC9FF",
+                "#8AD5DD",
+                "#EFEFEF",
+                "#FF2970",
+                "#6DDDC2",
+                "#778099",
+                "#F3937B",
+                "#F3D047",
+                "#DA3579",
+                "#8EA4BF"];
+        },
+        sortDateRange: function (list) {
+            var sorttedList = list.sort(function (a, b) {
+                return new Date(b) - new Date(a);
+            });
+            sorttedList = sorttedList.map(function (val) {
+                return new Date(val);
+            });
+            return sorttedList;
         }
-
     }
 
 

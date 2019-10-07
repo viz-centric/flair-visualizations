@@ -20,9 +20,10 @@ function boxplot() {
         axisColor,
         showLabels,
         labelColor,
+        colorPattern = 'single_color',//unique_color
         numberFormat = [],
-        displayColor = [],
         _print,
+        _data,
         broadcast,
         filterParameters,
         _notification = false;
@@ -54,8 +55,7 @@ function boxplot() {
         this.showLabels(config.showLabels);
         this.labelColor(config.labelColor);
         this.numberFormat(config.numberFormat);
-        this.displayColor(config.displayColor);
-
+        this.colorPattern(config.colorPattern);
     }
 
     var _buildTooltipData = function (datum, chart) {
@@ -93,7 +93,7 @@ function boxplot() {
     var onLassoStart = function (lasso, scope) {
         return function () {
             if (filter) {
-                lasso.items().selectAll('rect')
+                lasso.items()
                     .classed('not_possible', true)
                     .classed('selected', false);
             }
@@ -103,21 +103,21 @@ function boxplot() {
     var onLassoDraw = function (lasso, scope) {
         return function () {
             filter = true;
-            lasso.items().selectAll('rect')
+            lasso.items()
                 .classed('selected', false);
 
-            lasso.possibleItems().selectAll('rect').each(function (d, i) {
+            lasso.possibleItems().each(function (d, i) {
                 var item = d3.select(this).node().className.baseVal.split(' ')[0];
                 d3.selectAll('rect.' + item)
                     .classed('not_possible', false)
                     .classed('possible', true);
 
             });
-            lasso.possibleItems().selectAll('rect')
+            lasso.possibleItems()
                 .classed('not_possible', false)
                 .classed('possible', true);
 
-            lasso.notPossibleItems().selectAll('rect')
+            lasso.notPossibleItems()
                 .classed('not_possible', true)
                 .classed('possible', false);
         }
@@ -130,15 +130,16 @@ function boxplot() {
                 return;
             }
             if (data.length > 0) {
-                lasso.items().selectAll('rect')
+                lasso.items()
                     .classed('not_possible', false)
                     .classed('possible', false);
             }
 
-            lasso.selectedItems().selectAll('rect')
+            lasso.selectedItems()
                 .classed('selected', true)
 
-            lasso.notSelectedItems().selectAll('rect');
+            lasso.notSelectedItems()
+                .classed('selected', false);
 
             var confirm = d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
@@ -196,14 +197,13 @@ function boxplot() {
         var me = this;
 
         return function (d, i) {
-
-            d3.select(this).style('cursor', 'pointer')
-                .style('cursor', 'pointer')
-                .style('fill', COMMON.HIGHLIGHTER);
             var border = d3.select(this).attr('fill')
+            d3.select(this).style('cursor', 'pointer')
+                .attr('fill', COMMON.HIGHLIGHTER);
+
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border, _notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -213,8 +213,7 @@ function boxplot() {
 
         return function (d, i) {
             if (tooltip) {
-                var border = d3.select(this).attr('fill')
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border, _notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -224,7 +223,14 @@ function boxplot() {
 
         return function (d, i) {
             d3.select(this).style('cursor', 'default')
-
+                .attr("fill", function (datum) {
+                    if (colorPattern == "Unique Color") {
+                        return COMMON.COLORSCALE(i);
+                    }
+                    else {
+                        return COMMON.COLORSCALE(0);
+                    }
+                })
 
             if (tooltip) {
                 UTIL.hideTooltip(tooltip);
@@ -257,404 +263,53 @@ function boxplot() {
     }
 
     function chart(selection) {
-        _local_svg = selection;
 
-        selection.each(function (data) {
-            data = UTIL.sortingData(data, _dimension[0]);
-           
-            _Local_data = _originalData = data;
-            div = d3.select(this).node().parentNode;
+        data = UTIL.sortingData(_data, _dimension[0])
+        _Local_data = _originalData = data;
 
-            var svg = d3.select(this);
-            width = +svg.attr('width');
+        if (_print && !_notification) {
+            parentContainer = selection;
+        }
+        else {
+            parentContainer = d3.select('#' + selection.id)
+        }
+
+        var svg = parentContainer.append('svg')
+            .attr('width', parentContainer.attr('width'))
+            .attr('height', parentContainer.attr('height'))
+
+        var width = +svg.attr('width'),
             height = +svg.attr('height');
 
-            _local_svg.attr("width", width).
-                attr("height", height);
+        _local_svg = svg;
 
-            var globalMin, globalMax, xLabels;
+        container = svg.append('g')
+            .attr("class", "focus")
+            .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
-            var minMax = getGlobalMinMax(data);
-            globalMin = minMax[0];
-            globalMax = minMax[1];
+        svg.attr('width', width)
+            .attr('height', height)
 
-            xLabels = getXLabels(data);
+        parentContainer.append('div')
+            .attr('class', 'custom_tooltip');
 
-            gWidth = width - margin.left - margin.right;
-            gHeight = height - margin.top - margin.bottom;
-
-            var barWidth = Math.floor(gWidth / data.length / 2);
-            var me = this;
-            if (_tooltip) {
-              tooltip = parentContainer.select('.custom_tooltip');
-            }
-
-            x = d3
-                .scalePoint()
-                .domain(xLabels)
-                .rangeRound([0, gWidth])
-                .padding([0.5]);
-
-            y = d3
-                .scaleLinear()
-                .domain([globalMin, globalMax])
-                .range([gHeight, 0]);
-
-            var plot = svg
-                .append("g")
-                .attr("class", "plot")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-            var boxPlot = plot
-                .append("g")
-                .attr("transform", "translate(0,0)");
-
-            var verticalLines = boxPlot
-                .selectAll(".verticalLines")
-                .data(data)
-                .enter()
-                .append("line")
-                .attr('class', 'verticalLines')
-                .attr("stroke", "#000")
-                .attr("stroke-width", 1)
-                .style("stroke-dasharray", 3)
-                .attr("fill", "none");
-
-            var box = boxPlot
-                .selectAll(".box")
-                .data(data)
-                .enter()
-                .append("g")
-                .attr('class', 'box')
-                .attr("id", function (d, i) {
-                    return "box" + i;
-                })
-
-            var lowerBox = box
-                .append("rect")
-                .attr("width", barWidth)
-                .attr('class', 'lowerBox')
-                .attr("x", function (d) {
-                    return (
-                        x(d[_dimension[0]]) -
-                        barWidth / 2
-                    );
-                })
-                .attr("y", function (d) {
-                    return y(d[_measure[2]]);
-                })
-                .attr("fill", displayColor[1])
-                .attr("stroke", function (d) {
-                    return d3
-                        .rgb(displayColor[1])
-                        .darker();
-                })
-                .attr("stroke-width", 1)
-
-            var upperBox = box
-                .append("rect")
-                .attr("width", barWidth)
-                .attr('class', 'upperBox')
-                .attr("x", function (d) {
-                    return (
-                        x(d[_dimension[0]]) -
-                        barWidth / 2
-                    );
-                })
-                .attr("fill", displayColor[3])
-                .attr("stroke", function (d) {
-                    return d3
-                        .rgb(displayColor[3])
-                        .darker();
-                })
-                .attr("stroke-width", 1)
-                .attr("y", function (d) {
-                    return y(d[_measure[2]]);
-                })
-
-            horizontalLineConfigs = [
-                {
-                    label: _measure[4],
-                    x1: function (d) {
-                        return (
-                            x(d[_dimension[0]]) -
-                            barWidth / 2
-                        );
-                    },
-                    y1: function (d) {
-                        return y(d[_measure[4]]);
-                    },
-                    x2: function (d) {
-                        return (
-                            x(d[_dimension[0]]) +
-                            barWidth / 2
-                        );
-                    },
-                    y2: function (d) {
-                        return y(d[_measure[4]]);
-                    }
-                },
-                {
-                    label: _measure[2],
-                    x1: function (d) {
-                        return (
-                            x(d[_dimension[0]]) -
-                            barWidth / 2
-                        );
-                    },
-                    y1: function (d) {
-                        return y(d[_measure[2]]);
-                    },
-                    x2: function (d) {
-                        return (
-                            x(d[_dimension[0]]) +
-                            barWidth / 2
-                        );
-                    },
-                    y2: function (d) {
-                        return y(d[_measure[2]]);
-                    }
-                },
-                {
-                    label: _measure[0],
-                    x1: function (d) {
-                        return (
-                            x(d[_dimension[0]]) -
-                            barWidth / 2
-                        );
-                    },
-                    y1: function (d) {
-                        return y(d[_measure[0]]);
-                    },
-                    x2: function (d) {
-                        return (
-                            x(d[_dimension[0]]) +
-                            barWidth / 2
-                        );
-                    },
-                    y2: function (d) {
-                        return y(d[_measure[0]]);
-                    }
-                }
-            ];
-
-            function afterTransition() {
-                verticalLines
-                    .attr("x1", function (d) {
-                        return x(d[_dimension[0]]);
-                    })
-                    .attr("y1", function (d) {
-                        return y(d[_measure[0]]);
-                    })
-                    .attr("x2", function (d) {
-                        return x(d[_dimension[0]]);
-                    })
-                    .attr("y2", function (d) {
-                        return y(d[_measure[4]]);
-                    });
-
-                horizontalLineConfigs.forEach(function (config) {
-                    plot
-                        .selectAll(".horizontalLines")
-                        .data(data)
-                        .enter()
-                        .append("line")
-                        .attr('class', 'horizontalLines')
-                        .attr("x1", config.x1)
-                        .attr("y1", config.y1)
-                        .attr("x2", config.x2)
-                        .attr("y2", config.y2)
-                        .attr("stroke", function (d) {
-                            return displayColor[_measure.indexOf(config.label)];
-                        })
-                        .attr("stroke-width", 2)
-                        .attr("fill", "none");
-                });
-            }
-
-            if (!_print) {
-                _local_svg.selectAll('.lowerBox')
-                    .attr("height", 0)
-                    .transition()
-                    .duration(COMMON.DURATION)
-                    .ease(d3.easeQuadIn)
-                    .attr("height", function (d) {
-                        return y(d[_measure[1]]) - y(d[_measure[2]]);
-                    });
-
-                _local_svg.selectAll('.upperBox')
-                    .attr("height", 0)
-                    .transition()
-                    .duration(COMMON.DURATION)
-                    .ease(d3.easeQuadIn)
-                    .attr("height", function (d) {
-                        var height =
-                            y(d[_measure[2]]) -
-                            y(d[_measure[3]]);
-                        return height;
-                    })
-                    .attr("y", function (d) {
-                        return y(d[_measure[3]]);
-                    })
-                    .on("end", afterTransition);
-
-            }
-            else {
-                _local_svg.selectAll('.lowerBox')
-                    .attr("height", function (d) {
-                        return y(d[_measure[1]]) - y(d[_measure[2]]);
-                    });
-
-                _local_svg.selectAll('.upperBox')
-                    .attr("height", function (d) {
-                        var height =
-                            y(d[_measure[2]]) -
-                            y(d[_measure[3]]);
-                        return height;
-                    })
-                    .attr("y", function (d) {
-                        return y(d[_measure[3]]);
-                    })
-                afterTransition();
-            }
-            var isRotate = false;
-            plot.append("g")
-                .attr("class", "x_axis")
-                .attr("transform", "translate(0," + gHeight + ")")
-                .call(d3.axisBottom(x)
-                    .tickSize(0)
-                    .tickFormat(function (d) {
-                        if (isRotate == false) {
-                            isRotate = UTIL.getTickRotate(d, (gWidth) / (xLabels.length - 1), tickLength);
-                        }
-                        return UTIL.getTruncatedTick(d, (gWidth) / (xLabels.length - 1), tickLength);
-                    })
-                    .tickPadding(10))
-
-            plot.append("g")
-                .attr("class", "y_axis")
-                .call(d3.axisLeft(y).ticks(null, "s"))
-
-            if (isRotate) {
-                _local_svg.selectAll('.x_axis .tick text')
-                    .attr("transform", "rotate(-15)");
-            }
-
-            UTIL.setAxisColor(_local_svg, "", "", true, true, true, true);
-
-            if (!_print) {
-                var _filter = UTIL.createFilterElement()
-                $(div).append(_filter);
-
-                _local_svg.selectAll('g.box')
-                    .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-                    .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-                    .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
-                    .on('click', function (d) {
-                        filter = false;
-                        var confirm = d3.select(div).select('.confirm')
-                            .style('visibility', 'visible');
-
-                        var _filter = _Local_data.filter(function (d1) {
-                            return d[_dimension[0]] === d1[_dimension[0]]
-                        })
-                        var rect = d3.select(this);
-                        if (rect.classed('selected')) {
-                            rect.classed('selected', false);
-                            filterData.map(function (val, i) {
-                                if (val[_dimension[0]] == d[_dimension[0]]) {
-                                    filterData.splice(i, 1)
-                                }
-                            })
-                        } else {
-                            rect.classed('selected', true);
-                            var isExist = filterData.filter(function (val) {
-                                if (val[_dimension[0]] == d[_dimension[0]]) {
-                                    return val
-                                }
-                            })
-                            if (isExist.length == 0) {
-                                filterData.push(_filter[0]);
-                            }
-                        }
-
-                        var _filterDimension = {};
-                        if (broadcast.filterSelection.id) {
-                            _filterDimension = broadcast.filterSelection.filter;
-                        } else {
-                            broadcast.filterSelection.id = $(div).attr('id');
-                        }
-                        var dimension = _dimension[0];
-                        if (_filterDimension[dimension]) {
-                            var temp = _filterDimension[dimension];
-                            if (temp.indexOf(d[_dimension[0]]) < 0) {
-                                temp.push(d[_dimension[0]]);
-                            } else {
-                                temp.splice(temp.indexOf(d[_dimension[0]]), 1);
-                            }
-                            _filterDimension[dimension] = temp;
-                        } else {
-                            _filterDimension[dimension] = [d[_dimension[0]]];
-                        }
-
-                        var idWidget = broadcast.updateWidget[$(div).attr('id')];
-                        broadcast.updateWidget = {};
-                        broadcast.updateWidget[$(div).attr('id')] = idWidget;
-                        broadcast.filterSelection.filter = _filterDimension;
-                        var _filterParameters = filterParameters.get();
-                        _filterParameters[dimension] = _filterDimension[dimension];
-                        filterParameters.save(_filterParameters);
-                    })
-
-               parentContainer.select('.filterData')
-                .on('click', applyFilter());
-
-               parentContainer.select('.removeFilter')
-                .on('click', clearFilter(parentContainer));
-
-                var lasso = d3Lasso
-                    .lasso()
-                    .hoverSelect(true)
-                    .closePathSelect(true)
-                    .closePathDistance(100)
-                    .items(box)
-                    .targetArea(_local_svg);
-
-                lasso.on('start', onLassoStart(lasso, me))
-                    .on('draw', onLassoDraw(lasso, _local_svg))
-                    .on('end', onLassoEnd(lasso, _local_svg));
-
-                _local_svg.call(lasso);
-            }
-        });
-    }
-
-    chart._getName = function () {
-        return _NAME;
-    }
-
-    chart._getHTML = function () {
-        return _local_svg.node().outerHTML;
-    }
-
-    chart.update = function (data) {
-        data = UTIL.sortingData(data, _dimension[0]);
-        if (_tooltip) {
-          tooltip = parentContainer.select('.custom_tooltip');
-        }
-        _Local_data = data,
-            filterData = [];
+        var globalMin, globalMax, xLabels;
 
         var minMax = getGlobalMinMax(data);
         globalMin = minMax[0];
         globalMax = minMax[1];
 
         xLabels = getXLabels(data);
-        var plot = _local_svg.select('.plot');
-        gWidth = width - margin.left - margin.right,
-            gHeight = height - margin.top - margin.bottom;
+
+        gWidth = width - margin.left - margin.right;
+        gHeight = height - margin.top - margin.bottom;
 
         var barWidth = Math.floor(gWidth / data.length / 2);
+        var me = this;
+        if (_tooltip) {
+            tooltip = parentContainer.select('.custom_tooltip');
+        }
+
         x = d3
             .scalePoint()
             .domain(xLabels)
@@ -666,212 +321,353 @@ function boxplot() {
             .domain([globalMin, globalMax])
             .range([gHeight, 0]);
 
-        var verticalLines = plot.selectAll('.verticalLines')
-            .data(data);
+        var plot = svg
+            .append("g")
+            .attr("class", "plot")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-        verticalLines.exit().remove();
 
-        verticalLines
-            .attr("x1", function (d) {
-                return x(d[_dimension[0]]);
+        var verticalLines = plot.selectAll(".verticalLines")
+            .data(data)
+            .enter()
+            .append("line")
+            .attr("x1", function (datum) {
+                return x(datum[_dimension[0]]);
             })
-            .attr("y1", function (d) {
-                return y(d[_measure[0]]);
+            .attr("y1", function (datum) {
+                return y(datum[_measure[0]]);
             })
-            .attr("x2", function (d) {
-                return x(d[_dimension[0]]);
+            .attr("x2", function (datum) {
+                return x(datum[_dimension[0]]);
             })
-            .attr("y2", function (d) {
-                return y(d[_measure[4]]);
-            });
-
-
-        var verticalLinesNew = verticalLines.enter().append('line')
-            .attr('class', 'verticalLines');
-
-        verticalLinesNew
+            .attr("y2", function (datum) {
+                return y(datum[_measure[4]]);
+            })
             .attr("stroke", "#000")
-            .attr("stroke-width", 1)
-            .style("stroke-dasharray", 3)
-            .attr("fill", "none")
-            .attr("x1", function (d) {
-                return x(d[_dimension[0]]);
-            })
-            .attr("y1", function (d) {
-                return y(d[_measure[0]]);
-            })
-            .attr("x2", function (d) {
-                return x(d[_dimension[0]]);
-            })
-            .attr("y2", function (d) {
-                return y(d[_measure[4]]);
-            });
+            .style("stroke-width", 1)
+            .attr("fill", "none");
 
-
-        var horizontalLines = plot.selectAll('.horizontalLines')
-            .data(data);
-
-        horizontalLines.exit().remove();
-
-        horizontalLines.enter().append('line')
-            .attr('class', 'horizontalLines');
-
-        var box = plot.selectAll('.box')
-            .data(data);
-
-        box.exit().remove();
-
-        box.selectAll('.lowerBox')
-
+        // Draw the boxes of the box plot, filled and on top of vertical lines
+        var rects = plot.selectAll("rect")
+            .data(data)
+            .enter()
+            .append("rect")
+            .attr("class", 'box')
             .attr("width", barWidth)
-            .classed('selected', false)
-            .attr('class', 'lowerBox')
-            .attr("x", function (d) {
-                return (
-                    x(d[_dimension[0]]) -
-                    barWidth / 2
-                );
-            })
-            .attr("y", function (d) {
-                return y(d[_measure[2]]);
-            })
-            .attr("fill", displayColor[1])
-            .attr("stroke", function (d) {
-                return d3
-                    .rgb(displayColor[1])
-                    .darker();
-            })
-            .attr("stroke-width", 1)
-            .attr("height", 0)
-            .transition()
-            .duration(800)
-            .ease(d3.easeQuadIn)
-            .attr("height", function (d) {
-                return y(d[_measure[1]]) - y(d[_measure[2]]);
-            });
-
-        box.selectAll('.upperBox')
-            .attr("width", barWidth)
-            .classed('selected', false)
-            .attr("x", function (d) {
-                return (
-                    x(d[_dimension[0]]) -
-                    barWidth / 2
-                );
-            })
-            .attr("fill", displayColor[3])
-            .attr("stroke", function (d) {
-                return d3
-                    .rgb(displayColor[3])
-                    .darker();
-            })
-            .attr("stroke-width", 1)
-            .attr("y", function (d) {
-                return y(d[_measure[2]]);
-            })
-            .attr("height", 0)
-            .transition()
-            .duration(800)
-            .ease(d3.easeQuadIn)
-            .attr("height", function (d) {
-                var height =
-                    y(d[_measure[2]]) -
-                    y(d[_measure[3]]);
+            .attr("height", function (datum) {
+                var height = y(datum[_measure[1]]) - y(datum[_measure[3]]);
                 return height;
             })
-            .attr("y", function (d) {
-                return y(d[_measure[3]]);
+            .attr("x", function (datum) {
+                return x(datum[_dimension[0]]) - (barWidth / 2);
             })
-
-
-        var newBox = box.enter().append('g')
-            .attr('class', 'box')
-            .attr("id", function (d, i) {
-                return "box" + i;
+            .attr("y", function (datum) {
+                return y(datum[_measure[3]]);
             })
-            .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+            .attr("fill", function (datum, i) {
+                if (colorPattern == "Unique Color") {
+                    return COMMON.COLORSCALE(i);
+                }
+                else {
+                    return COMMON.COLORSCALE(0);
+                }
+            })
+            .attr("stroke", "#000")
+            .style("stroke-width", 1);
 
-        var lowerBox = newBox
+        // Now render all the horizontal lines at once - the whiskers and the median
+        var horizontalLineConfigs = [
+            // Top whisker
+            {
+                x1: function (datum) { return x(datum[_dimension[0]]) - barWidth / 2 },
+                y1: function (datum) { return y(datum[_measure[0]]) },
+                x2: function (datum) { return x(datum[_dimension[0]]) + barWidth / 2 },
+                y2: function (datum) { return y(datum[_measure[0]]) }
+            },
+            // Median line
+            {
+                x1: function (datum) { return x(datum[_dimension[0]]) - barWidth / 2 },
+                y1: function (datum) { return y(datum[_measure[2]]) },
+                x2: function (datum) { return x(datum[_dimension[0]]) + barWidth / 2 },
+                y2: function (datum) { return y(datum[_measure[2]]) }
+            },
+            // Bottom whisker
+            {
+                x1: function (datum) { return x(datum[_dimension[0]]) - barWidth / 2 },
+                y1: function (datum) { return y(datum[_measure[4]]) },
+                x2: function (datum) { return x(datum[_dimension[0]]) + barWidth / 2 },
+                y2: function (datum) { return y(datum[_measure[4]]) }
+            }
+        ];
+
+        for (var i = 0; i < horizontalLineConfigs.length; i++) {
+            var lineConfig = horizontalLineConfigs[i];
+
+            // Draw the whiskers at the min for this series
+            var horizontalLine = plot.selectAll(".whiskers")
+                .data(data)
+                .enter()
+                .append("line")
+                .attr("x1", lineConfig.x1)
+                .attr("y1", lineConfig.y1)
+                .attr("x2", lineConfig.x2)
+                .attr("y2", lineConfig.y2)
+                .attr("stroke", "#000")
+                .style("stroke-width", 1)
+                .attr("fill", "none");
+        }
+
+        var isRotate = false;
+        plot.append("g")
+            .attr("class", "x_axis")
+            .attr("transform", "translate(0," + gHeight + ")")
+            .call(d3.axisBottom(x)
+                .tickSize(0)
+                .tickFormat(function (d) {
+                    if (isRotate == false) {
+                        isRotate = UTIL.getTickRotate(d, (gWidth) / (xLabels.length - 1), tickLength);
+                    }
+                    return UTIL.getTruncatedTick(d, (gWidth) / (xLabels.length - 1), tickLength);
+                })
+                .tickPadding(10))
+
+        plot.append("g")
+            .attr("class", "y_axis")
+            .call(d3.axisLeft(y).ticks(null, "s"))
+
+        if (isRotate) {
+            _local_svg.selectAll('.x_axis .tick text')
+                .attr("transform", "rotate(-15)");
+        }
+
+        UTIL.setAxisColor("", true, "", true, _local_svg);
+
+
+        if (!_print) {
+            var confirm = $(me).parent().find('div.confirm')
+                .css('visibility', 'hidden');
+
+            var _filter = UTIL.createFilterElement()
+            $('#' + parentContainer.attr('id')).append(_filter)
+
+            _local_svg.selectAll('rect.box')
+                .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+                .on('click', function (d) {
+                    filter = false;
+
+                    var confirm = parentContainer.select('.confirm')
+                        .style('visibility', 'visible');
+
+                    var point = d3.select(this).selectAll('path');
+                    if (point.classed('selected')) {
+                        point.classed('selected', false);
+                    } else {
+                        point.classed('selected', true);
+                    }
+
+                    var _filterDimension = {};
+                    if (broadcast.filterSelection.id) {
+                        _filterDimension = broadcast.filterSelection.filter;
+                    } else {
+                        broadcast.filterSelection.id = parentContainer.attr('id');
+                    }
+                    var dimension = _dimension[0];
+                    if (_filterDimension[dimension]) {
+                        var temp = _filterDimension[dimension];
+                        if (temp.indexOf(d[_dimension[0]]) < 0) {
+                            temp.push(d[_dimension[0]]);
+                        } else {
+                            temp.splice(temp.indexOf(d[_dimension[0]]), 1);
+                        }
+                        _filterDimension[dimension] = temp;
+                    } else {
+                        _filterDimension[dimension] = [d[_dimension[0]]];
+                    }
+
+                    var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
+                    broadcast.updateWidget = {};
+                    broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
+                    broadcast.filterSelection.filter = _filterDimension;
+                    var _filterParameters = filterParameters.get();
+                    _filterParameters[dimension] = _filterDimension[dimension];
+                    filterParameters.save(_filterParameters);
+                })
+
+            parentContainer.select('.filterData')
+                .on('click', applyFilter());
+
+            parentContainer.select('.removeFilter')
+                .on('click', clearFilter(parentContainer));
+
+            var lasso = d3Lasso
+                .lasso()
+                .hoverSelect(true)
+                .closePathSelect(true)
+                .closePathDistance(100)
+                .items(rects)
+                .targetArea(_local_svg);
+
+            lasso.on('start', onLassoStart(lasso, _local_svg))
+                .on('draw', onLassoDraw(lasso, _local_svg))
+                .on('end', onLassoEnd(lasso, _local_svg));
+
+            _local_svg.call(lasso);
+        }
+
+    }
+
+    chart._getName = function () {
+        return _NAME;
+    }
+
+    chart._getHTML = function () {
+        return _local_svg.node().outerHTML;
+    }
+
+    chart.update = function (data) {
+        filterData = [];
+        var plot = _local_svg.select('.plot');
+
+        plot.selectAll('rect').remove();
+        plot.selectAll('line').remove();
+
+        if (_tooltip) {
+            tooltip = parentContainer.select('.custom_tooltip');
+        }
+
+        var globalMin, globalMax, xLabels;
+
+        var minMax = getGlobalMinMax(data);
+        globalMin = minMax[0];
+        globalMax = minMax[1];
+
+        xLabels = getXLabels(data);
+
+        var barWidth = Math.floor(gWidth / data.length / 2);
+
+        x = d3
+            .scalePoint()
+            .domain(xLabels)
+            .rangeRound([0, gWidth])
+            .padding([0.5]);
+
+        y = d3
+            .scaleLinear()
+            .domain([globalMin, globalMax])
+            .range([gHeight, 0]);
+
+        var verticalLines = plot.selectAll(".verticalLines")
+            .data(data)
+            .enter()
+            .append("line")
+            .attr("x1", function (datum) {
+                return x(datum[_dimension[0]]);
+            })
+            .attr("y1", function (datum) {
+                return y(datum[_measure[0]]);
+            })
+            .attr("x2", function (datum) {
+                return x(datum[_dimension[0]]);
+            })
+            .attr("y2", function (datum) {
+                return y(datum[_measure[4]]);
+            })
+            .attr("stroke", "#000")
+            .style("stroke-width", 1)
+            .attr("fill", "none");
+
+        // Draw the boxes of the box plot, filled and on top of vertical lines
+        var rects = plot.selectAll("rect")
+            .data(data)
+            .enter()
             .append("rect")
+            .attr("class", 'box')
             .attr("width", barWidth)
-            .attr('class', 'lowerBox')
-            .attr("x", function (d) {
-                return (
-                    x(d[_dimension[0]]) -
-                    barWidth / 2
-                );
-            })
-            .attr("y", function (d) {
-                return y(d[_measure[2]]);
-            })
-            .attr("fill", displayColor[1])
-            .attr("stroke", function (d) {
-                return d3
-                    .rgb(displayColor[1])
-                    .darker();
-            })
-            .attr("stroke-width", 1)
-            .attr("height", 0)
-            .transition()
-            .duration(800)
-            .ease(d3.easeQuadIn)
-            .attr("height", function (d) {
-                return y(d[_measure[1]]) - y(d[_measure[2]]);
-            });
-
-        var upperBox = newBox
-            .append("rect")
-            .attr("width", barWidth)
-            .attr('class', 'upperBox')
-            .attr("x", function (d) {
-                return (
-                    x(d[_dimension[0]]) -
-                    barWidth / 2
-                );
-            })
-            .attr("fill", displayColor[3])
-            .attr("stroke", function (d) {
-                return d3
-                    .rgb(displayColor[3])
-                    .darker();
-            })
-            .attr("stroke-width", 1)
-            .attr("y", function (d) {
-                return y(d[_measure[2]]);
-            })
-            .attr("height", 0)
-            .transition()
-            .duration(800)
-            .ease(d3.easeQuadIn)
-            .attr("height", function (d) {
-                var height =
-                    y(d[_measure[2]]) -
-                    y(d[_measure[3]]);
+            .attr("height", function (datum) {
+                var height = y(datum[_measure[1]]) - y(datum[_measure[3]]);
                 return height;
             })
-            .attr("y", function (d) {
-                return y(d[_measure[3]]);
+            .attr("x", function (datum) {
+                return x(datum[_dimension[0]]) - (barWidth / 2);
             })
+            .attr("y", function (datum) {
+                return y(datum[_measure[3]]);
+            })
+            .attr("fill", function (datum, i) {
+                if (colorPattern == "Unique Color") {
+                    return COMMON.COLORSCALE(i);
+                }
+                else {
+                    return COMMON.COLORSCALE(0);
+                }
+            })
+            .attr("stroke", "#000")
+            .style("stroke-width", 1);
 
-        plot.select('.x_axis')
-            .transition()
-            .duration(1000)
-            .call(d3.axisBottom(x));
+        // Now render all the horizontal lines at once - the whiskers and the median
+        var horizontalLineConfigs = [
+            // Top whisker
+            {
+                x1: function (datum) { return x(datum[_dimension[0]]) - barWidth / 2 },
+                y1: function (datum) { return y(datum[_measure[0]]) },
+                x2: function (datum) { return x(datum[_dimension[0]]) + barWidth / 2 },
+                y2: function (datum) { return y(datum[_measure[0]]) }
+            },
+            // Median line
+            {
+                x1: function (datum) { return x(datum[_dimension[0]]) - barWidth / 2 },
+                y1: function (datum) { return y(datum[_measure[2]]) },
+                x2: function (datum) { return x(datum[_dimension[0]]) + barWidth / 2 },
+                y2: function (datum) { return y(datum[_measure[2]]) }
+            },
+            // Bottom whisker
+            {
+                x1: function (datum) { return x(datum[_dimension[0]]) - barWidth / 2 },
+                y1: function (datum) { return y(datum[_measure[4]]) },
+                x2: function (datum) { return x(datum[_dimension[0]]) + barWidth / 2 },
+                y2: function (datum) { return y(datum[_measure[4]]) }
+            }
+        ];
 
-        plot.select('.y_axis')
-            .transition()
-            .duration(1000)
-            .call(d3.axisLeft(y).ticks(null, "s"));
+        for (var i = 0; i < horizontalLineConfigs.length; i++) {
+            var lineConfig = horizontalLineConfigs[i];
 
-        horizontalLineConfigs.forEach(function (config) {
-            horizontalLines
-                .attr("x1", config.x1)
-                .attr("y1", config.y1)
-                .attr("x2", config.x2)
-                .attr("y2", config.y2)
-        });
+            // Draw the whiskers at the min for this series
+            var horizontalLine = plot.selectAll(".whiskers")
+                .data(data)
+                .enter()
+                .append("line")
+                .attr("x1", lineConfig.x1)
+                .attr("y1", lineConfig.y1)
+                .attr("x2", lineConfig.x2)
+                .attr("y2", lineConfig.y2)
+                .attr("stroke", "#000")
+                .style("stroke-width", 1)
+                .attr("fill", "none");
+        }
+
+        var isRotate = false;
+        plot.select(".x_axis")
+            .attr("transform", "translate(0," + gHeight + ")")
+            .call(d3.axisBottom(x)
+                .tickSize(0)
+                .tickFormat(function (d) {
+                    if (isRotate == false) {
+                        isRotate = UTIL.getTickRotate(d, (gWidth) / (xLabels.length - 1), tickLength);
+                    }
+                    return UTIL.getTruncatedTick(d, (gWidth) / (xLabels.length - 1), tickLength);
+                })
+                .tickPadding(10))
+
+        plot.select(".y_axis")
+            .call(d3.axisLeft(y).ticks(null, "s"))
+
+        if (isRotate) {
+            _local_svg.selectAll('.x_axis .tick text')
+                .attr("transform", "rotate(-15)");
+        }
     }
 
 
@@ -942,6 +738,14 @@ function boxplot() {
         return chart;
     }
 
+    chart.colorPattern = function (value) {
+        if (!arguments.length) {
+            return colorPattern;
+        }
+        colorPattern = value;
+        return chart;
+    }
+
     chart.print = function (value) {
         if (!arguments.length) {
             return _print;
@@ -950,12 +754,16 @@ function boxplot() {
         return chart;
     }
 
-    chart.numberFormat = function (value, measure) {
-        return UTIL.baseAccessor.call(numberFormat, value, measure, _measure);
+    chart.data = function (value) {
+        if (!arguments.length) {
+            return _data;
+        }
+        _data = value;
+        return chart;
     }
 
-    chart.displayColor = function (value, measure) {
-        return UTIL.baseAccessor.call(displayColor, value, measure, _measure);
+    chart.numberFormat = function (value, measure) {
+        return UTIL.baseAccessor.call(numberFormat, value, measure, _measure);
     }
 
     chart.broadcast = function (value) {

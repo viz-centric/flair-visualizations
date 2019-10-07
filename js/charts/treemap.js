@@ -46,7 +46,7 @@ function treemap() {
     var _local_svg,
         _localTotal,
         _localData = [],
-        _localTooltip,
+        _tooltip,
         textPadding = 2,
         _originalData,
         width,
@@ -82,6 +82,7 @@ function treemap() {
         this.fontStyleForDimension(config.fontStyleForDimension);
         this.fontWeightForDimension(config.fontWeightForDimension);
         this.fontSizeForDimension(config.fontSizeForDimension);
+        setDefaultColorForChart();
     }
 
     var setColorDomainRange = function (arr, dim) {
@@ -155,7 +156,7 @@ function treemap() {
         }
 
         if (showLabelForDimension[0]) {
-            var nf = UTIL.getNumberFormatter(numberFormat),
+            var nf = UTIL.getNumberFormatterFn(numberFormat,obj.value),
                 value;
 
             if (numberFormat == "Percent") {
@@ -262,7 +263,7 @@ function treemap() {
             var border = d3.select(this).attr('fill');
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border, _notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -273,7 +274,7 @@ function treemap() {
         return function (d, i) {
             if (tooltip) {
                 var border = d3.select(this).attr('fill');
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me, border), container, border, _notification);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -290,6 +291,14 @@ function treemap() {
 
             if (tooltip) {
                 UTIL.hideTooltip(tooltip);
+            }
+        }
+    }
+
+    var setDefaultColorForChart = function () {
+        for (let index = 0; index < _dimension.length; index++) {
+            if (displayColor[index] == null || displayColor[index] == undefined) {
+                displayColor[index] = COMMON.COLORSCALE(index);
             }
         }
     }
