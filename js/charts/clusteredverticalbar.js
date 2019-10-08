@@ -980,6 +980,16 @@ function clusteredverticalbar() {
                         }
                     }
                 }
+                else{
+                    var textInfo=d3.select(this).node().getBBox();
+                    if(textInfo.width>=rectWidth){
+                        return 'hidden';
+                    }
+                    if(textInfo.height>=rectHeight){
+                        return 'hidden';
+                    }
+
+                }
                 if (rectHeight <= ((offsetX / 2) + parseFloat(d3.select(this).style('font-size').replace('px', '')))) {
                     return 'hidden';
                 }
