@@ -634,7 +634,15 @@ function stackedverticalbar() {
                             return 'hidden';
                         }
                     }
-
+                }
+                else {
+                    var textInfo = d3.select(this).node().getBBox();
+                    if (textInfo.width >= rectWidth) {
+                        return 'hidden';
+                    }
+                    if (textInfo.height >= rectHeight) {
+                        return 'hidden';
+                    }
                 }
                 var height = y(d[0]) - y(d[1]);
                 if (height <= 25) {

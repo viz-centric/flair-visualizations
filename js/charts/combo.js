@@ -1335,10 +1335,25 @@ function combo() {
             })
             .style('text-anchor', 'middle')
             .attr('visibility', function (d, i) {
+                var rect = d3.select(this.previousElementSibling).node(),
+                    rectWidth = rect.getAttribute('width'),
+                    rectHeight = rect.getAttribute('height');
                 if (_notification) {
                     return 'hidden';
                 }
-                return UTIL.getVisibility(_showValues[i]);
+                if (!_print) {
+                    return UTIL.getVisibility(_showValues[i]);
+                }
+                else {
+                    var textInfo = d3.select(this).node().getBBox();
+                    if (textInfo.width >= rectWidth) {
+                        return 'hidden';
+                    }
+                    if (textInfo.height >= rectHeight) {
+                        return 'hidden';
+                    }
+                }
+                return 'visible';
             })
             .style('font-style', function (d, i) {
                 return _fontStyle[i];

@@ -94,10 +94,14 @@ function kpi() {
         var containerSize = parseInt(d3.select(container).node().style('width')) + 100;
         if (width - 2 * COMMON.PADDING < containerSize) {
             var newFontSize = parseInt(container.selectAll('.child span').style('font-size')) - 5;
+            var newIconSize = parseInt(container.selectAll('.child i').style('font-size')) - 5;
 
-
-            container.selectAll('.child span').style('font-size', newFontSize + 'px')
-            container.selectAll('.child i').style('font-size', newFontSize + 'px')
+            if (newFontSize >= 9) {
+                container.selectAll('.child span').style('font-size', newFontSize + 'px')
+            }
+            if (newIconSize >= 9) {
+                container.selectAll('.child i').style('font-size', newIconSize + 'px')
+            }
             setFont();
         }
         else {
@@ -430,12 +434,12 @@ function kpi() {
     }
 
     /**
- * KPI Background Color accessor function
- *
- * @param {string|array(string)|null} value Background Color value for the measure(s)
- * @param {string|null} measure Measure for which the value is to be set or retrieved
- * @return {string|array(string)|function}
-*/
+    * KPI Background Color accessor function
+    *
+    * @param {string|array(string)|null} value Background Color value for the measure(s)
+    * @param {string|null} measure Measure for which the value is to be set or retrieved
+    * @return {string|array(string)|function}
+    */
     chart.kpiBackgroundColor = function (value, measure) {
         return UTIL.baseAccessor.call(_kpiBackgroundColor, value, measure, _measure);
     }
@@ -537,7 +541,7 @@ function kpi() {
         } else {
             /**
              * Setter method call with both value and measure arguments
- * E.g. <chart>.kpiColorExpression(<item>, <measure>) ==> <chart_function>
+    * E.g. <chart>.kpiColorExpression(<item>, <measure>) ==> <chart_function>
              */
             _kpiColorExpression[index] = UTIL.getExpressionConfig(value, ['color']);
         }

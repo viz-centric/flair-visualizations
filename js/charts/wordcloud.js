@@ -235,11 +235,12 @@ function wordcloud() {
             .size([parentWidth, parentHeight])
             .words(words)
             .rotate(0)
-            .padding(10)
-            .fontSize(60)
-
+            .padding(5)
+            .fontSize(function (d) { return d.size; })
             .on("end", drawSkillCloud)
             .start();
+
+            
 
         function drawSkillCloud(words) {
             var text = _local_svg
@@ -248,15 +249,18 @@ function wordcloud() {
                 .selectAll("text")
                 .data(words)
                 .enter().append("text")
-                .style("font-size", function (d) { return d.size + "px"; })
+                .style("font-size", function (d) {
+                    return d.size + "px";
+                })
+                .style("font-family", "Impact")
+                .style("fill", function (d, i) {
+                    return getFillColor(d, i, data);
+                })
                 .attr("text-anchor", "middle")
                 .attr("transform", function (d) {
                     return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
                 })
                 .text(function (d) { return d.text; })
-                .style("fill", function (d, i) {
-                    return getFillColor(d, i, data);
-                })
 
             if (!_print) {
 
