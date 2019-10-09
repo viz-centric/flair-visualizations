@@ -635,6 +635,11 @@ function line() {
                     + (x(d['data'][_dimension[0]]) + x.bandwidth() / 2)
                     + ',' + y(d['data'][d['tag']]) + ')';
             })
+            .style('visibility',function(d,i){
+                if(_pointType[_measure.indexOf(d.tag)]=="None"){
+                    return 'hidden';
+                }
+            })
 
         var text = clusterLine.selectAll('text')
             .data(function (d, i) {
@@ -1238,6 +1243,11 @@ function line() {
                 return d3.symbol()
                     .type(getPointType(_measure.indexOf(d.tag)))
                     .size(40)();
+            })
+            .style('visibility',function(d,i){
+                if(_pointType[_measure.indexOf(d.tag)]=="None"){
+                    return 'hidden';
+                }
             })
             .attr('transform', function (d) {
                 return 'translate('

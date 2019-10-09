@@ -535,6 +535,9 @@ function doughnut() {
                     break;
             }
         }
+        else {
+            legendBreakCount = 0;
+        }
         outerRadius = Math.min(plotWidth, plotHeight) / 2.25;
 
         /* setting the outerradius of the arc */

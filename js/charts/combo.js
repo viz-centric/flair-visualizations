@@ -713,6 +713,11 @@ function combo() {
                     .type(getPointType(_measure.indexOf(d.tag)))
                     .size(40)();
             })
+            .style('visibility',function(d,i){
+                if(_pointType[_measure.indexOf(d.tag)]=="None"){
+                    return 'hidden';
+                }
+            })
             .attr('transform', function (d) {
                 return 'translate('
                     + (x0(d['data'][_dimension[0]]) + x0.bandwidth() / 2)
@@ -1813,6 +1818,11 @@ function combo() {
                 return d3.symbol()
                     .type(getPointType(_measure.indexOf(d.tag)))
                     .size(40)();
+            })
+            .style('visibility',function(d,i){
+                if(_pointType[_measure.indexOf(d.tag)]=="None"){
+                    return 'hidden';
+                }
             })
             .attr('transform', function (d) {
                 return 'translate('

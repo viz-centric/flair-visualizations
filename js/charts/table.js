@@ -216,8 +216,9 @@ function table() {
 
     }
 
-    var createHeader = function () {
+    var createHeaderFooter = function () {
         var thead = "<thead><tr>";
+        var tfoot = "<tfoot><tr>";
 
         _dimension.forEach(function (item, index) {
             var title = _displayNameForDimension[index],
@@ -235,6 +236,7 @@ function table() {
             } else {
                 thead += "<th style=\"" + style + "\">" + item + "</th>";
             }
+            tfoot += "<th></th>";
         });
 
         _measure.forEach(function (item, index) {
@@ -253,11 +255,16 @@ function table() {
             } else {
                 thead += "<th style=\"" + style + "\">" + item + "</th>";
             }
+            tfoot += "<th></th>";
         });
 
         thead += "</tr></thead>";
+        tfoot += "</tr></tfoot>";
 
-        return thead;
+        return {
+            thead: thead,
+            tfoot: tfoot
+        };
 
     }
 
@@ -301,7 +308,7 @@ function table() {
 
                 style = JSON.stringify(style);
                 style = style.replace(/","/g, ';').replace(/["{}]/g, '');
-                tbody += "<td id=\"" + item + "\" style=\"" + style + "\">" + getIcon(index, d[_measure[index]]) + UTIL.getFormattedValue(d[_measure[index]], UTIL.getValueNumberFormat(index, _numberFormatForMeasure, d[_measure[index]])) + "</td>";
+                tbody += "<td class='sum' id=\"" + item + "\" style=\"" + style + "\">" + getIcon(index, d[_measure[index]]) + UTIL.getFormattedValue(d[_measure[index]], UTIL.getValueNumberFormat(index, _numberFormatForMeasure, d[_measure[index]])) + "</td>";
                 //  tbody += "<td onClick=\"readerTableChart('" + d[_measure[index]] + "',this,_local_svg,'" + item + "')\" style=\"" + style + "\">" + getIcon(index, d[_measure[index]]) + UTIL.getFormattedValue(d[_measure[index]], UTIL.getValueNumberFormat(index, _numberFormatForMeasure)) + "</td>";
 
             });
@@ -348,10 +355,13 @@ function table() {
             .classed('table-condensed', true)
             .classed('table-hover', true);
 
-        var thead = createHeader();
+        var thead_tfoot = createHeaderFooter();
 
         table.append('thead')
-            .html(thead);
+            .html(thead_tfoot.thead);
+
+        table.append('tfoot')
+            .html(thead_tfoot.tfoot);
 
         var tbody = createBody(data);
 
@@ -362,8 +372,18 @@ function table() {
             var _filter = UTIL.createFilterElement()
             $('#' + id).append(_filter)
 
-            $('#' + parentContainer.attr('id')).find('#viz_table').dataTable({
-                scrollY: height - 100,
+
+            var row = $('#' + id + " #viz_table thead").html()
+            $('#' + id + " #viz_table thead").append(row);
+            var addSearch = '#' + id + " #viz_table thead tr:eq(0) th";
+            $(addSearch).each(function () {
+                var title = $(this).text();
+                $(this).html('<input type="text" placeholder="Search ' + title + '" class="column_search" />');
+            });
+
+            var table = $('#' + parentContainer.attr('id')).find('#viz_table').DataTable({
+
+                scrollY: height - 300,
                 scrollX: true,
                 scrollCollapse: true,
                 ordering: true,
@@ -374,7 +394,7 @@ function table() {
                 // },
                 pagingType: "full_numbers",
                 aLengthMenu: [[2, 5, 10, 15, 20, 25, -1], [2, 5, 10, 15, 20, 25, "All"]],
-                iDisplayLength: 20,
+                iDisplayLength: 5,
                 bDestroy: true,
                 //   dom: '<"table-header">rt<"table-footer"lp>',
                 //  "sDom": "Rlfrtip",
@@ -383,8 +403,61 @@ function table() {
                         // $(oSettings.nTableWrapper).find('.dataTables_paginate').hide();
                         // $(oSettings.nTableWrapper).find('.dataTables_info').hide();
                     }
+                },
+                "footerCallback": function (row, data, start, end, display) {
+                    var api = this.api(), data;
+                    for (var i = 0; i < data.length; i++) {
+                        for (var j = 0; j < data[i].length; j++) {
+                            if (data[i][j].toString().indexOf('</i>') >= 0) {
+                                data[i][j] = parseFloat(data[i][j].substring(data[i][j].indexOf('</i>') + 4, data[i][j].length)).toFixed(2)
+                            }
+                        }
+                    }
+
+                    var intVal = function (i) {
+                        return typeof i === 'string' ?
+                            i.replace(/[\$,]/g, '') * 1 :
+                            typeof i === 'number' ?
+                                i : 0;
+                    };
+
+                    // Total over all pages
+
+                    for (let index = 0; index < _measure.length; index++) {
+
+                        total = api
+                            .column(_dimension.length + index)
+                            .data()
+                            .reduce(function (a, b) {
+                                return intVal(a) + intVal(b);
+                            }, 0);
+
+                        // Total over this page
+                        pageTotal = api
+                            .column(_dimension.length + index, { page: 'current' })
+                            .data()
+                            .reduce(function (a, b) {
+                                return intVal(a) + intVal(b);
+                            }, 0);
+
+                        // Update footer
+                        $(api.column(_dimension.length + index).footer()).html(
+                            parseFloat(pageTotal).toFixed(2) + ' ( ' + parseFloat(total).toFixed(2) + ' total)'
+                        );
+                    }
+
                 }
+
             });
+
+            $('#' + id + " thead").on('keyup', ".column_search", function () {
+
+                table
+                    .column($(this).parent().index())
+                    .search(this.value)
+                    .draw();
+            });
+
             $("#viz_table_paginate").css('display', 'blobk')
             $($('#' + parentContainer.attr('id') + ' td')).on('click', function () {
                 readerTableChart.call(this.textContent, this, parentContainer)
@@ -425,10 +498,13 @@ function table() {
 
         var table = parentContainer.select('#viz_table');
 
-        var thead = createHeader();
+        var thead_tfoot = createHeaderFooter();
 
         table.append('thead')
-            .html(thead);
+            .html(thead_tfoot.thead);
+
+        table.append('tfoot')
+            .html(thead_tfoot.tfoot);
 
         var tbody = createBody(data);
 
@@ -444,7 +520,8 @@ function table() {
             $('#' + id).append(_filter)
 
             $('#' + parentContainer.attr('id')).find('#viz_table').dataTable({
-                scrollY: height - 100,
+
+                scrollY: height - 300,
                 scrollX: true,
                 scrollCollapse: true,
                 ordering: true,
@@ -455,7 +532,7 @@ function table() {
                 // },
                 pagingType: "full_numbers",
                 aLengthMenu: [[2, 5, 10, 15, 20, 25, -1], [2, 5, 10, 15, 20, 25, "All"]],
-                iDisplayLength: 20,
+                iDisplayLength: 5,
                 bDestroy: true,
                 //   dom: '<"table-header">rt<"table-footer"lp>',
                 //  "sDom": "Rlfrtip",
@@ -464,6 +541,49 @@ function table() {
                         // $(oSettings.nTableWrapper).find('.dataTables_paginate').hide();
                         // $(oSettings.nTableWrapper).find('.dataTables_info').hide();
                     }
+                },
+                "footerCallback": function (row, data, start, end, display) {
+                    var api = this.api(), data;
+                    for (var i = 0; i < data.length; i++) {
+                        for (var j = 0; j < data[i].length; j++) {
+                            if (data[i][j].toString().indexOf('</i>') >= 0) {
+                                data[i][j] = parseFloat(data[i][j].substring(data[i][j].indexOf('</i>') + 4, data[i][j].length)).toFixed(2)
+                            }
+                        }
+                    }
+
+                    var intVal = function (i) {
+                        return typeof i === 'string' ?
+                            i.replace(/[\$,]/g, '') * 1 :
+                            typeof i === 'number' ?
+                                i : 0;
+                    };
+
+                    // Total over all pages
+
+                    for (let index = 0; index < _measure.length; index++) {
+
+                        total = api
+                            .column(_dimension.length + index)
+                            .data()
+                            .reduce(function (a, b) {
+                                return intVal(a) + intVal(b);
+                            }, 0);
+
+                        // Total over this page
+                        pageTotal = api
+                            .column(_dimension.length + index, { page: 'current' })
+                            .data()
+                            .reduce(function (a, b) {
+                                return intVal(a) + intVal(b);
+                            }, 0);
+
+                        // Update footer
+                        $(api.column(_dimension.length + index).footer()).html(
+                            parseFloat(pageTotal).toFixed(2) + ' ( ' + parseFloat(total).toFixed(2) + ' total)'
+                        );
+                    }
+
                 }
             });
             $("#viz_table_paginate").css('display', 'blobk')
