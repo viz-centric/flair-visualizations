@@ -191,7 +191,9 @@ function legend() {
                     while (newcount-- != 0) {
                         widthSum += d3.select('#' + me._getName() + '-legend-item' + newcount).node().getBBox().width + 16;
                     }
-                    return 'translate(' + widthSum + ', ' + legendBreakCount * 20 + ')';
+                    return 'translate(' + widthSum + ', ' + (me.legendPosition().toUpperCase() == 'TOP' ? legendBreakCount * 20 : (extraParams.height - (legendBreakCount * 20))) + ')';
+                    
+
                 }
                 return 'translate(' + widthSum + ', ' + (me.legendPosition().toUpperCase() == 'TOP' ? 0 : extraParams.height) + ')';
             });

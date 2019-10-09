@@ -550,6 +550,8 @@ function pie() {
                         translate = [(plotWidth / 2), 20 * parseFloat(legendBreakCount + 1) + (plotHeight / 2)];
                         break;
                     case 'BOTTOM':
+                        translate = [(plotWidth / 2), (plotHeight / 2)];
+                        break;
                     case 'RIGHT':
                         translate = [(plotWidth / 2), (plotHeight / 2)];
                         break;

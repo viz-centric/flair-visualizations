@@ -46,7 +46,7 @@ function infographics() {
         _localXLabels = [],
         _localMin,
         _localMax,
-        _localTooltip, infographics;
+        _localTooltip, infographics, container;
 
     /* These are the common private functions that is shared across the different private/public
      * methods but is initialized beforehand.
@@ -247,7 +247,7 @@ function infographics() {
         infographics.append('div')
             .attr('class', 'custom_tooltip');
 
-        var container = infographics.append('div')
+        container = infographics.append('div')
             .classed('container', true)
             .style('width', parentWidth + 'px')
             .style('height', parentHeight + 'px')
@@ -516,13 +516,13 @@ function infographics() {
 
         plot.select('path.infographics-line')
             .transition()
-            .duration(COMMON.DURATION)
+            .duration(0)
             .attr('d', _line)
             .attr('stroke-dasharray', 'none');
 
         plot.select('path.infographics-area')
             .transition()
-            .duration(COMMON.DURATION)
+            .duration(0)
             .attr('d', _area);
 
         plot.selectAll('.infographics-point').remove();
@@ -548,21 +548,11 @@ function infographics() {
             .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, infographics))
             .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, infographics))
 
-        div.select('#kpi-measure')
-            .transition()
-            .ease(d3.easeQuadIn)
-            .duration(500)
-            .delay(0)
-            .tween('html', function () {
-                var me = d3.select(this),
-                    i = d3.interpolateNumber(_localPrevKpiValue, _localTotal);
+        container.select('#kpi-measure')
+            .html(_getKpi(_localTotal, _localTotal))
 
-                _localPrevKpiValue = _localTotal;
-
-                return function (t) {
-                    me.html(_getKpi(i(t), _localTotal));
-                }
-            });
+        container.select('#kpi-label')
+            .html(_getKpiDisplayName() + "&nbsp;")
     }
 
     chart.config = function (value) {

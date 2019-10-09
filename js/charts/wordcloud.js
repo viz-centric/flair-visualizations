@@ -240,8 +240,6 @@ function wordcloud() {
             .on("end", drawSkillCloud)
             .start();
 
-            
-
         function drawSkillCloud(words) {
             var text = _local_svg
                 .append("g")
