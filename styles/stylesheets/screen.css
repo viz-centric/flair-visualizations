@@ -264,3 +264,28 @@ svg#graphics {
   border-left: 1px solid #d3d4d4;
   border-right: 1px solid #d3d4d4;
 }
+
+/* line 22, ../sass/partials/_table.scss */
+.searchIcon {
+  position: absolute;
+  margin: 5px;
+  top: -13px;
+  right: 5px;
+  z-index: 9999;
+  font-size: 35px;
+}
+
+/* line 31, ../sass/partials/_table.scss */
+#viz_table_filter {
+  margin-right: 45px !important;
+}
+
+/* line 35, ../sass/partials/_table.scss */
+.searchOpen {
+  display: block;
+}
+
+/* line 38, ../sass/partials/_table.scss */
+.searchClose {
+  display: none;
+}
