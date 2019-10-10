@@ -33,6 +33,7 @@ function table() {
         _iconFontWeight = [],
         _iconColor = [],
         _fontWeightForMeasure = [],
+        _isTotal = false,
         _print,
         broadcast,
         filterParameters,
@@ -64,7 +65,7 @@ function table() {
         this.iconPositionForMeasure(config.iconPositionForMeasure);
         this.iconExpressionForMeasure(config.iconExpressionForMeasure);
         this.fontWeightForMeasure(config.fontWeightForMeasure);
-
+        this.showTotal(config.showTotal);
         this.iconFontWeight(config.iconFontWeight);
         this.iconColor(config.iconColor);
     }
@@ -217,8 +218,8 @@ function table() {
     }
 
     var createHeaderFooter = function () {
-        var thead = "<thead><tr>";
-        var tfoot = "<tfoot><tr>";
+        var thead = "<thead class='searchHeader'><tr>";
+        var tfoot = "<tfoot class='totalFooter'><tr>";
 
         _dimension.forEach(function (item, index) {
             var title = _displayNameForDimension[index],
@@ -337,9 +338,10 @@ function table() {
 
         //  var disv = d3.select('#' + id);
 
+        $("#" + id).prepend('<div class="searchIcon"><i class="fa fa-caret-down searchOpen"></i><i class="fa fa-caret-up searchClose"></i></div>')
+
         var width = parentContainer.attr('width'),
             height = parentContainer.attr('height')
-
         svg
             .attr('width', width)
             .attr('height', height)
@@ -372,18 +374,54 @@ function table() {
             var _filter = UTIL.createFilterElement()
             $('#' + id).append(_filter)
 
+            $('#' + id + " #viz_table thead tr").clone(true).appendTo('#' + id + " #viz_table thead");
 
-            var row = $('#' + id + " #viz_table thead").html()
-            $('#' + id + " #viz_table thead").append(row);
-            var addSearch = '#' + id + " #viz_table thead tr:eq(0) th";
-            $(addSearch).each(function () {
+            $('#' + id + ' table:eq(0) thead tr:eq(0)').css('display', 'none')
+            $('.searchOpen').click(function () {
+                $('#' + id + ' table:eq(0) thead tr:eq(0)').css('display', 'table-row')
+                $('#' + id + ' .searchClose').css('display', 'block')
+                $('#' + id + ' .searchOpen').css('display', 'none')
+
+                tableHeight = height - 140
+                if (_isTotal) {
+                    tableHeight = height - 140 - 40;
+                }
+                $('#' + id + ' .dataTables_scrollBody').css('max-height', tableHeight + 'px')
+            })
+            $('.searchClose').click(function () {
+                $('#' + id + ' table:eq(0) thead tr:eq(0)').css('display', 'none')
+                $('#' + id + ' .searchClose').css('display', 'none')
+                $('#' + id + ' .searchOpen').css('display', 'block')
+
+                tableHeight = height - 100
+                if (_isTotal) {
+                    tableHeight = height - 100 - 40;
+                }
+                $('#' + id + ' .dataTables_scrollBody').css('max-height', tableHeight + 'px')
+            })
+            $('#' + id + ' #viz_table thead tr:eq(0) th').each(function (i) {
                 var title = $(this).text();
-                $(this).html('<input type="text" placeholder="Search ' + title + '" class="column_search" />');
+                $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+
+                $('input', this).on('keyup change', function () {
+
+                    if (table.column(i).search() !== this.value) {
+                        table
+                            .column(i)
+                            .search(this.value)
+                            .draw();
+                    }
+                });
             });
+
+            var tableHeight = height - 100;
+            if (_isTotal) {
+                tableHeight = height - 100 - 40;
+            }
 
             var table = $('#' + parentContainer.attr('id')).find('#viz_table').DataTable({
 
-                scrollY: height - 300,
+                scrollY: tableHeight,
                 scrollX: true,
                 scrollCollapse: true,
                 ordering: true,
@@ -394,7 +432,7 @@ function table() {
                 // },
                 pagingType: "full_numbers",
                 aLengthMenu: [[2, 5, 10, 15, 20, 25, -1], [2, 5, 10, 15, 20, 25, "All"]],
-                iDisplayLength: 5,
+                iDisplayLength: 20,
                 bDestroy: true,
                 //   dom: '<"table-header">rt<"table-footer"lp>',
                 //  "sDom": "Rlfrtip",
@@ -442,21 +480,20 @@ function table() {
 
                         // Update footer
                         $(api.column(_dimension.length + index).footer()).html(
-                            parseFloat(pageTotal).toFixed(2) + ' ( ' + parseFloat(total).toFixed(2) + ' total)'
-                        );
+                            parseFloat(total).toFixed(2)
+                        )
+
+                        $(api.column(_dimension.length + index).footer())
+                            .css('text-align', _textAlignmentForMeasure[index])
                     }
 
                 }
 
             });
 
-            $('#' + id + " thead").on('keyup', ".column_search", function () {
+            var footer = _isTotal == true ? "block" : "none";
 
-                table
-                    .column($(this).parent().index())
-                    .search(this.value)
-                    .draw();
-            });
+            $('#' + id + ' .dataTables_scrollFootInner tfoot').css('display', footer)
 
             $("#viz_table_paginate").css('display', 'blobk')
             $($('#' + parentContainer.attr('id') + ' td')).on('click', function () {
@@ -514,90 +551,139 @@ function table() {
             readerTableChart.call(this.textContent, this, parentContainer)
         })
 
-        if (!_print) {
+        $('#' + id + " #viz_table thead tr").clone(true).appendTo('#' + id + " #viz_table thead");
 
-            var _filter = UTIL.createFilterElement()
-            $('#' + id).append(_filter)
+        $('#' + id + ' table:eq(0) thead tr:eq(0)').css('display', 'none')
+        $('.searchOpen').click(function () {
+            $('#' + id + ' table:eq(0) thead tr:eq(0)').css('display', 'table-row')
+            $('#' + id + ' .searchClose').css('display', 'block')
+            $('#' + id + ' .searchOpen').css('display', 'none')
 
-            $('#' + parentContainer.attr('id')).find('#viz_table').dataTable({
+            tableHeight = height - 140
+            if (_isTotal) {
+                tableHeight = height - 140 - 40;
+            }
+            $('#' + id + ' .dataTables_scrollBody').css('max-height', tableHeight + 'px')
+        })
+        $('.searchClose').click(function () {
+            $('#' + id + ' table:eq(0) thead tr:eq(0)').css('display', 'none')
+            $('#' + id + ' .searchClose').css('display', 'none')
+            $('#' + id + ' .searchOpen').css('display', 'block')
 
-                scrollY: height - 300,
-                scrollX: true,
-                scrollCollapse: true,
-                ordering: true,
-                info: true,
-                'dom': 'Rlfrtip',
-                // colReorder: {
-                //     allowReorder: false
-                // },
-                pagingType: "full_numbers",
-                aLengthMenu: [[2, 5, 10, 15, 20, 25, -1], [2, 5, 10, 15, 20, 25, "All"]],
-                iDisplayLength: 5,
-                bDestroy: true,
-                //   dom: '<"table-header">rt<"table-footer"lp>',
-                //  "sDom": "Rlfrtip",
-                fnDrawCallback: function (oSettings) {
-                    if (oSettings._iDisplayLength > oSettings.fnRecordsDisplay()) {
-                        // $(oSettings.nTableWrapper).find('.dataTables_paginate').hide();
-                        // $(oSettings.nTableWrapper).find('.dataTables_info').hide();
-                    }
-                },
-                "footerCallback": function (row, data, start, end, display) {
-                    var api = this.api(), data;
-                    for (var i = 0; i < data.length; i++) {
-                        for (var j = 0; j < data[i].length; j++) {
-                            if (data[i][j].toString().indexOf('</i>') >= 0) {
-                                data[i][j] = parseFloat(data[i][j].substring(data[i][j].indexOf('</i>') + 4, data[i][j].length)).toFixed(2)
-                            }
-                        }
-                    }
+            tableHeight = height - 100
+            if (_isTotal) {
+                tableHeight = height - 100 - 40;
+            }
+            $('#' + id + ' .dataTables_scrollBody').css('max-height', tableHeight + 'px')
+        })
+        $('#' + id + ' #viz_table thead tr:eq(0) th').each(function (i) {
+            var title = $(this).text();
+            $(this).html('<input type="text" placeholder="Search ' + title + '" />');
 
-                    var intVal = function (i) {
-                        return typeof i === 'string' ?
-                            i.replace(/[\$,]/g, '') * 1 :
-                            typeof i === 'number' ?
-                                i : 0;
-                    };
-
-                    // Total over all pages
-
-                    for (let index = 0; index < _measure.length; index++) {
-
-                        total = api
-                            .column(_dimension.length + index)
-                            .data()
-                            .reduce(function (a, b) {
-                                return intVal(a) + intVal(b);
-                            }, 0);
-
-                        // Total over this page
-                        pageTotal = api
-                            .column(_dimension.length + index, { page: 'current' })
-                            .data()
-                            .reduce(function (a, b) {
-                                return intVal(a) + intVal(b);
-                            }, 0);
-
-                        // Update footer
-                        $(api.column(_dimension.length + index).footer()).html(
-                            parseFloat(pageTotal).toFixed(2) + ' ( ' + parseFloat(total).toFixed(2) + ' total)'
-                        );
-                    }
-
+            $('input', this).on('keyup change', function () {
+                debugger
+                if (table.column(i).search() !== this.value) {
+                    table
+                        .column(i)
+                        .search(this.value)
+                        .draw();
                 }
             });
-            $("#viz_table_paginate").css('display', 'blobk')
-            $($('#' + parentContainer.attr('id') + ' td')).on('click', function () {
-                readerTableChart.call(this.textContent, this, parentContainer)
-            })
+        });
 
-            parentContainer.select('.filterData')
-                .on('click', applyFilter());
-
-            parentContainer.select('.removeFilter')
-                .on('click', clearFilter());
+        var tableHeight = height - 100;
+        if (_isTotal) {
+            tableHeight = height - 100 - 40;
         }
+
+        var table = $('#' + parentContainer.attr('id')).find('#viz_table').DataTable({
+
+            scrollY: tableHeight,
+            scrollX: true,
+            scrollCollapse: true,
+            ordering: true,
+            info: true,
+            'dom': 'Rlfrtip',
+            // colReorder: {
+            //     allowReorder: false
+            // },
+            pagingType: "full_numbers",
+            aLengthMenu: [[2, 5, 10, 15, 20, 25, -1], [2, 5, 10, 15, 20, 25, "All"]],
+            iDisplayLength: 20,
+            bDestroy: true,
+            //   dom: '<"table-header">rt<"table-footer"lp>',
+            //  "sDom": "Rlfrtip",
+            fnDrawCallback: function (oSettings) {
+                if (oSettings._iDisplayLength > oSettings.fnRecordsDisplay()) {
+                    // $(oSettings.nTableWrapper).find('.dataTables_paginate').hide();
+                    // $(oSettings.nTableWrapper).find('.dataTables_info').hide();
+                }
+            },
+            "footerCallback": function (row, data, start, end, display) {
+                var api = this.api(), data;
+                for (var i = 0; i < data.length; i++) {
+                    for (var j = 0; j < data[i].length; j++) {
+                        if (data[i][j].toString().indexOf('</i>') >= 0) {
+                            data[i][j] = parseFloat(data[i][j].substring(data[i][j].indexOf('</i>') + 4, data[i][j].length)).toFixed(2)
+                        }
+                    }
+                }
+
+                var intVal = function (i) {
+                    return typeof i === 'string' ?
+                        i.replace(/[\$,]/g, '') * 1 :
+                        typeof i === 'number' ?
+                            i : 0;
+                };
+
+                // Total over all pages
+
+                for (let index = 0; index < _measure.length; index++) {
+
+                    total = api
+                        .column(_dimension.length + index)
+                        .data()
+                        .reduce(function (a, b) {
+                            return intVal(a) + intVal(b);
+                        }, 0);
+
+                    // Total over this page
+                    pageTotal = api
+                        .column(_dimension.length + index, { page: 'current' })
+                        .data()
+                        .reduce(function (a, b) {
+                            return intVal(a) + intVal(b);
+                        }, 0);
+
+                    // Update footer
+                    $(api.column(_dimension.length + index).footer()).html(
+                        parseFloat(total).toFixed(2)
+                    );
+
+                    $(api.column(_dimension.length + index).footer())
+                        .css('text-align', _textAlignmentForMeasure[index])
+                }
+
+            }
+
+        });
+
+        var footer = _isTotal == true ? "block" : "none";
+
+        $('#' + id + ' .dataTables_scrollFootInner tfoot').css('display', footer)
+
+        $("#viz_table_paginate").css('display', 'blobk')
+        $($('#' + parentContainer.attr('id') + ' td')).on('click', function () {
+            readerTableChart.call(this.textContent, this, parentContainer)
+        })
+
+        parentContainer.select('.filterData')
+            .on('click', applyFilter());
+
+        parentContainer.select('.removeFilter')
+            .on('click', clearFilter());
     }
+
 
     chart.config = function (value) {
         if (!arguments.length) {
@@ -621,6 +707,14 @@ function table() {
             return _measure;
         }
         _measure = value;
+        return chart;
+    }
+
+    chart.showTotal = function (value) {
+        if (!arguments.length) {
+            return _isTotal;
+        }
+        _isTotal = value;
         return chart;
     }
 

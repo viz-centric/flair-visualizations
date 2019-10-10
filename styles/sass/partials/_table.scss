@@ -18,3 +18,23 @@
   border-left: 1px solid #d3d4d4;
   border-right: 1px solid #d3d4d4;
 }
+
+.searchIcon {
+  position: absolute;
+  margin: 5px;
+  top: -13px;
+  right: 5px;
+  z-index: 9999;
+  font-size: 35px;
+}
+
+#viz_table_filter {
+  margin-right: 45px !important;
+}
+
+.searchOpen {
+  display: none;
+}
+.searchClose {
+  display: block;
+}
