@@ -46,12 +46,16 @@ function piegrid() {
     var _buildTooltipData = function (datum, chart, data) {
         var output = "";
 
+
+        var value = UTIL.getFormattedValue(_Local_data[data][_measure], UTIL.getNumberFormatterFn('Actual', _Local_data[data][_measure]));
+
+
         output += "<table><tr>"
             + "<th>" + _dimension + ": </th>"
             + "<td>" + _Local_data[data][_dimension] + "</td>"
             + "</tr><tr>"
             + "<th>" + _measure + ": </th>"
-            + "<td>" + _Local_data[data][_measure] + " </td>"
+            + "<td>" + value + " </td>"
             + "</tr></table>";
         return output;
     }
@@ -130,17 +134,19 @@ function piegrid() {
         svg.append("text")
             .attr("x", 0)
             .text(function (d, i) {
-                return data[i][_measure];
+                var value = UTIL.getFormattedValue(data[i][_measure], UTIL.getNumberFormatterFn('Actual', data[i][_measure]));
+                return value;
             })
             .text(function (d, i) {
+                var value = UTIL.getFormattedValue(data[i][_measure], UTIL.getNumberFormatterFn('Actual', data[i][_measure]));
                 if (!_print) {
                     return UTIL.getTruncatedLabel(
                         this,
-                        data[i][_measure],
+                        value,
                         r * 0.8)
                 }
                 else {
-                    return data[i][_measure];
+                    return value;
                 }
             })
             .style('text-anchor', 'middle')
