@@ -1206,6 +1206,10 @@ function line() {
             })
             .attr('stroke-dasharray', 'none')
             .attr('d', lineGenerator)
+            .style('fill', 'none')
+            .attr('stroke', function (d, i) {
+                return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
+            })
             .transition()
             .duration(COMMON.DURATION)
             .attrTween('stroke-dasharray', function () {

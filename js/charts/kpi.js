@@ -34,6 +34,7 @@ function kpi() {
         _FontsizeForDisplayName = [],
         _showIcon = [],
         _iconSize = [],
+        _isAnimation,
         _print,
         _notification = false,
         _data;
@@ -72,8 +73,9 @@ function kpi() {
         this.kpiIconColor(config.kpiIconColor);
         this.kpiIconExpression(config.kpiIconExpression);
         this.FontsizeForDisplayName(config.FontSizeforDisplayName);
-        this.showIcon(config.showIcon)
-        this.iconSize(config.iconSize)
+        this.showIcon(config.showIcon);
+        this.iconSize(config.iconSize);
+        this.isAnimation(config.isAnimation);
     }
 
     /**
@@ -128,8 +130,6 @@ function kpi() {
             'color': _kpiColor[index] || COMMON.DEFAULT_COLOR
         };
 
-
-
         if (_kpiColorExpression[index].length) {
             style['color'] = UTIL.expressionEvaluator(_kpiColorExpression[index], endValue, 'color');
         }
@@ -146,7 +146,7 @@ function kpi() {
             'color': _kpiIconColor[index] || (endValue > 0 ? COMMON.POSITIVE_KPI_COLOR : COMMON.NEGATIVE_KPI_COLOR),
             'font-size': _iconSize[index] + 'px' || COMMON.DEFAULT_FONTSIZE,
             'display': _showIcon[index] == true ? 'inline-block' : 'none',
-            // 'float': index == 0 ? 'right' : 'left'
+            'float': index == 1 ? 'left' : 'right'
         };
 
 
@@ -283,7 +283,7 @@ function kpi() {
                 })
                 .style('line-height', 1)
 
-            if (!_print) {
+            if (!_print && _isAnimation) {
                 kpiMeasure.transition()
                     .ease(d3.easeQuadIn)
                     .duration(1000)
@@ -303,6 +303,7 @@ function kpi() {
             else {
                 kpiMeasure.html(_getKpi(_localTotal[i], _localTotal[i], i));
             }
+            setFont()
         });
 
         if (_print) {
@@ -343,24 +344,30 @@ function kpi() {
         });
 
         _measure.forEach(function (m, i) {
-            div.select('#kpi-measure-' + i)
 
-                // kpiMeasure.html(_getKpi(_localTotal[i], _localTotal[i], 0));
-                .transition()
-                .ease(d3.easeQuadIn)
-                .duration(500)
-                .delay(0)
-                .tween('html', function () {
-                    var me = d3.select(this),
-                        interpolator = d3.interpolateNumber(_localPrevKpiValue[i], _localTotal[i]);
+            if (!_print && _isAnimation) {
+                div.select('#kpi-measure-' + i)
+                    .transition()
+                    .ease(d3.easeQuadIn)
+                    .duration(500)
+                    .delay(0)
+                    .tween('html', function () {
+                        var me = d3.select(this),
+                            interpolator = d3.interpolateNumber(_localPrevKpiValue[i], _localTotal[i]);
 
-                    _localPrevKpiValue[i] = _localTotal[i];
+                        _localPrevKpiValue[i] = _localTotal[i];
 
-                    return function (t) {
-                        me.html(_getKpi(interpolator(t), _localTotal[i], i));
-                        setFont()
-                    }
-                }).on("end", setFont);
+                        return function (t) {
+                            me.html(_getKpi(interpolator(t), _localTotal[i], i));
+                            setFont()
+                        }
+                    }).on("end", setFont);
+            }
+            else {
+                div.select('#kpi-measure-' + i)
+                    .html(_getKpi(_localTotal[i], _localTotal[i], i));
+            }
+            setFont()
         });
 
         var container = parentContainer.select('._container');
@@ -659,6 +666,13 @@ function kpi() {
             return _data;
         }
         _data = value;
+        return chart;
+    }
+    chart.isAnimation = function (value) {
+        if (!arguments.length) {
+            return _isAnimation;
+        }
+        _isAnimation = value;
         return chart;
     }
     return chart;

@@ -134,7 +134,8 @@ function numbergrid() {
     var addText = function (svg) {
         svg.append('text')
             .text(function (d) {
-                return d[_measure];
+                var value = UTIL.getFormattedValue(d[_measure], UTIL.getNumberFormatterFn('Actual',d[_measure]));
+                return value;
             })
             .attr('y', (r + m) / 2)
             .attr('x', 10)
