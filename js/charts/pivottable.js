@@ -466,9 +466,7 @@ function pivottable() {
 
     function chart(selection) {
         _local_svg = selection;
-
-        data = UTIL.sortingData(_data, _dimension[0])
-        _Local_data = _originalData = data;
+        _Local_data = _originalData = _data;
         if (_print && !_notification) {
             parentContainer = selection;
         }
@@ -553,7 +551,7 @@ function pivottable() {
             return result;
         });
 
-        nestedData = nester.entries(data),
+        nestedData = nester.entries(_data),
             pivotedData = [];
 
         getGeneratedPivotData(nestedData, 0);
@@ -666,7 +664,6 @@ function pivottable() {
     }
 
     chart.update = function (data) {
-        data = UTIL.sortingData(data, _dimension[0])
         _localData = data;
         svg = _local_svg;
         filterData = [];

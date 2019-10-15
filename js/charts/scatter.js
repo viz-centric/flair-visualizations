@@ -248,7 +248,7 @@ function scatter() {
             var border = d3.select(this).style('fill');
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container,  border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -259,7 +259,7 @@ function scatter() {
         return function (d, i) {
             if (tooltip) {
                 var border = d3.select(this).style('fill');
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container,  border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
             }
         }
     }
@@ -278,8 +278,7 @@ function scatter() {
     }
 
     function chart(selection) {
-        data = UTIL.sortingData(_data, _dimension[0])
-        _Local_data = _originalData = data;
+        _Local_data = _originalData = _data;
 
         if (_print && !_notification) {
             parentContainer = selection;
@@ -312,8 +311,8 @@ function scatter() {
         parentContainer.append('div')
             .attr('class', 'custom_tooltip');
 
-        drawPlot.call(this, data);
-        drawLegend.call(this, data);
+        drawPlot.call(this, _data);
+        drawLegend.call(this, _data);
 
     }
 
@@ -466,13 +465,13 @@ function scatter() {
 
         plot.append('g')
             .attr('class', 'x grid')
-            .attr('visibility','visible')
+            .attr('visibility', 'visible')
             .attr('transform', 'translate(0, ' + parseInt(plotHeight - 40) + ')')
             .call(_localXGrid);
 
         plot.append('g')
             .attr('class', 'y grid')
-            .attr('visibility','visible')
+            .attr('visibility', 'visible')
             .call(_localYGrid);
 
         if (_tooltip) {
@@ -489,9 +488,9 @@ function scatter() {
                 .tickSize(0)
                 .tickFormat(function (d) {
                     if (isRotate == false) {
-                        isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length ), tickLength);
+                        isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                     }
-                    return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length ), tickLength);
+                    return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength);
                 })
                 .tickPadding(10);
 
@@ -772,7 +771,6 @@ function scatter() {
         plotWidth = parentWidth;
         plotHeight = parentHeight;
 
-        data = UTIL.sortingData(data, _dimension[0]);
         if (_tooltip) {
             tooltip = parentContainer.select('.custom_tooltip');
         }
@@ -928,9 +926,9 @@ function scatter() {
 
         _localXAxis.tickFormat(function (d) {
             if (isRotate == false) {
-                isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length ), tickLength);
+                isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
             }
-            return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length ), tickLength);
+            return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength);
         })
 
         if (_showXaxis) {
@@ -967,13 +965,13 @@ function scatter() {
         plot.select('.x.grid')
             .transition()
             .duration(COMMON.DURATION)
-            .attr('visibility','visible')
+            .attr('visibility', 'visible')
             .call(_localXGrid);
 
         plot.select('.y.grid')
             .transition()
             .duration(COMMON.DURATION)
-            .attr('visibility','visible')
+            .attr('visibility', 'visible')
             .call(_localYGrid);
 
         _local_svg.select('g.lasso').remove()

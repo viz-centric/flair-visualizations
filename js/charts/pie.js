@@ -441,8 +441,8 @@ function pie() {
     }
 
     function chart(selection) {
-        data = UTIL.sortingData(_data, _dimension[0])
-        _Local_data = _originalData = data;
+
+        _Local_data = _originalData = _data;
 
         if (_print && !_notification) {
             parentContainer = selection;
@@ -455,7 +455,7 @@ function pie() {
             .attr('width', parentContainer.attr('width'))
             .attr('height', parentContainer.attr('height'))
 
-        data.map(function (d) {
+        _data.map(function (d) {
             d[_measure[0]] = Math.abs(d[_measure[0]]);
         })
 
@@ -473,17 +473,10 @@ function pie() {
         var me = this;
 
         /* total sum of the measure values */
-        _localTotal = d3.sum(data.map(function (d) { return d[_measure[0]]; }));
-
-        // /* applying sort operation to the data */
-        // UTIL.sorter(data, _measure, -1);
-
-        data.sort(function (a, b) {
-            return d3.descending(a[_dimension[0]], b[_dimension[0]]);
-        });
+        _localTotal = d3.sum(_data.map(function (d) { return d[_measure[0]]; }));
 
         /* extracting measure values only from the data */
-        _localSortedMeasureValue = data.map(function (d) { return +d[_measure[0]]; })
+        _localSortedMeasureValue = _data.map(function (d) { return +d[_measure[0]]; })
 
         container = svg.append('g')
             .classed('container', true)
@@ -497,7 +490,7 @@ function pie() {
         if (_legend) {
             _localLegend = LEGEND.bind(chart);
 
-            var result = _localLegend(data, container, {
+            var result = _localLegend(_data, container, {
                 width: parentWidth,
                 height: parentHeight,
                 legendBreakCount: legendBreakCount
@@ -569,7 +562,7 @@ function pie() {
         var pieMask = plot.append('g')
             .attr('id', 'arc-mask-group')
             .selectAll('.arc-mask')
-            .data(_pie(data), _localKey)
+            .data(_pie(_data), _localKey)
             .enter().append('g')
             .attr('id', function (d, i) {
                 return 'arc-mask-group-' + i;
@@ -591,7 +584,7 @@ function pie() {
         var pieArcGroup = plot.append('g')
             .attr('id', 'arc-group')
             .selectAll('.arc')
-            .data(_pie(data), _localKey)
+            .data(_pie(_data), _localKey)
             .enter().append('g')
             .attr('id', function (d, i) {
                 return 'arc-group-' + i;
@@ -612,7 +605,7 @@ function pie() {
             .attr('d', _arc);
 
         var pieArcTextGroup = plot.selectAll('.arc-text')
-            .data(_pie(data))
+            .data(_pie(_data))
             .enter().append('g')
             .attr('id', function (d, i) {
                 return 'arc-text-group-' + i;
@@ -798,7 +791,6 @@ function pie() {
     }
 
     chart.update = function (data) {
-        data = UTIL.sortingData(data, _dimension[0])
 
         /* store the data in local variable */
         _Local_data = data;
@@ -817,10 +809,6 @@ function pie() {
             filteredData;
 
         var outerRadius = Math.min(plotWidth, plotHeight) / 2.25;
-
-        data.sort(function (a, b) {
-            return d3.ascending(a[_dimension[0]], b[_dimension[0]]);
-        });
 
         filteredData = data.filter(function (d) {
             return _localLabelStack.indexOf(d[_dimension[0]]) == -1;

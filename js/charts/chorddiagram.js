@@ -229,9 +229,7 @@ function chorddiagram() {
     }
 
     function chart(selection) {
-
-        data = UTIL.sortingData(_data, _dimension[0])
-        _Local_data = _originalData = data;
+        _Local_data = _originalData = _data;
 
         var me = this;
 

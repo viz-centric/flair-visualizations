@@ -395,8 +395,7 @@ function clusteredhorizontalbar() {
     }
 
     function chart(selection) {
-        data = UTIL.sortingData(_data, _dimension[0])
-        _Local_data = _originalData = data;
+        _Local_data = _originalData = _data;
 
         if (_isFilterGrid) {
             if (!(Object.keys(broadcast.filterSelection.filter).length === 0 && broadcast.filterSelection.filter.constructor === Object)) {
@@ -446,7 +445,7 @@ function clusteredhorizontalbar() {
             .attr('class', 'custom_tooltip');
 
         drawLegend.call(this);
-        drawPlot.call(this, data);
+        drawPlot.call(this, _data);
     }
 
     var drawPlot = function (data) {
@@ -1135,9 +1134,6 @@ function clusteredhorizontalbar() {
             else {
                 drawPlotForFilter.call(this, UTIL.sortData(_originalData, filterConfig.key, filterConfig.sortType));
             }
-        }
-        else {
-            data = UTIL.sortingData(data, _dimension[0]);
         }
 
         if (_tooltip) {

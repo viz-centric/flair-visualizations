@@ -264,8 +264,7 @@ function boxplot() {
 
     function chart(selection) {
 
-        data = UTIL.sortingData(_data, _dimension[0])
-        _Local_data = _originalData = data;
+        _Local_data = _originalData = _data;
 
         if (_print && !_notification) {
             parentContainer = selection;
@@ -295,16 +294,16 @@ function boxplot() {
 
         var globalMin, globalMax, xLabels;
 
-        var minMax = getGlobalMinMax(data);
+        var minMax = getGlobalMinMax(_data);
         globalMin = minMax[0];
         globalMax = minMax[1];
 
-        xLabels = getXLabels(data);
+        xLabels = getXLabels(_data);
 
         gWidth = width - margin.left - margin.right;
         gHeight = height - margin.top - margin.bottom;
 
-        var barWidth = Math.floor(gWidth / data.length / 2);
+        var barWidth = Math.floor(gWidth / _data.length / 2);
         var me = this;
         if (_tooltip) {
             tooltip = parentContainer.select('.custom_tooltip');
@@ -328,7 +327,7 @@ function boxplot() {
 
 
         var verticalLines = plot.selectAll(".verticalLines")
-            .data(data)
+            .data(_data)
             .enter()
             .append("line")
             .attr("x1", function (datum) {

@@ -237,7 +237,13 @@ function table() {
             } else {
                 thead += "<th style=\"" + style + "\">" + item + "</th>";
             }
-            tfoot += "<th></th>";
+            if (index == 0) {
+                tfoot += "<th style='border-left:1px solid #d3d4d4;border-right:0px solid #d3d4d4'></th>";
+            }
+            else{
+                tfoot += "<th style='border-left:0px solid #d3d4d4;border-right:0px solid #d3d4d4'></th>";
+            }
+
         });
 
         _measure.forEach(function (item, index) {
@@ -320,9 +326,7 @@ function table() {
         return tbody
     }
     function chart(selection) {
-
-        data = UTIL.sortingData(_data, _dimension[0])
-        _Local_data = _originalData = data;
+        _Local_data = _originalData = _data;
         if (_print) {
             parentContainer = selection;
         }
@@ -365,7 +369,7 @@ function table() {
         table.append('tfoot')
             .html(thead_tfoot.tfoot);
 
-        var tbody = createBody(data);
+        var tbody = createBody(_data);
 
         table.append('tbody').html(tbody);
 
@@ -529,7 +533,6 @@ function table() {
     }
 
     chart.update = function (data) {
-        data = UTIL.sortingData(data, _dimension[0])
         _Local_data = data;
         svg = _local_svg;
         filterData = [];
