@@ -354,7 +354,7 @@ function heatmap() {
                     var temp = d.y;
                     var searchObj = _filter.find(o => o[_dimension[0]] === temp);
                     if (searchObj == undefined) {
-                        var tempData = _localData.filter(function (val) {
+                        var tempData = _Local_data.filter(function (val) {
                             return val[_dimension[0]] === d.y
                         })
                         _filter.push(tempData[0])
@@ -424,9 +424,7 @@ function heatmap() {
     }
 
     function chart(selection) {
-
-        data = UTIL.sortingData(_data, _dimension[0])
-        _Local_data = _originalData = data;
+        _Local_data = _originalData = _data;
 
         if (_print && !_notification) {
             parentContainer = selection;
@@ -456,7 +454,7 @@ function heatmap() {
             .attr('class', 'plot')
             .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
 
-        var yElement = d3.set(data.map(function (item) { return item[_dimension[0]]; })).values();
+        var yElement = d3.set(_data.map(function (item) { return item[_dimension[0]]; })).values();
         var xElement = d3.map();
 
         for (var i = 0; i < _measure.length; i++) {
@@ -464,7 +462,7 @@ function heatmap() {
         }
 
         cellWidth = parseInt((width - margin.left - margin.right) / _measure.length);
-        cellHeight = parseInt((height - margin.top - margin.bottom) / data.length);
+        cellHeight = parseInt((height - margin.top - margin.bottom) / _data.length);
 
         var offset = 6;
         var dimLabel = plot.selectAll('.dimLabel')
@@ -517,7 +515,7 @@ function heatmap() {
             }))
             .range([0, xElement.size() * cellWidth]);
 
-        data = transformData(data);
+        data = transformData(_data);
         if (_tooltip) {
             tooltip = parentContainer.select('.custom_tooltip');
         }
@@ -582,7 +580,7 @@ function heatmap() {
                     filter = false;
                     var confirm = parentContainer.select('.confirm')
                         .style('visibility', 'visible');
-                    var _filter = _localData.filter(function (d1) {
+                    var _filter = _Local_data.filter(function (d1) {
                         return d.y === d1[_dimension[0]]
                     })
 
@@ -701,7 +699,6 @@ function heatmap() {
     }
 
     chart.update = function (data) {
-        data = UTIL.sortingData(data, _dimension[0]);
         if (_tooltip) {
             tooltip = parentContainer.select('.custom_tooltip');
         }
@@ -862,7 +859,7 @@ function heatmap() {
                 filter = false;
                 var confirm = parentContainer.select('.confirm')
                     .style('visibility', 'visible');
-                var _filter = _localData.filter(function (d1) {
+                var _filter = _Local_data.filter(function (d1) {
                     return d.y === d1[_dimension[0]]
                 })
 

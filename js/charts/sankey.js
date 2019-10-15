@@ -338,8 +338,7 @@ function sankey() {
         })
 
     function chart(selection) {
-        data = UTIL.sortingData(_data, dimension[0])
-        _Local_data = _originalData = data;
+        _Local_data = _originalData = _data;
 
         if (_print && !_notification) {
             parentContainer = selection;
@@ -370,7 +369,7 @@ function sankey() {
             .attr('height', height)
             .attr('class', 'sankey');
 
-        var data = getSankeyData(data);
+        var data = getSankeyData(_data);
 
         parentWidth = width - margin.left - margin.right;
         parentHeight = height - margin.top - margin.bottom;

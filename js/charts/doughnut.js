@@ -454,8 +454,7 @@ function doughnut() {
     }
 
     function chart(selection) {
-        data = UTIL.sortingData(_data, _dimension[0])
-        _Local_data = _originalData = data;
+        data=_Local_data = _originalData = _data;
 
         if (_print && !_notification) {
             parentContainer = selection;
@@ -850,7 +849,6 @@ function doughnut() {
     }
 
     chart.update = function (data) {
-        data = UTIL.sortingData(data, _dimension[0])
         data.map(function (d) {
             d[_measure[0]] = Math.abs(d[_measure[0]]);
         })

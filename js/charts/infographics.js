@@ -161,13 +161,13 @@ function infographics() {
      */
     var _buildTooltipData = function (datum, chart) {
         var output = "";
-
+        var value = UTIL.getNumberFormatterFn(_kpiNumberFormat)(UTIL.roundNumber(datum[chart.measure()], 0)).toUpperCase()
         output += "<table><tr>"
             + "<th>" + chart.dimension() + ": </th>"
             + "<td>" + datum[chart.dimension()] + "</td>"
             + "</tr><tr>"
             + "<th>" + chart.measure() + ": </th>"
-            + "<td>" + Math.round(datum[chart.measure()] * 100) / 100 + "</td>"
+            + "<td>" + value + "</td>"
             + "</tr></table>";
 
         return output;
@@ -224,7 +224,7 @@ function infographics() {
 
     function chart(selection) {
 
-        data = UTIL.sortingData(_data, _dimension[0])
+        data = _data;
 
         if (!_print) {
             infographics = d3.select('#' + selection.id);
@@ -478,7 +478,6 @@ function infographics() {
             parentWidth = width - 2 * COMMON.PADDING,
             parentHeight = height - 2 * COMMON.PADDING;
 
-        data = UTIL.sortingData(data, _dimension[0]);
         if (_tooltip) {
             _localTooltip = infographics.select('.custom_tooltip');
         }

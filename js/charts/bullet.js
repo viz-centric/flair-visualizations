@@ -377,8 +377,7 @@ function bullet() {
     }
     function chart(selection) {
 
-        data = UTIL.sortingData(_data, dimension[0])
-        _Local_data = _originalData = data;
+        _Local_data = _originalData = _data;
 
         if (_print && !_notification) {
             parentContainer = selection;
@@ -399,8 +398,8 @@ function bullet() {
 
         _local_svg = svg;
 
-        setMeasuresSum(UTIL.getSum(data, measures[0]));
-        setTargetSum(UTIL.getSum(data, measures[1]));
+        setMeasuresSum(UTIL.getSum(_data, measures[0]));
+        setTargetSum(UTIL.getSum(_data, measures[1]));
 
         svg.selectAll('g').remove();
 
@@ -414,7 +413,7 @@ function bullet() {
             tooltip = parentContainer.select('.custom_tooltip');
         }
 
-        data = data.map(function (item) {
+        data = _data.map(function (item) {
             var d = {};
             d.title = item[dimension[0]];
             d.ranges = getSegmentValues(
@@ -607,7 +606,7 @@ function bullet() {
     }
 
     chart.update = function (data) {
-        data = UTIL.sortingData(data, dimension[0]);
+       
         if (_tooltip) {
             tooltip = parentContainer.select('.custom_tooltip');
         }

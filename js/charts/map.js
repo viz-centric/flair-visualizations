@@ -317,8 +317,7 @@ function map() {
     }
 
     function chart(selection) {
-        data = UTIL.sortingData(_data, _dimension[0])
-        _Local_data = _originalData = data;
+        _Local_data = _originalData = _data;
 
         if (_print && !_notification) {
             parentContainer = selection;
@@ -362,7 +361,7 @@ function map() {
 
         path = d3.geoPath().projection(projection);
 
-        data.forEach(function (d) {
+        _data.forEach(function (d) {
             valueMapper[d[_dimension[0]]] = d[_measure[0]];
         });
 
@@ -373,7 +372,7 @@ function map() {
             d3.rgb(_displayColor).darker()
         ])
 
-        gradientColor.domain(d3.extent(data, function (d) {
+        gradientColor.domain(d3.extent(_data, function (d) {
             return d[_measure[0]];
         }));
 

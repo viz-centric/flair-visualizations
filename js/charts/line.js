@@ -419,9 +419,7 @@ function line() {
         }
     }
     function chart(selection) {
-
-        data = UTIL.sortingData(_data, _dimension[0])
-        _Local_data = _originalData = data;
+        _Local_data = _originalData = _data;
 
         if (_isFilterGrid) {
             if (!(Object.keys(broadcast.filterSelection.filter).length === 0 && broadcast.filterSelection.filter.constructor === Object)) {
@@ -471,7 +469,7 @@ function line() {
             .attr('class', 'custom_tooltip');
 
         drawLegend.call(this);
-        drawPlot.call(this, data);
+        drawPlot.call(this, _data);
     }
 
     var drawPlot = function (data) {
@@ -635,8 +633,8 @@ function line() {
                     + (x(d['data'][_dimension[0]]) + x.bandwidth() / 2)
                     + ',' + y(d['data'][d['tag']]) + ')';
             })
-            .style('visibility',function(d,i){
-                if(_pointType[_measure.indexOf(d.tag)]=="None"){
+            .style('visibility', function (d, i) {
+                if (_pointType[_measure.indexOf(d.tag)] == "None") {
                     return 'hidden';
                 }
             })
@@ -1167,9 +1165,6 @@ function line() {
                 drawPlotForFilter.call(this, UTIL.sortData(_originalData, filterConfig.key, filterConfig.sortType));
             }
         }
-        else {
-            data = UTIL.sortingData(data, _dimension[0]);
-        }
 
         if (_tooltip) {
             tooltip = parentContainer.select('.custom_tooltip');
@@ -1248,8 +1243,8 @@ function line() {
                     .type(getPointType(_measure.indexOf(d.tag)))
                     .size(40)();
             })
-            .style('visibility',function(d,i){
-                if(_pointType[_measure.indexOf(d.tag)]=="None"){
+            .style('visibility', function (d, i) {
+                if (_pointType[_measure.indexOf(d.tag)] == "None") {
                     return 'hidden';
                 }
             })
