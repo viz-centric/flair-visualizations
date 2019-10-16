@@ -1399,13 +1399,13 @@ function stackedverticalbar() {
         plot.select('.x.grid')
             .attr('transform', 'translate(0, ' + plotHeight + ')')
             .transition()
-            .duration(COMMON.DURATION)
+            .duration(0)
             .attr('visibility', UTIL.getVisibility(_showGrid))
             .call(_localXGrid);
 
         plot.select('.y.grid')
             .transition()
-            .duration(COMMON.DURATION)
+            .duration(0)
             .attr('visibility', 'visible')
             .call(_localYGrid);
 

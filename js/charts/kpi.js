@@ -94,6 +94,9 @@ function kpi() {
 
     setFont = function () {
         var containerSize = parseInt(d3.select(container).node().style('width')) + 100;
+        var heightIcon = parseInt(d3.select(container).node().style('height'));
+
+
         if (width - 2 * COMMON.PADDING < containerSize) {
             var newFontSize = parseInt(container.selectAll('.child span').style('font-size')) - 5;
             var newIconSize = parseInt(container.selectAll('.child i').style('font-size')) - 5;
@@ -103,10 +106,27 @@ function kpi() {
             }
             if (newIconSize >= 9) {
                 container.selectAll('.child i').style('font-size', newIconSize + 'px')
+
             }
+
+            //working on it
+
+
+            // container.selectAll('.child i')
+            //     .style('height', newFontSize + 'px')
+            //     .style('display', 'flex')
+            //     .style('align-items', 'center')
+
             setFont();
         }
         else {
+
+            //working on it
+
+            // container.selectAll('.child i')
+            //     .style('height', _kpiFontSize[0] + 'px')
+            //     .style('display', 'flex')
+            //     .style('align-items', 'center')
             return true;
         }
     }
@@ -138,15 +158,16 @@ function kpi() {
         style = style.replace(/["{}]/g, '').replace(/,/g, ';');
 
         numberOutput += "<span style='" + style + "'>"
-            + Math.round(UTIL.getNumberFormatterFn(_kpiNumberFormat[index])(UTIL.roundNumber(value, 2)) * 100) / 100;
+            + UTIL.getFormattedValue(value, UTIL.getNumberFormatterFn(_kpiNumberFormat[index], value));
+
         + "</span>";
 
         var iconStyle = {
             'font-weight': _kpiIconFontWeight[index] || COMMON.DEFAULT_FONTWEIGHT,
             'color': _kpiIconColor[index] || (endValue > 0 ? COMMON.POSITIVE_KPI_COLOR : COMMON.NEGATIVE_KPI_COLOR),
             'font-size': _iconSize[index] + 'px' || COMMON.DEFAULT_FONTSIZE,
-            'display': _showIcon[index] == true ? 'inline-block' : 'none',
-            'float': index == 1 ? 'left' : 'right'
+            'display': _showIcon[index] == true ? 'inline-block' : 'none'
+            // 'float': index == 1 ? 'left' : 'right'
         };
 
 

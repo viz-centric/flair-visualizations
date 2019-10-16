@@ -240,7 +240,7 @@ function table() {
             if (index == 0) {
                 tfoot += "<th style='border-left:1px solid #d3d4d4;border-right:0px solid #d3d4d4'></th>";
             }
-            else{
+            else {
                 tfoot += "<th style='border-left:0px solid #d3d4d4;border-right:0px solid #d3d4d4'></th>";
             }
 
@@ -275,84 +275,22 @@ function table() {
 
     }
 
-    var createBody = function (data) {
-        var tbody = "<tbody>";
-        data.forEach(function (d) {
-            tbody += "<tr>";
-            _dimension.forEach(function (item, index) {
+    var createTable = function (data) {
 
-                var style = {
-                    'text-align': _textAlignmentForDimension[index],
-                    'background-color': _cellColorForDimension[index],
-                    'font-style': _fontStyleForDimension[index],
-                    'font-weight': _fontWeightForDimension[index],
-                    'font-size': _fontSizeForDimension[index] + "px",
-                    'color': _textColorForDimension[index]
-                };
-
-                style = JSON.stringify(style);
-                style = style.replace(/","/g, ';').replace(/["{}]/g, '');
-                //    tbody += "<td onClick=\"readerTableChart('" + d[_dimension[index]] + "',this,_local_svg,'" + item + "')\" style=\"" + style + "\">" + d[_dimension[index]] + "</td>";
-                tbody += "<td id=\"" + item + "\"  style=\"" + style + "\">" + d[_dimension[index]] + "</td>";
-            });
-
-            _measure.forEach(function (item, index) {
-                var style = {
-                    'text-align': _textAlignmentForMeasure[index],
-                    'background-color': _cellColorForMeasure[index],
-                    'font-style': _fontStyleForMeasure[index],
-                    'font-weight': _fontWeightForMeasure[index],
-                    'font-size': _fontSizeForMeasure[index] + "px",
-                    'color': _textColorForMeasure[index]
-                };
-
-                if (_textColorExpressionForMeasure[index].length > 0) {
-                    style['color'] = UTIL.expressionEvaluator(_textColorExpressionForMeasure[index], d[_measure[index]], 'color');
-                }
-                if (_cellColorExpressionForMeasure[index].length > 0) {
-                    style['background-color'] = UTIL.expressionEvaluator(_cellColorExpressionForMeasure[index], d[_measure[index]], 'color');
-                }
-
-                style = JSON.stringify(style);
-                style = style.replace(/","/g, ';').replace(/["{}]/g, '');
-                tbody += "<td class='sum' id=\"" + item + "\" style=\"" + style + "\">" + getIcon(index, d[_measure[index]]) + UTIL.getFormattedValue(d[_measure[index]], UTIL.getValueNumberFormat(index, _numberFormatForMeasure, d[_measure[index]])) + "</td>";
-                //  tbody += "<td onClick=\"readerTableChart('" + d[_measure[index]] + "',this,_local_svg,'" + item + "')\" style=\"" + style + "\">" + getIcon(index, d[_measure[index]]) + UTIL.getFormattedValue(d[_measure[index]], UTIL.getValueNumberFormat(index, _numberFormatForMeasure)) + "</td>";
-
-            });
-            tbody += "</tr>";
-        });
-
-        tbody += "</tbody>";
-        return tbody
-    }
-    function chart(selection) {
-        _Local_data = _originalData = _data;
-        if (_print) {
-            parentContainer = selection;
-        }
-        else {
-            parentContainer = d3.select('#' + selection.id)
-        }
-
-        var svg = parentContainer;
-
-        _local_svg = svg;
-
-        var id = svg.attr('id');
-
-        //  var disv = d3.select('#' + id);
+        var id = _local_svg.attr('id');
 
         $("#" + id).prepend('<div class="searchIcon"><i class="fa fa-caret-down searchOpen"></i><i class="fa fa-caret-up searchClose"></i></div>')
 
         var width = parentContainer.attr('width'),
-            height = parentContainer.attr('height')
-        svg
+            height = parentContainer.attr('height');
+
+        _local_svg
             .attr('width', width)
             .attr('height', height)
             .style('overflow-y', 'hidden')
             .style('overflow-x', 'auto');
 
-        var table = svg.append('table')
+        var table = _local_svg.append('table')
             .attr('id', 'viz_table')
             .style('width', '100%')
             .classed('display', true)
@@ -369,7 +307,7 @@ function table() {
         table.append('tfoot')
             .html(thead_tfoot.tfoot);
 
-        var tbody = createBody(_data);
+        var tbody = createBody(data);
 
         table.append('tbody').html(tbody);
 
@@ -403,14 +341,16 @@ function table() {
                 }
                 $('#' + id + ' .dataTables_scrollBody').css('max-height', tableHeight + 'px')
             })
+
+            var dataTable;
             $('#' + id + ' #viz_table thead tr:eq(0) th').each(function (i) {
                 var title = $(this).text();
                 $(this).html('<input type="text" placeholder="Search ' + title + '" />');
 
                 $('input', this).on('keyup change', function () {
 
-                    if (table.column(i).search() !== this.value) {
-                        table
+                    if (dataTable.column(i).search() !== this.value) {
+                        dataTable
                             .column(i)
                             .search(this.value)
                             .draw();
@@ -423,7 +363,7 @@ function table() {
                 tableHeight = height - 100 - 40;
             }
 
-            var table = $('#' + parentContainer.attr('id')).find('#viz_table').DataTable({
+            dataTable = $('#' + parentContainer.attr('id')).find('#viz_table').DataTable({
 
                 scrollY: tableHeight,
                 scrollX: true,
@@ -431,19 +371,26 @@ function table() {
                 ordering: true,
                 info: true,
                 'dom': 'Rlfrtip',
-                // colReorder: {
-                //     allowReorder: false
-                // },
                 pagingType: "full_numbers",
                 aLengthMenu: [[2, 5, 10, 15, 20, 25, -1], [2, 5, 10, 15, 20, 25, "All"]],
                 iDisplayLength: 20,
                 bDestroy: true,
-                //   dom: '<"table-header">rt<"table-footer"lp>',
-                //  "sDom": "Rlfrtip",
-                fnDrawCallback: function (oSettings) {
-                    if (oSettings._iDisplayLength > oSettings.fnRecordsDisplay()) {
-                        // $(oSettings.nTableWrapper).find('.dataTables_paginate').hide();
-                        // $(oSettings.nTableWrapper).find('.dataTables_info').hide();
+                "fnDrawCallback": function (oSettings) {
+                    var api = this.api();
+                    for (let index = 0; index < _dimension.length; index++) {
+                        var width = $(api.column(index).header())
+                            .css('width')
+
+                        $(api.column(index).footer())
+                            .css('width', width)
+                    }
+
+                    for (let index = 0; index < _measure.length; index++) {
+                        var width = $(api.column(_dimension.length + index).header())
+                            .css('width')
+
+                        $(api.column(_dimension.length + index).footer())
+                            .css('width', width)
                     }
                 },
                 "footerCallback": function (row, data, start, end, display) {
@@ -521,8 +468,75 @@ function table() {
             parentContainer.select('.removeFilter')
                 .on('click', clearFilter());
         }
-
     }
+
+    var createBody = function (data) {
+        var tbody = "<tbody>";
+        data.forEach(function (d) {
+            tbody += "<tr>";
+            _dimension.forEach(function (item, index) {
+
+                var style = {
+                    'text-align': _textAlignmentForDimension[index],
+                    'background-color': _cellColorForDimension[index],
+                    'font-style': _fontStyleForDimension[index],
+                    'font-weight': _fontWeightForDimension[index],
+                    'font-size': _fontSizeForDimension[index] + "px",
+                    'color': _textColorForDimension[index]
+                };
+
+                style = JSON.stringify(style);
+                style = style.replace(/","/g, ';').replace(/["{}]/g, '');
+                //    tbody += "<td onClick=\"readerTableChart('" + d[_dimension[index]] + "',this,_local_svg,'" + item + "')\" style=\"" + style + "\">" + d[_dimension[index]] + "</td>";
+                tbody += "<td id=\"" + item + "\"  style=\"" + style + "\">" + d[_dimension[index]] + "</td>";
+            });
+
+            _measure.forEach(function (item, index) {
+                var style = {
+                    'text-align': _textAlignmentForMeasure[index],
+                    'background-color': _cellColorForMeasure[index],
+                    'font-style': _fontStyleForMeasure[index],
+                    'font-weight': _fontWeightForMeasure[index],
+                    'font-size': _fontSizeForMeasure[index] + "px",
+                    'color': _textColorForMeasure[index]
+                };
+
+                if (_textColorExpressionForMeasure[index].length > 0) {
+                    style['color'] = UTIL.expressionEvaluator(_textColorExpressionForMeasure[index], d[_measure[index]], 'color');
+                }
+                if (_cellColorExpressionForMeasure[index].length > 0) {
+                    style['background-color'] = UTIL.expressionEvaluator(_cellColorExpressionForMeasure[index], d[_measure[index]], 'color');
+                }
+
+                style = JSON.stringify(style);
+                style = style.replace(/","/g, ';').replace(/["{}]/g, '');
+                tbody += "<td class='sum' id=\"" + item + "\" style=\"" + style + "\">" + getIcon(index, d[_measure[index]]) + UTIL.getFormattedValue(d[_measure[index]], UTIL.getValueNumberFormat(index, _numberFormatForMeasure, d[_measure[index]])) + "</td>";
+                //  tbody += "<td onClick=\"readerTableChart('" + d[_measure[index]] + "',this,_local_svg,'" + item + "')\" style=\"" + style + "\">" + getIcon(index, d[_measure[index]]) + UTIL.getFormattedValue(d[_measure[index]], UTIL.getValueNumberFormat(index, _numberFormatForMeasure)) + "</td>";
+
+            });
+            tbody += "</tr>";
+        });
+
+        tbody += "</tbody>";
+        return tbody
+    }
+    function chart(selection) {
+        _Local_data = _originalData = _data;
+        if (_print) {
+            parentContainer = selection;
+        }
+        else {
+            parentContainer = d3.select('#' + selection.id)
+        }
+
+        var svg = parentContainer;
+
+        _local_svg = svg;
+
+        createTable(_data);
+    }
+
+
 
     chart._getName = function () {
         return _NAME;
@@ -536,184 +550,11 @@ function table() {
         _Local_data = data;
         svg = _local_svg;
         filterData = [];
-        var _api;
+        var id = svg.attr('id');
 
-        var width = parentContainer.attr('width'),
-            height = parentContainer.attr('height')
+        $("#" + id).html('')
 
-        var id = parentContainer.attr('id');
-        parentContainer.select("#viz_table").html('');
-        //        parentContainer.selectAll("#viz_table_length,#viz_table_filter,#viz_table_info,#viz_table_paginate").html('')
-
-        parentContainer.selectAll('tbody').remove();
-        parentContainer.selectAll('thead').remove();
-        parentContainer.selectAll('tfoot').remove();
-
-        var table = parentContainer.select('#viz_table');
-
-        var thead_tfoot = createHeaderFooter();
-
-        table.append('thead')
-            .html(thead_tfoot.thead);
-
-        table.append('tfoot')
-            .html(thead_tfoot.tfoot);
-
-        var tbody = createBody(data);
-
-        table.append('tbody').html(tbody);
-
-        if (!_print) {
-
-            var _filter = UTIL.createFilterElement()
-            $('#' + id).append(_filter)
-
-            $('#' + id + " #viz_table thead tr").clone(true).appendTo('#' + id + " #viz_table thead");
-
-            $('#' + id + ' table:eq(0) thead tr:eq(0)').css('display', 'none')
-            $('.searchOpen').click(function () {
-                $('#' + id + ' table:eq(0) thead tr:eq(0)').css('display', 'table-row')
-                $('#' + id + ' .searchClose').css('display', 'block')
-                $('#' + id + ' .searchOpen').css('display', 'none')
-
-                tableHeight = height - 140
-                if (_isTotal) {
-                    tableHeight = height - 140 - 40;
-                }
-                $('#' + id + ' .dataTables_scrollBody').css('max-height', tableHeight + 'px')
-            })
-            $('.searchClose').click(function () {
-                $('#' + id + ' table:eq(0) thead tr:eq(0)').css('display', 'none')
-                $('#' + id + ' .searchClose').css('display', 'none')
-                $('#' + id + ' .searchOpen').css('display', 'block')
-
-                tableHeight = height - 100
-                if (_isTotal) {
-                    tableHeight = height - 100 - 40;
-                }
-                $('#' + id + ' .dataTables_scrollBody').css('max-height', tableHeight + 'px')
-            })
-            $('#' + id + ' #viz_table thead tr:eq(0) th').each(function (i) {
-                var title = $(this).text();
-                $(this).html('<input type="text" placeholder="Search ' + title + '" />');
-
-                $('input', this).on('keyup change', function () {
-
-                    if (table.column(i).search() !== this.value) {
-                        table
-                            .column(i)
-                            .search(this.value)
-                            .draw();
-                    }
-                });
-            });
-
-            var tableHeight = height - 100;
-            if (_isTotal) {
-                tableHeight = height - 100 - 40;
-            }
-
-            var table = $('#' + parentContainer.attr('id')).find('#viz_table').DataTable({
-
-                scrollY: tableHeight,
-                scrollX: true,
-                scrollCollapse: true,
-                ordering: true,
-                info: true,
-                'dom': 'Rlfrtip',
-                // colReorder: {
-                //     allowReorder: false
-                // },
-                pagingType: "full_numbers",
-                aLengthMenu: [[2, 5, 10, 15, 20, 25, -1], [2, 5, 10, 15, 20, 25, "All"]],
-                iDisplayLength: 20,
-                bDestroy: true,
-                //   dom: '<"table-header">rt<"table-footer"lp>',
-                //  "sDom": "Rlfrtip",
-                fnDrawCallback: function (oSettings) {
-                    if (oSettings._iDisplayLength > oSettings.fnRecordsDisplay()) {
-                        // $(oSettings.nTableWrapper).find('.dataTables_paginate').hide();
-                        // $(oSettings.nTableWrapper).find('.dataTables_info').hide();
-                    }
-                },
-                "footerCallback": function (row, data, start, end, display) {
-                    var api = this.api(), data;
-                    _api = api;
-                    for (var i = 0; i < data.length; i++) {
-                        for (var j = 0; j < data[i].length; j++) {
-                            if (data[i][j].toString().indexOf('</i>') >= 0) {
-                                data[i][j] = parseFloat(data[i][j].substring(data[i][j].indexOf('</i>') + 4, data[i][j].length)).toFixed(2)
-                            }
-                        }
-                    }
-
-                    var intVal = function (i) {
-                        return typeof i === 'string' ?
-                            i.replace(/[\$,]/g, '') * 1 :
-                            typeof i === 'number' ?
-                                i : 0;
-                    };
-                    // Total over all pages
-
-                    for (let index = 0; index < _measure.length; index++) {
-
-                        total = api
-                            .column(_dimension.length + index)
-                            .data()
-                            .reduce(function (a, b) {
-                                return intVal(a) + intVal(b);
-                            }, 0);
-
-                        // Total over this page
-                        pageTotal = api
-                            .column(_dimension.length + index, { page: 'current' })
-                            .data()
-                            .reduce(function (a, b) {
-                                return intVal(a) + intVal(b);
-                            }, 0);
-
-                        // Update footer
-                        $(api.column(_dimension.length + index).footer()).html(
-                            parseFloat(total).toFixed(2)
-                        )
-
-                        $(api.column(_dimension.length + index).footer())
-                            .css('text-align', _textAlignmentForMeasure[index])
-                    }
-                }
-            });
-
-            for (let index = 0; index < _dimension.length; index++) {
-                var width = $(_api.column(index).header())
-                    .css('width')
-
-                $(_api.column(index).footer())
-                    .css('width', width)
-            }
-
-            for (let index = 0; index < _measure.length; index++) {
-                var width = $(_api.column(_dimension.length + index).header())
-                    .css('width')
-
-                $(_api.column(_dimension.length + index).footer())
-                    .css('width', width)
-            }
-
-            var footer = _isTotal == true ? "block" : "none";
-
-            $('#' + id + ' .dataTables_scrollFootInner tfoot').css('display', footer)
-
-            $("#viz_table_paginate").css('display', 'blobk')
-            $($('#' + parentContainer.attr('id') + ' td')).on('click', function () {
-                readerTableChart.call(this.textContent, this, parentContainer)
-            })
-
-            parentContainer.select('.filterData')
-                .on('click', applyFilter());
-
-            parentContainer.select('.removeFilter')
-                .on('click', clearFilter());
-        }
+        createTable(data);
     }
 
 
