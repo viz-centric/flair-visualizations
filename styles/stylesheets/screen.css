@@ -282,10 +282,15 @@ svg#graphics {
 
 /* line 35, ../sass/partials/_table.scss */
 .searchOpen {
-  display: block;
+  display: none;
 }
 
 /* line 38, ../sass/partials/_table.scss */
 .searchClose {
-  display: none;
+  display: block;
+}
+
+/* line 41, ../sass/partials/_table.scss */
+.dataTables_scroll {
+  overflow: auto;
 }
