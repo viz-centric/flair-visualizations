@@ -147,7 +147,9 @@ function kpi() {
             'font-style': _kpiFontStyle[index] || COMMON.DEFAULT_FONTSTYLE,
             'font-weight': _kpiFontWeight[index] || COMMON.DEFAULT_FONTWEIGHT,
             'font-size': _kpiFontSize[index] + 'px' || COMMON.DEFAULT_FONTSIZE,
-            'color': _kpiColor[index] || COMMON.DEFAULT_COLOR
+            'color': _kpiColor[index] || COMMON.DEFAULT_COLOR,
+            'display': index == 0 ? 'flex' : 'inline-block',
+            'align-items': 'center'
         };
 
         if (_kpiColorExpression[index].length) {
@@ -189,10 +191,8 @@ function kpi() {
 
         iconOutput += "<i class=\"" + _kpiIcon[index] + "\" style=\"" + iconStyle + "\" aria-hidden=\"true\"></i>";
 
-        return index ? (iconOutput + "&nbsp;" + numberOutput)
-            : (numberOutput + "&nbsp;" + iconOutput);
-
-
+        return index ? ("<div style='white-space:nowrap;display:flex;align-items:center;'>" + iconOutput + "&nbsp;" + numberOutput + "</div>")
+            : ("<div style='white-space:nowrap;display:flex;align-items:center;'>" + numberOutput + "&nbsp;" + iconOutput + "</div>");
     }
 
     function chart(selection) {
