@@ -52,7 +52,7 @@ function doughnut() {
         _localData,
         _originalData;
 
-    var filter = false, filterData = [], parentContainer, plotWidth, plotHeight, legendBreakCount = 1;;
+    var filter = false, filterData = [], container, parentContainer, plotWidth, plotHeight, legendBreakCount = 1;;
 
     /* These are the common private functions that is shared across the different private/public
      * methods but is initialized beforehand.
@@ -454,7 +454,7 @@ function doughnut() {
     }
 
     function chart(selection) {
-        data=_Local_data = _originalData = _data;
+        data = _Local_data = _originalData = _data;
 
         if (_print && !_notification) {
             parentContainer = selection;
@@ -501,7 +501,7 @@ function doughnut() {
         /* extracting measure values only from the data */
         _localSortedMeasureValue = data.map(function (d) { return +d[_measure[0]]; })
 
-        var container = svg.append('g')
+        container = svg.append('g')
             .classed('container', true)
             .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
@@ -865,8 +865,6 @@ function doughnut() {
         /* store the data in local variable */
         _localData = data;
 
-        outerRadius = Math.min(parentWidth, parentHeight) / 2.25;
-
         data.sort(function (a, b) {
             return d3.ascending(a[_dimension[0]], b[_dimension[0]]);
         });
@@ -887,16 +885,35 @@ function doughnut() {
         var oldFilteredData = _mergeForTransition(filteredData, prevData),
             newFilteredData = _mergeForTransition(prevData, filteredData);
 
-        if (_legend) {
-            svg.select('.legend').remove();
+        plotWidth = parentWidth;
+        plotHeight = parentHeight;
 
-            _localLegend(data, svg.select('g'), {
+        if (_legend) {
+            _localLegend = LEGEND.bind(chart);
+
+            var result = _localLegend(data, container, {
                 width: parentWidth,
                 height: parentHeight,
-                labelStack: _localLabelStack
+                legendBreakCount: legendBreakCount
             });
+
+            legendWidth = result.legendWidth;
+            legendHeight = result.legendHeight;
+            legendBreakCount = result.legendBreakCount;
+
+            switch (_legendPosition.toUpperCase()) {
+                case 'TOP':
+                case 'BOTTOM':
+                    plotHeight = plotHeight - parseFloat((20 * parseFloat(legendBreakCount)) + 20);
+                    break;
+                case 'RIGHT':
+                case 'LEFT':
+                    plotWidth = plotWidth - legendWidth;
+                    break;
+            }
         }
-        var outerRadius = Math.min(parentWidth, parentHeight) / 2.25;
+
+        outerRadius = Math.min(plotWidth, plotHeight) / 2.25;
         var doughnutMask = svg.select('#arc-mask-group')
             .selectAll('g.arc-mask')
             .data(_doughnut(oldFilteredData), _localKey)
