@@ -151,15 +151,38 @@ function heatmap() {
         return iconName[index];
     }
 
-    var getIcon = function (index, endValue) {
+    var getIcon = function (index, endValue, d, height) {
         var iconOutput = "";
+
+        switch (iconPosition[index].toUpperCase()) {
+            case 'CENTER':
+                float = 'unset';
+                paddingLeft = '0px'
+                paddingRight = '0px'
+                marginTop = height / 2 - 5
+                break;
+            case 'RIGHT':
+                float = 'right';
+                paddingLeft = '0px'
+                paddingRight = '15px'
+                marginTop = height / 2 - 5
+                break;
+            case 'LEFT':
+                float = 'left';
+                paddingLeft = '10px'
+                paddingRight = '0px'
+                marginTop = height / 2 - 5
+                break;
+        }
 
         var iconStyle = {
             'font-weight': iconFontWeight[index] || COMMON.DEFAULT_FONTWEIGHT,
             'color': valueTextColour[index] || COMMON.DEFAULT_COLOR,
             'font-size': fontSizeForMeasure[index] || COMMON.DEFAULT_FONTSIZE + 'px',
-            //   'text-align': getIconPosition(index),
-            'padding-right': '15px'
+            'float': float,
+            'padding-left': paddingLeft,
+            'padding-right': paddingRight,
+            'margin-top': marginTop + 'px'
         };
 
         if (iconExpression[index].length) {
@@ -249,13 +272,13 @@ function heatmap() {
 
         switch (iconProp.toUpperCase()) {
             case 'CENTER':
-                offset = 0 + padding;
+                offset = 'unset';
                 break;
             case 'RIGHT':
-                offset = width / 2 - 2 * padding;
+                offset = 'right';
                 break;
             case 'LEFT':
-                offset = -(width / 2) + (3 * padding);
+                offset = 'left';
                 break;
         }
 
@@ -679,12 +702,6 @@ function heatmap() {
 
 
         element.append('foreignObject')
-            .attr('x', function (d) {
-                return getIconPosition(d, cellWidth);
-            })
-            .attr('y', function (d) {
-                return cellHeight / 2;;
-            })
             .attr('visibility', function (d) {
                 return UTIL.getVisibility(showIcon[_measure.indexOf(d.x)]);
             })
@@ -693,7 +710,7 @@ function heatmap() {
             .html(function (d) {
                 //return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + ';font-size:' + fontSizeForMeasure[_measure.indexOf(d.x)] + 'px;"></i>';
 
-                return getIcon(_measure.indexOf(d.x), d.val)
+                return getIcon(_measure.indexOf(d.x), d.val, d, cellHeight)
             });
 
     }
@@ -820,12 +837,6 @@ function heatmap() {
             });
 
         cell.select('foreignObject')
-            .attr('x', function (d) {
-                return getIconPosition(d, cellWidth);
-            })
-            .attr('y', function (d) {
-                return cellHeight / 2;;
-            })
             .attr('visibility', function (d) {
                 return UTIL.getVisibility(showIcon[_measure.indexOf(d.x)]);
             })
@@ -834,7 +845,7 @@ function heatmap() {
             .html(function (d) {
                 //return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + ';font-size:' + fontSizeForMeasure[_measure.indexOf(d.x)] + 'px;"></i>';
 
-                return getIcon(_measure.indexOf(d.x), d.val)
+                return getIcon(_measure.indexOf(d.x), d.val, d, cellHeight)
             });
 
         newCell.append('rect')
@@ -943,12 +954,6 @@ function heatmap() {
             });
 
         newCell.append('foreignObject')
-            .attr('x', function (d) {
-                return getIconPosition(d, cellWidth);
-            })
-            .attr('y', function (d) {
-                return cellHeight / 2;;
-            })
             .attr('visibility', function (d) {
                 return UTIL.getVisibility(showIcon[_measure.indexOf(d.x)]);
             })
@@ -957,7 +962,7 @@ function heatmap() {
             .html(function (d) {
                 //return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + ';font-size:' + fontSizeForMeasure[_measure.indexOf(d.x)] + 'px;"></i>';
 
-                return getIcon(_measure.indexOf(d.x), d.val)
+                return getIcon(_measure.indexOf(d.x), d.val, d, cellHeight)
             });
 
         //   drawViz(newCell)

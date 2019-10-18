@@ -107,7 +107,8 @@ function infographics() {
         style = style.replace(/["{}]/g, '').replace(/,/g, ';');
 
         numberOutput += "<span style='" + style + "'>"
-            + UTIL.getNumberFormatterFn(_kpiNumberFormat)(UTIL.roundNumber(value, 0)).toUpperCase()
+
+            + UTIL.getFormattedValue(value, UTIL.getNumberFormatterFn(_kpiNumberFormat, value))
             + "</span>";
 
         var iconStyle = {
@@ -161,7 +162,9 @@ function infographics() {
      */
     var _buildTooltipData = function (datum, chart) {
         var output = "";
-        var value = UTIL.getNumberFormatterFn(_kpiNumberFormat)(UTIL.roundNumber(datum[chart.measure()], 0)).toUpperCase()
+
+        var value = UTIL.getFormattedValue(datum[chart.measure()], UTIL.getNumberFormatterFn(_kpiNumberFormat, datum[chart.measure()]))
+
         output += "<table><tr>"
             + "<th>" + chart.dimension() + ": </th>"
             + "<td>" + datum[chart.dimension()] + "</td>"
