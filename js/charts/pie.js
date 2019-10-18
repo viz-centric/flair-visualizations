@@ -434,10 +434,7 @@ function pie() {
                 return obj;
             });
 
-        return d3.merge([sData, onlyFirst])
-            .sort(function (a, b) {
-                return d3.ascending(a[_dimension[0]], b[_dimension[0]]);
-            })
+        return d3.merge([sData, onlyFirst]);
     }
 
     function chart(selection) {
@@ -797,6 +794,7 @@ function pie() {
         data.map(function (d) {
             d[_measure[0]] = Math.abs(d[_measure[0]]);
         })
+
         if (_tooltip) {
             tooltip = parentContainer.select('.custom_tooltip');
         }
@@ -807,8 +805,6 @@ function pie() {
             parentWidth = width - 2 * COMMON.PADDING,
             parentHeight = height - 2 * COMMON.PADDING,
             filteredData;
-
-        var outerRadius = Math.min(plotWidth, plotHeight) / 2.25;
 
         filteredData = data.filter(function (d) {
             return _localLabelStack.indexOf(d[_dimension[0]]) == -1;
@@ -825,6 +821,10 @@ function pie() {
             newFilteredData = _mergeForTransition(prevData, filteredData);
 
         _local_svg.select('.legend').remove();
+
+        plotWidth = parentWidth;
+        plotHeight = parentHeight;
+        
         if (_legend) {
             _localLegend = LEGEND.bind(chart);
 
@@ -849,6 +849,9 @@ function pie() {
                     break;
             }
         }
+
+
+        outerRadius = Math.min(plotWidth, plotHeight) / 2.25;
 
         var pieMask = svg.select('#arc-mask-group')
             .selectAll('g.arc-mask')
@@ -875,7 +878,7 @@ function pie() {
             .data(_pie(newFilteredData), _localKey)
 
         pieMask.select('path')
-            .transition().duration(1000)
+            .transition().duration(0)
             .attrTween('d', function (d) {
                 var interpolate = d3.interpolate(this._current, d);
                 var _this = this;
@@ -917,7 +920,7 @@ function pie() {
             .data(_pie(newFilteredData), _localKey);
 
         pieArcGroup.select('path')
-            .transition().duration(1000)
+            .transition().duration(0)
             .attrTween('d', function (d) {
                 var interpolate = d3.interpolate(this._current, d);
                 var _this = this;
