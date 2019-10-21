@@ -631,7 +631,7 @@ function stackedhorizontalbar() {
                 return UTIL.setPlotPosition(_legendPosition, _showXaxis, _showYaxis, _showLegend, margin.left, legendSpace, legendBreakCount, axisLabelSpace, _local_svg);
             });
 
-        var keys = UTIL.getMeasureList(data[0], _dimension);
+        var keys = _measure ;
 
         x.rangeRound([0, plotHeight])
             .padding([0.5])
@@ -858,7 +858,7 @@ function stackedhorizontalbar() {
     }
     var drawPlotForFilter = function (data) {
         if (!_print) {
-            var keys = UTIL.getMeasureList(data[0], _dimension);
+            var keys = _measure ;
             var range = UTIL.getMinMax(data, keys);
             parentContainer.select('.filterElement').remove();
             svgFilter = parentContainer.append('svg')
@@ -867,7 +867,7 @@ function stackedhorizontalbar() {
                 .attr('class', 'filterElement')
                 .style('visibility', UTIL.getVisibility(_isFilterGrid));
 
-            var keys = UTIL.getMeasureList(data[0], _dimension);
+            var keys = _measure ;
 
             _x.rangeRound([0, parseInt(_local_svg.attr('height') - 2 * COMMON.PADDING)])
                 .padding([0.5])
@@ -1120,7 +1120,7 @@ function stackedhorizontalbar() {
         _Local_data = data;
         filterData = [];
 
-        var keys = UTIL.getMeasureList(data[0], _dimension);
+        var keys = _measure ;
 
         x.rangeRound([0, plotHeight])
             .padding([0.5])

@@ -287,7 +287,7 @@ function table() {
         _local_svg
             .attr('width', width)
             .attr('height', height)
-            .style('overflow-y', 'hidden')
+            .style('overflow-y', 'auto')
             .style('overflow-x', 'auto');
 
         var table = _local_svg.append('table')
@@ -296,6 +296,7 @@ function table() {
             .classed('display', true)
             .classed('nowrap', true)
             .classed('table', true)
+            .classed('display',true)
             .classed('table-condensed', true)
             .classed('table-hover', true);
 
@@ -365,9 +366,14 @@ function table() {
 
             dataTable = $('#' + parentContainer.attr('id')).find('#viz_table').DataTable({
 
-                scrollY: tableHeight,
-                scrollX: true,
-                scrollCollapse: true,
+                //  scrollY: tableHeight,
+                responsive: true,
+                // scrollX: true,
+                //  scrollCollapse: true,
+                fixedHeader: {
+                    header: true,
+                    footer: true
+                },
                 ordering: true,
                 info: true,
                 'dom': 'Rlfrtip',
@@ -449,6 +455,10 @@ function table() {
                             .css('text-align', _textAlignmentForMeasure[index])
                     }
 
+                },
+                colResize: {
+                    scrollY: 200,
+                    resizeTable: true
                 }
 
             });
