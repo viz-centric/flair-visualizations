@@ -183,7 +183,7 @@ function clusteredverticalbar() {
 
             var _filter = [];
             if (data.length > 0) {
-                var keys = UTIL.getMeasureList(data[0], _dimension);
+                var keys = _measure ;
                 data.forEach(function (d) {
                     var obj = new Object();
                     obj[_dimension[0]] = d[_dimension[0]];
@@ -465,7 +465,7 @@ function clusteredverticalbar() {
                 return UTIL.setPlotPosition(_legendPosition, _showXaxis, _showYaxis, _showLegend, margin.left, legendSpace, legendBreakCount, axisLabelSpace, _local_svg);
             });
 
-        var keys = UTIL.getMeasureList(data[0], _dimension);
+        var keys = _measure ;
 
         x0.rangeRound([0, plotWidth])
             .padding([0.2])
@@ -671,7 +671,7 @@ function clusteredverticalbar() {
 
     var drawPlotForFilter = function (data) {
         if (!_print) {
-            var keys = UTIL.getMeasureList(data[0], _dimension);
+            var keys = _measure ;
             var range = UTIL.getMinMax(data, keys);
             parentContainer.select('.filterElement').remove();
             svgFilter = parentContainer.append('svg')
@@ -1121,7 +1121,7 @@ function clusteredverticalbar() {
         _Local_data = data;
         filterData = [];
 
-        var keys = UTIL.getMeasureList(data[0], _dimension);
+        var keys = _measure ;
 
         _localXLabels = data.map(function (d) {
             return d[_dimension[0]];

@@ -460,7 +460,7 @@ function clusteredhorizontalbar() {
                 return UTIL.setPlotPosition(_legendPosition, _showXaxis, _showYaxis, _showLegend, margin.left, legendSpace, legendBreakCount, axisLabelSpace, _local_svg);
             });
 
-        var keys = UTIL.getMeasureList(data[0], _dimension);
+        var keys = _measure ;
 
         x0.rangeRound([0, plotHeight])
             .paddingInner(0.1)
@@ -677,7 +677,7 @@ function clusteredhorizontalbar() {
 
     var drawPlotForFilter = function (data) {
         if (!_print) {
-            var keys = UTIL.getMeasureList(data[0], _dimension);
+            var keys = _measure //UTIL.getMeasureList(data[0], _dimension);
             var range = UTIL.getMinMax(data, keys);
             parentContainer.select('.filterElement').remove();
             svgFilter = parentContainer.append('svg')
@@ -1147,7 +1147,7 @@ function clusteredhorizontalbar() {
         _Local_data = data,
             filterData = [];
 
-        var keys = UTIL.getMeasureList(data[0], _dimension);
+        var keys = _measure //UTIL.getMeasureList(data[0], _dimension);
 
         x0.rangeRound([0, plotHeight])
             .paddingInner(0.1)

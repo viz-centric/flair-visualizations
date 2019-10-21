@@ -447,10 +447,7 @@ function doughnut() {
                 return obj;
             });
 
-        return d3.merge([sData, onlyFirst])
-            .sort(function (a, b) {
-                return d3.ascending(a[_dimension[0]], b[_dimension[0]]);
-            })
+        return d3.merge([sData, onlyFirst]);
     }
 
     function chart(selection) {
@@ -865,10 +862,6 @@ function doughnut() {
         /* store the data in local variable */
         _localData = data;
 
-        data.sort(function (a, b) {
-            return d3.ascending(a[_dimension[0]], b[_dimension[0]]);
-        });
-
         svg.selectAll('.arc path').classed('selected', false)
 
         filteredData = data.filter(function (d) {
@@ -884,6 +877,8 @@ function doughnut() {
 
         var oldFilteredData = _mergeForTransition(filteredData, prevData),
             newFilteredData = _mergeForTransition(prevData, filteredData);
+
+        _local_svg.select('.legend').remove();
 
         plotWidth = parentWidth;
         plotHeight = parentHeight;
@@ -939,7 +934,7 @@ function doughnut() {
             .data(_doughnut(newFilteredData), _localKey)
 
         doughnutMask.select('path')
-            .transition().duration(1000)
+            .transition().duration(0)
             .attrTween('d', function (d) {
                 var interpolate = d3.interpolate(this._current, d);
                 var _this = this;
@@ -986,7 +981,7 @@ function doughnut() {
             .data(_doughnut(newFilteredData), _localKey);
 
         doughnutArcGroup.select('path')
-            .transition().duration(1000)
+            .transition().duration(0)
             .attrTween('d', function (d) {
                 var interpolate = d3.interpolate(this._current, d);
                 var _this = this;

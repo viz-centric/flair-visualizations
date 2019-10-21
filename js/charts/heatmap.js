@@ -17,7 +17,8 @@ function heatmap() {
         fontStyleForDimension,
         fontWeightForDimension,
         fontSizeForDimension,
-
+        colorPattern,
+        displayColor,
         showValues = [],
         displayNameForMeasure = [],
         showIcon = [],
@@ -38,7 +39,7 @@ function heatmap() {
         _print,
         broadcast,
         filterParameters,
-        displayColor = [],
+        displayColorMeasure = [],
         _notification = false,
         _data;
 
@@ -52,7 +53,8 @@ function heatmap() {
     };
 
     var yScale = d3.scaleBand(),
-        xScale = d3.scaleBand();
+        xScale = d3.scaleBand(),
+        gradientColor = d3.scaleLinear();
 
     var filter = false, filterData = [];
 
@@ -61,6 +63,8 @@ function heatmap() {
         this.measure(config.measure);
         this.dimLabelColor(config.dimLabelColor);
         this.displayName(config.displayName);
+        this.displayColor(config.displayColor);
+        this.colorPattern(config.colorPattern);
         this.fontStyleForDimension(config.fontStyleForDimension);
         this.fontWeightForDimension(config.fontWeightForDimension);
         this.fontSizeForDimension(config.fontSizeForDimension);
@@ -79,15 +83,15 @@ function heatmap() {
         this.fontWeightForMeasure(config.fontWeightForMeasure);
         this.numberFormat(config.numberFormat);
         this.fontSizeForMeasure(config.fontSizeForMeasure);
-        this.displayColor(config.displayColor);
+        this.displayColorMeasure(config.displayColorMeasure);
         this.iconExpression(config.iconExpression);
         setDefaultColorForChart();
     }
 
     var setDefaultColorForChart = function () {
         for (let index = 0; index < _measure.length; index++) {
-            if (displayColor[index] == null || displayColor[index] == undefined) {
-                displayColor[index] = COMMON.COLORSCALE(index);
+            if (displayColorMeasure[index] == null || displayColorMeasure[index] == undefined) {
+                displayColorMeasure[index] = COMMON.COLORSCALE(index);
             }
         }
     }
@@ -233,36 +237,45 @@ function heatmap() {
             return colorProp.filter(function (c) { return c.hasOwnProperty('default'); })[0]['color'];
         }
 
-        colorProp.some(function (c) {
-            if (c.hasOwnProperty('upto')) {
-                if (val <= c.upto) {
+        if (colorPattern == "unique_color") {
+            colorProp.some(function (c) {
+                if (c.hasOwnProperty('upto')) {
+                    if (val <= c.upto) {
+                        result = c.color;
+                        return true;
+                    }
+                }
+                else if (c.hasOwnProperty('above')) {
+                    if (val > c.above) {
+                        result = c.color;
+                        return true;
+                    }
+                }
+                else if (c.hasOwnProperty('below')) {
+                    if (val < c.below) {
+                        result = c.color;
+                        return true;
+                    }
+                }
+                else if (property.hasOwnProperty('default')) {
                     result = c.color;
                     return true;
                 }
-            }
-            else if (c.hasOwnProperty('above')) {
-                if (val > c.above) {
+                else {
                     result = c.color;
                     return true;
                 }
-            }
-            else if (c.hasOwnProperty('below')) {
-                if (val < c.below) {
-                    result = c.color;
-                    return true;
-                }
-            }
-            else if (property.hasOwnProperty('default')) {
-                result = c.color;
-                return true;
-            }
-            else {
-                result = c.color;
-                return true;
-            }
-        });
+            });
+            return result || displayColorMeasure[_measure.indexOf(data.x)];
+        }
+        else if (colorPattern == "single_color") {
+            return displayColor;
+        }
+        else {
+            return gradientColor(data.val);
+        }
 
-        return result || displayColor[_measure.indexOf(data.x)];
+
     }
     var getIconPosition = function (data, width) {
         var iconProp = iconPosition[_measure.indexOf(data.x)]
@@ -539,6 +552,16 @@ function heatmap() {
             .range([0, xElement.size() * cellWidth]);
 
         data = transformData(_data);
+
+        gradientColor.range([
+            d3.rgb(displayColor).brighter(),
+            d3.rgb(displayColor).darker()
+        ])
+
+        gradientColor.domain(d3.extent(data, function (d) {
+            return d.val;
+        }));
+
         if (_tooltip) {
             tooltip = parentContainer.select('.custom_tooltip');
         }
@@ -688,7 +711,7 @@ function heatmap() {
                 return getValueTextAnchor(d);
             })
             .attr('visibility', function (d) {
-                return showValues[_measure.indexOf(d.x)];
+                return UTIL.getVisibility(showValues[_measure.indexOf(d.x)]);
             })
             .style('font-style', function (d) {
                 return fontStyleForMeasure[_measure.indexOf(d.x)];
@@ -768,6 +791,14 @@ function heatmap() {
 
         data = transformData(data);
 
+        gradientColor.range([
+            d3.rgb(displayColor).brighter(),
+            d3.rgb(displayColor).darker()
+        ])
+
+        gradientColor.domain(d3.extent(data, function (d) {
+            return d.val;
+        }));
         var cell = plot.selectAll(".node")
             .data(data)
 
@@ -790,8 +821,8 @@ function heatmap() {
             .attr('width', cellWidth - 1)
             .attr('height', cellHeight - 1)
             .style('fill', function (d) {
-                return d3.interpolateRgb('transparent', getFillColor(d));
-            })
+                return getFillColor(d);
+            });
 
         cell.select('text')
             .attr('x', function (d) {
@@ -824,7 +855,7 @@ function heatmap() {
                 return getValueTextAnchor(d);
             })
             .attr('visibility', function (d) {
-                return showValues[_measure.indexOf(d.x)];
+                return UTIL.getVisibility(showValues[_measure.indexOf(d.x)]);
             })
             .style('font-style', function (d) {
                 return fontStyleForMeasure[_measure.indexOf(d.x)];
@@ -856,11 +887,8 @@ function heatmap() {
             .style('stroke-width', '2px')
             .attr('width', cellWidth - 1)
             .attr('height', cellHeight - 1)
-            .transition()
-            .ease(d3.easeQuadIn)
-            .duration(COMMON.DURATION)
-            .styleTween('fill', function (d) {
-                return d3.interpolateRgb('transparent', getFillColor(d));
+            .style('fill', function (d) {
+                return getFillColor(d);
             });
 
         newCell.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
@@ -941,7 +969,7 @@ function heatmap() {
                 return getValueTextAnchor(d);
             })
             .attr('visibility', function (d) {
-                return showValues[_measure.indexOf(d.x)];
+                return UTIL.getVisibility(showValues[_measure.indexOf(d.x)]);
             })
             .style('font-style', function (d) {
                 return fontStyleForMeasure[_measure.indexOf(d.x)];
@@ -1077,11 +1105,27 @@ function heatmap() {
         return chart;
     }
 
+    chart.colorPattern = function (value) {
+        if (!arguments.length) {
+            return colorPattern;
+        }
+        colorPattern = value;
+        return chart;
+    }
+
+    chart.displayColor = function (value) {
+        if (!arguments.length) {
+            return displayColor;
+        }
+        displayColor = value;
+        return chart;
+    }
+
     chart.showValues = function (value, measure) {
         return UTIL.baseAccessor.call(showValues, value, measure, _measure);
     }
-    chart.displayColor = function (value, measure) {
-        return UTIL.baseAccessor.call(displayColor, value, measure, _measure);
+    chart.displayColorMeasure = function (value, measure) {
+        return UTIL.baseAccessor.call(displayColorMeasure, value, measure, _measure);
     }
     chart.displayNameForMeasure = function (value, measure) {
         return UTIL.baseAccessor.call(displayNameForMeasure, value, measure, _measure);
