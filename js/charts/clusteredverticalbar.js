@@ -183,7 +183,7 @@ function clusteredverticalbar() {
 
             var _filter = [];
             if (data.length > 0) {
-                var keys = _measure ;
+                var keys = UTIL.getMeasureList(data[0], _dimension, _measure);
                 data.forEach(function (d) {
                     var obj = new Object();
                     obj[_dimension[0]] = d[_dimension[0]];
@@ -465,7 +465,7 @@ function clusteredverticalbar() {
                 return UTIL.setPlotPosition(_legendPosition, _showXaxis, _showYaxis, _showLegend, margin.left, legendSpace, legendBreakCount, axisLabelSpace, _local_svg);
             });
 
-        var keys = _measure ;
+        var keys = UTIL.getMeasureList(data[0], _dimension, _measure);
 
         x0.rangeRound([0, plotWidth])
             .padding([0.2])
@@ -609,6 +609,10 @@ function clusteredverticalbar() {
             .attr('visibility', UTIL.getVisibility(_showYaxisLabel))
             .text(function () {
                 return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+            })
+            .text(function () {
+                var text = _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+                return UTIL.getTruncatedLabel(this, text, plotHeight)
             });
 
         UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
@@ -671,7 +675,7 @@ function clusteredverticalbar() {
 
     var drawPlotForFilter = function (data) {
         if (!_print) {
-            var keys = _measure ;
+            var keys = UTIL.getMeasureList(data[0], _dimension, _measure);
             var range = UTIL.getMinMax(data, keys);
             parentContainer.select('.filterElement').remove();
             svgFilter = parentContainer.append('svg')
@@ -979,12 +983,12 @@ function clusteredverticalbar() {
                         }
                     }
                 }
-                else{
-                    var textInfo=d3.select(this).node().getBBox();
-                    if(textInfo.width>=rectWidth){
+                else {
+                    var textInfo = d3.select(this).node().getBBox();
+                    if (textInfo.width >= rectWidth) {
                         return 'hidden';
                     }
-                    if(textInfo.height>=rectHeight){
+                    if (textInfo.height >= rectHeight) {
                         return 'hidden';
                     }
 
@@ -1121,7 +1125,7 @@ function clusteredverticalbar() {
         _Local_data = data;
         filterData = [];
 
-        var keys = _measure ;
+        var keys = UTIL.getMeasureList(data[0], _dimension, _measure);
 
         _localXLabels = data.map(function (d) {
             return d[_dimension[0]];

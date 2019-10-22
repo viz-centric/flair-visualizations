@@ -551,6 +551,10 @@ function scatter() {
                 .attr('visibility', UTIL.getVisibility(_showYaxisLabel))
                 .text(function () {
                     return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+                })
+                .text(function () {
+                    var text = _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+                    return UTIL.getTruncatedLabel(this, text, plotHeight)
                 });
         }
 

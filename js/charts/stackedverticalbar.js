@@ -665,7 +665,7 @@ function stackedverticalbar() {
                 return UTIL.setPlotPosition(_legendPosition, _showXaxis, _showYaxis, _showLegend, margin.left, legendSpace, legendBreakCount, axisLabelSpace, _local_svg);
             });
 
-        var keys = _measure ;
+        var keys = UTIL.getMeasureList(data[0], _dimension, _measure);
 
         x.rangeRound([0, plotWidth])
             .padding([0.2])
@@ -826,6 +826,10 @@ function stackedverticalbar() {
             .attr('visibility', UTIL.getVisibility(_showYaxisLabel))
             .text(function () {
                 return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+            })
+            .text(function () {
+                var text = _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+                return UTIL.getTruncatedLabel(this, text, plotHeight)
             });
 
         UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
@@ -907,7 +911,7 @@ function stackedverticalbar() {
     }
     var drawPlotForFilter = function (data) {
         if (!_print) {
-            var keys = _measure ;
+            var keys = UTIL.getMeasureList(data[0], _dimension, _measure);
             var range = UTIL.getMinMax(data, keys);
             parentContainer.select('.filterElement').remove();
             svgFilter = parentContainer.append('svg')
@@ -916,7 +920,7 @@ function stackedverticalbar() {
                 .attr('class', 'filterElement')
                 .style('visibility', UTIL.getVisibility(_isFilterGrid));
 
-            var keys = _measure ;
+            var keys = UTIL.getMeasureList(data[0], _dimension, _measure);
 
             _x.rangeRound([0, parseInt(_local_svg.attr('width') - 2 * COMMON.PADDING)])
                 .padding([0.2])
@@ -1177,7 +1181,7 @@ function stackedverticalbar() {
             DURATION = 0;
         }
 
-        var keys = _measure ;
+        var keys = UTIL.getMeasureList(data[0], _dimension, _measure);
 
         x.rangeRound([0, plotWidth])
             .padding([0.2])

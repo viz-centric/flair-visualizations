@@ -631,7 +631,7 @@ function stackedhorizontalbar() {
                 return UTIL.setPlotPosition(_legendPosition, _showXaxis, _showYaxis, _showLegend, margin.left, legendSpace, legendBreakCount, axisLabelSpace, _local_svg);
             });
 
-        var keys = _measure ;
+        var keys = UTIL.getMeasureList(data[0], _dimension, _measure);
 
         x.rangeRound([0, plotHeight])
             .padding([0.5])
@@ -747,6 +747,10 @@ function stackedhorizontalbar() {
             .attr('visibility', UTIL.getVisibility(_showXaxisLabel))
             .text(function () {
                 return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+            })
+            .text(function () {
+                var text = _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+                return UTIL.getTruncatedLabel(this, text, plotWidth - 200)
             });
 
         _localYAxis = d3.axisLeft(x)
@@ -858,7 +862,7 @@ function stackedhorizontalbar() {
     }
     var drawPlotForFilter = function (data) {
         if (!_print) {
-            var keys = _measure ;
+            var keys = UTIL.getMeasureList(data[0], _dimension, _measure);
             var range = UTIL.getMinMax(data, keys);
             parentContainer.select('.filterElement').remove();
             svgFilter = parentContainer.append('svg')
@@ -867,7 +871,7 @@ function stackedhorizontalbar() {
                 .attr('class', 'filterElement')
                 .style('visibility', UTIL.getVisibility(_isFilterGrid));
 
-            var keys = _measure ;
+            var keys = UTIL.getMeasureList(data[0], _dimension, _measure);
 
             _x.rangeRound([0, parseInt(_local_svg.attr('height') - 2 * COMMON.PADDING)])
                 .padding([0.5])
@@ -1120,7 +1124,7 @@ function stackedhorizontalbar() {
         _Local_data = data;
         filterData = [];
 
-        var keys = _measure ;
+        var keys = UTIL.getMeasureList(data[0], _dimension, _measure);
 
         x.rangeRound([0, plotHeight])
             .padding([0.5])

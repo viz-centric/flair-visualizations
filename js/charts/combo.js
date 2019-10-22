@@ -253,7 +253,7 @@ function combo() {
             var _filter = [];
 
             if (data.length > 0) {
-                var keys = UTIL.getMeasureList(data[0].data, _dimension);
+                var keys = UTIL.getMeasureList(data[0].data, _dimension, _measure);
                 data.forEach(function (d) {
                     var obj = new Object();
                     var temp = d.data[_dimension[0]];
@@ -520,7 +520,7 @@ function combo() {
         if (_tooltip) {
             tooltip = parentContainer.select('.custom_tooltip');
         }
-        var keys = UTIL.getMeasureList(data[0], _dimension);
+        var keys = UTIL.getMeasureList(data[0], _dimension, _measure);
 
         measuresBar = [],
             measuresLine = [];
@@ -711,8 +711,8 @@ function combo() {
                     .type(getPointType(_measure.indexOf(d.tag)))
                     .size(40)();
             })
-            .style('visibility',function(d,i){
-                if(_pointType[_measure.indexOf(d.tag)]=="None"){
+            .style('visibility', function (d, i) {
+                if (_pointType[_measure.indexOf(d.tag)] == "None") {
                     return 'hidden';
                 }
             })
@@ -937,6 +937,10 @@ function combo() {
             .attr('visibility', UTIL.getVisibility(_showYaxisLabel))
             .text(function () {
                 return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+            })
+            .text(function () {
+                var text = _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+                return UTIL.getTruncatedLabel(this, text, plotHeight)
             });
 
         UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
@@ -1016,7 +1020,7 @@ function combo() {
 
     var drawPlotForFilter = function (data) {
         if (!_print) {
-            var keys = UTIL.getMeasureList(data[0], _dimension);
+            var keys = UTIL.getMeasureList(data[0], _dimension, _measure);
             var range = UTIL.getMinMax(data, keys);
             parentContainer.select('.filterElement').remove();
             svgFilter = parentContainer.append('svg')
@@ -1518,7 +1522,7 @@ function combo() {
                 drawPlotForFilter.call(this, UTIL.sortData(_originalData, filterConfig.key, filterConfig.sortType));
             }
         }
-      
+
         if (_tooltip) {
             tooltip = parentContainer.select('.custom_tooltip');
         }
@@ -1814,8 +1818,8 @@ function combo() {
                     .type(getPointType(_measure.indexOf(d.tag)))
                     .size(40)();
             })
-            .style('visibility',function(d,i){
-                if(_pointType[_measure.indexOf(d.tag)]=="None"){
+            .style('visibility', function (d, i) {
+                if (_pointType[_measure.indexOf(d.tag)] == "None") {
                     return 'hidden';
                 }
             })
