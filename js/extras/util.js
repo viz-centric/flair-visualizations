@@ -735,9 +735,20 @@ function util() {
                 .style('visibility', _showYaxis == true ? 'visible' : 'hidden');
 
         },
-        getMeasureList: function (data, _dimension) {
+        getMeasureList: function (data, dimension, measure) {
             var keys = Object.keys(data);
-            keys.splice(keys.indexOf(_dimension[0]), 1);
+            keys.splice(keys.indexOf(dimension[0]), 1);
+
+            if (measure) {
+                var newList = [];
+                newList = measure.filter(function (val) {
+                    var o = keys.find(x => x == val) || null
+                    if (o != null) {
+                        return val;
+                    }
+                })
+                return newList;
+            }
             return keys;
         },
         sortingData: function (data, key) {

@@ -642,7 +642,7 @@ function treemap() {
         }
 
         var svg = parentContainer.append('svg')
-            .attr('width', parentContainer.attr('width') - 2 * COMMON.PADDING)
+            .attr('width', parentContainer.attr('width') -2 *  COMMON.PADDING)
             .attr('height', parentContainer.attr('height') - 2 * COMMON.PADDING)
 
         var width = +svg.attr('width'),
@@ -662,7 +662,7 @@ function treemap() {
 
         svg.attr('width', width)
             .attr('height', height)
-            .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
+            .attr('transform', 'translate(' + 0 + ', ' + COMMON.PADDING + ')');
 
         if (_tooltip) {
             tooltip = parentContainer.select('.custom_tooltip');

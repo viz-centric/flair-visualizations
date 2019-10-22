@@ -460,7 +460,7 @@ function clusteredhorizontalbar() {
                 return UTIL.setPlotPosition(_legendPosition, _showXaxis, _showYaxis, _showLegend, margin.left, legendSpace, legendBreakCount, axisLabelSpace, _local_svg);
             });
 
-        var keys = _measure ;
+        var keys = UTIL.getMeasureList(data[0], _dimension, _measure);
 
         x0.rangeRound([0, plotHeight])
             .paddingInner(0.1)
@@ -559,6 +559,10 @@ function clusteredhorizontalbar() {
             .attr('visibility', UTIL.getVisibility(_showXaxisLabel))
             .text(function () {
                 return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+            })
+            .text(function () {
+                var text = _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+                return UTIL.getTruncatedLabel(this, text, plotWidth - 200)
             });
 
 

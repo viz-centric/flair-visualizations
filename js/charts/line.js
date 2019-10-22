@@ -4,7 +4,7 @@ var UTIL = require('../extras/util.js')();
 var LEGEND = require('../extras/legend_barcharts.js')();
 
 try {
-    var d3Lasso = __webpack_require__(/*! d3-lasso */ "./node_modules/d3-lasso/build/d3-lasso.js");
+    var d3Lasso = require("d3-lasso");
 
 } catch (ex) { }
 
@@ -307,7 +307,9 @@ function line() {
 
         return function (d, i) {
             d3.select(this).style('cursor', 'pointer')
-                .style('fill', COMMON.HIGHLIGHTER);
+                .style('fill', COMMON.HIGHLIGHTER)
+                .attr("d", d3.symbol().size(100))
+
             var border = UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor)
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
@@ -333,6 +335,7 @@ function line() {
                 .style('fill', function (d1, i) {
                     return UTIL.getBorderColor(_measure.indexOf(d.tag), _borderColor);
                 })
+                .attr("d", d3.symbol().size(40))
 
             if (tooltip) {
                 UTIL.hideTooltip(tooltip);
@@ -485,7 +488,7 @@ function line() {
             });
 
         var labelStack = [];
-        var keys = UTIL.getMeasureList(data[0], _dimension);
+        var keys = UTIL.getMeasureList(data[0], _dimension, _measure);
 
         x.rangeRound([0, plotWidth])
             .padding([0.5])
@@ -830,6 +833,10 @@ function line() {
             .attr('visibility', UTIL.getVisibility(_showYaxisLabel))
             .text(function () {
                 return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+            })
+            .text(function () {
+                var text = _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+                return UTIL.getTruncatedLabel(this, text, plotHeight)
             });
 
         UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
@@ -949,7 +956,7 @@ function line() {
     }
     var drawPlotForFilter = function (data) {
         if (!_print) {
-            var keys = UTIL.getMeasureList(data[0], _dimension);
+            var keys = UTIL.getMeasureList(data[0], _dimension, _measure);
             var range = UTIL.getMinMax(data, keys);
             parentContainer.select('.filterElement').remove();
             svgFilter = parentContainer.append('svg')
@@ -1179,7 +1186,7 @@ function line() {
             return d[_dimension[0]];
         });
 
-        var keys = UTIL.getMeasureList(data[0], _dimension);
+        var keys = UTIL.getMeasureList(data[0], _dimension, _measure);
 
         x.rangeRound([0, plotWidth])
             .padding([0.5])
