@@ -854,6 +854,21 @@ function util() {
             return _filter;
         },
 
+        getFilterDataForLegend: function (labelStack, data) {
+            var _filter = []
+            data.map(function (val) {
+                var obj = new Object();
+                var key = Object.keys(val)
+                for (var index = 0; index < key.length; index++) {
+                    if (labelStack.indexOf(key[index]) == -1) {
+                        obj[key[index]] = val[key[index]]
+                    }
+                }
+                _filter.push(obj);
+            });
+            return _filter;
+        },
+
         sortingView: function (container, parentHeight, parentWidth, legendBreakCount, axisLabelSpace, offsetX, visibility) {
 
             var sortButton = container.append('g')
