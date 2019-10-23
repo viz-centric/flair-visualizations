@@ -38,7 +38,17 @@
 .searchClose {
   display: block;
 }
-.dataTables_scroll
-{
-    overflow:auto;
+.dataTables_scroll {
+  overflow: auto;
+}
+
+._pagination li > a,
+._pagination li > span {
+  display: inline-block !important;
+  padding: 5px 14px !important;
+  background-color: #fff !important;
+  border: 1px solid #337ab7 !important;
+  border-radius: 15px !important;
+  color: #337ab7 !important;
+  margin: 5px;
 }

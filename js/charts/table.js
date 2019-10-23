@@ -39,7 +39,7 @@ function table() {
         filterParameters,
         _data;
 
-    var _Local_data, filterData = [], _originalData, _local_svg, parentContainer;
+    var _Local_data, filterData = [], _originalData, _local_svg, parentContainer, activePage = 1;
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
@@ -156,7 +156,6 @@ function table() {
                         return val;
                     }
                 }
-
             });
             chart.update(d);
             if (broadcast) {
@@ -296,7 +295,7 @@ function table() {
             .classed('display', true)
             .classed('nowrap', true)
             .classed('table', true)
-            .classed('display',true)
+            .classed('display', true)
             .classed('table-condensed', true)
             .classed('table-hover', true);
 
@@ -313,6 +312,14 @@ function table() {
         table.append('tbody').html(tbody);
 
         if (!_print) {
+
+
+            var pager = '<ul class="pager _pagination" style="margin:0px;float:right;">'
+                + '<li><span id="previous">Previous</span></li>'
+                + '<li><span id="next">Next</span></li>'
+                + '</ul>';
+
+            $('#' + id).append(pager)
 
             var _filter = UTIL.createFilterElement()
             $('#' + id).append(_filter)
@@ -370,16 +377,15 @@ function table() {
                 responsive: true,
                 // scrollX: true,
                 //  scrollCollapse: true,
+                "paging": false,
                 fixedHeader: {
                     header: true,
                     footer: true
                 },
                 ordering: true,
-                info: true,
+                info: false,
                 'dom': 'Rlfrtip',
-                pagingType: "full_numbers",
-                aLengthMenu: [[2, 5, 10, 15, 20, 25, -1], [2, 5, 10, 15, 20, 25, "All"]],
-                iDisplayLength: 20,
+
                 bDestroy: true,
                 "fnDrawCallback": function (oSettings) {
                     var api = this.api();
@@ -461,6 +467,27 @@ function table() {
                     resizeTable: true
                 }
 
+            });
+
+            $('#' + id).find('#previous').on('click', function (e, i) {
+                activePage = activePage - 1;
+                var pageInfo = {
+                    'visualizationID': id.replace("table-content-", ""),
+                    'activePageNo': activePage
+                }
+                broadcast.activePage = pageInfo;
+                broadcast.$broadcast('FlairBi:update-table');
+            });
+
+
+            $('#' + id).find('#next').on('click', function (e, i) {
+                activePage = activePage + 1;
+                var pageInfo = {
+                    'visualizationID': id.replace("table-content-", ""),
+                    'activePageNo': activePage
+                }
+                broadcast.activePage = pageInfo;
+                broadcast.$broadcast('FlairBi:update-table');
             });
 
             var footer = _isTotal == true ? "block" : "none";

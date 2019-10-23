@@ -396,6 +396,15 @@ function line() {
                     }
                 });
             }
+
+            if (_localLabelStack.length > 0) {
+                _local_svg.selectAll('.item')
+                    .style('fill', function (d, i) {
+                        //working on it....
+                        console.log('demo' + _localLabelStack)
+                    })
+            }
+
         }
         else {
             legendSpace = 0;
@@ -1131,6 +1140,9 @@ function line() {
 
     chart.update = function (data, filterConfig) {
 
+        if (_localLabelStack.length >= 0) {
+            data = UTIL.getFilterDataForLegend(_localLabelStack, _Local_data)
+        }
         if (_isFilterGrid) {
             if (!(Object.keys(broadcast.filterSelection.filter).length === 0 && broadcast.filterSelection.filter.constructor === Object)) {
                 _isFilterGrid = false;
@@ -1176,7 +1188,6 @@ function line() {
         if (_tooltip) {
             tooltip = parentContainer.select('.custom_tooltip');
         }
-        _Local_data = data;
         filterData = [];
 
         var chartplot = _local_svg.select('.chart')
