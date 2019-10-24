@@ -182,7 +182,7 @@ function heatmap() {
         var iconStyle = {
             'font-weight': iconFontWeight[index] || COMMON.DEFAULT_FONTWEIGHT,
             'color': valueTextColour[index] || COMMON.DEFAULT_COLOR,
-            'font-size': fontSizeForMeasure[index] || COMMON.DEFAULT_FONTSIZE + 'px',
+            'font-size': fontSizeForMeasure[index] + 'px' || COMMON.DEFAULT_FONTSIZE + 'px',
             'float': float,
             'padding-left': paddingLeft,
             'padding-right': paddingRight,
@@ -192,6 +192,10 @@ function heatmap() {
         if (iconExpression[index].length) {
             iconName[index] = UTIL.expressionEvaluator(iconExpression[index], endValue, 'icon');
             iconStyle['color'] = UTIL.expressionEvaluator(iconExpression[index], endValue, 'color');
+        }
+
+        if (fontSizeForMeasure[index] >= height) {
+            iconStyle['font-size'] = fontSizeForMeasure[index] - 5 + 'px';
         }
 
         iconStyle = JSON.stringify(iconStyle);
@@ -687,6 +691,8 @@ function heatmap() {
             .attr('y', function (d) {
                 return cellHeight / 2;
             })
+            .attr('dx', '0.2em')
+            .attr('dy', '0.2em')
             .text(function (d) {
                 var si = numberFormat[_measure.indexOf(d.x)],
                     nf = UTIL.getNumberFormatterFn(si, d.val),
@@ -720,6 +726,9 @@ function heatmap() {
                 return fontWeightForMeasure[_measure.indexOf(d.x)];
             })
             .style('font-size', function (d) {
+                if (fontSizeForMeasure[_measure.indexOf(d.x)] >= cellHeight - 1) {
+                    return fontSizeForMeasure[_measure.indexOf(d.x)] - 5;
+                }
                 return fontSizeForMeasure[_measure.indexOf(d.x)];
             });
 
@@ -831,6 +840,8 @@ function heatmap() {
             .attr('y', function (d) {
                 return cellHeight / 2;
             })
+            .attr('dx', '0.2em')
+            .attr('dy', '0.2em')
             .text(function (d) {
                 var si = numberFormat[_measure.indexOf(d.x)],
                     nf = UTIL.getNumberFormatterFn(si, d.val),
@@ -864,6 +875,9 @@ function heatmap() {
                 return fontWeightForMeasure[_measure.indexOf(d.x)];
             })
             .style('font-size', function (d) {
+                if (fontSizeForMeasure[_measure.indexOf(d.x)] >= cellHeight - 1) {
+                    return fontSizeForMeasure[_measure.indexOf(d.x)] - 5;
+                }
                 return fontSizeForMeasure[_measure.indexOf(d.x)];
             });
 
@@ -945,6 +959,8 @@ function heatmap() {
             .attr('y', function (d) {
                 return cellHeight / 2;
             })
+            .attr('dx', '0.2em')
+            .attr('dy', '0.2em')
             .text(function (d) {
                 var si = numberFormat[_measure.indexOf(d.x)],
                     nf = UTIL.getNumberFormatterFn(si, d.val),
@@ -978,6 +994,9 @@ function heatmap() {
                 return fontWeightForMeasure[_measure.indexOf(d.x)];
             })
             .style('font-size', function (d) {
+                if (fontSizeForMeasure[_measure.indexOf(d.x)] >= cellHeight - 1) {
+                    return fontSizeForMeasure[_measure.indexOf(d.x)] - 5;
+                }
                 return fontSizeForMeasure[_measure.indexOf(d.x)];
             });
 

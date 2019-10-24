@@ -3,7 +3,7 @@ var COMMON = require('../extras/common.js')();
 var UTIL = require('../extras/util.js')();
 
 function legend() {
-    return function (data, selection, extraParams) {
+    return function (data, selection, extraParams, localLabelStack) {
         var me = this;
         var measure = data;
 
@@ -96,8 +96,14 @@ function legend() {
                 }
                 return d;
             })
-
-            .style('stroke-width', 0);
+            .style('fill-opacity', function (d, i) {
+                if (localLabelStack.length > 0) {
+                    if (localLabelStack.indexOf(measure.displayName[i]) >= 0) {
+                        return 0.5;
+                    }
+                }
+            })
+            .style('stroke-width', 1);
 
         legendItem.append('text')
             .attr('x', 18)

@@ -351,13 +351,13 @@ function line() {
         plotHeight = parentHeight;
         _local_svg.select('.legend').remove();
         if (_showLegend) {
-            var stackedverticalbarLegend = LEGEND.bind(chart);
+            var lineLegend = LEGEND.bind(chart);
 
-            var result = stackedverticalbarLegend(_legendData, container, {
+            var result = lineLegend(_legendData, container, {
                 width: parentWidth,
                 height: parentHeight,
                 legendBreakCount: legendBreakCount
-            });
+            }, _localLabelStack);
 
             legendWidth = result.legendWidth;
             legendHeight = result.legendHeight;
@@ -396,15 +396,6 @@ function line() {
                     }
                 });
             }
-
-            if (_localLabelStack.length > 0) {
-                _local_svg.selectAll('.item')
-                    .style('fill', function (d, i) {
-                        //working on it....
-                        console.log('demo' + _localLabelStack)
-                    })
-            }
-
         }
         else {
             legendSpace = 0;
@@ -1140,7 +1131,7 @@ function line() {
 
     chart.update = function (data, filterConfig) {
 
-        if (_localLabelStack.length >= 0) {
+        if (_localLabelStack.length > 0) {
             data = UTIL.getFilterDataForLegend(_localLabelStack, _Local_data)
         }
         if (_isFilterGrid) {
