@@ -328,7 +328,7 @@ function stackedhorizontalbar() {
                 width: parentWidth,
                 height: parentHeight,
                 legendBreakCount: legendBreakCount
-            });
+            }, _localLabelStack);
 
             legendWidth = result.legendWidth;
             legendHeight = result.legendHeight;
@@ -1070,7 +1070,9 @@ function stackedhorizontalbar() {
     }
 
     chart.update = function (data, filterConfig) {
-
+        if (_localLabelStack.length >= 0) {
+            data = UTIL.getFilterDataForLegend(_localLabelStack, _Local_data)
+        }
         if (_isFilterGrid) {
             if (!(Object.keys(broadcast.filterSelection.filter).length === 0 && broadcast.filterSelection.filter.constructor === Object)) {
                 _isFilterGrid = false;
@@ -1121,7 +1123,7 @@ function stackedhorizontalbar() {
         if (isAnimationDisable) {
             DURATION = 0;
         }
-        _Local_data = data;
+       
         filterData = [];
 
         var keys = UTIL.getMeasureList(data[0], _dimension, _measure);
