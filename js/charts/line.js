@@ -661,6 +661,15 @@ function line() {
                 return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(_measure.indexOf(d.tag), _numberFormat, d.data[d.tag]));
             })
             .text(function (d, i) {
+                for (let index = 0; index < _measure.length; index++) {
+                    if (d["tag"] != _measure[index]) {
+                        if (d["data"][d.tag] == d["data"][_measure[index]]) {
+                            /*   _local_svg.select('text')*/
+                            return ''
+                        }
+                    }
+                }
+
                 if (!_print) {
                     var width = (1 - x.padding()) * plotWidth / (_localXLabels.length - 1);
                     return UTIL.getTruncatedLabel(this, d3.select(this).text(), width);
@@ -1168,14 +1177,11 @@ function line() {
             });
 
         if (filterConfig) {
-            if (!filterConfig.isFilter) {
-                data = UTIL.sortingData(data, _dimension[0]);
-            }
-            else {
-                drawPlotForFilter.call(this, UTIL.sortData(_originalData, filterConfig.key, filterConfig.sortType));
+            if (filterConfig.isFilter) {
+                data = UTIL.sortingData(data, filterConfig.key, filterConfig.sortType)
+                drawPlotForFilter.call(this, data);
             }
         }
-
         if (_tooltip) {
             tooltip = parentContainer.select('.custom_tooltip');
         }

@@ -1481,7 +1481,7 @@ function combo() {
 
     chart.update = function (data, filterConfig) {
 
-        if (_localLabelStack.length >= 0) {
+        if (_localLabelStack.length > 0) {
             data = UTIL.getFilterDataForLegend(_localLabelStack, _Local_data)
         }
         if (_isFilterGrid) {
@@ -1518,18 +1518,16 @@ function combo() {
             });
 
         if (filterConfig) {
-            if (!filterConfig.isFilter) {
-                data = UTIL.sortingData(data, _dimension[0]);
-            }
-            else {
-                drawPlotForFilter.call(this, UTIL.sortData(_originalData, filterConfig.key, filterConfig.sortType));
+            if (filterConfig.isFilter) {
+                data = UTIL.sortingData(data, filterConfig.key, filterConfig.sortType)
+                drawPlotForFilter.call(this, data);
             }
         }
 
         if (_tooltip) {
             tooltip = parentContainer.select('.custom_tooltip');
         }
-        
+
         svg = _local_svg;
 
         var DURATION = COMMON.DURATION;
