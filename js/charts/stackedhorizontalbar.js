@@ -1070,7 +1070,7 @@ function stackedhorizontalbar() {
     }
 
     chart.update = function (data, filterConfig) {
-        if (_localLabelStack.length >= 0) {
+        if (_localLabelStack.length > 0) {
             data = UTIL.getFilterDataForLegend(_localLabelStack, _Local_data)
         }
         if (_isFilterGrid) {
@@ -1107,11 +1107,9 @@ function stackedhorizontalbar() {
             });
 
         if (filterConfig) {
-            if (!filterConfig.isFilter) {
-                data = UTIL.sortingData(data, _dimension[0]);
-            }
-            else {
-                drawPlotForFilter.call(this, UTIL.sortData(_originalData, filterConfig.key, filterConfig.sortType));
+            if (filterConfig.isFilter) {
+                data = UTIL.sortingData(data, filterConfig.key, filterConfig.sortType)
+                drawPlotForFilter.call(this, data);
             }
         }
 
@@ -1123,7 +1121,7 @@ function stackedhorizontalbar() {
         if (isAnimationDisable) {
             DURATION = 0;
         }
-       
+
         filterData = [];
 
         var keys = UTIL.getMeasureList(data[0], _dimension, _measure);
