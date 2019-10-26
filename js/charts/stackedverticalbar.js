@@ -1165,7 +1165,7 @@ function stackedverticalbar() {
 
         if (filterConfig) {
             if (filterConfig.isFilter) {
-                data = UTIL.sortingData(data, filterConfig.key, filterConfig.sortType)
+                  data = UTIL.sortData(data, filterConfig.key, filterConfig.sortType)
                 drawPlotForFilter.call(this, data);
             }
         }

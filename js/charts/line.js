@@ -658,18 +658,13 @@ function line() {
             })
             .style('text-anchor', 'middle')
             .text(function (d, i) {
+                var text = _local_svg.selectAll("text")
+                    .filter(function () {
+                        return d3.select(this).text() == d["data"][d.tag]
+                    })
                 return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(_measure.indexOf(d.tag), _numberFormat, d.data[d.tag]));
             })
             .text(function (d, i) {
-                for (let index = 0; index < _measure.length; index++) {
-                    if (d["tag"] != _measure[index]) {
-                        if (d["data"][d.tag] == d["data"][_measure[index]]) {
-                            /*   _local_svg.select('text')*/
-                            return ''
-                        }
-                    }
-                }
-
                 if (!_print) {
                     var width = (1 - x.padding()) * plotWidth / (_localXLabels.length - 1);
                     return UTIL.getTruncatedLabel(this, d3.select(this).text(), width);
@@ -1178,7 +1173,7 @@ function line() {
 
         if (filterConfig) {
             if (filterConfig.isFilter) {
-                data = UTIL.sortingData(data, filterConfig.key, filterConfig.sortType)
+                data = UTIL.sortData(data, filterConfig.key, filterConfig.sortType)
                 drawPlotForFilter.call(this, data);
             }
         }
