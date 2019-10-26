@@ -662,6 +662,9 @@ function line() {
                     .filter(function () {
                         return d3.select(this).text() == d["data"][d.tag]
                     })
+                if (text._groups[0].length >= 1) {
+                    return ''
+                }
                 return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(_measure.indexOf(d.tag), _numberFormat, d.data[d.tag]));
             })
             .text(function (d, i) {
