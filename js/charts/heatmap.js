@@ -236,47 +236,47 @@ function heatmap() {
         var colorProp = colourCoding[_measure.indexOf(data.x)],
             val = data.val,
             result;
+        colorProp.some(function (c) {
+            if (c.hasOwnProperty('upto')) {
+                if (val <= c.upto) {
+                    result = c.color;
+                    return true;
+                }
+            }
+            else if (c.hasOwnProperty('above')) {
+                if (val > c.above) {
+                    result = c.color;
+                    return true;
+                }
+            }
+            else if (c.hasOwnProperty('below')) {
+                if (val < c.below) {
+                    result = c.color;
+                    return true;
+                }
+            }
+            else if (property.hasOwnProperty('default')) {
+                result = c.color;
+                return true;
+            }
+            else {
+                result = c.color;
+                return true;
+            }
+        });
 
         if (isNaN(val)) {
             return colorProp.filter(function (c) { return c.hasOwnProperty('default'); })[0]['color'];
         }
 
         if (colorPattern == "unique_color") {
-            colorProp.some(function (c) {
-                if (c.hasOwnProperty('upto')) {
-                    if (val <= c.upto) {
-                        result = c.color;
-                        return true;
-                    }
-                }
-                else if (c.hasOwnProperty('above')) {
-                    if (val > c.above) {
-                        result = c.color;
-                        return true;
-                    }
-                }
-                else if (c.hasOwnProperty('below')) {
-                    if (val < c.below) {
-                        result = c.color;
-                        return true;
-                    }
-                }
-                else if (property.hasOwnProperty('default')) {
-                    result = c.color;
-                    return true;
-                }
-                else {
-                    result = c.color;
-                    return true;
-                }
-            });
             return result || displayColorMeasure[_measure.indexOf(data.x)];
         }
         else if (colorPattern == "single_color") {
-            return displayColor;
+            return result || displayColor;
         }
         else {
-            return gradientColor(data.val);
+            return result || gradientColor(data.val);
         }
 
 

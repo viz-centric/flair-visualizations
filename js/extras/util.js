@@ -774,7 +774,7 @@ function util() {
                 expression.forEach(function (item) {
                     obj = {};
                     temp = item.split(',').map(function (c) { return c.trim(); });
-                    obj[temp[0].toLowerCase()] = parseInt(temp[1]) || null;
+                    obj[temp[0].toLowerCase()] = parseFloat(temp[1]) || null;
                     args.forEach(function (arg, i) {
                         obj[arg] = temp[i + 2];
                     });
