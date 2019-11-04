@@ -39,7 +39,7 @@ function table() {
         filterParameters,
         _data;
 
-    var _Local_data, filterData = [], _originalData, _local_svg, parentContainer, activePage = 1;
+    var _Local_data, filterData = [], _originalData, _local_svg, parentContainer, activePage = 0;
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
