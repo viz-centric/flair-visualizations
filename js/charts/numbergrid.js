@@ -134,7 +134,7 @@ function numbergrid() {
     var addText = function (svg) {
         svg.append('text')
             .text(function (d) {
-                var value = UTIL.getFormattedValue(d[_measure], UTIL.getNumberFormatterFn('Actual',d[_measure]));
+                var value = UTIL.getFormattedValue(d[_measure], UTIL.getNumberFormatterFn('Actual', d[_measure]));
                 return value;
             })
             .attr('y', (r + m) / 2)
@@ -232,7 +232,7 @@ function numbergrid() {
             .style('fill', function (d, i) {
                 var path = d3.select(this.parentNode)
                 var index = d3.select(path.node().parentElement).attr('class')
-                return _colorSet[parseInt(index)];
+                return _colorSet[parseInt(index)] != undefined ? _colorSet[parseInt(index)] : UTIL.getUniqueColour(index);
             })
             .style('stroke', '#FFFFFF')
             .attr("rx", 10)
@@ -352,12 +352,12 @@ function numbergrid() {
             .style('fill', function (d, i) {
                 var path = d3.select(this.parentNode)
                 var index = d3.select(path.node().parentElement).attr('class')
-                return _colorSet[parseInt(index)];
+                return _colorSet[parseInt(index)] != undefined ? _colorSet[parseInt(index)] : UTIL.getUniqueColour(index);
             })
             .style('stroke', function (d, i) {
                 var path = d3.select(this.parentNode)
                 var index = d3.select(path.node().parentElement).attr('class')
-                return _colorSet[parseInt(index)];
+                return _colorSet[parseInt(index)] != undefined ? _colorSet[parseInt(index)] : UTIL.getUniqueColour(index);
             })
             .style('stroke', '#FFFFFF')
             .attr("rx", 10)

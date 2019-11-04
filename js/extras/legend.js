@@ -3,7 +3,7 @@ var COMMON = require('../extras/common.js')();
 var UTIL = require('../extras/util.js')();
 
 function legend() {
-    return function (data, selection, extraParams) {
+    return function (data, selection, extraParams, localLabelStack) {
         if (extraParams.labelStack == void 0) {
             extraParams.labelStack = [];
         }
@@ -88,54 +88,56 @@ function legend() {
                 }
                 return COMMON.COLORSCALE(d[me.dimension()]);
             })
+            // .style('fill-opacity', function (d, i) {
+            //     if (typeof d == 'string') {
+            //         return extraParams.labelStack.indexOf(d) == -1 ? 1 : 0;
+            //     }
+            //     return extraParams.labelStack.indexOf(d[me.dimension()]) == -1 ? 1 : 0;
+            // })
             .style('fill-opacity', function (d, i) {
-                if (typeof d == 'string') {
-                    return extraParams.labelStack.indexOf(d) == -1 ? 1 : 0;
+                if (localLabelStack.length > 0) {
+                    if (localLabelStack.indexOf(d[me.dimension()]) >= 0) {
+                        return 0.5;
+                    }
                 }
-                return extraParams.labelStack.indexOf(d[me.dimension()]) == -1 ? 1 : 0;
             })
+            .style('stroke-width', 1)
             .style('stroke', function (d, i) {
                 if (typeof d == 'string') {
                     return COMMON.COLORSCALE(d);
                 }
                 return COMMON.COLORSCALE(d[me.dimension()]);
-            })
-            .style('stroke-width', function (d, i) {
-                if (typeof d == 'string') {
-                    return extraParams.labelStack.indexOf(d) == -1 ? 1 : 0;
-                }
-                return extraParams.labelStack.indexOf(d[me.dimension()]) == -1 ? 0 : 1;
-            }),
+            });
 
-            legendItem.append('text')
-                .attr('x', 18)
-                .attr('y', 10)
-                .text(function (d) {
-                    if (typeof d == 'string') {
-                        return d;
+        legendItem.append('text')
+            .attr('x', 18)
+            .attr('y', 10)
+            .text(function (d) {
+                if (typeof d == 'string') {
+                    return d;
+                }
+                if (me.print() == false) {
+                    return d[me.dimension()]
+                }
+                return d[me.dimension()].toString().substring(0, 5) + "...";
+            })
+            .text(function (d) {
+                if (me.print() == false) {
+                    if ((me.legendPosition().toUpperCase() == 'TOP') || (me.legendPosition().toUpperCase() == 'BOTTOM')) {
+                        return UTIL.getTruncatedLabel(this, d[me.dimension()], Math.floor(extraParams.width / data.length) - 10);
+                    } else if ((me.legendPosition().toUpperCase() == 'LEFT') || (me.legendPosition().toUpperCase() == 'RIGHT')) {
+                        return UTIL.getTruncatedLabel(this, d[me.dimension()], extraParams.width / 5);
                     }
-                    if (me.print() == false) {
-                        return d[me.dimension()]
+                }
+                else {
+                    if (typeof d == 'string') {
+                        return d[me.dimension()].toString().substring(0, 5) + "...";;
                     }
                     return d[me.dimension()].toString().substring(0, 5) + "...";
-                })
-                .text(function (d) {
-                    if (me.print() == false) {
-                        if ((me.legendPosition().toUpperCase() == 'TOP') || (me.legendPosition().toUpperCase() == 'BOTTOM')) {
-                            return UTIL.getTruncatedLabel(this, d[me.dimension()], Math.floor(extraParams.width / data.length) - 10);
-                        } else if ((me.legendPosition().toUpperCase() == 'LEFT') || (me.legendPosition().toUpperCase() == 'RIGHT')) {
-                            return UTIL.getTruncatedLabel(this, d[me.dimension()], extraParams.width / 5);
-                        }
-                    }
-                    else {
-                        if (typeof d == 'string') {
-                            return d[me.dimension()].toString().substring(0, 5) + "...";;
-                        }
-                        return d[me.dimension()].toString().substring(0, 5) + "...";
-                    }
-                })
-                .style('fill', COMMON.LEGEND_COLOR)
-                .style('font-weight', 'bold')
+                }
+            })
+            .style('fill', COMMON.LEGEND_COLOR)
+            .style('font-weight', 'bold')
 
         var legendWidth = legend.node().getBBox().width,
             legendHeight = legend.node().getBBox().height;
@@ -192,7 +194,7 @@ function legend() {
                         widthSum += d3.select('#' + me._getName() + '-legend-item' + newcount).node().getBBox().width + 16;
                     }
                     return 'translate(' + widthSum + ', ' + (me.legendPosition().toUpperCase() == 'TOP' ? legendBreakCount * 20 : (extraParams.height - (legendBreakCount * 20))) + ')';
-                    
+
 
                 }
                 return 'translate(' + widthSum + ', ' + (me.legendPosition().toUpperCase() == 'TOP' ? 0 : extraParams.height) + ')';

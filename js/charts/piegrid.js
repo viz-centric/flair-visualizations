@@ -323,12 +323,12 @@ function piegrid() {
                 if (i == 1) {
                     d3.select(this).style('fill-opacity', 0.5)
                 }
-                return _colorSet[parseInt(index)];
+                return _colorSet[parseInt(index)] != undefined ? _colorSet[parseInt(index)] : UTIL.getUniqueColour(index);
             })
             .style("stroke", function (d, i) {
                 var path = d3.select(this.parentNode)
                 var index = d3.select(path.node().parentElement).attr('class')
-                return _colorSet[parseInt(index)];
+                return _colorSet[parseInt(index)] != undefined ? _colorSet[parseInt(index)] : UTIL.getUniqueColour(index);
             })
             .style("stroke-opacity", 0.5);
 
@@ -391,12 +391,12 @@ function piegrid() {
                 if (i == 1) {
                     d3.select(this).style('fill-opacity', 0.5)
                 }
-                return _colorSet[parseInt(index)];
+                return _colorSet[parseInt(index)]!=undefined?_colorSet[parseInt(index)]:UTIL.getUniqueColour(index);
             })
             .style("stroke", function (d, i) {
                 var path = d3.select(this.parentNode)
                 var index = d3.select(path.node().parentElement).attr('class')
-                return _colorSet[parseInt(index)];
+                return _colorSet[parseInt(index)]!=undefined?_colorSet[parseInt(index)]:UTIL.getUniqueColour(index);
             })
             .style("stroke-opacity", 0.5);
 

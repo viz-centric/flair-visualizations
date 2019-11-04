@@ -465,7 +465,8 @@ function table() {
                 colResize: {
                     scrollY: 200,
                     resizeTable: true
-                }
+                },
+                "aaSorting": []
 
             });
 
