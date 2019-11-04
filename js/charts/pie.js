@@ -406,13 +406,8 @@ function pie() {
     }
 
     var _legendClick = function (data) {
-        if (_localLabelStack.indexOf(data[_dimension[0]]) < 0) {
-            _localLabelStack.push(data[_dimension[0]]);
-        } else {
-            _localLabelStack.splice(_localLabelStack.indexOf(data[_dimension[0]]), 1);
-        }
-
-        chart.update(_Local_data);
+        var _filter = UTIL.getFilterDataForPie(_localLabelStack, data[_dimension[0]], _Local_data, _dimension)
+        chart.update(_filter);
     }
 
     var _mergeForTransition = function (fData, sData) {
@@ -491,7 +486,7 @@ function pie() {
                 width: parentWidth,
                 height: parentHeight,
                 legendBreakCount: legendBreakCount
-            });
+            }, _localLabelStack);
 
             legendWidth = result.legendWidth;
             legendHeight = result.legendHeight;
@@ -789,8 +784,10 @@ function pie() {
 
     chart.update = function (data) {
 
-        /* store the data in local variable */
-        _Local_data = data;
+        if (_localLabelStack.length > 0) {
+            data = UTIL.getFilterDataForPie(_localLabelStack, data[_dimension[0]], _Local_data, _dimension)
+        }
+
         data.map(function (d) {
             d[_measure[0]] = Math.abs(d[_measure[0]]);
         })
@@ -806,33 +803,33 @@ function pie() {
             parentHeight = height - 2 * COMMON.PADDING,
             filteredData;
 
-        filteredData = data.filter(function (d) {
-            return _localLabelStack.indexOf(d[_dimension[0]]) == -1;
-        });
+        // filteredData = data.filter(function (d) {
+        //     return _localLabelStack.indexOf(d[_dimension[0]]) == -1;
+        // });
 
         var prevData = svg.selectAll('g.arc')
             .data().map(function (d) { return d.data });
 
-        if (prevData.length == 0) {
-            prevData = filteredData;
-        }
+        // if (prevData.length == 0) {
+        //     prevData = filteredData;
+        // }
 
-        var oldFilteredData = _mergeForTransition(filteredData, prevData),
-            newFilteredData = _mergeForTransition(prevData, filteredData);
+        // var oldFilteredData = _mergeForTransition(filteredData, prevData),
+        //     newFilteredData = _mergeForTransition(prevData, filteredData);
 
         _local_svg.select('.legend').remove();
 
         plotWidth = parentWidth;
         plotHeight = parentHeight;
-        
+
         if (_legend) {
             _localLegend = LEGEND.bind(chart);
 
-            var result = _localLegend(data, container, {
+            var result = _localLegend(_Local_data, container, {
                 width: parentWidth,
                 height: parentHeight,
                 legendBreakCount: legendBreakCount
-            });
+            }, _localLabelStack);
 
             legendWidth = result.legendWidth;
             legendHeight = result.legendHeight;
@@ -855,7 +852,7 @@ function pie() {
 
         var pieMask = svg.select('#arc-mask-group')
             .selectAll('g.arc-mask')
-            .data(_pie(oldFilteredData), _localKey)
+            .data(_pie(data), _localKey)
             .enter()
             .insert('g')
             .attr('id', function (d, i) {
@@ -875,7 +872,7 @@ function pie() {
             });
 
         pieMask = svg.selectAll('g.arc-mask')
-            .data(_pie(newFilteredData), _localKey)
+            .data(_pie(data), _localKey)
 
         pieMask.select('path')
             .transition().duration(0)
@@ -889,14 +886,14 @@ function pie() {
             });
 
         pieMask = svg.selectAll('g.arc-mask')
-            .data(_pie(filteredData), _localKey);
+            .data(_pie(data), _localKey);
 
         pieMask.exit()
             .remove();
 
         var pieArcGroup = svg.select('#arc-group')
             .selectAll('g.arc')
-            .data(_pie(oldFilteredData), _localKey)
+            .data(_pie(data), _localKey)
             .enter()
             .insert('g')
             .attr('id', function (d, i) {
@@ -917,7 +914,7 @@ function pie() {
             })
 
         pieArcGroup = svg.selectAll('g.arc')
-            .data(_pie(newFilteredData), _localKey);
+            .data(_pie(data), _localKey);
 
         pieArcGroup.select('path')
             .transition().duration(0)
@@ -931,7 +928,7 @@ function pie() {
             });
 
         pieArcGroup = svg.selectAll('g.arc')
-            .data(_pie(filteredData), _localKey);
+            .data(_pie(data), _localKey);
 
         pieArcGroup.exit()
             .remove();

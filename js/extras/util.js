@@ -854,6 +854,20 @@ function util() {
             return _filter;
         },
 
+        getFilterDataForPie: function (labelStack, filterParameter, data, dimension) {
+            if (labelStack.indexOf(filterParameter) == -1) {
+                labelStack.push(filterParameter);
+            } else {
+                labelStack.splice(labelStack.indexOf(filterParameter), 1);
+            }
+
+            var _filter = []
+            _filter = data.filter(function (val) {
+                return labelStack.indexOf(val[dimension]) === -1;
+            });
+            return _filter;
+        },
+
         getFilterDataForLegend: function (labelStack, data) {
             var _filter = []
             data.map(function (val) {
@@ -1115,6 +1129,12 @@ function util() {
                 return new Date(val);
             });
             return sorttedList;
+        },
+        getUniqueColour: function (index) {
+            var r = parseInt(Math.abs(Math.sin(index + 50)) * 255),
+                g = parseInt(Math.abs(Math.cos(index)) * 255),
+                b = parseInt(Math.abs(Math.sin(7 * index - 100)) * 255);
+            return d3.rgb(r, g, b);
         }
     }
 

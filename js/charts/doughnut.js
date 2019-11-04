@@ -49,7 +49,7 @@ function doughnut() {
         _localKey,
         _localLegend,
         _localLabelStack = [],
-        _localData,
+        _local_data,
         _originalData;
 
     var filter = false, filterData = [], container, parentContainer, plotWidth, plotHeight, legendBreakCount = 1;;
@@ -419,13 +419,8 @@ function doughnut() {
     }
 
     var _legendClick = function (data) {
-        if (_localLabelStack.indexOf(data[_dimension[0]]) < 0) {
-            _localLabelStack.push(data[_dimension[0]]);
-        } else {
-            _localLabelStack.splice(_localLabelStack.indexOf(data[_dimension[0]]), 1);
-        }
-
-        chart.update(_localData);
+        var _filter = UTIL.getFilterDataForPie(_localLabelStack, data[_dimension[0]], _local_data, _dimension)
+        chart.update(_filter);
     }
 
     var _mergeForTransition = function (fData, sData) {
@@ -451,7 +446,7 @@ function doughnut() {
     }
 
     function chart(selection) {
-        data = _Local_data = _originalData = _data;
+        data = _local_data = _originalData = _data;
 
         if (_print && !_notification) {
             parentContainer = selection;
@@ -514,7 +509,7 @@ function doughnut() {
                 width: parentWidth,
                 height: parentHeight,
                 legendBreakCount: legendBreakCount
-            });
+            }, _localLabelStack);
 
             legendWidth = result.legendWidth;
             legendHeight = result.legendHeight;
@@ -846,6 +841,11 @@ function doughnut() {
     }
 
     chart.update = function (data) {
+
+        if (_localLabelStack.length > 0) {
+            data = UTIL.getFilterDataForPie(_localLabelStack, data[_dimension[0]], _local_data, _dimension)
+        }
+
         data.map(function (d) {
             d[_measure[0]] = Math.abs(d[_measure[0]]);
         })
@@ -859,24 +859,21 @@ function doughnut() {
             parentHeight = height - 2 * COMMON.PADDING,
             filteredData;
 
-        /* store the data in local variable */
-        _localData = data;
-
         svg.selectAll('.arc path').classed('selected', false)
 
-        filteredData = data.filter(function (d) {
-            return _localLabelStack.indexOf(d[_dimension[0]]) == -1;
-        });
+        // filteredData = data.filter(function (d) {
+        //     return _localLabelStack.indexOf(d[_dimension[0]]) == -1;
+        // });
 
-        var prevData = svg.selectAll('g.arc')
-            .data().map(function (d) { return d.data });
+        // var prevData = svg.selectAll('g.arc')
+        //     .data().map(function (d) { return d.data });
 
-        if (prevData.length == 0) {
-            prevData = filteredData;
-        }
+        // if (prevData.length == 0) {
+        //     prevData = filteredData;
+        // }
 
-        var oldFilteredData = _mergeForTransition(filteredData, prevData),
-            newFilteredData = _mergeForTransition(prevData, filteredData);
+        // var oldFilteredData = _mergeForTransition(filteredData, prevData),
+        //     newFilteredData = _mergeForTransition(prevData, filteredData);
 
         _local_svg.select('.legend').remove();
 
@@ -886,11 +883,11 @@ function doughnut() {
         if (_legend) {
             _localLegend = LEGEND.bind(chart);
 
-            var result = _localLegend(data, container, {
+            var result = _localLegend(_local_data, container, {
                 width: parentWidth,
                 height: parentHeight,
                 legendBreakCount: legendBreakCount
-            });
+            }, _localLabelStack);
 
             legendWidth = result.legendWidth;
             legendHeight = result.legendHeight;
@@ -911,7 +908,7 @@ function doughnut() {
         outerRadius = Math.min(plotWidth, plotHeight) / 2.25;
         var doughnutMask = svg.select('#arc-mask-group')
             .selectAll('g.arc-mask')
-            .data(_doughnut(oldFilteredData), _localKey)
+            .data(_doughnut(data), _localKey)
             .enter()
             .insert('g')
             .attr('id', function (d, i) {
@@ -931,7 +928,7 @@ function doughnut() {
             });
 
         doughnutMask = svg.selectAll('g.arc-mask')
-            .data(_doughnut(newFilteredData), _localKey)
+            .data(_doughnut(data), _localKey)
 
         doughnutMask.select('path')
             .transition().duration(0)
@@ -945,7 +942,7 @@ function doughnut() {
             });
 
         doughnutMask = svg.selectAll('g.arc-mask')
-            .data(_doughnut(filteredData), _localKey);
+            .data(_doughnut(data), _localKey);
 
         doughnutMask.exit()
             .transition()
@@ -955,7 +952,7 @@ function doughnut() {
 
         var doughnutArcGroup = svg.select('#arc-group')
             .selectAll('g.arc')
-            .data(_doughnut(oldFilteredData), _localKey)
+            .data(_doughnut(data), _localKey)
             .enter()
             .insert('g')
             .attr('id', function (d, i) {
@@ -978,7 +975,7 @@ function doughnut() {
 
 
         doughnutArcGroup = svg.selectAll('g.arc')
-            .data(_doughnut(newFilteredData), _localKey);
+            .data(_doughnut(data), _localKey);
 
         doughnutArcGroup.select('path')
             .transition().duration(0)
@@ -992,7 +989,7 @@ function doughnut() {
             });
 
         doughnutArcGroup = svg.selectAll('g.arc')
-            .data(_doughnut(filteredData), _localKey);
+            .data(_doughnut(data), _localKey);
 
         doughnutArcGroup.exit()
             .transition()
