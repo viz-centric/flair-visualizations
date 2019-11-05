@@ -19,6 +19,7 @@ function common() {
         BORDER_RADIUS: 5,
         DURATION: 1000,
         AXIS_THICKNESS: 50,
+        SHOWAXISLABEL: 'Formated',
         COLORSCALE: d3.scaleOrdinal()
             .range([
                 "#439dd3",

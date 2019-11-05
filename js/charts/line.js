@@ -23,6 +23,7 @@ function line() {
         _showYaxis,
         _showXaxisLabel,
         _showYaxisLabel,
+        _axisScaleLabel = COMMON.SHOWAXISLABEL,
         _showGrid,
         _xAxisColor,
         _yAxisColor,
@@ -86,6 +87,7 @@ function line() {
         this.showYaxis(config.showYaxis);
         this.showXaxisLabel(config.showXaxisLabel);
         this.showYaxisLabel(config.showYaxisLabel);
+        this.axisScaleLabel(config.axisScaleLabel);
         this.xAxisColor(config.xAxisColor);
         this.yAxisColor(config.yAxisColor);
         this.displayName(config.displayName);
@@ -819,7 +821,12 @@ function line() {
             .tickSize(0)
             .tickPadding(8)
             .tickFormat(function (d) {
-                return UTIL.shortScale(2)(d);
+                if (_axisScaleLabel == "Formated") {
+                    return UTIL.shortScale(2)(d);
+                }
+                else {
+                    return d.toString().length > 3 ? d.toString().substring(0, 3) + "..." : d;
+                }
             });
 
         yAxisGroup = plot.append('g')
@@ -1620,6 +1627,14 @@ function line() {
             return _showYaxisLabel;
         }
         _showYaxisLabel = value;
+        return chart;
+    }
+
+    chart.axisScaleLabel = function (value) {
+        if (!arguments.length) {
+            return _axisScaleLabel;
+        }
+        _axisScaleLabel = value;
         return chart;
     }
 

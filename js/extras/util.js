@@ -417,6 +417,7 @@ function util() {
                 var charLength = parseInt(containerLength * element.getNumberOfChars() / element.getComputedTextLength()) - offset;
                 charLength = (charLength < 0) ? 0 : charLength;
                 truncLabel = arr.splice(0, charLength).join('') + '...';
+                truncLabel = truncLabel == '...' ? '' : truncLabel;
             }
 
             return truncLabel;
