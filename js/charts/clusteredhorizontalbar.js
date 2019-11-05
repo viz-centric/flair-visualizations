@@ -23,6 +23,7 @@ function clusteredhorizontalbar() {
         _showYaxis,
         _showXaxisLabel,
         _showYaxisLabel,
+        _axisScaleLabel = COMMON.SHOWAXISLABEL,
         _xAxisColor,
         _yAxisColor,
         _showGrid,
@@ -86,6 +87,7 @@ function clusteredhorizontalbar() {
         this.showYaxis(config.showYaxis);
         this.showXaxisLabel(config.showXaxisLabel);
         this.showYaxisLabel(config.showYaxisLabel);
+        this.axisScaleLabel(config.axisScaleLabel);
         this.xAxisColor(config.xAxisColor);
         this.yAxisColor(config.yAxisColor);
         this.showGrid(config.showGrid);
@@ -1136,7 +1138,7 @@ function clusteredhorizontalbar() {
 
         if (filterConfig) {
             if (filterConfig.isFilter) {
-                  data = UTIL.sortData(data, filterConfig.key, filterConfig.sortType)
+                data = UTIL.sortData(data, filterConfig.key, filterConfig.sortType)
                 drawPlotForFilter.call(this, data);
             }
         }
@@ -1475,6 +1477,14 @@ function clusteredhorizontalbar() {
             return _showYaxisLabel;
         }
         _showYaxisLabel = value;
+        return chart;
+    }
+
+    chart.axisScaleLabel = function (value) {
+        if (!arguments.length) {
+            return _axisScaleLabel;
+        }
+        _axisScaleLabel = value;
         return chart;
     }
 

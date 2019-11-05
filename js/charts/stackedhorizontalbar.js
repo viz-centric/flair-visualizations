@@ -23,6 +23,7 @@ function stackedhorizontalbar() {
         _showYaxis,
         _showXaxisLabel,
         _showYaxisLabel,
+        _axisScaleLabel = COMMON.SHOWAXISLABEL,
         _xAxisColor,
         _yAxisColor,
         _showGrid,
@@ -82,6 +83,7 @@ function stackedhorizontalbar() {
         this.showXaxisLabel(config.showXaxisLabel);
 
         this.showYaxisLabel(config.showYaxisLabel);
+        this.axisScaleLabel(config.axisScaleLabel);
         this.xAxisColor(config.xAxisColor);
         this.yAxisColor(config.yAxisColor);
         this.showGrid(config.showGrid);
@@ -1440,6 +1442,14 @@ function stackedhorizontalbar() {
             return _showYaxisLabel;
         }
         _showYaxisLabel = value;
+        return chart;
+    }
+
+    chart.axisScaleLabel = function (value) {
+        if (!arguments.length) {
+            return _axisScaleLabel;
+        }
+        _axisScaleLabel = value;
         return chart;
     }
 

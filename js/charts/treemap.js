@@ -156,7 +156,7 @@ function treemap() {
         }
 
         if (showLabelForDimension[0]) {
-            var nf = UTIL.getNumberFormatterFn(numberFormat,obj.value),
+            var nf = UTIL.getNumberFormatterFn(numberFormat, obj.value),
                 value;
 
             if (numberFormat == "Percent") {
@@ -245,9 +245,22 @@ function treemap() {
                 textWidth = element.getComputedTextLength(),
                 textHeight = parseInt(d3.select(element).style('font-size').replace('px', ''));
 
-            if (((textWidth + 2 * textPadding) > contWidth) || ((textHeight + 2 * textPadding) > contHeight)) {
+            // if (((textWidth + 2 * textPadding) > contWidth) || ((textHeight + 2 * textPadding) > contHeight)) {
+            //     return 'hidden';
+            // }
+
+            var valueWidth = d3.select(element).selectAll('tspan')._groups[0][1].getComputedTextLength();
+            if (valueWidth > contWidth + 2 * textPadding) {
                 return 'hidden';
             }
+            else {
+                var textElement = d3.select(element).selectAll('tspan')._groups[0][0];
+                var text = d3.select(element).selectAll('tspan')._groups[0][0].textContent;
+
+                contWidth = contWidth - valueWidth - 2 * textPadding;
+                d3.select(element).selectAll('tspan')._groups[0][0].textContent = UTIL.getTruncatedLabel(textElement, text, contWidth)
+            }
+
             return 'visible';
         }
         return 'visible';
@@ -575,16 +588,16 @@ function treemap() {
         }
 
 
-        rect.transition(t)
-            .attr('width', function (d) {
-                return d.x1 - d.x0;
-            })
-            .attr('height', function (d) {
-                return d.y1 - d.y0;
-            })
-            .attr('fill', function (d, i) {
-                return getFillColor(d, i)
-            });
+        // rect.transition(t)
+        //     .attr('width', function (d) {
+        //         return d.x1 - d.x0;
+        //     })
+        //     .attr('height', function (d) {
+        //         return d.y1 - d.y0;
+        //     })
+        //     .attr('fill', function (d, i) {
+        //         return getFillColor(d, i)
+        //     });
 
         function afterTransition() {
             element.filter(function (d, i) { return d.parent; })
@@ -600,14 +613,10 @@ function treemap() {
                 })
                 .attr('y', '1em')
                 .text(function (d, i) {
-                    return i ? '- ' + d.data : d.data;
+                    return i == 0 ? d.data + ': ' : d.data;
                 })
                 .attr('fill', function (d, i) {
                     return getColorValue(d, i);
-                })
-                .attr('visibility', function (d, i) {
-                    var parentNode = d3.select(this).node().parentNode;
-                    return getVisibilityValue(parentNode, d.node);
                 })
                 .style('font-style', function (d, i) {
                     return getFontStyleValue(d, i);
@@ -617,17 +626,21 @@ function treemap() {
                 })
                 .style('font-size', function (d, i) {
                     return getFontSizeValue(d, i);
+                })
+                .attr('visibility', function (d, i) {
+                    var parentNode = d3.select(this).node().parentNode;
+                    return getVisibilityValue(parentNode, d.node);
                 });
         }
-        if (!_print) {
-            var t = d3.transition()
-                .duration(COMMON.DURATION)
-                .ease(d3.easeQuadIn)
-                .on('end', afterTransition);
-        }
-        else {
-            afterTransition()
-        }
+        // if (!_print) {
+        //     var t = d3.transition()
+        //         .duration(COMMON.DURATION)
+        //         .ease(d3.easeQuadIn)
+        //         .on('end', afterTransition);
+        // }
+        // else {
+        afterTransition()
+        // }
 
     }
     function chart(selection) {
@@ -642,7 +655,7 @@ function treemap() {
         }
 
         var svg = parentContainer.append('svg')
-            .attr('width', parentContainer.attr('width') -2 *  COMMON.PADDING)
+            .attr('width', parentContainer.attr('width') - 2 * COMMON.PADDING)
             .attr('height', parentContainer.attr('height') - 2 * COMMON.PADDING)
 
         var width = +svg.attr('width'),

@@ -24,6 +24,7 @@ function stackedverticalbar() {
         _showYaxis,
         _showXaxisLabel,
         _showYaxisLabel,
+        _axisScaleLabel = COMMON.SHOWAXISLABEL,
         _xAxisColor,
         _yAxisColor,
         _showGrid,
@@ -89,6 +90,7 @@ function stackedverticalbar() {
         this.showYaxis(config.showYaxis);
         this.showXaxisLabel(config.showXaxisLabel);
         this.showYaxisLabel(config.showYaxisLabel);
+        this.axisScaleLabel(config.axisScaleLabel);
         this.showGrid(config.showGrid);
         this.xAxisColor(config.xAxisColor);
         this.yAxisColor(config.yAxisColor);
@@ -805,7 +807,12 @@ function stackedverticalbar() {
             .tickSize(0)
             .tickPadding(8)
             .tickFormat(function (d) {
-                return UTIL.shortScale(2)(d);
+                if (_axisScaleLabel == "Formated") {
+                    return UTIL.shortScale(2)(d);
+                }
+                else {
+                    return d.toString().length > 3 ? d.toString().substring(0, 3) + "..." : d;
+                }
             });
 
         yAxisGroup = plot.append('g')
@@ -1165,7 +1172,7 @@ function stackedverticalbar() {
 
         if (filterConfig) {
             if (filterConfig.isFilter) {
-                  data = UTIL.sortData(data, filterConfig.key, filterConfig.sortType)
+                data = UTIL.sortData(data, filterConfig.key, filterConfig.sortType)
                 drawPlotForFilter.call(this, data);
             }
         }
@@ -1522,6 +1529,14 @@ function stackedverticalbar() {
             return _showYaxisLabel;
         }
         _showYaxisLabel = value;
+        return chart;
+    }
+
+    chart.axisScaleLabel = function (value) {
+        if (!arguments.length) {
+            return _axisScaleLabel;
+        }
+        _axisScaleLabel = value;
         return chart;
     }
 
