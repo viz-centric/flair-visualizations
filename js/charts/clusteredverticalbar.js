@@ -587,11 +587,6 @@ function clusteredverticalbar() {
             .tickSize(0)
             .tickPadding(8)
             .tickFormat(function (d) {
-                // if ((plotHeight / y.ticks().length) < 11) {
-                //     return '';
-                // }
-                //return UTIL.getTruncatedTick(UTIL.shortScale(2)(d), margin.left - 8, tickLength);
-
                 if (_axisScaleLabel == "Formated") {
                     return UTIL.shortScale(2)(d);
                 }
@@ -621,7 +616,12 @@ function clusteredverticalbar() {
             })
             .text(function () {
                 var text = _displayNameForMeasure.map(function (p) { return p; }).join(', ');
-                return UTIL.getTruncatedLabel(this, text, plotHeight)
+                if (!_print) {
+                    return UTIL.getTruncatedLabel(this, text, plotHeight)
+                }
+                else {
+                    return text;
+                }
             });
 
         UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);

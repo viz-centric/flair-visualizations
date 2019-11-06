@@ -836,7 +836,12 @@ function stackedverticalbar() {
             })
             .text(function () {
                 var text = _displayNameForMeasure.map(function (p) { return p; }).join(', ');
-                return UTIL.getTruncatedLabel(this, text, plotHeight)
+                if (!_print) {
+                    return UTIL.getTruncatedLabel(this, text, plotHeight)
+                }
+                else {
+                    return text;
+                }
             });
 
         UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);

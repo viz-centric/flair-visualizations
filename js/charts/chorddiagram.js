@@ -229,7 +229,7 @@ function chorddiagram() {
     }
 
     function chart(selection) {
-        _Local_data = _originalData = _data;
+        var data = _Local_data = _originalData = _data;
 
         var me = this;
 
@@ -324,7 +324,8 @@ function chorddiagram() {
             .labelPadding(.03)
             .fill(function (d) {
                 if (_colorPattern == "unique_color") {
-                    return colors[sortOrder.indexOf(d)];
+                    return colors[sortOrder.indexOf(d)] != undefined ? colors[sortOrder.indexOf(d)] : UTIL.getUniqueColour(sortOrder.indexOf(d));
+                    //    return colors[sortOrder.indexOf(d)];
                 }
                 else if (_colorPattern == "single_color") {
                     return colors[0];

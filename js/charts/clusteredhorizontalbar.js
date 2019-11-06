@@ -538,7 +538,12 @@ function clusteredhorizontalbar() {
 
         _localXAxis = d3.axisBottom(y)
             .tickFormat(function (d) {
-                return UTIL.shortScale(2)(d);
+                if (_axisScaleLabel == "Formated") {
+                    return UTIL.shortScale(2)(d);
+                }
+                else {
+                    return UTIL.getTruncatedTick(d, (plotWidth) / (y.ticks().length) - 5, tickLength);
+                }
             })
         // .tickSize(0)
         // .tickPadding(10);
@@ -564,7 +569,12 @@ function clusteredhorizontalbar() {
             })
             .text(function () {
                 var text = _displayNameForMeasure.map(function (p) { return p; }).join(', ');
-                return UTIL.getTruncatedLabel(this, text, plotWidth - 200)
+                if (!_print) {
+                    return UTIL.getTruncatedLabel(this, text, plotHeight - 200)
+                }
+                else {
+                    return text;
+                }
             });
 
 

@@ -559,7 +559,7 @@ function pivottable() {
         mapper = d3.map();
 
         pivotedDimension.forEach(function (pd) {
-            mapper.set(pd, getUniqueData(data, pd));
+            mapper.set(pd, getUniqueData(_data, pd));
         });
 
 

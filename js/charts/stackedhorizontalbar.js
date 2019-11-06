@@ -51,8 +51,11 @@ function stackedhorizontalbar() {
         _showSorting = true;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
+
     var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, parentContainer;
+
     var parentWidth, parentHeight, plotWidth, plotHeight, container;
+
     var _localXAxis,
         _localYAxis,
         _localXGrid,
@@ -62,6 +65,10 @@ function stackedhorizontalbar() {
     var _x = d3.scaleBand(), _y = d3.scaleLinear(), brush = d3.brushY();
 
     var FilterControlHeight = 100, FilterControlWidth = 100;
+
+    var tickLength = d3.scaleLinear()
+        .domain([22, 34])
+        .range([2, 4]);
 
     var margin = {
         top: 0,
@@ -728,7 +735,12 @@ function stackedhorizontalbar() {
 
         _localXAxis = d3.axisBottom(y)
             .tickFormat(function (d) {
-                return UTIL.shortScale(2)(d);
+                if (_axisScaleLabel == "Formated") {
+                    return UTIL.shortScale(2)(d);
+                }
+                else {
+                    return UTIL.getTruncatedTick(d, (plotWidth) / (y.ticks().length) - 5, tickLength);
+                }
             })
 
         xAxisGroup = plot.append('g')
@@ -752,7 +764,12 @@ function stackedhorizontalbar() {
             })
             .text(function () {
                 var text = _displayNameForMeasure.map(function (p) { return p; }).join(', ');
-                return UTIL.getTruncatedLabel(this, text, plotWidth - 200)
+                if (!_print) {
+                    return UTIL.getTruncatedLabel(this, text, plotWidth-200)
+                }
+                else {
+                    return text;
+                }
             });
 
         _localYAxis = d3.axisLeft(x)
@@ -1110,7 +1127,7 @@ function stackedhorizontalbar() {
 
         if (filterConfig) {
             if (filterConfig.isFilter) {
-                  data = UTIL.sortData(data, filterConfig.key, filterConfig.sortType)
+                data = UTIL.sortData(data, filterConfig.key, filterConfig.sortType)
                 drawPlotForFilter.call(this, data);
             }
         }
