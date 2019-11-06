@@ -1136,6 +1136,17 @@ function util() {
                 g = parseInt(Math.abs(Math.cos(index)) * 255),
                 b = parseInt(Math.abs(Math.sin(7 * index - 100)) * 255);
             return d3.rgb(r, g, b);
+        },
+        hasDuplicates: function (array) {
+            var valuesSoFar = Object.create(null);
+            for (var i = 0; i < array.length; ++i) {
+                var value = array[i];
+                if (value in valuesSoFar) {
+                    return true;
+                }
+                valuesSoFar[value] = true;
+            }
+            return false;
         }
     }
 

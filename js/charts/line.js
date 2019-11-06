@@ -660,13 +660,6 @@ function line() {
             })
             .style('text-anchor', 'middle')
             .text(function (d, i) {
-                var text = _local_svg.selectAll("text")
-                    .filter(function () {
-                        return d3.select(this).text() == d["data"][d.tag]
-                    })
-                if (text._groups[0].length >= 1) {
-                    return ''
-                }
                 return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(_measure.indexOf(d.tag), _numberFormat, d.data[d.tag]));
             })
             .text(function (d, i) {
@@ -682,7 +675,33 @@ function line() {
                 if (_notification) {
                     return 'hidden';
                 }
-                return UTIL.getVisibility(_showValues[_measure.indexOf(d.tag)]);
+                if (_showValues[_measure.indexOf(d.tag)]) {
+                    var showText = "";
+                    var ticks = y.ticks();
+
+                    var allValue = [];
+                    var allData = data.filter(function (val) {
+                        if (val[_dimension[0]] == d["data"][_dimension[0]]) {
+                            for (let index = 0; index < _measure.length; index++) {
+                                if (_measure[index] != d["tag"]) {
+                                    allValue.push(d["data"][_measure[index]])
+                                }
+                            }
+                            return val;
+                        }
+                    });
+                    for (let index = 0; index < allValue.length; index++) {
+                        var yPosition = y(allValue[index]);
+                        var activePostion = y(d.data[d.tag]);
+                        if (Math.abs(yPosition - activePostion) <= (plotHeight / ticks.length)) {
+                            showText = 'hidden';
+                        }
+                    }
+                }
+                else {
+                    return 'hidden'
+                }
+                return showText;
             })
             .style('font-style', function (d, i) {
                 return _fontStyle[_measure.indexOf(d.tag)];
@@ -850,7 +869,12 @@ function line() {
             })
             .text(function () {
                 var text = _displayNameForMeasure.map(function (p) { return p; }).join(', ');
-                return UTIL.getTruncatedLabel(this, text, plotHeight)
+                if (!_print) {
+                    return UTIL.getTruncatedLabel(this, text, plotHeight)
+                }
+                else {
+                    return text;
+                }
             });
 
         UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
@@ -1377,7 +1401,33 @@ function line() {
                 if (_notification) {
                     return 'hidden';
                 }
-                return UTIL.getVisibility(_showValues[_measure.indexOf(d.tag)]);
+                if (_showValues[_measure.indexOf(d.tag)]) {
+                    var showText = "";
+                    var ticks = y.ticks();
+
+                    var allValue = [];
+                    var allData = data.filter(function (val) {
+                        if (val[_dimension[0]] == d["data"][_dimension[0]]) {
+                            for (let index = 0; index < _measure.length; index++) {
+                                if (_measure[index] != d["tag"]) {
+                                    allValue.push(d["data"][_measure[index]])
+                                }
+                            }
+                            return val;
+                        }
+                    });
+                    for (let index = 0; index < allValue.length; index++) {
+                        var yPosition = y(allValue[index]);
+                        var activePostion = y(d.data[d.tag]);
+                        if (Math.abs(yPosition - activePostion) <= (plotHeight / ticks.length)) {
+                            showText = 'hidden';
+                        }
+                    }
+                }
+                else {
+                    return 'hidden'
+                }
+                return showText;
             })
             .style('font-style', function (d, i) {
                 return _fontStyle[_measure.indexOf(d.tag)];
