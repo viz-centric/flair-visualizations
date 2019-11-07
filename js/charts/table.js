@@ -278,8 +278,6 @@ function table() {
 
         var id = _local_svg.attr('id');
 
-        $("#" + id).prepend('<div class="searchIcon"><i class="fa fa-caret-down searchOpen"></i><i class="fa fa-caret-up searchClose"></i></div>')
-
         var width = parentContainer.attr('width'),
             height = parentContainer.attr('height');
 
@@ -291,7 +289,7 @@ function table() {
 
         var table = _local_svg.append('table')
             .attr('id', 'viz_table')
-            .style('width', '100%')
+            //.style('width', '100%')
             .classed('display', true)
             .classed('nowrap', true)
             .classed('table', true)
@@ -313,6 +311,7 @@ function table() {
 
         if (!_print) {
 
+            $("#" + id).prepend('<div class="searchIcon"><i class="fa fa-caret-down searchOpen"></i><i class="fa fa-caret-up searchClose"></i></div>')
 
             var pager = '<ul class="pager _pagination" style="margin:0px;float:right;">'
                 + '<li><span id="previous">Previous</span></li>'
@@ -373,10 +372,10 @@ function table() {
 
             dataTable = $('#' + parentContainer.attr('id')).find('#viz_table').DataTable({
 
-                //  scrollY: tableHeight,
+                scrollY: tableHeight,
                 responsive: true,
-                // scrollX: true,
-                //  scrollCollapse: true,
+                scrollX: true,
+                scrollCollapse: true,
                 "paging": false,
                 fixedHeader: {
                     header: true,
@@ -462,10 +461,6 @@ function table() {
                     }
 
                 },
-                colResize: {
-                    scrollY: 200,
-                    resizeTable: true
-                },
                 "aaSorting": []
 
             });
@@ -500,6 +495,14 @@ function table() {
                 readerTableChart.call(this.textContent, this, parentContainer)
             })
 
+            var displayTableHeight = parseFloat($('#' + parentContainer.attr('id')).find('#viz_table').css('height')) + 220;
+
+            if (displayTableHeight < parseFloat(height)) {
+                var parentElement = "#" + parentContainer.attr('id').replace('table-content-', '');
+                $(parentElement)
+                    .css('height', displayTableHeight + 'px');
+            }
+
             parentContainer.select('.filterData')
                 .on('click', applyFilter());
 
@@ -525,7 +528,7 @@ function table() {
 
                 style = JSON.stringify(style);
                 style = style.replace(/","/g, ';').replace(/["{}]/g, '');
-                //    tbody += "<td onClick=\"readerTableChart('" + d[_dimension[index]] + "',this,_local_svg,'" + item + "')\" style=\"" + style + "\">" + d[_dimension[index]] + "</td>";
+
                 tbody += "<td id=\"" + item + "\"  style=\"" + style + "\">" + d[_dimension[index]] + "</td>";
             });
 
@@ -549,7 +552,6 @@ function table() {
                 style = JSON.stringify(style);
                 style = style.replace(/","/g, ';').replace(/["{}]/g, '');
                 tbody += "<td class='sum' id=\"" + item + "\" style=\"" + style + "\">" + getIcon(index, d[_measure[index]]) + UTIL.getFormattedValue(d[_measure[index]], UTIL.getValueNumberFormat(index, _numberFormatForMeasure, d[_measure[index]])) + "</td>";
-                //  tbody += "<td onClick=\"readerTableChart('" + d[_measure[index]] + "',this,_local_svg,'" + item + "')\" style=\"" + style + "\">" + getIcon(index, d[_measure[index]]) + UTIL.getFormattedValue(d[_measure[index]], UTIL.getValueNumberFormat(index, _numberFormatForMeasure)) + "</td>";
 
             });
             tbody += "</tr>";
@@ -573,8 +575,6 @@ function table() {
 
         createTable(_data);
     }
-
-
 
     chart._getName = function () {
         return _NAME;
