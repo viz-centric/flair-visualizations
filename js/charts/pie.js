@@ -652,6 +652,9 @@ function pie() {
                     }
                     return UTIL.getTruncatedLabel(this, this.textContent, size);
                 }
+                else {
+                    return this.textContent;
+                }
             })
             .text(function (d) {
                 var diff = d.endAngle - d.startAngle;

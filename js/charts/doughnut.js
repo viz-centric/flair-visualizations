@@ -709,6 +709,9 @@ function doughnut() {
                     }
                     return UTIL.getTruncatedLabel(this, this.textContent, size);
                 }
+                else {
+                    return this.textContent
+                }
 
             })
             .text(function (d) {
@@ -762,7 +765,7 @@ function doughnut() {
                         .style('visibility', 'visible');
                     filter = false;
 
-                    var point = d3.select(this);
+                    var point = d3.select(this).select('path');
                     if (point.classed('selected')) {
                         point.classed('selected', false);
                     } else {
@@ -1005,7 +1008,7 @@ function doughnut() {
                     .style('visibility', 'visible');
                 filter = false;
 
-                var point = d3.select(this);
+                var point = d3.select(this).select('path');
                 if (point.classed('selected')) {
                     point.classed('selected', false);
                 } else {

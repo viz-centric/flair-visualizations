@@ -617,6 +617,12 @@ function combo() {
                 return y(d['data'][d['tag']]);
             });
 
+
+        var clusterArea = content.selectAll('.cluster_area')
+            .data(measuresLine.filter(function (m) { return labelStack.indexOf(m) == -1; }))
+            .enter().append('g')
+            .attr('class', 'cluster_area');
+
         var clusterBar = content.selectAll('.cluster_bar')
             .data(data)
             .enter().append('g')
@@ -625,23 +631,12 @@ function combo() {
                 return 'translate(' + x0(d[_dimension[0]]) + ', 0)';
             });
 
-        var bar = clusterBar.selectAll('g.bar')
-            .data(function (d) {
-                return measuresBar
-                    .filter(function (m) { return labelStack.indexOf(m) == -1; })
-                    .map(function (m) { return { "tag": m, "data": d }; });
-            })
-            .enter().append('g')
-            .attr('class', 'bar');
-
-        drawViz(bar, keys)
-
         var clusterLine = content.selectAll('.cluster_line')
             .data(measuresLine.filter(function (m) { return labelStack.indexOf(m) == -1; }))
             .enter().append('g')
             .attr('class', 'cluster_line');
 
-        var area = clusterLine.append('path')
+        var area = clusterArea.append('path')
             .datum(function (d, i) {
                 return data.map(function (datum) { return { "tag": d, "data": datum }; });
             })
@@ -660,8 +655,21 @@ function combo() {
             .style('fill-opacity', 0.5)
             .attr('stroke', 'none')
             .style('stroke-width', 0)
-            .style('opacity', 0)
+            .style('opacity', 1)
             .attr('d', areaGenerator);
+
+
+
+        var bar = clusterBar.selectAll('g.bar')
+            .data(function (d) {
+                return measuresBar
+                    .filter(function (m) { return labelStack.indexOf(m) == -1; })
+                    .map(function (m) { return { "tag": m, "data": d }; });
+            })
+            .enter().append('g')
+            .attr('class', 'bar');
+
+        drawViz(bar, keys);
 
         var line = clusterLine.append('path')
             .datum(function (d, i) {
@@ -674,7 +682,8 @@ function combo() {
             })
             .attr('stroke-linejoin', 'round')
             .attr('stroke-linecap', 'round')
-            .attr('stroke-width', 1)
+            .attr('d', lineGenerator)
+            .attr('stroke-width', 1);
 
         var point = clusterLine.selectAll('point')
             .data(function (d, i) {
@@ -838,7 +847,7 @@ function combo() {
         }
         if (!_print) {
             area.transition()
-                .duration(COMMON.DURATION)
+                .duration(0)
                 .styleTween('opacity', function () {
                     var interpolator = d3.interpolateNumber(0, 1);
 
@@ -860,7 +869,7 @@ function combo() {
                 })
                 .attr('d', lineGenerator)
                 .transition()
-                .duration(COMMON.DURATION)
+                .duration(0)
                 .attrTween('stroke-dasharray', function () {
                     var l = this.getTotalLength(),
                         i = d3.interpolateString("0," + l, l + "," + l);
@@ -1353,27 +1362,6 @@ function combo() {
                 return x1.bandwidth() / 2;
             })
             .style('text-anchor', 'middle')
-            .attr('visibility', function (d, i) {
-                var rect = d3.select(this.previousElementSibling).node(),
-                    rectWidth = rect.getAttribute('width'),
-                    rectHeight = rect.getAttribute('height');
-                if (_notification) {
-                    return 'hidden';
-                }
-                if (!_print) {
-                    return UTIL.getVisibility(_showValues[i]);
-                }
-                else {
-                    var textInfo = d3.select(this).node().getBBox();
-                    if (textInfo.width >= rectWidth) {
-                        return 'hidden';
-                    }
-                    if (textInfo.height >= rectHeight) {
-                        return 'hidden';
-                    }
-                }
-                return 'visible';
-            })
             .style('font-style', function (d, i) {
                 return _fontStyle[i];
             })
@@ -1396,11 +1384,26 @@ function combo() {
                     return _textColor[_measure.indexOf(d['tag'])];
                 }
             })
-            .text(function (d, i) {
-                var barWidth = (1 - x0.padding()) * plotWidth / (_Local_data.length - 1);
-                barWidth = (1 - x1.padding()) * barWidth / keys.length;
-                return UTIL.getTruncatedTick(d3.select(this).text(), barWidth, tickLength);
+            .attr('visibility', function (d, i) {
+                var rect = d3.select(this.previousElementSibling).node(),
+                    rectWidth = rect.getAttribute('width'),
+                    rectHeight = rect.getAttribute('height');
+                if (_notification) {
+                    return 'hidden';
+                }
+                if (UTIL.getVisibility(_showValues[i])) {
+                    var textInfo = d3.select(this).node().getBBox();
+                    if (textInfo.width >= rectWidth) {
+                        return 'hidden';
+                    }
+                    if (textInfo.height >= rectHeight) {
+                        return 'hidden';
+                    }
+                    return 'visible';
+                }
+                return 'hidden';
             });
+
     }
     chart._legendInteraction = function (event, data, plot) {
         if (_print) {
@@ -1531,7 +1534,7 @@ function combo() {
 
         if (filterConfig) {
             if (filterConfig.isFilter) {
-                  data = UTIL.sortData(data, filterConfig.key, filterConfig.sortType)
+                data = UTIL.sortData(data, filterConfig.key, filterConfig.sortType)
                 drawPlotForFilter.call(this, data);
             }
         }
@@ -1667,12 +1670,6 @@ function combo() {
                 return x1.bandwidth() / 2;
             })
             .style('text-anchor', 'middle')
-            .attr('visibility', function (d, i) {
-                if (_notification) {
-                    return 'hidden';
-                }
-                return UTIL.getVisibility(_showValues[i]);
-            })
             .style('font-style', function (d, i) {
                 return _fontStyle[i];
             })
@@ -1695,10 +1692,24 @@ function combo() {
                     return _textColor[_measure.indexOf(d['tag'])];
                 }
             })
-            .text(function (d, i) {
-                var barWidth = (1 - x0.padding()) * plotWidth / (_Local_data.length - 1);
-                barWidth = (1 - x1.padding()) * barWidth / keys.length;
-                return UTIL.getTruncatedTick(d3.select(this).text(), barWidth, tickLength);
+            .attr('visibility', function (d, i) {
+                var rect = d3.select(this.previousElementSibling).node(),
+                    rectWidth = rect.getAttribute('width'),
+                    rectHeight = rect.getAttribute('height');
+                if (_notification) {
+                    return 'hidden';
+                }
+                if (UTIL.getVisibility(_showValues[i])) {
+                    var textInfo = d3.select(this).node().getBBox();
+                    if (textInfo.width >= rectWidth) {
+                        return 'hidden';
+                    }
+                    if (textInfo.height >= rectHeight) {
+                        return 'hidden';
+                    }
+                    return 'visible';
+                }
+                return 'hidden';
             });
 
         var newBars = bar.enter().append('g')
@@ -1712,6 +1723,9 @@ function combo() {
             });
 
         var clusterLine = chartploat.selectAll('.cluster_line')
+            .data(measuresLine.filter(function (m) { return labelStack.indexOf(m) == -1; }))
+
+        var clusterArea = chartploat.selectAll('.cluster_area')
             .data(measuresLine.filter(function (m) { return labelStack.indexOf(m) == -1; }))
 
         var lineText = clusterLine.selectAll('text')
@@ -1796,7 +1810,7 @@ function combo() {
             })
             .attr('d', lineGenerator)
 
-        var area = clusterLine.select('path.area')
+        var area = clusterArea.select('path.area')
             .datum(function (d, i) {
                 return data.map(function (datum) { return { "tag": d, "data": datum }; });
             })
