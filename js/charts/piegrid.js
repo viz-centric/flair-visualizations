@@ -177,7 +177,7 @@ function piegrid() {
                     return data[i][_dimension].substring(0, 4);
                 }
             })
-            .attr("y", (r + m))
+            .attr("y", (r + m - 5))
             .attr("text-anchor", "middle")
             .style('text-anchor', 'middle')
             .style('fill', _fontColor)
@@ -242,6 +242,7 @@ function piegrid() {
         r = Math.sqrt(RR);
         r = (r - 25) / 2;
         r = setRadius(width, height, data);
+
         var svg = parentContainer.selectAll("svg")
             .data(preData)
             .enter().append("svg")
@@ -251,7 +252,7 @@ function piegrid() {
             .attr("width", (r + m) * 2)
             .attr("height", (r + m) * 2)
             .append("g")
-            .attr("transform", "translate(" + (r + m) + "," + (r + m) + ")")
+            .attr("transform", "translate(" + (r + m - 10) + "," + (r + m - 10) + ")")
 
         if (!_print) {
             var confirm = $(me).parent().find('div.confirm')
@@ -391,12 +392,12 @@ function piegrid() {
                 if (i == 1) {
                     d3.select(this).style('fill-opacity', 0.5)
                 }
-                return _colorSet[parseInt(index)]!=undefined?_colorSet[parseInt(index)]:UTIL.getUniqueColour(index);
+                return _colorSet[parseInt(index)] != undefined ? _colorSet[parseInt(index)] : UTIL.getUniqueColour(index);
             })
             .style("stroke", function (d, i) {
                 var path = d3.select(this.parentNode)
                 var index = d3.select(path.node().parentElement).attr('class')
-                return _colorSet[parseInt(index)]!=undefined?_colorSet[parseInt(index)]:UTIL.getUniqueColour(index);
+                return _colorSet[parseInt(index)] != undefined ? _colorSet[parseInt(index)] : UTIL.getUniqueColour(index);
             })
             .style("stroke-opacity", 0.5);
 

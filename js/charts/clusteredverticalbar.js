@@ -41,7 +41,7 @@ function clusteredverticalbar() {
         _print,
         broadcast,
         filterParameters,
-        isAnimationDisable = false,
+        isLiveEnabled = false,
         _notification = false,
         _data,
         _isFilterGrid = false,
@@ -1129,7 +1129,7 @@ function clusteredverticalbar() {
         }
 
         var DURATION = COMMON.DURATION;
-        if (isAnimationDisable) {
+        if (isLiveEnabled) {
             DURATION = 0;
         }
         filterData = [];
@@ -1636,11 +1636,11 @@ function clusteredverticalbar() {
         return chart;
     }
 
-    chart.isAnimationDisable = function (value) {
+    chart.isLiveEnabled = function (value) {
         if (!arguments.length) {
-            return isAnimationDisable;
+            return isLiveEnabled;
         }
-        isAnimationDisable = value;
+        isLiveEnabled = value;
         return chart;
     }
     chart.notification = function (value) {

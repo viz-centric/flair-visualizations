@@ -44,7 +44,7 @@ function clusteredhorizontalbar() {
         _print,
         broadcast,
         filterParameters,
-        isAnimationDisable = false,
+        isLiveEnabled = false,
         _notification = false,
         _data,
         _isFilterGrid = false,
@@ -1158,7 +1158,7 @@ function clusteredhorizontalbar() {
         }
         var DURATION = COMMON.DURATION;
         var svg = _local_svg;
-        if (isAnimationDisable) {
+        if (isLiveEnabled) {
             DURATION = 0;
         }
 
@@ -1655,11 +1655,11 @@ function clusteredhorizontalbar() {
         filterParameters = value;
         return chart;
     }
-    chart.isAnimationDisable = function (value) {
+    chart.isLiveEnabled = function (value) {
         if (!arguments.length) {
-            return isAnimationDisable;
+            return isLiveEnabled;
         }
-        isAnimationDisable = value;
+        isLiveEnabled = value;
         return chart;
     }
     chart.notification = function (value) {

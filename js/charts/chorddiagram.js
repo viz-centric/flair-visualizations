@@ -25,7 +25,7 @@ function chorddiagram() {
         _print,
         broadcast,
         filterParameters,
-        isAnimationDisable = false,
+        isLiveEnabled = false,
         _notification = false,
         _data;
 
@@ -715,11 +715,11 @@ function chorddiagram() {
         return chart;
     }
 
-    chart.isAnimationDisable = function (value) {
+    chart.isLiveEnabled = function (value) {
         if (!arguments.length) {
-            return isAnimationDisable;
+            return isLiveEnabled;
         }
-        isAnimationDisable = value;
+        isLiveEnabled = value;
         return chart;
     }
     chart.notification = function (value) {

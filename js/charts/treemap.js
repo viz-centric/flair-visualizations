@@ -96,10 +96,10 @@ function treemap() {
 
         if (dim == 1) {
             dim1Color.domain([Math.min.apply(Math, values), Math.max.apply(Math, values)]);
-            dim1Color.range([d3.rgb(displayColor[0]).brighter(), d3.rgb(displayColor[0]).darker()])
+            dim1Color.range([d3.rgb(displayColor[0] != undefined ? displayColor[0] : UTIL.getUniqueColour(0)).brighter(), d3.rgb(displayColor[0] != undefined ? displayColor[0] : UTIL.getUniqueColour(0)).darker()])
         } else if (dim == 2) {
             dim2Color.domain([Math.min.apply(Math, values), Math.max.apply(Math, values)]);
-            dim2Color.range([d3.rgb(displayColor[1]).brighter(), d3.rgb(displayColor[1]).darker()])
+            dim2Color.range([d3.rgb(displayColor[1] != undefined ? displayColor[1] : UTIL.getUniqueColour(1)).brighter(), d3.rgb(displayColor[1] != undefined ? displayColor[1] : UTIL.getUniqueColour(1)).darker()])
         }
     }
 
@@ -111,18 +111,15 @@ function treemap() {
         if (colorPattern == 'single_color') {
             if (_dimension.length == 2) {
                 if (obj.children) {
-                    return displayColor[0];
+                    return displayColor[0] != undefined ? displayColor[0] : UTIL.getUniqueColour(0);
                 } else {
-                    return displayColor[1];
+                    return displayColor[1] != undefined ? displayColor[1] : UTIL.getUniqueColour(1);
                 }
             } else {
-                return displayColor[0];
+                return displayColor[0] != undefined ? displayColor[0] : UTIL.getUniqueColour(0);;
             }
         } else if (colorPattern == 'unique_color') {
-
-            var defaultColors = colorSet;
-            return defaultColors[index % (defaultColors.length)];
-            // return d3.schemeCategory20c[index % (d3.schemeCategory20c.length)];
+            return colorSet[index] != undefined ? colorSet[index] : UTIL.getUniqueColour(index);
         } else if (colorPattern == 'gradient_color') {
             if (_dimension.length == 2) {
                 if (obj.children) {

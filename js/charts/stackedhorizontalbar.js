@@ -44,7 +44,7 @@ function stackedhorizontalbar() {
         _print,
         broadcast,
         filterParameters,
-        isAnimationDisable = false,
+        isLiveEnabled = false,
         _notification = false,
         _data,
         _isFilterGrid = false,
@@ -1137,7 +1137,7 @@ function stackedhorizontalbar() {
             tooltip = parentContainer.select('.custom_tooltip');
         }
         var DURATION = COMMON.DURATION;
-        if (isAnimationDisable) {
+        if (isLiveEnabled) {
             DURATION = 0;
         }
 
@@ -1627,11 +1627,11 @@ function stackedhorizontalbar() {
         filterParameters = value;
         return chart;
     }
-    chart.isAnimationDisable = function (value) {
+    chart.isLiveEnabled = function (value) {
         if (!arguments.length) {
-            return isAnimationDisable;
+            return isLiveEnabled;
         }
-        isAnimationDisable = value;
+        isLiveEnabled = value;
         return chart;
     }
     chart.notification = function (value) {
