@@ -372,15 +372,11 @@ function table() {
 
             dataTable = $('#' + parentContainer.attr('id')).find('#viz_table').DataTable({
 
-                scrollY: tableHeight,
+                //  scrollY: tableHeight,
                 responsive: true,
-                scrollX: true,
-                scrollCollapse: true,
+                // scrollX: true,
+                //  scrollCollapse: true,
                 "paging": false,
-                fixedHeader: {
-                    header: true,
-                    footer: true
-                },
                 ordering: true,
                 info: false,
                 'dom': 'Rlfrtip',
@@ -495,7 +491,7 @@ function table() {
                 readerTableChart.call(this.textContent, this, parentContainer)
             })
 
-            var displayTableHeight = parseFloat($('#' + parentContainer.attr('id')).find('#viz_table').css('height')) + 220;
+            var displayTableHeight = parseFloat($('#' + parentContainer.attr('id')).find('#viz_table').css('height')) + 110;
 
             if (displayTableHeight < parseFloat(height)) {
                 var parentElement = "#" + parentContainer.attr('id').replace('table-content-', '');
