@@ -26,7 +26,8 @@ function boxplot() {
         _data,
         broadcast,
         filterParameters,
-        _notification = false;
+        _notification = false,
+        isLiveEnabled = false;
 
     var x, y;
     var margin = {
@@ -454,6 +455,10 @@ function boxplot() {
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
+                    if (isLiveEnabled) {
+                        broadcast.$broadcast('FlairBi:livemode-dialog');
+                        return;
+                    }
                     filter = false;
 
                     var confirm = parentContainer.select('.confirm')
@@ -787,7 +792,13 @@ function boxplot() {
         _notification = value;
         return chart;
     }
-
+    chart.isLiveEnabled = function (value) {
+        if (!arguments.length) {
+            return isLiveEnabled;
+        }
+        isLiveEnabled = value;
+        return chart;
+    }
     return chart;
 }
 module.exports = boxplot;

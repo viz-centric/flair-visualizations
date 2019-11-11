@@ -512,6 +512,10 @@ function stackedhorizontalbar() {
                             broadcast.$broadcast('FlairBi:threshold-dialog');
                         }
                         else {
+                            if (isLiveEnabled) {
+                                broadcast.$broadcast('FlairBi:livemode-dialog');
+                                return;
+                            }
                             filter = false;
                             var confirm = parentContainer.select('.confirm')
                                 .style('visibility', 'visible');

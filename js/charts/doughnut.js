@@ -35,6 +35,7 @@ function doughnut() {
         _fontWeight,
         _fontColor,
         _notification = false,
+        isLiveEnabled = false,
         _data;
 
     /* These are the common variables that is shared across the different private/public
@@ -761,6 +762,10 @@ function doughnut() {
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg))
                 .on('click', function (d, i) {
 
+                    if (isLiveEnabled) {
+                        broadcast.$broadcast('FlairBi:livemode-dialog');
+                        return;
+                    }
                     var confirm = parentContainer.select('.confirm')
                         .style('visibility', 'visible');
                     filter = false;
@@ -1004,6 +1009,10 @@ function doughnut() {
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg))
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg))
             .on('click', function (d, i) {
+                if (isLiveEnabled) {
+                    broadcast.$broadcast('FlairBi:livemode-dialog');
+                    return;
+                }
                 var confirm = parentContainer.select('.confirm')
                     .style('visibility', 'visible');
                 filter = false;
@@ -1333,6 +1342,13 @@ function doughnut() {
             return _data;
         }
         _data = value;
+        return chart;
+    }
+    chart.isLiveEnabled = function (value) {
+        if (!arguments.length) {
+            return isLiveEnabled;
+        }
+        isLiveEnabled = value;
         return chart;
     }
     return chart;

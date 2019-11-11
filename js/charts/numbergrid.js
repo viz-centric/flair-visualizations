@@ -21,6 +21,7 @@ function numbergrid() {
         _fontSizeforDisplayName,
         _colorSet = [],
         _notification = false,
+        isLiveEnabled = false,
         _data;
 
     var _local_svg, _Local_data, tooltip, parentContainer;
@@ -252,7 +253,10 @@ function numbergrid() {
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, parentContainer))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, parentContainer))
                 .on('click', function (d) {
-
+                    if (isLiveEnabled) {
+                        broadcast.$broadcast('FlairBi:livemode-dialog');
+                        return;
+                    }
                     var path = d3.select(this.parentNode)
                     var index = parseInt(d3.select(path.node().parentElement).attr('class'))
 
@@ -370,7 +374,10 @@ function numbergrid() {
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, parentContainer))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, parentContainer))
                 .on('click', function (d) {
-
+                    if (isLiveEnabled) {
+                        broadcast.$broadcast('FlairBi:livemode-dialog');
+                        return;
+                    }
                     var path = d3.select(this.parentNode)
                     var index = parseInt(d3.select(path.node().parentElement).attr('class'))
 
@@ -554,6 +561,13 @@ function numbergrid() {
             return _data;
         }
         _data = value;
+        return chart;
+    }
+    chart.isLiveEnabled = function (value) {
+        if (!arguments.length) {
+            return isLiveEnabled;
+        }
+        isLiveEnabled = value;
         return chart;
     }
     return chart;

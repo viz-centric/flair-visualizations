@@ -23,6 +23,7 @@ function piegrid() {
         _fontColor,
         _colorSet = [],
         _notification = false,
+        isLiveEnabled = false,
         _data;
 
     var _Local_data, tooltip, parentContainer;
@@ -265,6 +266,10 @@ function piegrid() {
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, parentContainer))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, parentContainer))
                 .on('click', function (d) {
+                    if (isLiveEnabled) {
+                        broadcast.$broadcast('FlairBi:livemode-dialog');
+                        return;
+                    }
                     var index = parseInt(d3.select(this.parentNode).attr('class'));
 
                     var confirm = parentContainer.select('.confirm')
@@ -406,6 +411,10 @@ function piegrid() {
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, parentContainer))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, parentContainer))
                 .on('click', function (d) {
+                    if (isLiveEnabled) {
+                        broadcast.$broadcast('FlairBi:livemode-dialog');
+                        return;
+                    }
                     var index = parseInt(d3.select(this.parentNode).attr('class'));
 
                     var confirm = parentContainer.select('.confirm')
@@ -594,6 +603,13 @@ function piegrid() {
             return _data;
         }
         _data = value;
+        return chart;
+    }
+    chart.isLiveEnabled = function (value) {
+        if (!arguments.length) {
+            return isLiveEnabled;
+        }
+        isLiveEnabled = value;
         return chart;
     }
     return chart;

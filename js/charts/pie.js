@@ -28,6 +28,7 @@ function pie() {
         broadcast,
         filterParameters,
         _notification = false,
+        isLiveEnabled = false,
         _data;
 
     /* These are the common variables that is shared across the different private/public
@@ -679,6 +680,10 @@ function pie() {
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg))
                 .on('click', function (d, i) {
+                    if (isLiveEnabled) {
+                        broadcast.$broadcast('FlairBi:livemode-dialog');
+                        return;
+                    }
                     var confirm = parentContainer.select('.confirm')
                         .style('visibility', 'visible');
                     filter = false;
@@ -940,6 +945,10 @@ function pie() {
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, svg))
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, svg))
             .on('click', function (d, i) {
+                if (isLiveEnabled) {
+                    broadcast.$broadcast('FlairBi:livemode-dialog');
+                    return;
+                }
                 var confirm = parentContainer.select('.confirm')
                     .style('visibility', 'visible');
                 filter = false;
@@ -1171,6 +1180,13 @@ function pie() {
             return _data;
         }
         _data = value;
+        return chart;
+    }
+    chart.isLiveEnabled = function (value) {
+        if (!arguments.length) {
+            return isLiveEnabled;
+        }
+        isLiveEnabled = value;
         return chart;
     }
     return chart;

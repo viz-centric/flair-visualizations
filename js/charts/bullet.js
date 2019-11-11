@@ -31,6 +31,7 @@ function bullet() {
         broadcast,
         filterParameters,
         _notification = false,
+        isLiveEnabled = false,
         _data;
 
     var _local_svg, _Local_data, _originalData;
@@ -521,7 +522,10 @@ function bullet() {
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
-
+                    if (isLiveEnabled) {
+                        broadcast.$broadcast('FlairBi:livemode-dialog');
+                        return;
+                    }
                     var confirm = parentContainer.select('.confirm')
                         .style('visibility', 'visible');
 
@@ -606,7 +610,7 @@ function bullet() {
     }
 
     chart.update = function (data) {
-       
+
         if (_tooltip) {
             tooltip = parentContainer.select('.custom_tooltip');
         }
@@ -687,6 +691,10 @@ function bullet() {
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
             .on('click', function (d) {
+                if (isLiveEnabled) {
+                    broadcast.$broadcast('FlairBi:livemode-dialog');
+                    return;
+                }
                 var confirm = parentContainer.select('.confirm')
                     .style('visibility', 'visible');
 
@@ -952,7 +960,13 @@ function bullet() {
         _data = value;
         return chart;
     }
-    
+    chart.isLiveEnabled = function (value) {
+        if (!arguments.length) {
+            return isLiveEnabled;
+        }
+        isLiveEnabled = value;
+        return chart;
+    }
     return chart;
 }
 

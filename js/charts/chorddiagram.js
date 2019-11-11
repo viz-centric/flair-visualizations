@@ -370,6 +370,10 @@ function chorddiagram() {
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d, i) {
+                    if (isLiveEnabled) {
+                        broadcast.$broadcast('FlairBi:livemode-dialog');
+                        return;
+                    }
                     var confirm = parentContainer.select('.confirm')
                         .style('visibility', 'visible');
                     filter = false;
