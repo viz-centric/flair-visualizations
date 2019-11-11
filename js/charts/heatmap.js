@@ -41,6 +41,7 @@ function heatmap() {
         filterParameters,
         displayColorMeasure = [],
         _notification = false,
+        isLiveEnabled = false,
         _data;
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [];
@@ -628,6 +629,10 @@ function heatmap() {
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
                     filter = false;
+                    if (isLiveEnabled) {
+                        broadcast.$broadcast('FlairBi:livemode-dialog');
+                        return;
+                    }
                     var confirm = parentContainer.select('.confirm')
                         .style('visibility', 'visible');
                     var _filter = _Local_data.filter(function (d1) {
@@ -909,6 +914,10 @@ function heatmap() {
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
             .on('click', function (d) {
+                if (isLiveEnabled) {
+                    broadcast.$broadcast('FlairBi:livemode-dialog');
+                    return;
+                }
                 filter = false;
                 var confirm = parentContainer.select('.confirm')
                     .style('visibility', 'visible');
@@ -1281,6 +1290,13 @@ function heatmap() {
             return _data;
         }
         _data = value;
+        return chart;
+    }
+    chart.isLiveEnabled = function (value) {
+        if (!arguments.length) {
+            return isLiveEnabled;
+        }
+        isLiveEnabled = value;
         return chart;
     }
     return chart;

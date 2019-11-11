@@ -46,6 +46,7 @@ function line() {
         broadcast,
         filterParameters,
         _notification = false,
+        isLiveEnabled = false,
         _data,
         _isFilterGrid = false,
         _showSorting = true;
@@ -743,6 +744,10 @@ function line() {
                             broadcast.$broadcast('FlairBi:threshold-dialog');
                         }
                         else {
+                            if (isLiveEnabled) {
+                                broadcast.$broadcast('FlairBi:livemode-dialog');
+                                return;
+                            }
                             filter = false;
                             var confirm = parentContainer.select('.confirm')
                                 .style('visibility', 'visible');
@@ -1880,6 +1885,13 @@ function line() {
             return _showSorting;
         }
         _showSorting = value;
+        return chart;
+    }
+    chart.isLiveEnabled = function (value) {
+        if (!arguments.length) {
+            return isLiveEnabled;
+        }
+        isLiveEnabled = value;
         return chart;
     }
     return chart;

@@ -29,6 +29,7 @@ function sankey() {
         broadcast,
         filterParameters,
         _notification = false,
+        isLiveEnabled = false,
         _colorList = [],
         _data;
 
@@ -589,6 +590,10 @@ function sankey() {
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, 'node'))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'node'))
                 .on('click', function (d) {
+                    if (isLiveEnabled) {
+                        broadcast.$broadcast('FlairBi:livemode-dialog');
+                        return;
+                    }
                     filter = false;
                     var confirm = parentContainer.select('.confirm')
                         .style('visibility', 'visible');
@@ -707,6 +712,10 @@ function sankey() {
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, 'node'))
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'node'))
             .on('click', function (d) {
+                if (isLiveEnabled) {
+                    broadcast.$broadcast('FlairBi:livemode-dialog');
+                    return;
+                }
                 filter = false;
                 var confirm = parentContainer.select('.confirm')
                     .style('visibility', 'visible');
@@ -886,6 +895,10 @@ function sankey() {
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg, 'link'))
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'link'))
             .on('click', function (d) {
+                if (isLiveEnabled) {
+                    broadcast.$broadcast('FlairBi:livemode-dialog');
+                    return;
+                }
                 filter = false;
                 var confirm = parentContainer.select('.confirm')
                     .style('visibility', 'visible');
@@ -1081,6 +1094,13 @@ function sankey() {
             return _data;
         }
         _data = value;
+        return chart;
+    }
+    chart.isLiveEnabled = function (value) {
+        if (!arguments.length) {
+            return isLiveEnabled;
+        }
+        isLiveEnabled = value;
         return chart;
     }
     return chart;
