@@ -39,7 +39,7 @@ function table() {
         filterParameters,
         _data;
 
-    var _Local_data, filterData = [], _originalData, _local_svg, parentContainer, activePage = 0;
+    var _Local_data, _updatedHeight, filterData = [], _originalData, _local_svg, parentContainer, activePage = 0;
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
@@ -497,6 +497,7 @@ function table() {
                 var parentElement = "#" + parentContainer.attr('id').replace('table-content-', '');
                 $(parentElement)
                     .css('height', displayTableHeight + 'px');
+                _updatedHeight = height;
             }
 
             parentContainer.select('.filterData')
@@ -589,6 +590,19 @@ function table() {
         $("#" + id).html('')
 
         createTable(data);
+
+        var parentElement = "#" + parentContainer.attr('id').replace('table-content-', '');
+
+
+        var newHeight = parseFloat($(parentElement).find('#viz_table_wrapper').css('height'));
+        var displayTableHeight = parseFloat($('#' + parentContainer.attr('id')).find('#viz_table').css('height')) + 110;
+
+        if (newHeight <= displayTableHeight) {
+
+            $(parentElement)
+                .css('height', newHeight + 'px');
+        }
+
     }
 
 

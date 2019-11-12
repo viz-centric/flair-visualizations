@@ -39,7 +39,7 @@ function pivottable() {
         _notification = false,
         _data;
 
-    var _localData, filterData = [], _local_svg, _originalData, parentContainer, mapper;
+    var _localData, filterData = [], _local_svg, _originalData, parentContainer, mapper,activePage = 0;
 
     var unpivotedDimension, nester, pivotedDimension, nestedData, pivotedData = [];
     var _setConfigParams = function (config) {
@@ -632,20 +632,52 @@ function pivottable() {
             var _filter = UTIL.createFilterElement()
             $('#' + id).append(_filter)
 
+            var pager = '<ul class="pager _pagination" style="margin:0px;float:right;">'
+                + '<li><span id="previous">Previous</span></li>'
+                + '<li><span id="next">Next</span></li>'
+                + '</ul>';
+
+            $('#' + id).append(pager);
+
+            var tableHeight = height - 100;
+            
             $('#' + parentContainer.attr('id')).find('#viz_pivot-table').dataTable({
-                scrollY: height - 100,
+                scrollY: tableHeight,
                 scrollX: true,
                 scrollCollapse: true,
                 ordering: true,
                 info: true,
                 searching: false,
                 bDestroy: true,
-                'sDom': 't'
+                'sDom': 't',
+                "aaSorting": []
             });
 
             $($('#' + parentContainer.attr('id') + ' td')).on('click', function () {
                 readerTableChart.call(this.textContent, this, parentContainer)
             })
+
+
+            $('#' + id).find('#previous').on('click', function (e, i) {
+                activePage = activePage - 1;
+                var pageInfo = {
+                    'visualizationID': id.replace("pivot-content-", ""),
+                    'activePageNo': activePage
+                }
+                broadcast.activePage = pageInfo;
+                broadcast.$broadcast('FlairBi:update-table');
+            });
+
+
+            $('#' + id).find('#next').on('click', function (e, i) {
+                activePage = activePage + 1;
+                var pageInfo = {
+                    'visualizationID': id.replace("pivot-content-", ""),
+                    'activePageNo': activePage
+                }
+                broadcast.activePage = pageInfo;
+                broadcast.$broadcast('FlairBi:update-table');
+            });
 
             svg.select('.filterData')
                 .on('click', applyFilter());
