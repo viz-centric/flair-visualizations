@@ -306,3 +306,8 @@ svg#graphics {
   color: #337ab7 !important;
   margin: 5px;
 }
+
+/* line 55, ../sass/partials/_table.scss */
+.dataTables_wrapper.no-footer .dataTables_scrollBody {
+  border-bottom: none !important;
+}

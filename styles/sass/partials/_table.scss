@@ -52,3 +52,6 @@
   color: #337ab7 !important;
   margin: 5px;
 }
+.dataTables_wrapper.no-footer .dataTables_scrollBody {
+  border-bottom: none !important;
+}
