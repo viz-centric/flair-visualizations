@@ -462,13 +462,19 @@ function table() {
             });
 
             $('#' + id).find('#previous').on('click', function (e, i) {
-                activePage = activePage - 1;
-                var pageInfo = {
-                    'visualizationID': id.replace("table-content-", ""),
-                    'activePageNo': activePage
+                if (activePage == 0) {
+                    $(this).parent().addClass('disabled');
+                    return;
                 }
-                broadcast.activePage = pageInfo;
-                broadcast.$broadcast('FlairBi:update-table');
+                else {
+                    activePage = activePage - 1;
+                    var pageInfo = {
+                        'visualizationID': id.replace("table-content-", ""),
+                        'activePageNo': activePage
+                    }
+                    broadcast.activePage = pageInfo;
+                    broadcast.$broadcast('FlairBi:update-table');
+                }
             });
 
 
@@ -490,15 +496,6 @@ function table() {
             $($('#' + parentContainer.attr('id') + ' td')).on('click', function () {
                 readerTableChart.call(this.textContent, this, parentContainer)
             })
-
-            var displayTableHeight = parseFloat($('#' + parentContainer.attr('id')).find('#viz_table').css('height')) + 110;
-
-            if (displayTableHeight < parseFloat(height)) {
-                var parentElement = "#" + parentContainer.attr('id').replace('table-content-', '');
-                $(parentElement)
-                    .css('height', displayTableHeight + 'px');
-                _updatedHeight = height;
-            }
 
             parentContainer.select('.filterData')
                 .on('click', applyFilter());
@@ -586,23 +583,8 @@ function table() {
         svg = _local_svg;
         filterData = [];
         var id = svg.attr('id');
-
         $("#" + id).html('')
-
         createTable(data);
-
-        var parentElement = "#" + parentContainer.attr('id').replace('table-content-', '');
-
-
-        var newHeight = parseFloat($(parentElement).find('#viz_table_wrapper').css('height'));
-        var displayTableHeight = parseFloat($('#' + parentContainer.attr('id')).find('#viz_table').css('height')) + 110;
-
-        if (newHeight <= displayTableHeight) {
-
-            $(parentElement)
-                .css('height', newHeight + 'px');
-        }
-
     }
 
 
