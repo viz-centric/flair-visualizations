@@ -39,7 +39,7 @@ function pivottable() {
         _notification = false,
         _data;
 
-    var _localData, filterData = [], _local_svg, _originalData, parentContainer, mapper,activePage = 0;
+    var _local_data, filterData = [], _local_svg, _originalData, parentContainer, mapper, activePage = 0;
 
     var unpivotedDimension, nester, pivotedDimension, nestedData, pivotedData = [];
     var _setConfigParams = function (config) {
@@ -194,7 +194,7 @@ function pivottable() {
 
     var getCellColor = function (value, isDimension) {
         if (isDimension) {
-            _cellColorForDimension[_dimension.indexOf(value)]
+            return _cellColorForDimension[_dimension.indexOf(value)]
         }
         return _cellColorForMeasure[_measure.indexOf(value)]
     }
@@ -229,9 +229,9 @@ function pivottable() {
 
     var getTextAlignment = function (value, isDimension) {
         if (isDimension) {
-            _textAlignmentForDimension[_dimension.indexOf(value)]
+            return _textAlignmentForDimension[_dimension.indexOf(value)]
         }
-        _textAlignmentForMeasure[_measure.indexOf(value)]
+        return _textAlignmentForMeasure[_measure.indexOf(value)]
     }
 
     var getUniqueData = function (data, pivoted_dimension) {
@@ -269,7 +269,7 @@ function pivottable() {
     }
     var applyFilter = function () {
         return function () {
-            var d = _localData.filter(function (val) {
+            var d = _originalData.filter(function (val) {
                 for (var index = 0; index < filterData.length; index++) {
                     if (val[filterData[index].key] == filterData[index].value) {
                         return val;
@@ -409,7 +409,7 @@ function pivottable() {
             icon = getIcon(i, datum[parent.join('_')])
             // )
 
-            content += "<td id=\"" + _dimension[i] + "\"    style=\"" + style + "\">" + ((datum[parent.join('_')] !== undefined) ? getValueNumberFormat(parent[0], datum[parent.join('_')])(datum[parent.join('_')]) : "-" + icon + "</td>");
+            content += "<td id=\"" + _dimension[i] + "\"  onClick=\"chart.readerTableChart('" + datum[_dimension[i]] + "',this,_local_svg,'" + datum[parent.join('_')] + "')\"  style=\"" + style + "\">" + ((datum[parent.join('_')] !== undefined) ? getValueNumberFormat(parent[0], datum[parent.join('_')])(datum[parent.join('_')]) + "&nbsp" + icon : "-") + "</td>";
         }
 
         parent.pop();
@@ -424,11 +424,10 @@ function pivottable() {
         iterator.forEach(function (item) {
             var style = {
                 'text-align': getTextAlignment(key, true),
-                'background-color': getCellColor(key, true),
+                'background-color': '#f7f7f7',
                 'font-style': getFontStyle(key, true),
                 'font-weight': getFontWeight(key, true),
-                'font-size': getFontSize(key, true),
-                'color': getTextColor(key, true) + 'px',
+                'font-size': getFontSize(key, true)
             };
 
             style = JSON.stringify(style);
@@ -464,26 +463,13 @@ function pivottable() {
         return row;
     }
 
-    function chart(selection) {
-        _local_svg = selection;
-        _Local_data = _originalData = _data;
-        if (_print && !_notification) {
-            parentContainer = selection;
-        }
-        else {
-            parentContainer = d3.select('#' + selection.id)
-        }
+    var createTable = function (data) {
+        var id = parentContainer.attr('id');
 
-        var svg = parentContainer;
-
-        var id = svg.attr('id');
-
-        //  var disv = d3.select('#' + id);
+        var svg = parentContainer;;
 
         var width = parentContainer.attr('width'),
-            height = parentContainer.attr('height')
-
-        var id = svg.attr('id');
+            height = parentContainer.attr('height');
 
         if (_print) {
             svg
@@ -551,7 +537,7 @@ function pivottable() {
             return result;
         });
 
-        nestedData = nester.entries(_data),
+        nestedData = nester.entries(data),
             pivotedData = [];
 
         getGeneratedPivotData(nestedData, 0);
@@ -559,11 +545,10 @@ function pivottable() {
         mapper = d3.map();
 
         pivotedDimension.forEach(function (pd) {
-            mapper.set(pd, getUniqueData(_data, pd));
+            mapper.set(pd, getUniqueData(data, pd));
         });
 
-
-        var table = svg.append('table')
+        var table = parentContainer.append('table')
             .attr('id', 'viz_pivot-table')
             .style('width', '100%')
             .style('font-size', '0.7rem')
@@ -580,8 +565,9 @@ function pivottable() {
             unpivotedDimension.forEach(function (upd, i) {
                 var style = {
                     'text-align': getTextAlignment(upd, true),
-                    'background-color': '#f7f7f7',
-                    'font-weight': 'bold',
+                    'font-weight': getFontWeight(upd, true),
+                    'font-style': getFontStyle(upd, true),
+                    'font-size': getFontSize(upd, true) + 'px'
                 };
 
                 style = JSON.stringify(style);
@@ -632,15 +618,19 @@ function pivottable() {
             var _filter = UTIL.createFilterElement()
             $('#' + id).append(_filter)
 
-            var pager = '<ul class="pager _pagination" style="margin:0px;float:right;">'
-                + '<li><span id="previous">Previous</span></li>'
-                + '<li><span id="next">Next</span></li>'
+            var pager = '<ul class="pager pagination _pagination" style="margin:0px;float:right;">'
+                + '<li class="page-item"><span id="previous">Previous</span></li>'
+                + '<li class="page-item"><span id="next">Next</span></li>'
                 + '</ul>';
 
             $('#' + id).append(pager);
 
+            if (activePage == 0) {
+                $('#' + id).find('#previous').parent().addClass('disabled');
+            }
+
             var tableHeight = height - 100;
-            
+
             $('#' + parentContainer.attr('id')).find('#viz_pivot-table').dataTable({
                 scrollY: tableHeight,
                 scrollX: true,
@@ -657,20 +647,26 @@ function pivottable() {
                 readerTableChart.call(this.textContent, this, parentContainer)
             })
 
-
             $('#' + id).find('#previous').on('click', function (e, i) {
-                activePage = activePage - 1;
-                var pageInfo = {
-                    'visualizationID': id.replace("pivot-content-", ""),
-                    'activePageNo': activePage
+                if (activePage == 0) {
+                    $(this).parent().addClass('disabled');
+                    return;
                 }
-                broadcast.activePage = pageInfo;
-                broadcast.$broadcast('FlairBi:update-table');
+                else {
+                    activePage = activePage - 1;
+                    var pageInfo = {
+                        'visualizationID': id.replace("pivot-content-", ""),
+                        'activePageNo': activePage
+                    }
+                    broadcast.activePage = pageInfo;
+                    broadcast.$broadcast('FlairBi:update-table');
+                }
             });
 
 
             $('#' + id).find('#next').on('click', function (e, i) {
                 activePage = activePage + 1;
+                $('#' + id).find('#previous').parent().removeClass('disabled');
                 var pageInfo = {
                     'visualizationID': id.replace("pivot-content-", ""),
                     'activePageNo': activePage
@@ -687,6 +683,19 @@ function pivottable() {
         }
     }
 
+    function chart(selection) {
+        _local_svg = selection;
+        _Local_data = _originalData = _data;
+        if (_print && !_notification) {
+            parentContainer = selection;
+        }
+        else {
+            parentContainer = d3.select('#' + selection.id)
+        }
+
+        createTable(_data);
+    }
+
     chart._getName = function () {
         return _NAME;
     }
@@ -696,82 +705,12 @@ function pivottable() {
     }
 
     chart.update = function (data) {
-        _localData = data;
+        _Local_data = data;
         svg = _local_svg;
         filterData = [];
-        parentContainer.selectAll('tbody').remove();
-        parentContainer.selectAll('thead').remove();
-
-        var table = parentContainer.select('#viz_pivot-table');
-
-        nestedData = nester.entries(data),
-            pivotedData = [];
-
-        getGeneratedPivotData(nestedData, 0);
-
-        mapper = d3.map();
-
-        pivotedDimension.forEach(function (pd) {
-            mapper.set(pd, getUniqueData(data, pd));
-        });
-
-        var thead = "<thead><tr>",
-            tbody = "<tbody>";
-
-        if (_dimension.length === unpivotedDimension.length) {
-            unpivotedDimension.forEach(function (upd, i) {
-                var style = {
-                    'text-align': getTextAlignment(upd, true),
-                    'background-color': '#f7f7f7',
-                    'font-weight': 'bold'
-                };
-
-                style = JSON.stringify(style);
-                style = style.replace(/","/g, ';').replace(/["{}]/g, '');
-
-                thead += "<th style=\"" + style + "\">" + upd + "</th>";
-            });
-        } else {
-            thead += "<th colspan=\"" + unpivotedDimension.length + "\" rowspan=\"" + pivotedDimension.length + "\"></th>";
-        }
-
-        _measure.forEach(function (m) {
-            var style = {
-                'text-align': getTextAlignment(m),
-                'background-color': '#f7f7f7',
-                'font-weight': 'bold'
-            };
-
-            style = JSON.stringify(style);
-            style = style.replace(/","/g, ';').replace(/["{}]/g, '');
-
-            thead += "<th colspan=\"" + getColspanValue(mapper, 0) + "\" style=\"" + style + "\">" + m + "</th>";
-        });
-
-        thead += "</tr>";
-
-        mapper.entries().forEach(function (entry, index) {
-            thead += createHeaders(entry.value, entry.key, index);
-        });
-
-        thead += "</thead>";
-
-
-        pivotedData.forEach(function (pd) {
-            tbody += "<tr>" + createEntries(pd) + "</tr>";
-        });
-
-        tbody += "</tbody></table>";
-
-        table.append('thead')
-            .html(thead);
-
-        table.append('tbody')
-            .html(tbody);
-
-        $($('#' + parentContainer.attr('id') + ' td')).on('click', function () {
-            readerTableChart.call(this.textContent, this, parentContainer)
-        })
+        var id = parentContainer.attr('id');
+        $("#" + id).html('')
+        createTable(data);
     }
 
     chart.config = function (value) {

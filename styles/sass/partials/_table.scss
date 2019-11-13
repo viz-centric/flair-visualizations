@@ -55,3 +55,8 @@
 .dataTables_wrapper.no-footer .dataTables_scrollBody {
   border-bottom: none !important;
 }
+td.selected {
+  background-color: #676a6c !important;
+  opacity: 0.5 !important;
+  color: #fff !important;
+}
