@@ -326,7 +326,7 @@ function bullet() {
 
         if (orientation == 'Horizontal') {
             if (showLabel) {
-                margin['left'] = Math.floor(containerWidth / 8);
+                margin['left'] = 45;
             } else {
                 margin['left'] = 20;
             }

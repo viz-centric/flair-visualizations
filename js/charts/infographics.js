@@ -229,15 +229,15 @@ function infographics() {
 
         data = _data;
 
-        if (!_print) {
-            infographics = d3.select('#' + selection.id);
+        if (_print && !_notification) {
+            parentContainer = selection;
         }
         else {
-            infographics = selection;
+            parentContainer = d3.select('#' + selection.id)
         }
 
-        var width = infographics.attr('width'),
-            height = infographics.attr('height'),
+        var width = parentContainer.attr('width'),
+            height = parentContainer.attr('height'),
             parentWidth = width - 2 * COMMON.PADDING,
             parentHeight = height - 2 * COMMON.PADDING;
 
@@ -247,10 +247,10 @@ function infographics() {
         /* store the data in local variable */
         _localData = data;
 
-        infographics.append('div')
+        parentContainer.append('div')
             .attr('class', 'custom_tooltip');
 
-        container = infographics.append('div')
+        container = parentContainer.append('div')
             .classed('container', true)
             .style('width', parentWidth + 'px')
             .style('height', parentHeight + 'px')
@@ -272,7 +272,7 @@ function infographics() {
             .style('pointer-events', 'none');
 
         if (_tooltip) {
-            _localTooltip = infographics.select('.custom_tooltip');
+            _localTooltip = parentContainer.select('.custom_tooltip');
         }
 
         _localDiv = graphics;
@@ -454,9 +454,9 @@ function infographics() {
 
         }
         if (!_print || _notification) {
-            points.on('mouseover', _handleMouseOverFn.call(chart, _localTooltip, infographics))
-                .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, infographics))
-                .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, infographics))
+            points.on('mouseover', _handleMouseOverFn.call(chart, _localTooltip, parentContainer))
+                .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, parentContainer))
+                .on('mouseout', _handleMouseOutFn.call(chart, _localTooltip, parentContainer))
                 .on('click', function (d, i) {
 
                 });

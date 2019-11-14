@@ -37,6 +37,7 @@ function pivottable() {
         broadcast,
         filterParameters,
         _notification = false,
+        isLiveEnabled = false,
         _data;
 
     var _local_data, filterData = [], _local_svg, _originalData, parentContainer, mapper, activePage = 0;
@@ -427,7 +428,7 @@ function pivottable() {
                 'background-color': '#f7f7f7',
                 'font-style': getFontStyle(key, true),
                 'font-weight': getFontWeight(key, true),
-                'font-size': getFontSize(key, true)
+                'font-size': getFontSize(key, true) + 'px'
             };
 
             style = JSON.stringify(style);
@@ -445,9 +446,11 @@ function pivottable() {
 
             unpivotedDimension.forEach(function (upd) {
                 var style = {
-                    'text-align': getTextAlignment(upd, true),
+                    'text-align': getTextAlignment(key, true),
                     'background-color': '#f7f7f7',
-                    'font-weight': 'bold',
+                    'font-style': getFontStyle(key, true),
+                    'font-weight': getFontWeight(key, true),
+                    'font-size': getFontSize(key, true) + 'px'
                 };
 
                 style = JSON.stringify(style);
@@ -580,10 +583,13 @@ function pivottable() {
         }
 
         _measure.forEach(function (m) {
+            debugger
             var style = {
                 'text-align': getTextAlignment(m),
                 'background-color': '#f7f7f7',
-                'font-weight': 'bold',
+                'font-style': getFontStyle(m),
+                'font-weight': getFontWeight(m),
+                'font-size': getFontSize(m) + 'px'
             };
 
             style = JSON.stringify(style);
@@ -644,6 +650,10 @@ function pivottable() {
             });
 
             $($('#' + parentContainer.attr('id') + ' td')).on('click', function () {
+                if (isLiveEnabled) {
+                    broadcast.$broadcast('FlairBi:livemode-dialog');
+                    return;
+                }
                 readerTableChart.call(this.textContent, this, parentContainer)
             })
 
@@ -680,6 +690,15 @@ function pivottable() {
 
             svg.select('.removeFilter')
                 .on('click', clearFilter());
+
+            var displayTableHeight = parseFloat($('#' + parentContainer.attr('id')).find('#viz_pivot-table').css('height')) + 110;
+
+            if (displayTableHeight < parseFloat(height)) {
+                $('#' + id + ' ._pagination')
+                    .css('position', 'absolute')
+                    .css('right', '0px')
+                    .css('bottom', '0px')
+            }
         }
     }
 
@@ -972,7 +991,13 @@ function pivottable() {
         _data = value;
         return chart;
     }
-
+    chart.isLiveEnabled = function (value) {
+        if (!arguments.length) {
+            return isLiveEnabled;
+        }
+        isLiveEnabled = value;
+        return chart;
+    }
     return chart;
 }
 
