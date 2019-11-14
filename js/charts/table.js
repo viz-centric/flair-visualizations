@@ -34,6 +34,7 @@ function table() {
         _iconColor = [],
         _fontWeightForMeasure = [],
         _isTotal = false,
+        isLiveEnabled = false,
         _print,
         broadcast,
         filterParameters,
@@ -494,8 +495,21 @@ function table() {
 
             $("#viz_table_paginate").css('display', 'blobk')
             $($('#' + parentContainer.attr('id') + ' td')).on('click', function () {
+                if (isLiveEnabled) {
+                    broadcast.$broadcast('FlairBi:livemode-dialog');
+                    return;
+                }
                 readerTableChart.call(this.textContent, this, parentContainer)
             })
+
+            var displayTableHeight = parseFloat($('#' + parentContainer.attr('id')).find('#viz_table').css('height')) + 110;
+
+            if (displayTableHeight < parseFloat(height)) {
+                $('#' + id + ' ._pagination')
+                    .css('position', 'absolute')
+                    .css('right', '0px')
+                    .css('bottom', '0px')
+            }
 
             parentContainer.select('.filterData')
                 .on('click', applyFilter());
@@ -842,6 +856,13 @@ function table() {
             return _data;
         }
         _data = value;
+        return chart;
+    }
+    chart.isLiveEnabled = function (value) {
+        if (!arguments.length) {
+            return isLiveEnabled;
+        }
+        isLiveEnabled = value;
         return chart;
     }
     return chart;
