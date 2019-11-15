@@ -603,6 +603,13 @@ function gauge() {
         _data = value;
         return chart;
     }
+    chart.notification = function (value) {
+        if (!arguments.length) {
+            return _notification;
+        }
+        _notification = value;
+        return chart;
+    }
     return chart;
 }
 module.exports = gauge;

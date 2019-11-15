@@ -1343,23 +1343,19 @@ function combo() {
             .text(function (d, i) {
                 return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(i, _numberFormat, d.data[d.tag]));
             })
-            .attr('x', function (d, i) {
-                return x1(measuresBar[i]);
+            .attr('y', function (d, i) {
+                if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
+                    return plotHeight;
+                } else if (d['data'][measuresBar[i]] > 0) {
+                    return y(d['data'][measuresBar[i]]) + _fontSize[i];
+                }
+                return y(0) + _fontSize[i];
+            })
+            .attr("x", function (d,i) {
+                return x1(measuresBar[i]) + (x1.bandwidth() / 2);
             })
             .attr('dy', function (d, i) {
                 return COMMON.OFFSET;
-            })
-            .attr('y', function (d, i) {
-                if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
-                    return contentHeight;
-                } else if (d['data'][measuresBar[i]] > 0) {
-                    return y(d['data'][measuresBar[i]]);
-                }
-
-                return y(0);
-            })
-            .attr('dx', function (d, i) {
-                return x1.bandwidth() / 2;
             })
             .style('text-anchor', 'middle')
             .style('font-style', function (d, i) {
@@ -1651,23 +1647,19 @@ function combo() {
             .text(function (d, i) {
                 return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(i, _numberFormat, d.data[d.tag]));
             })
-            .attr('x', function (d, i) {
-                return x1(measuresBar[i]);
+            .attr('y', function (d, i) {
+                if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
+                    return plotHeight;
+                } else if (d['data'][measuresBar[i]] > 0) {
+                    return y(d['data'][measuresBar[i]]) + _fontSize[i];
+                }
+                return y(0) + _fontSize[i];
+            })
+            .attr("x", function (d,i) {
+                return x1(measuresBar[i]) + (x1.bandwidth() / 2);
             })
             .attr('dy', function (d, i) {
                 return COMMON.OFFSET;
-            })
-            .attr('y', function (d, i) {
-                if ((d['data'][measuresBar[i]] === null) || (isNaN(d['data'][measuresBar[i]]))) {
-                    return contentHeight;
-                } else if (d['data'][measuresBar[i]] > 0) {
-                    return y(d['data'][measuresBar[i]]);
-                }
-
-                return y(0);
-            })
-            .attr('dx', function (d, i) {
-                return x1.bandwidth() / 2;
             })
             .style('text-anchor', 'middle')
             .style('font-style', function (d, i) {
