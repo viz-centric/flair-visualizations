@@ -369,7 +369,7 @@ function pivottable() {
             style = JSON.stringify(style);
             style = style.replace(/","/g, ';').replace(/["{}]/g, '');
 
-            content += "<td id=\"" + upd + "\" style=\"" + style + "\">" + datum[upd] + "</td>";
+            content += "<td class='filter' id=\"" + upd + "\" style=\"" + style + "\">" + datum[upd] + "</td>";
         });
 
         _measure.forEach(function (m, i) {
@@ -649,7 +649,7 @@ function pivottable() {
                 "aaSorting": []
             });
 
-            $($('#' + parentContainer.attr('id') + ' td')).on('click', function () {
+            $($('#' + parentContainer.attr('id') + ' td.filter')).on('click', function () {
                 if (isLiveEnabled) {
                     broadcast.$broadcast('FlairBi:livemode-dialog');
                     return;
