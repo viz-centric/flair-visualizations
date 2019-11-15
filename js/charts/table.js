@@ -494,7 +494,7 @@ function table() {
             $('#' + id + ' .dataTables_scrollFootInner tfoot').css('display', footer)
 
             $("#viz_table_paginate").css('display', 'blobk')
-            $($('#' + parentContainer.attr('id') + ' td')).on('click', function () {
+            $($('#' + parentContainer.attr('id') + ' td.filter')).on('click', function () {
                 if (isLiveEnabled) {
                     broadcast.$broadcast('FlairBi:livemode-dialog');
                     return;
@@ -537,7 +537,7 @@ function table() {
                 style = JSON.stringify(style);
                 style = style.replace(/","/g, ';').replace(/["{}]/g, '');
 
-                tbody += "<td id=\"" + item + "\"  style=\"" + style + "\">" + d[_dimension[index]] + "</td>";
+                tbody += "<td class='filter' id=\"" + item + "\"  style=\"" + style + "\">" + d[_dimension[index]] + "</td>";
             });
 
             _measure.forEach(function (item, index) {
