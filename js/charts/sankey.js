@@ -415,7 +415,7 @@ function sankey() {
         var rect = node.append('rect')
             .attr('width', sankey.nodeWidth())
             .attr('height', function (d) { return d.dy; })
-            .attr('class', function (d) { return d.name; })
+            .attr('class', function (d) { return d.name.replace(' ','_'); })
             .style('cursor', 'move')
             .style('fill', function (d, i) {
                 return getFillColor(d, i);
@@ -483,6 +483,7 @@ function sankey() {
             .data(data.links)
             .enter().append('path')
             .attr('class', 'link')
+            .attr('d', path)
             .style('stroke', function (d, i) {
                 if (colorPattern == 'single_color') {
                     return _colorList[0];
@@ -492,11 +493,10 @@ function sankey() {
                     if (_print) {
                         return _colorList[0];
                     }
-                    return d3.select('.' + d.source.name).style('fill');
+                    return d3.select('.' + d.source.name.replace(' ','_')).style('fill');
                 }
             })
-            .style('stroke-opacity', '0.5')
-            .attr('d', path)
+            .style('stroke-opacity', '0.5') 
             .style('stroke-width', function (d) { return Math.max(1, d.dy); })
             .sort(function (a, b) { return b.dy - a.dy; })
 
@@ -699,7 +699,7 @@ function sankey() {
         node.select('rect')
             .attr('width', sankey.nodeWidth())
             .attr('height', function (d) { return d.dy; })
-            .attr('class', function (d) { return d.name; })
+            .attr('class', function (d) { return d.name.replace(' ','_'); })
             .style('cursor', 'move')
             .style('fill', function (d, i) {
                 return getFillColor(d, i);
@@ -886,7 +886,7 @@ function sankey() {
                     if (_print) {
                         return _colorList[0];
                     }
-                    return d3.select('.' + d.source.name).style('fill');
+                    return d3.select('.' + d.source.name.replace(' ','_')).style('fill');
                 }
             })
             .style('stroke-width', function (d) { return Math.max(1, d.dy); })
@@ -936,7 +936,7 @@ function sankey() {
                     if (_print) {
                         return _colorList[0];
                     }
-                    return d3.select('.' + d.source.name).style('fill');
+                    return d3.select('.' + d.source.name.replace(' ','_')).style('fill');
                 }
             })
             .style('stroke-width', function (d) { return Math.max(1, d.dy); })

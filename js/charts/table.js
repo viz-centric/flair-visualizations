@@ -865,6 +865,13 @@ function table() {
         isLiveEnabled = value;
         return chart;
     }
+    chart.notification = function (value) {
+        if (!arguments.length) {
+            return _notification;
+        }
+        _notification = value;
+        return chart;
+    }
     return chart;
 }
 
