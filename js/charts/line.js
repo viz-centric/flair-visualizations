@@ -10,7 +10,7 @@ try {
 
 function line() {
 
-    var _NAME = 'line';
+    var _NAME = 'Line';
 
     var _config,
         _dimension,
@@ -19,6 +19,7 @@ function line() {
         _legendPosition,
         _sort,
         _tooltip,
+        _stacked,
         _showXaxis,
         _showYaxis,
         _showXaxisLabel,
@@ -84,6 +85,7 @@ function line() {
         this.measure(config.measure);
         this.showLegend(config.showLegend);
         this.legendPosition(config.legendPosition);
+        this.stacked(config.stacked);
         this.showXaxis(config.showXaxis);
         this.showYaxis(config.showYaxis);
         this.showXaxisLabel(config.showXaxisLabel);
@@ -173,17 +175,18 @@ function line() {
         }
     }
 
-    var _buildTooltipData = function (datum, chart) {
+    var _buildTooltipData = function (datum) {
         var output = "";
         output += "<table><tr>"
 
             + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + datum.data[_dimension[0]] + "</td>"
-            + "</tr><tr>"
-            + "<th>" + datum.tag + ": </th>"
-            // + "<td>" + datum.data[datum.tag] + "</td>"
-            + "<td>" + UTIL.getFormattedValue(datum.data[datum.tag], UTIL.getValueNumberFormat(_measure.indexOf(datum.tag), _numberFormat, datum.data[datum.tag])) + " </td>"
-            + "</tr></table>";
+            + "<td>" + datum[chart.dimension()] + "</td>"
+            + "</tr>";
+        _measure.forEach(element => {
+            output += "<tr> <th><i class='fa fa-square dataset' style='color:" + _displayColor[_measure.indexOf(element)] + ";'></i>" + element + " : </th>"
+                + "<td>" + UTIL.getFormattedValue(datum[element], UTIL.getValueNumberFormat(_measure.indexOf(element), _numberFormat, datum[element])) + " </td></tr>"
+        });
+        output += "</table>";
 
         return output;
     }
@@ -300,7 +303,7 @@ function line() {
     }
     var clearFilter = function (parentContainer) {
         return function () {
-            chart.update(_originalData);
+            chart.update(_data);
             parentContainer.select('.confirm')
                 .style('visibility', 'hidden');
         }
@@ -313,7 +316,7 @@ function line() {
                 .style('fill', COMMON.HIGHLIGHTER)
                 .attr("d", d3.symbol().size(100))
 
-            var border = UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor)
+            var border = UTIL.getDisplayColor(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key), _displayColor)
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
                 UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
@@ -325,8 +328,62 @@ function line() {
 
         return function (d, i) {
             if (tooltip) {
-                var border = UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor)
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
+                var mouse = d3.mouse(d3.select('.overlayTooltip').node()),
+                    crosshair = container.select('.crosshair');
+
+                var labelStack = [];
+
+                var measures = _measure.filter(function (d) {
+                    return labelStack.indexOf(d) == -1;
+                });
+
+                if (!measures.length) {
+                    // Implies the legends are turned off
+                    crosshair.style('display', 'none');
+                    return;
+                }
+
+                // finding x-value
+                var xPos = mouse[0],
+                    xDomain = x.domain(),
+                    xRange = x.range(),
+                    xRangePoints = d3.range(xRange[0], xRange[1], x.step())
+
+                var xVal = xDomain[d3.bisect(xRangePoints, xPos) - 1];
+
+                //finding y-value
+                var yPos = y.invert(mouse[1]),
+                    yDomain = y.domain(),
+                    dataX = _originalData.filter(function (d) {
+                        return d[_dimension[0]] == xVal;
+                    })[0],
+                    yVal = [];
+
+                if (dataX) {
+                    measures.forEach(function (m) {
+                        yVal.push(dataX[m]);
+                    });
+
+                    var xScale = x(xVal);
+
+                    d3.selectAll('path.point')
+                        .attr("d", d3.symbol().size(40))
+
+                    var filterPoint = d3.selectAll('path.point').filter(function (d, i) {
+                        return d.data[_dimension[0]] === xVal;
+                    })
+
+                    filterPoint.attr("d", d3.symbol().size(100))
+
+                    crosshair.select('#crosshairLineX')
+                        .attr('x1', xScale)
+                        .attr('x2', xScale)
+                        .attr('y1', y(yDomain[0]))
+                        .attr('y2', y(yDomain[1]));
+
+                    UTIL.showTooltip(tooltip);
+                    UTIL.updateTooltip.call(tooltip, _buildTooltipData(dataX), _local_svg, '', _NAME);
+                }
             }
         }
     }
@@ -336,7 +393,7 @@ function line() {
         return function (d, i) {
             d3.select(this).style('cursor', 'pointer')
                 .style('fill', function (d1, i) {
-                    return UTIL.getBorderColor(_measure.indexOf(d.tag), _borderColor);
+                    return UTIL.getBorderColor(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key), _borderColor);
                 })
                 .attr("d", d3.symbol().size(40))
 
@@ -481,7 +538,7 @@ function line() {
     var drawPlot = function (data) {
         var me = this;
         if (_tooltip) {
-            tooltip = parentContainer.select('.custom_tooltip');
+            var tooltip = parentContainer.select('.custom_tooltip');
         }
         var plot = container.append('g')
             .attr('class', 'line-plot')
@@ -502,6 +559,36 @@ function line() {
         y.rangeRound([plotHeight, 0])
             .domain([range[0], range[1]])
             .nice();
+
+        if (_stacked) {
+            var posTotal,
+                negTotal;
+
+            data.forEach(function (d) {
+                posTotal = 0;
+                negTotal = 0;
+                keys.forEach(function (m) {
+                    d[m] = +d[m];
+                    if (d[m] >= 0) {
+                        posTotal += d[m];
+                    } else {
+                        negTotal += d[m];
+                    }
+                });
+                d.posTotal = posTotal;
+                d.negTotal = negTotal;
+            });
+
+            y.domain([
+                d3.min(data, function (d) { return d.negTotal; }),
+                d3.max(data, function (d) { return d.posTotal; })
+            ]).nice();
+
+            data.map(function (val) {
+                delete val['negTotal'];
+                delete val['posTotal'];
+            })
+        }
 
         drawPlotForFilter.call(this, data);
 
@@ -534,42 +621,85 @@ function line() {
             .attr('visibility', 'visible')
             .call(_localYGrid);
 
-        areaGenerator = d3.area()
-            .curve(d3.curveLinear)
-            .x(function (d, i) {
-                return x(d['data'][_dimension[0]]) + x.bandwidth() / 2;
-            })
-            .y0(function (d, i) {
-                return y(0);
-            })
-            .y1(function (d) {
-                return y(d['data'][d['tag']]);
-            });
 
-        lineGenerator = d3.line()
-            .curve(d3.curveLinear)
-            .x(function (d, i) {
-                return x(d['data'][_dimension[0]]) + x.bandwidth() / 2;
-            })
-            .y(function (d, i) {
-                return y(d['data'][d['tag']]);
-            });
+        if (_stacked) {
+            areaGenerator = d3.area()
+                .curve(d3.curveLinear)
+                .x(function (d, i) {
+                    return x(d.data[_dimension[0]])
+                })
+                .y0(function (d, i) {
+                    return y(d.tag[i][0])
+                })
+                .y1(function (d, i) {
+                    return y(d.tag[i][1]);
+                });
 
-        var clusterLine = plot.selectAll('.cluster_line')
-            .data(keys.filter(function (m) { return labelStack.indexOf(m) == -1; }))
-            .enter().append('g')
-            .attr('class', 'cluster_line');
+            lineGenerator = d3.line()
+                .curve(d3.curveLinear)
+                .x(function (d, i) {
+                    return x(d.data[_dimension[0]]);
+                })
+                .y(function (d, i) {
+                    if (d.tag[i][0] < 0) {
 
-        var area = clusterLine.append('path')
+                        return y(d.tag[i][0])
+                    }
+                    return y(d.tag[i][1])
+                });
+        }
+        else {
+            areaGenerator = d3.area()
+                .curve(d3.curveLinear)
+                .x(function (d, i) {
+                    return x(d['data'][_dimension[0]]) + x.bandwidth() / 2;
+                })
+                .y0(function (d, i) {
+                    return y(0);
+                })
+                .y1(function (d) {
+                    return y(d['data'][d['tag']]);
+                });
+
+            lineGenerator = d3.line()
+                .curve(d3.curveLinear)
+                .x(function (d, i) {
+                    return x(d['data'][_dimension[0]]) + x.bandwidth() / 2;
+                })
+                .y(function (d, i) {
+                    return y(d['data'][d['tag']]);
+                });
+        }
+        var clusterLine, clusterArea;
+        if (_stacked) {
+            clusterArea = plot.selectAll('.cluster_area')
+                .data(d3.stack()
+                    .keys(keys.filter(function (d) {
+                        return labelStack.indexOf(d) == -1;
+                    }))
+                    .offset(d3.stackOffsetDiverging)(data)
+                )
+                .enter().append('g')
+                .attr('class', 'cluster_area');
+        }
+        else {
+            clusterArea = plot.selectAll('.cluster_area')
+                .data(keys.filter(function (m) { return labelStack.indexOf(m) == -1; }))
+                .enter().append('g')
+                .attr('class', 'cluster_area');
+
+        }
+
+        var area = clusterArea.append('path')
             .datum(function (d, i) {
                 return data.map(function (datum) { return { "tag": d, "data": datum }; });
             })
             .attr('class', 'area')
             .attr('fill', function (d, i) {
-                return UTIL.getBorderColor(_measure.indexOf(d[0]['tag']), _borderColor);
+                return UTIL.getBorderColor(i, _borderColor);
             })
             .attr('visibility', function (d, i) {
-                if (_lineType[(_measure.indexOf(d[0]['tag']))].toUpperCase() == "AREA") {
+                if (_lineType[i].toUpperCase() == "AREA") {
                     return 'visible'
                 }
                 else {
@@ -579,8 +709,71 @@ function line() {
             .style('fill-opacity', 0.5)
             .attr('stroke', 'none')
             .style('stroke-width', 0)
-            .style('opacity', 0)
+            .style('opacity', 1)
             .attr('d', areaGenerator);
+
+        // Gridline starts here
+        var crosshair = plot.append('g')
+            .attr('class', 'crosshair')
+            .style('display', 'none');
+
+        crosshair.append('line')
+            .attr('id', 'crosshairLineX')
+            .attr('class', 'crosshairLine');
+
+        plot.append('rect')
+            .attr('class', 'overlayTooltip')
+            .attr('width', plotWidth)
+            .attr('height', plotHeight)
+            .style('pointer-events', 'all')
+            .attr('fill', 'none')
+            .attr('stroke', 'none')
+            .on('mouseover', function () {
+                crosshair.style('display', null);
+            })
+            .on('mouseout', function () {
+                crosshair.style('display', 'none');
+                d3.selectAll('path.point')
+                    .attr("d", d3.symbol().size(40))
+                UTIL.hideTooltip(tooltip);
+            })
+            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+
+        // Gridline ends here
+
+        if (_stacked) {
+            clusterLine = plot.selectAll('.cluster_line')
+                .data(d3.stack()
+                    .keys(keys.filter(function (d) {
+                        return labelStack.indexOf(d) == -1;
+                    }))
+                    .offset(d3.stackOffsetDiverging)(data)
+                )
+                .enter().append('g')
+                .attr('class', 'cluster_line');
+
+            clusterArea = plot.selectAll('.cluster_area')
+                .data(d3.stack()
+                    .keys(keys.filter(function (d) {
+                        return labelStack.indexOf(d) == -1;
+                    }))
+                    .offset(d3.stackOffsetDiverging)(data)
+                )
+                .enter().append('g')
+                .attr('class', 'cluster_area');
+        }
+        else {
+            clusterLine = plot.selectAll('.cluster_line')
+                .data(keys.filter(function (m) { return labelStack.indexOf(m) == -1; }))
+                .enter().append('g')
+                .attr('class', 'cluster_line');
+
+            clusterArea = plot.selectAll('.cluster_area')
+                .data(keys.filter(function (m) { return labelStack.indexOf(m) == -1; }))
+                .enter().append('g')
+                .attr('class', 'cluster_area');
+
+        }
 
         var line = clusterLine.append('path')
             .classed('line-path', true)
@@ -591,56 +784,62 @@ function line() {
             .attr('stroke-dasharray', 'none')
             .style('fill', 'none')
             .attr('stroke', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
+                return UTIL.getDisplayColor(i, _displayColor);
             })
             .attr('stroke-linejoin', 'round')
             .attr('stroke-linecap', 'round')
-            .attr('stroke-width', 1)
+            .attr('stroke-width', '3px')
 
-        var point = clusterLine.selectAll('point')
+        var point = clusterLine.selectAll('.point')
             .data(function (d, i) {
                 return data.map(function (datum) { return { "tag": d, "data": datum }; });
             })
             .enter().append('path')
             .attr('class', 'point')
             .attr('stroke', function (d, i) {
-                if (_displayColorExpression[_measure.indexOf(d.tag)].length) {
-                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.tag)], d['data'][d['tag']], 'color').length > 0) {
-                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.tag)], d['data'][d['tag']], 'color')
+                if (_displayColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)].length) {
+                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d['data'][d['tag']], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d['data'][d['tag']], 'color')
                     }
                     else {
-                        return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+                        return UTIL.getDisplayColor(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key), _displayColor);
                     }
                 }
                 else {
-                    return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+                    return UTIL.getDisplayColor(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key), _displayColor);
                 }
             })
             .attr('fill', function (d, i) {
-                if (_displayColorExpression[_measure.indexOf(d.tag)].length) {
-                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.tag)], d['data'][d['tag']], 'color').length > 0) {
-                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.tag)], d['data'][d['tag']], 'color')
+                if (_displayColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)].length) {
+                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d['data'][d['tag']], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d['data'][d['tag']], 'color')
                     }
                     else {
-                        return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+                        return UTIL.getDisplayColor(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key), _displayColor);
                     }
                 }
                 else {
-                    return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+                    return UTIL.getDisplayColor(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key), _displayColor);
                 }
             })
             .attr('d', function (d, i) {
                 return d3.symbol()
-                    .type(getPointType(_measure.indexOf(d.tag)))
+                    .type(getPointType(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)))
                     .size(40)();
             })
-            .attr('transform', function (d) {
-                return 'translate('
-                    + (x(d['data'][_dimension[0]]) + x.bandwidth() / 2)
-                    + ',' + y(d['data'][d['tag']]) + ')';
+            .attr('transform', function (d, i) {
+                if (_stacked) {
+                    return 'translate('
+                        + (x(d['data'][_dimension[0]]) + x.bandwidth() / 2)
+                        + ',' + y(d.tag[i][1] == 0 ? d.tag[i][0] : d.tag[i][1]) + ')';
+                } else {
+                    return 'translate('
+                        + (x(d['data'][_dimension[0]]) + x.bandwidth() / 2)
+                        + ',' + y(d['data'][d['tag']]) + ')';
+                }
             })
             .style('visibility', function (d, i) {
-                if (_pointType[_measure.indexOf(d.tag)] == "None") {
+                if (_pointType[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)] == "None") {
                     return 'hidden';
                 }
             })
@@ -654,14 +853,19 @@ function line() {
                 return x(d['data'][_dimension[0]]);
             })
             .attr('y', function (d, i) {
-                return y(d.data[d.tag]);
+                if (_stacked) {
+                    return y(d.tag[i][1]);
+                }
+                else {
+                    return y(d['data'][d['tag']]);
+                }
             })
             .attr('dy', function (d, i) {
                 return -2 * offsetY;
             })
             .style('text-anchor', 'middle')
             .text(function (d, i) {
-                return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(_measure.indexOf(d.tag), _numberFormat, d.data[d.tag]));
+                return UTIL.getFormattedValue(d.data[d.tag.key == undefined ? d.tag : d.tag.key], UTIL.getValueNumberFormat(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key), _numberFormat, d.data[d.tag.key == undefined ? d.tag : d.tag.key]));
             })
             .text(function (d, i) {
                 if (!_print) {
@@ -669,35 +873,37 @@ function line() {
                     return UTIL.getTruncatedLabel(this, d3.select(this).text(), width);
                 }
                 else {
-                    return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(_measure.indexOf(d.tag), _numberFormat, d.data[d.tag]));
+                    return UTIL.getFormattedValue(d.data[d.tag.key == undefined ? d.tag : d.tag.key], UTIL.getValueNumberFormat(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key), _numberFormat, d.data[d.tag.key == undefined ? d.tag : d.tag.key]));
                 }
             })
             .attr('visibility', function (d, i) {
                 if (_notification) {
                     return 'hidden';
                 }
-                if (_showValues[_measure.indexOf(d.tag)]) {
-                    var showText = "";
-                    var ticks = y.ticks();
+                if (_showValues[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)]) {
+                    // var showText = "";
+                    // var ticks = y.ticks();
 
-                    var allValue = [];
-                    var allData = data.filter(function (val) {
-                        if (val[_dimension[0]] == d["data"][_dimension[0]]) {
-                            for (let index = 0; index < _measure.length; index++) {
-                                if (_measure[index] != d["tag"]) {
-                                    allValue.push(d["data"][_measure[index]])
-                                }
-                            }
-                            return val;
-                        }
-                    });
-                    for (let index = 0; index < allValue.length; index++) {
-                        var yPosition = y(allValue[index]);
-                        var activePostion = y(d.data[d.tag]);
-                        if (Math.abs(yPosition - activePostion) <= (plotHeight / ticks.length)) {
-                            showText = 'hidden';
-                        }
-                    }
+                    // var allValue = [];
+                    // var allData = data.filter(function (val) {
+                    //     if (val[_dimension[0]] == d["data"][_dimension[0]]) {
+                    //         for (let index = 0; index < _measure.length; index++) {
+                    //             if (_measure[index] != d["tag"]) {
+                    //                 allValue.push(d["data"][_measure[index]])
+                    //             }
+                    //         }
+                    //         return val;
+                    //     }
+                    // });
+                    // for (let index = 0; index < allValue.length; index++) {
+                    //     var yPosition = y(allValue[index]);
+                    //     var activePostion = y(d.data[d.tag.key==undefined?d.tag:d.tag.key]);
+                    //     if (Math.abs(yPosition - activePostion) <= (plotHeight / ticks.length)) {
+                    //         showText = 'hidden';
+                    //     }
+                    // }
+
+                    return 'visible'
                 }
                 else {
                     return 'hidden'
@@ -705,101 +911,101 @@ function line() {
                 return showText;
             })
             .style('font-style', function (d, i) {
-                return _fontStyle[_measure.indexOf(d.tag)];
+                return _fontStyle[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
             })
             .style('font-weight', function (d, i) {
-                return _fontWeight[_measure.indexOf(d.tag)];
+                return _fontWeight[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
             })
             .style('font-size', function (d, i) {
-                return _fontSize[_measure.indexOf(d.tag)];
+                return _fontSize[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
             })
             .style('fill', function (d, i) {
-                if (_textColorExpression[_measure.indexOf(d.tag)].length) {
-                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag)], d.data[d.tag], 'color').length > 0) {
-                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag)], d.data[d.tag], 'color')
+                if (_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)].length) {
+                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d.data[d.tag.key == undefined ? d.tag : d.tag.key], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d.data[d.tag.key == undefined ? d.tag : d.tag.key], 'color')
                     }
                     else {
-                        return _textColor[_measure.indexOf(d.tag)];
+                        return _textColor[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
                     }
                 }
                 else {
-                    return _textColor[_measure.indexOf(d.tag)];
+                    return _textColor[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
                 }
             });
 
         if (!_print || _notification) {
-            point.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
-                .on('click', function (d) {
-                    if (!_print) {
-                        if (broadcast != undefined && broadcast.isThresholdAlert) {
-                            var ThresholdViz = {};
-                            ThresholdViz.ID = parentContainer.attr('vizID');
-                            ThresholdViz.measure = d.tag;
-                            ThresholdViz.measureValue = d.data[d.tag];
-                            ThresholdViz.dimension = _dimension[0];
-                            ThresholdViz.dimensionValue = d.data[_dimension[0]];
-                            broadcast.ThresholdViz = ThresholdViz;
-                            broadcast.$broadcast('FlairBi:threshold-dialog');
-                        }
-                        else {
-                            if (isLiveEnabled) {
-                                broadcast.$broadcast('FlairBi:livemode-dialog');
-                                return;
-                            }
-                            filter = false;
-                            var confirm = parentContainer.select('.confirm')
-                                .style('visibility', 'visible');
-                            var _filter = _Local_data.filter(function (d1) {
-                                return d.data[_dimension[0]] === d1[_dimension[0]]
-                            })
-                            var rect = d3.select(this);
-                            if (rect.classed('selected')) {
-                                rect.classed('selected', false);
-                                filterData.map(function (val, i) {
-                                    if (val[_dimension[0]] == d.data[_dimension[0]]) {
-                                        filterData.splice(i, 1)
-                                    }
-                                })
-                            } else {
-                                rect.classed('selected', true);
-                                var isExist = filterData.filter(function (val) {
-                                    if (val[_dimension[0]] == d.data[_dimension[0]]) {
-                                        return val
-                                    }
-                                })
-                                if (isExist.length == 0) {
-                                    filterData.push(_filter[0]);
-                                }
-                            }
-
-                            var _filterDimension = {};
-                            if (broadcast.filterSelection.id) {
-                                _filterDimension = broadcast.filterSelection.filter;
-                            } else {
-                                broadcast.filterSelection.id = parentContainer.attr('id');
-                            }
-                            var dimension = _dimension[0];
-                            if (_filterDimension[dimension]) {
-                                _filterDimension[dimension] = filterData.map(function (d) {
-                                    return d[_dimension[0]];
-                                });
-                            } else {
-                                _filterDimension[dimension] = [d.data[_dimension[0]]];
-                            }
-
-                            var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
-                            broadcast.updateWidget = {};
-                            broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
-                            broadcast.filterSelection.filter = _filterDimension;
-                            var _filterParameters = filterParameters.get();
-                            _filterParameters[dimension] = _filterDimension[dimension];
-                            filterParameters.save(_filterParameters);
-                        }
+            // point.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+            //     .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+            //     .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+            point.on('click', function (d) {
+                if (!_print) {
+                    if (broadcast != undefined && broadcast.isThresholdAlert) {
+                        var ThresholdViz = {};
+                        ThresholdViz.ID = parentContainer.attr('vizID');
+                        ThresholdViz.measure = d.tag;
+                        ThresholdViz.measureValue = d.data[d.tag];
+                        ThresholdViz.dimension = _dimension[0];
+                        ThresholdViz.dimensionValue = d.data[_dimension[0]];
+                        broadcast.ThresholdViz = ThresholdViz;
+                        broadcast.$broadcast('FlairBi:threshold-dialog');
                     }
+                    else {
+                        if (isLiveEnabled) {
+                            broadcast.$broadcast('FlairBi:livemode-dialog');
+                            return;
+                        }
+                        filter = false;
+                        var confirm = parentContainer.select('.confirm')
+                            .style('visibility', 'visible');
+                        var _filter = _Local_data.filter(function (d1) {
+                            return d.data[_dimension[0]] === d1[_dimension[0]]
+                        })
+                        var rect = d3.select(this);
+                        if (rect.classed('selected')) {
+                            rect.classed('selected', false);
+                            filterData.map(function (val, i) {
+                                if (val[_dimension[0]] == d.data[_dimension[0]]) {
+                                    filterData.splice(i, 1)
+                                }
+                            })
+                        } else {
+                            rect.classed('selected', true);
+                            var isExist = filterData.filter(function (val) {
+                                if (val[_dimension[0]] == d.data[_dimension[0]]) {
+                                    return val
+                                }
+                            })
+                            if (isExist.length == 0) {
+                                filterData.push(_filter[0]);
+                            }
+                        }
 
-                })
+                        var _filterDimension = {};
+                        if (broadcast.filterSelection.id) {
+                            _filterDimension = broadcast.filterSelection.filter;
+                        } else {
+                            broadcast.filterSelection.id = parentContainer.attr('id');
+                        }
+                        var dimension = _dimension[0];
+                        if (_filterDimension[dimension]) {
+                            _filterDimension[dimension] = filterData.map(function (d) {
+                                return d[_dimension[0]];
+                            });
+                        } else {
+                            _filterDimension[dimension] = [d.data[_dimension[0]]];
+                        }
+
+                        var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
+                        broadcast.updateWidget = {};
+                        broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
+                        broadcast.filterSelection.filter = _filterDimension;
+                        var _filterParameters = filterParameters.get();
+                        _filterParameters[dimension] = _filterDimension[dimension];
+                        filterParameters.save(_filterParameters);
+                    }
+                }
+
+            })
         }
 
         /* Axes */
@@ -886,7 +1092,7 @@ function line() {
 
         if (!_print) {
 
-            //remove Threshold modal popup 
+            //remove Threshold modal popup
             // var str = UTIL.createAlert($(div).attr('id'), _measure);
             // $(div).append(str);
 
@@ -897,19 +1103,9 @@ function line() {
             $('#' + parentContainer.attr('id')).append(_filter);
 
             line
-                .on("mouseover", function (d) {
-                    d3.select(this)
-                        .style("stroke-width", "2.5px")
-                        .style("cursor", "pointer");
-                })
-                .on("mouseout", function (d) {
-                    d3.select(this)
-                        .style("stroke-width", "1.5px")
-                        .style("cursor", "none");
-                })
                 .attr('d', lineGenerator)
                 .transition()
-                .duration(COMMON.DURATION)
+                .duration(0)
                 .attrTween('stroke-dasharray', function () {
                     var l = this.getTotalLength(),
                         i = d3.interpolateString("0," + l, l + "," + l);
@@ -917,7 +1113,7 @@ function line() {
                 });
 
             area.transition()
-                .duration(COMMON.DURATION)
+                .duration(0)
                 .styleTween('opacity', function () {
                     var interpolator = d3.interpolateNumber(0, 1);
 
@@ -1000,7 +1196,7 @@ function line() {
     var drawPlotForFilter = function (data) {
         if (!_print) {
             var keys = UTIL.getMeasureList(data[0], _dimension, _measure);
-            var range = UTIL.getMinMax(data, keys);
+
             parentContainer.select('.filterElement').remove();
             svgFilter = parentContainer.append('svg')
                 .attr('width', parentContainer.attr('width'))
@@ -1017,6 +1213,36 @@ function line() {
             _y.rangeRound([FilterControlHeight - COMMON.PADDING, 0])
                 .domain([range[0], range[1]])
                 .nice();
+
+            if (_stacked) {
+                var posTotal,
+                    negTotal;
+
+                data.forEach(function (d) {
+                    posTotal = 0;
+                    negTotal = 0;
+                    keys.forEach(function (m) {
+                        d[m] = +d[m];
+                        if (d[m] >= 0) {
+                            posTotal += d[m];
+                        } else {
+                            negTotal += d[m];
+                        }
+                    });
+                    d.posTotal = posTotal;
+                    d.negTotal = negTotal;
+                });
+
+                _y.domain([
+                    d3.min(data, function (d) { return d.negTotal; }),
+                    d3.max(data, function (d) { return d.posTotal; })
+                ]).nice();
+
+                data.map(function (val) {
+                    delete val['negTotal'];
+                    delete val['posTotal'];
+                })
+            }
 
             brush.extent([[0, 0], [parentContainer.attr('width'), FilterControlHeight]])
                 .on("brush", brushed);
@@ -1056,31 +1282,74 @@ function line() {
 
             var labelStack = [];
 
-            var _areaGenerator = d3.area()
-                .curve(d3.curveLinear)
-                .x(function (d, i) {
-                    return _x(d['data'][_dimension[0]]) + _x.bandwidth() / 2;
-                })
-                .y0(function (d, i) {
-                    return _y(0);
-                })
-                .y1(function (d) {
-                    return _y(d['data'][d['tag']]);
-                });
+            var _areaGenerator, _lineGenerator;
+            if (_stacked) {
+                _areaGenerator = d3.area()
+                    .curve(d3.curveLinear)
+                    .x(function (d, i) {
+                        return _x(d.data[_dimension[0]])
+                    })
+                    .y0(function (d, i) {
+                        return _y(d.tag[i][0])
+                    })
+                    .y1(function (d, i) {
+                        return _y(d.tag[i][1]);
+                    });
 
-            var _lineGenerator = d3.line()
-                .curve(d3.curveLinear)
-                .x(function (d, i) {
-                    return _x(d['data'][_dimension[0]]) + x.bandwidth() / 2;
-                })
-                .y(function (d, i) {
-                    return _y(d['data'][d['tag']]);
-                });
+                _lineGenerator = d3.line()
+                    .curve(d3.curveLinear)
+                    .x(function (d, i) {
+                        return _x(d.data[_dimension[0]]);
+                    })
+                    .y(function (d, i) {
+                        if (d.tag[i][0] < 0) {
 
-            var cluster_lineFilter = context.selectAll('.cluster_lineFilter')
-                .data(keys.filter(function (m) { return labelStack.indexOf(m) == -1; }))
-                .enter().append('g')
-                .attr('class', 'cluster_lineFilter');
+                            return _y(d.tag[i][0])
+                        }
+                        return _y(d.tag[i][1])
+                    });
+            }
+            else {
+                _areaGenerator = d3.area()
+                    .curve(d3.curveLinear)
+                    .x(function (d, i) {
+                        return _x(d['data'][_dimension[0]]) + x.bandwidth() / 2;
+                    })
+                    .y0(function (d, i) {
+                        return _y(0);
+                    })
+                    .y1(function (d) {
+                        return _y(d['data'][d['tag']]);
+                    });
+
+                _lineGenerator = d3.line()
+                    .curve(d3.curveLinear)
+                    .x(function (d, i) {
+                        return _x(d['data'][_dimension[0]]) + _x.bandwidth() / 2;
+                    })
+                    .y(function (d, i) {
+                        return _y(d['data'][d['tag']]);
+                    });
+            }
+
+            var cluster_lineFilter;
+            if (_stacked) {
+                cluster_lineFilter = context.selectAll('.cluster_lineFilter')
+                    .data(d3.stack()
+                        .keys(keys.filter(function (d) {
+                            return labelStack.indexOf(d) == -1;
+                        }))
+                        .offset(d3.stackOffsetDiverging)(data)
+                    )
+                    .enter().append('g')
+                    .attr('class', 'cluster_lineFilter');
+            }
+            else {
+                cluster_lineFilter = context.selectAll('.context')
+                    .data(keys.filter(function (m) { return labelStack.indexOf(m) == -1; }))
+                    .enter().append('g')
+                    .attr('class', 'cluster_lineFilter');
+            }
 
             var areaFilter = cluster_lineFilter.append('path')
                 .datum(function (d, i) {
@@ -1088,17 +1357,17 @@ function line() {
                 })
                 .attr('class', 'areaFilter')
                 .attr('fill', function (d, i) {
-                    return UTIL.getBorderColor(_measure.indexOf(d[0]['tag']), _borderColor);
+                    return UTIL.getBorderColor(i, _borderColor);
                 })
                 .attr('visibility', function (d, i) {
-                    if (_lineType[(_measure.indexOf(d[0]['tag']))].toUpperCase() == "AREA") {
+                    if (_lineType[i].toUpperCase() == "AREA") {
                         return 'visible'
                     }
                     else {
                         return 'hidden';
                     }
                 })
-                .style('fill-opacity', 0.3)
+                .style('fill-opacity', 0.5)
                 .attr('stroke', 'none')
                 .style('stroke-width', 0)
                 .style('opacity', 1)
@@ -1113,15 +1382,16 @@ function line() {
                 .attr('stroke-dasharray', 'none')
                 .style('fill', 'none')
                 .attr('stroke', function (d, i) {
-                    return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
+                    return UTIL.getDisplayColor(i, _displayColor);
                 })
                 .attr('stroke-linejoin', 'round')
                 .attr('stroke-linecap', 'round')
-                .attr('stroke-width', 1)
+                .attr('stroke-width', '1px')
                 .attr('d', _lineGenerator)
                 .style('stroke-opacity', 0.6)
         }
     }
+
     chart._legendInteraction = function (event, data, plot) {
         if (_print) {
             // No interaction during print enabled
@@ -1145,11 +1415,31 @@ function line() {
     var _legendMouseOver = function (data, plot) {
 
         var line = plot.selectAll('.line')
+            .style("visibility", "hidden");
+
+        var area = plot.selectAll('.area')
+            .style("visibility", "hidden");
+
+        var point = plot.selectAll('path.point')
+            .style("opacity", "0");
+
+        var line = plot.selectAll('.line')
             .filter(function (d, i) {
-                return d[i].tag === data;
+                return d[i].tag.key === data;
             })
-            .style("stroke-width", "2.5px")
-            .style('stroke', COMMON.HIGHLIGHTER);
+            .style("visibility", "visible");
+
+        var area = plot.selectAll('.area')
+            .filter(function (d, i) {
+                return d[i].tag.key === data;
+            })
+            .style("visibility", "visible");
+
+        var point = plot.selectAll('path.point')
+            .filter(function (d, i) {
+                return d.tag.key === data;
+            })
+            .style("opacity", "1");
     }
 
     var _legendMouseMove = function (data, plot) {
@@ -1158,12 +1448,19 @@ function line() {
 
     var _legendMouseOut = function (data, plot) {
         var line = plot.selectAll('.line')
-            .filter(function (d, i) {
-                return d[i].tag === data;
-            })
-            .style("stroke-width", "1.5px")
-            .style('stroke', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
+            .style("visibility", "visible");
+
+        var point = plot.selectAll('path.point')
+            .style("opacity", "1");
+
+        var area = plot.selectAll('.area')
+            .style("visibility", function (d, i) {
+                if (_lineType[i].toUpperCase() == "AREA") {
+                    return "visible";
+                }
+                else {
+                    return "hidden";
+                }
             });
     }
 
@@ -1217,8 +1514,11 @@ function line() {
             }
         }
         if (_tooltip) {
-            tooltip = parentContainer.select('.custom_tooltip');
+            var tooltip = parentContainer.select('.custom_tooltip');
         }
+
+        _originalData = data;
+
         filterData = [];
 
         var chartplot = _local_svg.select('.chart')
@@ -1240,71 +1540,159 @@ function line() {
             .domain([range[0], range[1]])
             .nice();
 
-        var clusterLine = plot.selectAll('.cluster_line')
-            .data(keys.filter(function (m) { return labelStack.indexOf(m) == -1; }))
+        if (_stacked) {
+            var posTotal,
+                negTotal;
 
-        var line = clusterLine.select('path.line')
-            .classed('line-path', true)
-            .datum(function (d, i) {
-                return data.map(function (datum) { return { "tag": d, "data": datum }; });
-            })
-            .attr('stroke-dasharray', 'none')
-            .attr('d', lineGenerator)
-            .style('fill', 'none')
-            .attr('stroke', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
-            })
-            .transition()
-            .duration(COMMON.DURATION)
-            .attrTween('stroke-dasharray', function () {
-                var l = this.getTotalLength(),
-                    i = d3.interpolateString("0," + l, l + "," + l);
-                return function (t) { return i(t); };
+            data.forEach(function (d) {
+                posTotal = 0;
+                negTotal = 0;
+                keys.forEach(function (m) {
+                    d[m] = +d[m];
+                    if (d[m] >= 0) {
+                        posTotal += d[m];
+                    } else {
+                        negTotal += d[m];
+                    }
+                });
+                d.posTotal = posTotal;
+                d.negTotal = negTotal;
             });
 
+            y.domain([
+                d3.min(data, function (d) { return d.negTotal; }),
+                d3.max(data, function (d) { return d.posTotal; })
+            ]).nice();
 
-        var area = clusterLine.select('path.area')
+            data.map(function (val) {
+                delete val['negTotal'];
+                delete val['posTotal'];
+            })
+        }
+
+        var clusterLine, clusterArea;
+
+        if (_stacked) {
+            clusterLine = plot.selectAll('.cluster_line')
+                .data(d3.stack()
+                    .keys(keys.filter(function (d) {
+                        return labelStack.indexOf(d) == -1;
+                    }))
+                    .offset(d3.stackOffsetDiverging)(data)
+                );
+
+            clusterArea = plot.selectAll('.cluster_area')
+                .data(d3.stack()
+                    .keys(keys.filter(function (d) {
+                        return labelStack.indexOf(d) == -1;
+                    }))
+                    .offset(d3.stackOffsetDiverging)(data)
+                );
+        }
+        else {
+            clusterLine = plot.selectAll('.cluster_line')
+                .data(keys.filter(function (m) { return labelStack.indexOf(m) == -1; }));
+
+            clusterArea = plot.selectAll('.cluster_area')
+                .data(keys.filter(function (m) { return labelStack.indexOf(m) == -1; }));
+
+        }
+
+        var line = clusterLine.select('path.line')
             .datum(function (d, i) {
                 return data.map(function (datum) { return { "tag": d, "data": datum }; });
             })
-            .attr('d', areaGenerator)
+            .attr('class', 'line')
+            .attr('stroke-dasharray', 'none')
+            .style('fill', 'none')
+            .attr('stroke', function (d, i) {
+                return UTIL.getDisplayColor(i, _displayColor);
+            })
+            .attr('stroke-linejoin', 'round')
+            .attr('stroke-linecap', 'round')
+            .attr('d', lineGenerator)
+            .attr('stroke-width', '3px');
+
+
+        var area = clusterArea.select('path.area')
+            .datum(function (d, i) {
+                return data.map(function (datum) { return { "tag": d, "data": datum }; });
+            })
+            .attr('fill', function (d, i) {
+                return UTIL.getBorderColor(i, _borderColor);
+            })
+            .attr('visibility', function (d, i) {
+                if (_lineType[i].toUpperCase() == "AREA") {
+                    return 'visible'
+                }
+                else {
+                    return 'hidden';
+                }
+            })
             .style('fill-opacity', 0.5)
             .attr('stroke', 'none')
             .style('stroke-width', 0)
-            .style('opacity', 0)
+            .style('opacity', 1)
+            .attr('d', areaGenerator);
 
         plot.selectAll('path.point').remove()
 
-        var point = clusterLine.selectAll('point')
+        var point = clusterLine.selectAll('.point')
             .data(function (d, i) {
                 return data.map(function (datum) { return { "tag": d, "data": datum }; });
             })
             .enter().append('path')
             .attr('class', 'point')
             .attr('stroke', function (d, i) {
-                return UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor);
+                if (_displayColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)].length) {
+                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d['data'][d['tag']], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d['data'][d['tag']], 'color')
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key), _displayColor);
+                    }
+                }
+                else {
+                    return UTIL.getDisplayColor(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key), _displayColor);
+                }
             })
             .attr('fill', function (d, i) {
-                return UTIL.getBorderColor(_measure.indexOf(d.tag), _borderColor);
+                if (_displayColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)].length) {
+                    if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d['data'][d['tag']], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d['data'][d['tag']], 'color')
+                    }
+                    else {
+                        return UTIL.getDisplayColor(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key), _displayColor);
+                    }
+                }
+                else {
+                    return UTIL.getDisplayColor(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key), _displayColor);
+                }
             })
             .attr('d', function (d, i) {
                 return d3.symbol()
-                    .type(getPointType(_measure.indexOf(d.tag)))
+                    .type(getPointType(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)))
                     .size(40)();
             })
+            .attr('transform', function (d, i) {
+                if (_stacked) {
+                    return 'translate('
+                        + (x(d['data'][_dimension[0]]) + x.bandwidth() / 2)
+                        + ',' + y(d.tag[i][1] == 0 ? d.tag[i][0] : d.tag[i][1]) + ')';
+                } else {
+                    return 'translate('
+                        + (x(d['data'][_dimension[0]]) + x.bandwidth() / 2)
+                        + ',' + y(d['data'][d['tag']]) + ')';
+                }
+            })
             .style('visibility', function (d, i) {
-                if (_pointType[_measure.indexOf(d.tag)] == "None") {
+                if (_pointType[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)] == "None") {
                     return 'hidden';
                 }
             })
-            .attr('transform', function (d) {
-                return 'translate('
-                    + (x(d['data'][_dimension[0]]) + x.bandwidth() / 2)
-                    + ',' + y(d['data'][d['tag']]) + ')';
-            })
-            .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+            // .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
+            // .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
+            // .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
             .on('click', function (d) {
                 if (!_print) {
                     if (broadcast != undefined && broadcast.isThresholdAlert) {
@@ -1384,14 +1772,19 @@ function line() {
                 return x(d['data'][_dimension[0]]);
             })
             .attr('y', function (d, i) {
-                return y(d.data[d.tag]);
+                if (_stacked) {
+                    return y(d.tag[i][1]);
+                }
+                else {
+                    return y(d['data'][d['tag']]);
+                }
             })
             .attr('dy', function (d, i) {
                 return -2 * offsetY;
             })
             .style('text-anchor', 'middle')
             .text(function (d, i) {
-                return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(_measure.indexOf(d.tag), _numberFormat, d.data[d.tag]));
+                return UTIL.getFormattedValue(d.data[d.tag.key == undefined ? d.tag : d.tag.key], UTIL.getValueNumberFormat(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key), _numberFormat, d.data[d.tag.key == undefined ? d.tag : d.tag.key]));
             })
             .text(function (d, i) {
                 if (!_print) {
@@ -1399,35 +1792,37 @@ function line() {
                     return UTIL.getTruncatedLabel(this, d3.select(this).text(), width);
                 }
                 else {
-                    return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(_measure.indexOf(d.tag), _numberFormat, d.data[d.tag]));
+                    return UTIL.getFormattedValue(d.data[d.tag.key == undefined ? d.tag : d.tag.key], UTIL.getValueNumberFormat(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key), _numberFormat, d.data[d.tag.key == undefined ? d.tag : d.tag.key]));
                 }
             })
             .attr('visibility', function (d, i) {
                 if (_notification) {
                     return 'hidden';
                 }
-                if (_showValues[_measure.indexOf(d.tag)]) {
-                    var showText = "";
-                    var ticks = y.ticks();
+                if (_showValues[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)]) {
+                    // var showText = "";
+                    // var ticks = y.ticks();
 
-                    var allValue = [];
-                    var allData = data.filter(function (val) {
-                        if (val[_dimension[0]] == d["data"][_dimension[0]]) {
-                            for (let index = 0; index < _measure.length; index++) {
-                                if (_measure[index] != d["tag"]) {
-                                    allValue.push(d["data"][_measure[index]])
-                                }
-                            }
-                            return val;
-                        }
-                    });
-                    for (let index = 0; index < allValue.length; index++) {
-                        var yPosition = y(allValue[index]);
-                        var activePostion = y(d.data[d.tag]);
-                        if (Math.abs(yPosition - activePostion) <= (plotHeight / ticks.length)) {
-                            showText = 'hidden';
-                        }
-                    }
+                    // var allValue = [];
+                    // var allData = data.filter(function (val) {
+                    //     if (val[_dimension[0]] == d["data"][_dimension[0]]) {
+                    //         for (let index = 0; index < _measure.length; index++) {
+                    //             if (_measure[index] != d["tag"]) {
+                    //                 allValue.push(d["data"][_measure[index]])
+                    //             }
+                    //         }
+                    //         return val;
+                    //     }
+                    // });
+                    // for (let index = 0; index < allValue.length; index++) {
+                    //     var yPosition = y(allValue[index]);
+                    //     var activePostion = y(d.data[d.tag.key==undefined?d.tag:d.tag.key]);
+                    //     if (Math.abs(yPosition - activePostion) <= (plotHeight / ticks.length)) {
+                    //         showText = 'hidden';
+                    //     }
+                    // }
+
+                    return 'visible'
                 }
                 else {
                     return 'hidden'
@@ -1435,25 +1830,25 @@ function line() {
                 return showText;
             })
             .style('font-style', function (d, i) {
-                return _fontStyle[_measure.indexOf(d.tag)];
+                return _fontStyle[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
             })
             .style('font-weight', function (d, i) {
-                return _fontWeight[_measure.indexOf(d.tag)];
+                return _fontWeight[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
             })
             .style('font-size', function (d, i) {
-                return _fontSize[_measure.indexOf(d.tag)];
+                return _fontSize[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
             })
             .style('fill', function (d, i) {
-                if (_textColorExpression[_measure.indexOf(d.tag)].length) {
-                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag)], d.data[d.tag], 'color').length > 0) {
-                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag)], d.data[d.tag], 'color')
+                if (_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)].length) {
+                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d.data[d.tag.key == undefined ? d.tag : d.tag.key], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d.data[d.tag.key == undefined ? d.tag : d.tag.key], 'color')
                     }
                     else {
-                        return _textColor[_measure.indexOf(d.tag)];
+                        return _textColor[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
                     }
                 }
                 else {
-                    return _textColor[_measure.indexOf(d.tag)];
+                    return _textColor[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
                 }
             });
 
@@ -1462,14 +1857,19 @@ function line() {
                 return x(d['data'][_dimension[0]]);
             })
             .attr('y', function (d, i) {
-                return y(d.data[d.tag]);
+                if (_stacked) {
+                    return y(d.tag[i][1]);
+                }
+                else {
+                    return y(d['data'][d['tag']]);
+                }
             })
             .attr('dy', function (d, i) {
                 return -2 * offsetY;
             })
             .style('text-anchor', 'middle')
             .text(function (d, i) {
-                return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(_measure.indexOf(d.tag), _numberFormat, d.data[d.tag]));
+                return UTIL.getFormattedValue(d.data[d.tag.key == undefined ? d.tag : d.tag.key], UTIL.getValueNumberFormat(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key), _numberFormat, d.data[d.tag.key == undefined ? d.tag : d.tag.key]));
             })
             .text(function (d, i) {
                 if (!_print) {
@@ -1477,35 +1877,63 @@ function line() {
                     return UTIL.getTruncatedLabel(this, d3.select(this).text(), width);
                 }
                 else {
-                    return UTIL.getFormattedValue(d.data[d.tag], UTIL.getValueNumberFormat(_measure.indexOf(d.tag), _numberFormat, d.data[d.tag]));
+                    return UTIL.getFormattedValue(d.data[d.tag.key == undefined ? d.tag : d.tag.key], UTIL.getValueNumberFormat(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key), _numberFormat, d.data[d.tag.key == undefined ? d.tag : d.tag.key]));
                 }
             })
             .attr('visibility', function (d, i) {
                 if (_notification) {
                     return 'hidden';
                 }
-                return UTIL.getVisibility(_showValues[_measure.indexOf(d.tag)]);
+                if (_showValues[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)]) {
+                    // var showText = "";
+                    // var ticks = y.ticks();
+
+                    // var allValue = [];
+                    // var allData = data.filter(function (val) {
+                    //     if (val[_dimension[0]] == d["data"][_dimension[0]]) {
+                    //         for (let index = 0; index < _measure.length; index++) {
+                    //             if (_measure[index] != d["tag"]) {
+                    //                 allValue.push(d["data"][_measure[index]])
+                    //             }
+                    //         }
+                    //         return val;
+                    //     }
+                    // });
+                    // for (let index = 0; index < allValue.length; index++) {
+                    //     var yPosition = y(allValue[index]);
+                    //     var activePostion = y(d.data[d.tag.key==undefined?d.tag:d.tag.key]);
+                    //     if (Math.abs(yPosition - activePostion) <= (plotHeight / ticks.length)) {
+                    //         showText = 'hidden';
+                    //     }
+                    // }
+
+                    return 'visible'
+                }
+                else {
+                    return 'hidden'
+                }
+                return showText;
             })
             .style('font-style', function (d, i) {
-                return _fontStyle[_measure.indexOf(d.tag)];
+                return _fontStyle[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
             })
             .style('font-weight', function (d, i) {
-                return _fontWeight[_measure.indexOf(d.tag)];
+                return _fontWeight[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
             })
             .style('font-size', function (d, i) {
-                return _fontSize[_measure.indexOf(d.tag)];
+                return _fontSize[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
             })
             .style('fill', function (d, i) {
-                if (_textColorExpression[_measure.indexOf(d.tag)].length) {
-                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag)], d.data[d.tag], 'color').length > 0) {
-                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag)], d.data[d.tag], 'color')
+                if (_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)].length) {
+                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d.data[d.tag.key == undefined ? d.tag : d.tag.key], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d.data[d.tag.key == undefined ? d.tag : d.tag.key], 'color')
                     }
                     else {
-                        return _textColor[_measure.indexOf(d.tag)];
+                        return _textColor[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
                     }
                 }
                 else {
-                    return _textColor[_measure.indexOf(d.tag)];
+                    return _textColor[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
                 }
             });
 

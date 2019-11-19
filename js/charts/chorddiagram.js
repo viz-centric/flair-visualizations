@@ -255,7 +255,7 @@ function chorddiagram() {
         svg.selectAll('g').remove();
 
         if (_tooltip) {
-            tooltip = parentContainer.select('.custom_tooltip');
+            var tooltip = parentContainer.select('.custom_tooltip');
         }
 
         svg = svg.attr('width', width)
@@ -505,7 +505,7 @@ function chorddiagram() {
             height = +svg.attr('height');
 
         if (_tooltip) {
-            tooltip = parentContainer.select('.custom_tooltip');
+            var tooltip = parentContainer.select('.custom_tooltip');
         }
 
         _local_svg.selectAll('.plot g').remove();

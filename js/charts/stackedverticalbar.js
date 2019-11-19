@@ -661,7 +661,7 @@ function stackedverticalbar() {
     var drawPlot = function (data) {
         var me = this;
         if (_tooltip) {
-            tooltip = parentContainer.select('.custom_tooltip');
+            var tooltip = parentContainer.select('.custom_tooltip');
         }
 
         var plot = container.append('g')
@@ -1188,7 +1188,7 @@ function stackedverticalbar() {
 
         var labelStack = [];
         if (_tooltip) {
-            tooltip = parentContainer.select('.custom_tooltip');
+            var tooltip = parentContainer.select('.custom_tooltip');
         }
 
         filterData = [];

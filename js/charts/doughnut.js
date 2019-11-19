@@ -478,7 +478,7 @@ function doughnut() {
         var me = this;
 
         if (_tooltip) {
-            tooltip = parentContainer.select('.custom_tooltip');
+            var tooltip = parentContainer.select('.custom_tooltip');
         }
 
         /* total sum of the measure values */
@@ -858,7 +858,7 @@ function doughnut() {
             d[_measure[0]] = Math.abs(d[_measure[0]]);
         })
         if (_tooltip) {
-            tooltip = parentContainer.select('.custom_tooltip');
+            var tooltip = parentContainer.select('.custom_tooltip');
         }
         var svg = _local_svg,
             width = +svg.attr('width'),

@@ -51,73 +51,69 @@ function util() {
         },
 
 
-        updateTooltip: function (data, container, borderColor, notification) {
+        updateTooltip: function (data, container, borderColor, chartType) {
             var pt = d3.mouse(container.node()),
                 x = pt[0] + 20,
                 y = pt[1];
             d3.getEvent = () => require("d3-selection").event;
 
-            if (notification) {
-                this
-                    .style("left", d3.event.pageX - 50 + "px")
-                    .style("top", d3.event.pageY - 70 + "px")
-                    .style('border', 'solid 2px')
-                    .style('border-color', borderColor)
-                    .style("display", "inline-block")
-                    .html(data);
+            // if (notification) {
+            //     this
+            //         .style("left", d3.event.pageX - 50 + "px")
+            //         .style("top", d3.event.pageY - 70 + "px")
+            //         .style('border', 'solid 2px')
+            //         .style('border-color', borderColor)
+            //         .style("display", "inline-block")
+            //         .html(data);
+            // }
+            // else {
+            this.style('Top', y + 'px')
+                .style('Left', x + 'px')
+                .style('border', 'solid 2px')
+                .style('border-color', borderColor)
+                .html(data);
+
+            var tooltip = this.node()
+            var c = container.node();
+            var left = c.clientLeft,
+                width = c.clientWidth,
+                height = c.clientHeight,
+                top = 0;
+
+            var tipLeft = tooltip.offsetLeft,
+                tipWidth = tooltip.offsetWidth,
+                tipHeight = tooltip.offsetHeight,
+                tipTop = tooltip.offsetTop;
+
+            //setting tooltip position    
+            // to do  
+            if (tipLeft < left) {
+                tooltip.style.left = left + "px";
             }
             else {
-                this.style('Top', y + 'px')
-                    .style('Left', x + 'px')
-                    .style('border', 'solid 2px')
-                    .style('border-color', borderColor)
-                    .html(data);
-
-                var tooltip = this.node()
-                var c = container.node();
-                var left = c.clientLeft,
-                    width = c.clientWidth,
-                    height = c.clientHeight,
-                    top = 0;
-
-                var tipLeft = tooltip.offsetLeft,
-                    tipWidth = tooltip.offsetWidth,
-                    tipHeight = tooltip.offsetHeight,
-                    tipTop = tooltip.offsetTop;
-
-                //setting tooltip position    
-                // to do  
-                if (tipLeft < left) {
-                    tooltip.style.left = left + "px";
-                }
-                else {
-                    tooltip.style.left = (left + width - tipWidth - 20) - (width - x) + 'px';
-                }
-
-                if (tipLeft + tipWidth > left + width) {
-                    tooltip.style.left = (left + width - tipWidth - 20) - (width - x) + 'px';
-
-                }
-                else {
-                    if (parseInt(container.node().getAttribute('width')) - x <= (tipWidth + 20)) {
-                        tooltip.style.left = (left + width - tipWidth - 20) - (width - x) + 'px';
-                    }
-                    else {
-                        tooltip.style.left = x + 'px';
-                    }
-                }
-
-                if (tipTop < top) {
-                    tooltip.style.top = top + "px";
-                }
-
-                if (tipTop + tipHeight > top + height) {
-                    tooltip.style.top = (top + height - tipHeight) + 'px';
-                }
-
+                tooltip.style.left = (left + width - tipWidth - 20) - (width - x) + 'px';
             }
 
+            if (tipLeft + tipWidth > left + width) {
+                tooltip.style.left = (left + width - tipWidth - 20) - (width - x) + 'px';
 
+            }
+            else {
+                if (parseInt(container.node().getAttribute('width')) - x <= (tipWidth + 20)) {
+                    tooltip.style.left = (left + width - tipWidth - 20) - (width - x) + 'px';
+                }
+                else {
+                    tooltip.style.left = x + 'px';
+                }
+            }
+
+            if (tipTop < top) {
+                tooltip.style.top = top + "px";
+            }
+
+            if (tipTop + tipHeight > top + height) {
+                tooltip.style.top = (top + height - tipHeight) + 'px';
+            }
         },
 
         hideTooltip: function (tooltip) {

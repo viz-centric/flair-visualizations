@@ -520,7 +520,7 @@ function combo() {
     var drawPlot = function (data) {
         var me = this;
         if (_tooltip) {
-            tooltip = parentContainer.select('.custom_tooltip');
+            var tooltip = parentContainer.select('.custom_tooltip');
         }
         var keys = UTIL.getMeasureList(data[0], _dimension, _measure);
 
@@ -1536,7 +1536,7 @@ function combo() {
         }
 
         if (_tooltip) {
-            tooltip = parentContainer.select('.custom_tooltip');
+            var tooltip = parentContainer.select('.custom_tooltip');
         }
 
         svg = _local_svg;

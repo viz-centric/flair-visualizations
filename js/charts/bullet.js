@@ -411,7 +411,7 @@ function bullet() {
             .attr('class', 'plot')
 
         if (_tooltip) {
-            tooltip = parentContainer.select('.custom_tooltip');
+            var tooltip = parentContainer.select('.custom_tooltip');
         }
 
         data = _data.map(function (item) {
@@ -612,7 +612,7 @@ function bullet() {
     chart.update = function (data) {
 
         if (_tooltip) {
-            tooltip = parentContainer.select('.custom_tooltip');
+            var tooltip = parentContainer.select('.custom_tooltip');
         }
         _Local_data = data;
         filterData = [];

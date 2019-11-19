@@ -51,10 +51,10 @@ function infographics() {
     /* These are the common private functions that is shared across the different private/public
      * methods but is initialized beforehand.
      */
-    var _x = d3.scalePoint(),
-        _y = d3.scaleLinear(),
-        _line = d3.line(),
-        _area = d3.area();
+    var x = d3.scalePoint(),
+        y = d3.scaleLinear(),
+        lineGenerator = d3.line(),
+        areaGenerator = d3.area();
 
     /* -------------------------------------------------------------------------------- */
     var _setConfigParams = function (config) {
@@ -290,27 +290,32 @@ function infographics() {
         _localMin = range[0];
         _localMax = range[1];
 
-        _x.domain(_localXLabels)
-            .range([0, parentWidth]);
+        x.domain(_localXLabels)
+            .padding([0.5])
+            .rangeRound([0, parentWidth]);
 
-        _y.domain([_localMin, _localMax])
+        y.domain([_localMin, _localMax])
             .range([parentHeight, 0]);
 
-        _line.x(function (d) {
-            return _x(d[_dimension[0]]);
-        })
-            .y(function (d) {
-                return _y(d[_measure[0]]);
-            });
-
-        _area.x(function (d) {
-            return _x(d[_dimension[0]]);
-        })
+        areaGenerator = d3.area()
+            .curve(d3.curveLinear)
+            .x(function (d) {
+                return x(d[_dimension[0]]);
+            })
             .y0(function (d, i) {
-                return _y(0);
+                return y(0);
             })
             .y1(function (d) {
-                return _y(d[_measure[0]]);
+                return y(d[_measure[0]]);
+            });
+
+        lineGenerator = d3.line()
+            .curve(d3.curveLinear)
+            .x(function (d) {
+                return x(d[_dimension[0]]);
+            })
+            .y(function (d) {
+                return y(d[_measure[0]]);
             });
 
         var plot = graphics.append('g')
@@ -321,17 +326,16 @@ function infographics() {
             .classed('infographics-line', true)
             .style('fill', 'none')
             .style('stroke', _chartBorderColor)
-            .style('stroke-linejoin', 'round')
-            .style('stroke-linecap', 'round')
-            .style('stroke-width', 4)
-            .attr('d', _line)
+            .style('stroke-width', '2px')
+            .style('stroke-dasharray','none')
+            .attr('d', lineGenerator)
 
         var area = plot.append('path')
             .classed('infographics-area', true)
             .style('fill', _chartDisplayColor)
             .style('stroke-width', 0)
-            .style('opacity', 0)
-            .attr('d', _area)
+            .style('opacity', 0.5)
+            .attr('d', areaGenerator)
 
         var points = plot.append('g')
             .attr('id', 'infographics-point-group')
@@ -340,15 +344,15 @@ function infographics() {
             .enter().append('circle')
             .classed('infographics-point', true)
             .attr('cx', function (d, i) {
-                return _x(d[_dimension[0]]);
+                return x(d[_dimension[0]]);
             })
             .attr('cy', function (d, i) {
-                return _y(d[_measure[0]]);
+                return y(d[_measure[0]]);
             })
-            .attr('r', 4)
+            .attr('r', 5)
             .style('fill', _chartBorderColor)
-            .style('stroke', d3.hsl(_chartBorderColor).darker(1).toString())
-            .style('stroke-width', 0)
+            .style('stroke', _chartBorderColor)
+            .style('stroke-width', 1.5)
 
         var measure = info.append('div')
             .classed('measure', true)
@@ -397,17 +401,7 @@ function infographics() {
                 .duration(COMMON.DURATION)
                 .attrTween('stroke-dasharray', function () {
                     var l = this.getTotalLength(),
-                        interpolator = d3.interpolateString('0,' + l, l + ',' + l);
-
-                    return function (t) {
-                        return interpolator(t);
-                    }
-                });
-
-            area.transition()
-                .duration(COMMON.DURATION)
-                .styleTween('opacity', function () {
-                    var interpolator = d3.interpolateNumber(0, .5);
+                        interpolator = d3.interpolateString("0," + l, l + "," + l);
 
                     return function (t) {
                         return interpolator(t);
@@ -507,10 +501,10 @@ function infographics() {
         });
 
         /* Update the axes scales */
-        _x.domain(_localXLabels)
+        x.domain(_localXLabels)
             .range([0, parentWidth]);
 
-        _y.domain([_localMin, _localMax])
+        y.domain([_localMin, _localMax])
             .range([parentHeight, 0]);
 
         var plot = div.select('#infographics-plot')
@@ -519,13 +513,13 @@ function infographics() {
         plot.select('path.infographics-line')
             .transition()
             .duration(0)
-            .attr('d', _line)
+            .attr('d', lineGenerator)
             .attr('stroke-dasharray', 'none');
 
         plot.select('path.infographics-area')
             .transition()
             .duration(0)
-            .attr('d', _area);
+            .attr('d', areaGenerator);
 
         plot.selectAll('.infographics-point').remove();
 
@@ -536,15 +530,16 @@ function infographics() {
             .enter().append('circle')
             .classed('infographics-point', true)
             .attr('cx', function (d, i) {
-                return _x(d[_dimension[0]]);
+                return x(d[_dimension[0]]);
             })
             .attr('cy', function (d, i) {
-                return _y(d[_measure[0]]);
+                return y(d[_measure[0]]);
             })
-            .attr('r', 4)
+            .attr('r', 6)
             .style('fill', _chartBorderColor)
-            .style('stroke', d3.hsl(_chartBorderColor).darker(1).toString())
-            .style('stroke-width', 0)
+            .style('stroke', _chartBorderColor)
+            .style('stroke-opacity', 0.6)
+            .style('stroke-width', 1.5)
 
         points.on('mouseover', _handleMouseOverFn.call(chart, _localTooltip, infographics))
             .on('mousemove', _handleMouseMoveFn.call(chart, _localTooltip, infographics))

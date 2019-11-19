@@ -680,7 +680,7 @@ function treemap() {
             .attr('transform', 'translate(' + 0 + ', ' + COMMON.PADDING + ')');
 
         if (_tooltip) {
-            tooltip = parentContainer.select('.custom_tooltip');
+            var tooltip = parentContainer.select('.custom_tooltip');
         }
 
         treemap = d3.treemap()
