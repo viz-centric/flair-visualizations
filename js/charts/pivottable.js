@@ -583,7 +583,7 @@ function pivottable() {
         }
 
         _measure.forEach(function (m) {
-            debugger
+             
             var style = {
                 'text-align': getTextAlignment(m),
                 'background-color': '#f7f7f7',

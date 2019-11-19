@@ -509,7 +509,7 @@ function pie() {
         }
 
         if (_tooltip) {
-            tooltip = parentContainer.select('.custom_tooltip');
+            var tooltip = parentContainer.select('.custom_tooltip');
         }
 
         outerRadius = Math.min(plotWidth, plotHeight) / 2.25;
@@ -801,7 +801,7 @@ function pie() {
         })
 
         if (_tooltip) {
-            tooltip = parentContainer.select('.custom_tooltip');
+            var tooltip = parentContainer.select('.custom_tooltip');
         }
 
         var svg = _local_svg,

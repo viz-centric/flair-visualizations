@@ -348,7 +348,7 @@ function map() {
             .attr('class', 'custom_tooltip');
 
         if (_tooltip) {
-            tooltip = parentContainer.select('.custom_tooltip');
+            var tooltip = parentContainer.select('.custom_tooltip');
         }
 
         container = svg.append('g')

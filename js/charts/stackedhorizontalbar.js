@@ -635,7 +635,7 @@ function stackedhorizontalbar() {
         var me = this,
             labelStack = [];
         if (_tooltip) {
-            tooltip = parentContainer.select('.custom_tooltip');
+            var tooltip = parentContainer.select('.custom_tooltip');
         }
         var plot = container.append('g')
             .attr('class', 'stackedhorizontalbar-plot')
@@ -1138,7 +1138,7 @@ function stackedhorizontalbar() {
 
         var labelStack = [];
         if (_tooltip) {
-            tooltip = parentContainer.select('.custom_tooltip');
+            var tooltip = parentContainer.select('.custom_tooltip');
         }
         var DURATION = COMMON.DURATION;
         if (isLiveEnabled) {

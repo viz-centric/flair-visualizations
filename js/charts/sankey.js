@@ -317,7 +317,7 @@ function sankey() {
         if (colorPattern == 'single_color') {
             return displayColor;
         } else if (colorPattern == 'unique_color') {
-            return _colorList[i % (_colorList.length)];
+            return _colorList[i] != undefined ? _colorList[i] : UTIL.getUniqueColour(i);
         } else if (colorPattern == 'gradient_color') {
             return gradientColor(d.value);
         }
@@ -361,7 +361,7 @@ function sankey() {
         _local_svg = svg;
 
         if (_tooltip) {
-            tooltip = parentContainer.select('.custom_tooltip');
+            var tooltip = parentContainer.select('.custom_tooltip');
         }
         var me = this;
         svg.selectAll('g').remove();
@@ -415,7 +415,7 @@ function sankey() {
         var rect = node.append('rect')
             .attr('width', sankey.nodeWidth())
             .attr('height', function (d) { return d.dy; })
-            .attr('class', function (d) { return d.name.replace(' ','_'); })
+            .attr('class', function (d) { return d.name.replace(/ /g, "_"); })
             .style('cursor', 'move')
             .style('fill', function (d, i) {
                 return getFillColor(d, i);
@@ -488,15 +488,15 @@ function sankey() {
                 if (colorPattern == 'single_color') {
                     return _colorList[0];
                 } else if (colorPattern == 'unique_color') {
-                    return _colorList[d.index];
+                    return _colorList[d.index]!=undefined?_colorList[d.index]:UTIL.getUniqueColour(d.index);
                 } else if (colorPattern == 'gradient_color') {
                     if (_print) {
                         return _colorList[0];
                     }
-                    return d3.select('.' + d.source.name.replace(' ','_')).style('fill');
+                    return d3.select('.' + d.source.name.replace(/ /g, "_")).style('fill');
                 }
             })
-            .style('stroke-opacity', '0.5') 
+            .style('stroke-opacity', '0.5')
             .style('stroke-width', function (d) { return Math.max(1, d.dy); })
             .sort(function (a, b) { return b.dy - a.dy; })
 
@@ -678,7 +678,7 @@ function sankey() {
             return d.value;
         }));
         if (_tooltip) {
-            tooltip = parentContainer.select('.custom_tooltip');
+            var tooltip = parentContainer.select('.custom_tooltip');
         }
         var nodeDistance = data.nodes[0].sourceLinks[0].target.x - data.nodes[0].x - sankey.nodeWidth();
 
@@ -699,7 +699,7 @@ function sankey() {
         node.select('rect')
             .attr('width', sankey.nodeWidth())
             .attr('height', function (d) { return d.dy; })
-            .attr('class', function (d) { return d.name.replace(' ','_'); })
+            .attr('class', function (d) { return d.name.replace(/ /g, "_"); })
             .style('cursor', 'move')
             .style('fill', function (d, i) {
                 return getFillColor(d, i);
@@ -881,12 +881,12 @@ function sankey() {
                 if (colorPattern == 'single_color') {
                     return _colorList[0];
                 } else if (colorPattern == 'unique_color') {
-                    return _colorList[d.index];
+                    return _colorList[d.index]!=undefined?_colorList[d.index]:UTIL.getUniqueColour(d.index);
                 } else if (colorPattern == 'gradient_color') {
                     if (_print) {
                         return _colorList[0];
                     }
-                    return d3.select('.' + d.source.name.replace(' ','_')).style('fill');
+                    return d3.select('.' + d.source.name.replace(/ /g, "_")).style('fill');
                 }
             })
             .style('stroke-width', function (d) { return Math.max(1, d.dy); })
@@ -931,12 +931,12 @@ function sankey() {
                 if (colorPattern == 'single_color') {
                     return _colorList[0];
                 } else if (colorPattern == 'unique_color') {
-                    return _colorList[d.index];
+                    return _colorList[d.index] != undefined ? _colorList[d.index] : UTIL.getUniqueColour(d.index);
                 } else if (colorPattern == 'gradient_color') {
                     if (_print) {
                         return _colorList[0];
                     }
-                    return d3.select('.' + d.source.name.replace(' ','_')).style('fill');
+                    return d3.select('.' + d.source.name.replace(/ /g, "_")).style('fill');
                 }
             })
             .style('stroke-width', function (d) { return Math.max(1, d.dy); })

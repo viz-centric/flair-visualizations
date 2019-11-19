@@ -359,7 +359,7 @@ function donut() {
             }
 
             if (_tooltip) {
-              tooltip = parentContainer.select('.custom_tooltip');
+              var tooltip = parentContainer.select('.custom_tooltip');
             }
 
             chart.drawPlot = function (data) {
