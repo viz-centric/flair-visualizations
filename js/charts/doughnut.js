@@ -478,7 +478,7 @@ function doughnut() {
         var me = this;
 
         if (_tooltip) {
-            var tooltip = parentContainer.select('.custom_tooltip');
+           tooltip = parentContainer.select('.custom_tooltip');
         }
 
         /* total sum of the measure values */
@@ -858,7 +858,7 @@ function doughnut() {
             d[_measure[0]] = Math.abs(d[_measure[0]]);
         })
         if (_tooltip) {
-            var tooltip = parentContainer.select('.custom_tooltip');
+           tooltip = parentContainer.select('.custom_tooltip');
         }
         var svg = _local_svg,
             width = +svg.attr('width'),
@@ -891,7 +891,7 @@ function doughnut() {
         if (_legend) {
             _localLegend = LEGEND.bind(chart);
 
-            var result = _localLegend(_local_data, container, {
+            var result = _localLegend(data, container, {
                 width: parentWidth,
                 height: parentHeight,
                 legendBreakCount: legendBreakCount

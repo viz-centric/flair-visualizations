@@ -568,7 +568,7 @@ function heatmap() {
         }));
 
         if (_tooltip) {
-            var tooltip = parentContainer.select('.custom_tooltip');
+           tooltip = parentContainer.select('.custom_tooltip');
         }
 
         var cell = plot.selectAll(".node")
@@ -754,7 +754,7 @@ function heatmap() {
 
     chart.update = function (data) {
         if (_tooltip) {
-            var tooltip = parentContainer.select('.custom_tooltip');
+           tooltip = parentContainer.select('.custom_tooltip');
         }
         _Local_data = data;
         filterData = [];

@@ -781,14 +781,12 @@ function line() {
                 return data.map(function (datum) { return { "tag": d, "data": datum }; });
             })
             .attr('class', 'line')
-            .attr('stroke-dasharray', 'none')
             .style('fill', 'none')
             .attr('stroke', function (d, i) {
                 return UTIL.getDisplayColor(i, _displayColor);
             })
-            .attr('stroke-linejoin', 'round')
-            .attr('stroke-linecap', 'round')
             .attr('stroke-width', '3px')
+
 
         var point = clusterLine.selectAll('.point')
             .data(function (d, i) {
@@ -843,6 +841,7 @@ function line() {
                     return 'hidden';
                 }
             })
+            .style('opacity', 0)
 
         var text = clusterLine.selectAll('text')
             .data(function (d, i) {
@@ -1105,12 +1104,19 @@ function line() {
             line
                 .attr('d', lineGenerator)
                 .transition()
-                .duration(0)
+                .duration(COMMON.DURATION)
                 .attrTween('stroke-dasharray', function () {
                     var l = this.getTotalLength(),
-                        i = d3.interpolateString("0," + l, l + "," + l);
-                    return function (t) { return i(t); };
+                        interpolator = d3.interpolateString("0," + l, l + "," + l);
+
+                    return function (t) {
+                        return interpolator(t);
+                    }
                 });
+
+            point.transition()
+                .duration(COMMON.DURATION * 2)
+                .style('opacity', 1);
 
             area.transition()
                 .duration(0)
@@ -1189,6 +1195,9 @@ function line() {
             line
                 .attr('d', lineGenerator)
             area
+                .style('opacity', 1);
+
+            point
                 .style('opacity', 1);
         }
 
@@ -1414,28 +1423,38 @@ function line() {
     }
     var _legendMouseOver = function (data, plot) {
 
-        var line = plot.selectAll('.line')
+        plot.selectAll('.line')
             .style("visibility", "hidden");
 
-        var area = plot.selectAll('.area')
+        plot.selectAll('.area')
             .style("visibility", "hidden");
 
-        var point = plot.selectAll('path.point')
+        plot.selectAll('path.point')
             .style("opacity", "0");
 
-        var line = plot.selectAll('.line')
+        plot.selectAll('.cluster_line').selectAll('text')
+            .style("opacity", "0");
+
+        plot.selectAll('.line')
             .filter(function (d, i) {
                 return d[i].tag.key === data;
             })
             .style("visibility", "visible");
 
-        var area = plot.selectAll('.area')
+
+        plot.selectAll('.area')
             .filter(function (d, i) {
                 return d[i].tag.key === data;
             })
             .style("visibility", "visible");
 
-        var point = plot.selectAll('path.point')
+        plot.selectAll('path.point')
+            .filter(function (d, i) {
+                return d.tag.key === data;
+            })
+            .style("opacity", "1");
+
+        plot.selectAll('.cluster_line').selectAll('text')
             .filter(function (d, i) {
                 return d.tag.key === data;
             })
@@ -1451,6 +1470,9 @@ function line() {
             .style("visibility", "visible");
 
         var point = plot.selectAll('path.point')
+            .style("opacity", "1");
+
+        plot.selectAll('.cluster_line').selectAll('text')
             .style("opacity", "1");
 
         var area = plot.selectAll('.area')
@@ -1520,6 +1542,55 @@ function line() {
         _originalData = data;
 
         filterData = [];
+
+        if (_stacked) {
+            areaGenerator = d3.area()
+                .curve(d3.curveLinear)
+                .x(function (d, i) {
+                    return x(d.data[_dimension[0]])
+                })
+                .y0(function (d, i) {
+                    return y(d.tag[i][0])
+                })
+                .y1(function (d, i) {
+                    return y(d.tag[i][1]);
+                });
+
+            lineGenerator = d3.line()
+                .curve(d3.curveLinear)
+                .x(function (d, i) {
+                    return x(d.data[_dimension[0]]);
+                })
+                .y(function (d, i) {
+                    if (d.tag[i][0] < 0) {
+
+                        return y(d.tag[i][0])
+                    }
+                    return y(d.tag[i][1])
+                });
+        }
+        else {
+            areaGenerator = d3.area()
+                .curve(d3.curveLinear)
+                .x(function (d, i) {
+                    return x(d['data'][_dimension[0]]) + x.bandwidth() / 2;
+                })
+                .y0(function (d, i) {
+                    return y(0);
+                })
+                .y1(function (d) {
+                    return y(d['data'][d['tag']]);
+                });
+
+            lineGenerator = d3.line()
+                .curve(d3.curveLinear)
+                .x(function (d, i) {
+                    return x(d['data'][_dimension[0]]) + x.bandwidth() / 2;
+                })
+                .y(function (d, i) {
+                    return y(d['data'][d['tag']]);
+                });
+        }
 
         var chartplot = _local_svg.select('.chart')
         labelStack = [];

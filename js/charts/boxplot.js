@@ -307,7 +307,7 @@ function boxplot() {
         var barWidth = Math.floor(gWidth / _data.length / 2);
         var me = this;
         if (_tooltip) {
-            var tooltip = parentContainer.select('.custom_tooltip');
+           tooltip = parentContainer.select('.custom_tooltip');
         }
 
         x = d3
@@ -538,7 +538,7 @@ function boxplot() {
         plot.selectAll('line').remove();
 
         if (_tooltip) {
-            var tooltip = parentContainer.select('.custom_tooltip');
+           tooltip = parentContainer.select('.custom_tooltip');
         }
 
         var globalMin, globalMax, xLabels;

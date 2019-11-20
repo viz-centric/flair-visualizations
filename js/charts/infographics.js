@@ -326,8 +326,7 @@ function infographics() {
             .classed('infographics-line', true)
             .style('fill', 'none')
             .style('stroke', _chartBorderColor)
-            .style('stroke-width', '2px')
-            .style('stroke-dasharray','none')
+            .style('stroke-width', '3px')
             .attr('d', lineGenerator)
 
         var area = plot.append('path')
@@ -352,6 +351,7 @@ function infographics() {
             .attr('r', 5)
             .style('fill', _chartBorderColor)
             .style('stroke', _chartBorderColor)
+            .style('opacity', 0)
             .style('stroke-width', 1.5)
 
         var measure = info.append('div')
@@ -408,6 +408,10 @@ function infographics() {
                     }
                 });
 
+            points.transition()
+                .duration(COMMON.DURATION * 2)
+                .style('opacity', 1);
+
             kpi.transition()
                 .ease(d3.easeQuadIn)
                 .duration(COMMON.DURATION)
@@ -425,6 +429,7 @@ function infographics() {
         }
         else {
             area.style('opacity', .5)
+            line.style('opacity', 1)
             kpi.html(_getKpi(_localTotal, _localTotal))
 
             var kpiData = graphics.append('text')
