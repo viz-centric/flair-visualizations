@@ -361,7 +361,7 @@ function sankey() {
         _local_svg = svg;
 
         if (_tooltip) {
-            var tooltip = parentContainer.select('.custom_tooltip');
+           tooltip = parentContainer.select('.custom_tooltip');
         }
         var me = this;
         svg.selectAll('g').remove();
@@ -678,7 +678,7 @@ function sankey() {
             return d.value;
         }));
         if (_tooltip) {
-            var tooltip = parentContainer.select('.custom_tooltip');
+           tooltip = parentContainer.select('.custom_tooltip');
         }
         var nodeDistance = data.nodes[0].sourceLinks[0].target.x - data.nodes[0].x - sankey.nodeWidth();
 

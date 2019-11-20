@@ -191,7 +191,7 @@ function rangefilter() {
             .attr('class', 'custom_tooltip');
 
         if (_tooltip) {
-            var tooltip = parentContainer.select('.custom_tooltip');
+           tooltip = parentContainer.select('.custom_tooltip');
         }
 
         var plot = svg.append('g')

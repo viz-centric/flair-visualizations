@@ -476,7 +476,7 @@ function scatter() {
             .call(_localYGrid);
 
         if (_tooltip) {
-            var tooltip = parentContainer.select('.custom_tooltip');
+           tooltip = parentContainer.select('.custom_tooltip');
         }
 
         var xAxisGroup,
@@ -781,7 +781,7 @@ function scatter() {
         plotHeight = parentHeight;
 
         if (_tooltip) {
-            var tooltip = parentContainer.select('.custom_tooltip');
+           tooltip = parentContainer.select('.custom_tooltip');
         }
 
         _Local_data = data,
