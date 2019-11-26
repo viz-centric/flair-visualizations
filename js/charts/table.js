@@ -134,10 +134,8 @@ function table() {
         iconStyle = JSON.stringify(iconStyle);
         iconStyle = iconStyle.replace(/["{}]/g, '').replace(/,/g, ';');
 
+
         iconOutput += "<i  class=\"" + _iconNameForMeasure[index] + "\" style=\"" + iconStyle + "\" aria-hidden=\"true\"></i>";
-
-
-
         if (getIconName(index) !== "") {
             return iconOutput;
         }
@@ -217,7 +215,7 @@ function table() {
 
     }
 
-    var createHeaderFooter = function () {
+    var createHeaderFooter = function (data) {
         var thead = "<thead class='searchHeader'><tr>";
         var tfoot = "<tfoot class='totalFooter'><tr>";
 
@@ -237,14 +235,16 @@ function table() {
             } else {
                 thead += "<th style=\"" + style + "\">" + item + "</th>";
             }
-            if (index == 0) {
-                tfoot += "<th style='border-left:1px solid #d3d4d4;border-right:0px solid #d3d4d4'></th>";
-            }
-            else {
-                tfoot += "<th style='border-left:0px solid #d3d4d4;border-right:0px solid #d3d4d4'></th>";
-            }
+            // if (index == 0) {
+            //     tfoot += "<th style='border-left:1px solid #d3d4d4;border-right:0px solid #d3d4d4'></th>";
+            // }
+            // else {
+            //     tfoot += "<th style='border-left:0px solid #d3d4d4;border-right:0px solid #d3d4d4'></th>";
+            // }
 
         });
+
+        tfoot += "<th colspan=" + _dimension.length + "></th>";
 
         _measure.forEach(function (item, index) {
             var title = _displayNameForMeasure[index],
@@ -262,7 +262,9 @@ function table() {
             } else {
                 thead += "<th style=\"" + style + "\">" + item + "</th>";
             }
-            tfoot += "<th></th>";
+            var total = d3.sum(data.map(function (d) { return d[_measure[index]]; }));
+
+            tfoot += "<th style='text-align:" + _textAlignmentForMeasure[index] + "'>" + total.toFixed(2) + "</th>";
         });
 
         thead += "</tr></thead>";
@@ -290,23 +292,23 @@ function table() {
 
         var table = _local_svg.append('table')
             .attr('id', 'viz_table')
-            //.style('width', '100%')
+            //.style('width', '170%')
             .classed('display', true)
             .classed('nowrap', true)
-            .classed('table', true)
-            .classed('display', true)
+            // .classed('table', true)
+            // .classed('display', true)
             .classed('table-condensed', true)
             .classed('table-hover', true);
 
-        var thead_tfoot = createHeaderFooter();
+        var thead_tfoot = createHeaderFooter(data);
 
         table.append('thead')
             .html(thead_tfoot.thead);
 
+        var tbody = createBody(data);
+
         table.append('tfoot')
             .html(thead_tfoot.tfoot);
-
-        var tbody = createBody(data);
 
         table.append('tbody').html(tbody);
 
@@ -324,39 +326,19 @@ function table() {
             var _filter = UTIL.createFilterElement()
             $('#' + id).append(_filter)
 
-            $('#' + id + " #viz_table thead tr").clone(true).appendTo('#' + id + " #viz_table thead");
-
-            $('#' + id + ' table:eq(0) thead tr:eq(0)').css('display', 'none')
-            $('.searchOpen').click(function () {
-                $('#' + id + ' table:eq(0) thead tr:eq(0)').css('display', 'table-row')
-                $('#' + id + ' .searchClose').css('display', 'block')
-                $('#' + id + ' .searchOpen').css('display', 'none')
-
-                tableHeight = height - 140
-                if (_isTotal) {
-                    tableHeight = height - 140 - 40;
-                }
-                $('#' + id + ' .dataTables_scrollBody').css('max-height', tableHeight + 'px')
-            })
-            $('.searchClose').click(function () {
-                $('#' + id + ' table:eq(0) thead tr:eq(0)').css('display', 'none')
-                $('#' + id + ' .searchClose').css('display', 'none')
-                $('#' + id + ' .searchOpen').css('display', 'block')
-
-                tableHeight = height - 100
-                if (_isTotal) {
-                    tableHeight = height - 100 - 40;
-                }
-                $('#' + id + ' .dataTables_scrollBody').css('max-height', tableHeight + 'px')
-            })
-
             var dataTable;
-            $('#' + id + ' #viz_table thead tr:eq(0) th').each(function (i) {
+
+            var tableHeight = height - 170;
+            if (_isTotal) {
+                tableHeight = height - 170 - 40;
+            }
+
+            $('#' + id + " #viz_table thead tr").clone(true).appendTo('#' + id + " #viz_table thead");
+            $('#' + id + ' #viz_table thead tr:eq(1) th').each(function (i) {
                 var title = $(this).text();
                 $(this).html('<input type="text" placeholder="Search ' + title + '" />');
 
                 $('input', this).on('keyup change', function () {
-
                     if (dataTable.column(i).search() !== this.value) {
                         dataTable
                             .column(i)
@@ -366,101 +348,46 @@ function table() {
                 });
             });
 
-            var tableHeight = height - 100;
-            if (_isTotal) {
-                tableHeight = height - 100 - 40;
-            }
+            $('#' + id + ' .searchOpen').click(function () {
+                $('#' + id + ' .dataTables_scrollHeadInner thead tr:eq(1)').css('display', 'table-row')
+                $('#' + id + ' .searchClose').css('display', 'block')
+                $('#' + id + ' .searchOpen').css('display', 'none')
+
+                tableHeight = height - 140
+                if (_isTotal) {
+                    tableHeight = height - 140 - 40;
+                }
+                $('#' + id + ' .dataTables_scrollBody').css('max-height', tableHeight + 'px')
+            })
+            $('#' + id + ' .searchClose').click(function () {
+                $('#' + id + ' table:eq(0) thead tr:eq(1)').css('display', 'none')
+                $('#' + id + ' .searchClose').css('display', 'none')
+                $('#' + id + ' .searchOpen').css('display', 'block')
+
+                tableHeight = height - 170
+                if (_isTotal) {
+                    tableHeight = height - 170 - 40;
+                }
+                $('#' + id + ' .dataTables_scrollBody').css('max-height', tableHeight + 'px')
+            })
 
             dataTable = $('#' + parentContainer.attr('id')).find('#viz_table').DataTable({
-
-                //  scrollY: tableHeight,
-                responsive: true,
-                // scrollX: true,
-                //  scrollCollapse: true,
+                "orderCellsTop": true,
                 "paging": false,
-                ordering: true,
-                info: false,
+                "ordering": true,
                 'dom': 'Rlfrtip',
-
-                bDestroy: true,
-                "fnDrawCallback": function (oSettings) {
-                    var api = this.api();
-                    for (let index = 0; index < _dimension.length; index++) {
-                        var width = $(api.column(index).header())
-                            .css('width')
-
-                        $(api.column(index).footer())
-                            .css('width', width)
-                    }
-
-                    for (let index = 0; index < _measure.length; index++) {
-                        var width = $(api.column(_dimension.length + index).header())
-                            .css('width')
-
-                        $(api.column(_dimension.length + index).footer())
-                            .css('width', width)
-                    }
-                },
-                "footerCallback": function (row, data, start, end, display) {
-                    var api = this.api(), data;
-                    for (var i = 0; i < data.length; i++) {
-                        for (var j = 0; j < data[i].length; j++) {
-                            if (data[i][j].toString().indexOf('</i>') >= 0) {
-                                data[i][j] = parseFloat(data[i][j].substring(data[i][j].indexOf('</i>') + 4, data[i][j].length)).toFixed(2)
-                            }
-                        }
-                    }
-
-                    var intVal = function (i) {
-                        return typeof i === 'string' ?
-                            i.replace(/[\$,]/g, '') * 1 :
-                            typeof i === 'number' ?
-                                i : 0;
-                    };
-
-                    // Total over all pages
-
-                    for (let index = 0; index < _measure.length; index++) {
-                        var width = $(api.column(index).header())
-                            .css('width')
-
-                        $(api.column(index).footer())
-                            .css('width', width)
-                    }
-
-
-
-
-                    for (let index = 0; index < _measure.length; index++) {
-
-                        total = api
-                            .column(_dimension.length + index)
-                            .data()
-                            .reduce(function (a, b) {
-                                return intVal(a) + intVal(b);
-                            }, 0);
-
-                        // Total over this page
-                        pageTotal = api
-                            .column(_dimension.length + index, { page: 'current' })
-                            .data()
-                            .reduce(function (a, b) {
-                                return intVal(a) + intVal(b);
-                            }, 0);
-
-                        // Update footer
-                        $(api.column(_dimension.length + index).footer()).html(
-                            parseFloat(total).toFixed(2)
-                        )
-
-                        $(api.column(_dimension.length + index).footer())
-                            .css('text-align', _textAlignmentForMeasure[index])
-                    }
-
-                },
-                "aaSorting": []
-
+                "autoWidth": true,
+                "scrollX": true,
+                "scrollY": tableHeight,
+                "info": false,
+                "aaSorting": [],
+                "colResize": {
+                    scrollY: 200,
+                    resizeTable: true
+                }
             });
+
+            $('#' + id + ' .dataTables_scrollHeadInner thead tr:eq(1)').css('display', 'none')
 
             $('#' + id).find('#previous').on('click', function (e, i) {
                 if (activePage == 0) {
@@ -489,9 +416,9 @@ function table() {
                 broadcast.$broadcast('FlairBi:update-table');
             });
 
-            var footer = _isTotal == true ? "block" : "none";
+            var footer = _isTotal == true ? "1" : "0";
 
-            $('#' + id + ' .dataTables_scrollFootInner tfoot').css('display', footer)
+            $('#' + id + ' .dataTables_scrollFootInner tfoot').css('opacity', footer)
 
             $("#viz_table_paginate").css('display', 'blobk')
             $($('#' + parentContainer.attr('id') + ' td.filter')).on('click', function () {

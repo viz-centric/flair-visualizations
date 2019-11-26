@@ -252,17 +252,33 @@ svg#graphics {
   border-right: 1px solid #d3d4d4;
 }
 
-/* line 7, ../sass/partials/_table.scss */
+/* line 8, ../sass/partials/_table.scss */
+#viz_table {
+  margin: 0 auto;
+  width: 100% !important;
+  clear: both;
+  border-collapse: collapse;
+  table-layout: fixed;
+  word-wrap: break-word;
+}
+
+/* line 17, ../sass/partials/_table.scss */
+div.dataTables_wrapper {
+  width: 100% !important;
+  margin: 0 auto;
+}
+
+/* line 22, ../sass/partials/_table.scss */
 .dataTables_length {
   text-align: left !important;
 }
-/* line 10, ../sass/partials/_table.scss */
+/* line 25, ../sass/partials/_table.scss */
 .dataTables_length label {
   /*setting up search box position  */
   width: auto !important;
 }
 
-/* line 15, ../sass/partials/_table.scss */
+/* line 30, ../sass/partials/_table.scss */
 #viz_pivot-table_wrapper .table th {
   font-weight: bold;
   border-bottom: 0px;
@@ -270,7 +286,7 @@ svg#graphics {
   border-right: 1px solid #d3d4d4;
 }
 
-/* line 22, ../sass/partials/_table.scss */
+/* line 37, ../sass/partials/_table.scss */
 .searchIcon {
   position: absolute;
   margin: 5px;
@@ -280,27 +296,27 @@ svg#graphics {
   font-size: 35px;
 }
 
-/* line 31, ../sass/partials/_table.scss */
+/* line 46, ../sass/partials/_table.scss */
 #viz_table_filter {
   margin-right: 45px !important;
 }
 
-/* line 35, ../sass/partials/_table.scss */
+/* line 50, ../sass/partials/_table.scss */
 .searchOpen {
   display: none;
 }
 
-/* line 38, ../sass/partials/_table.scss */
+/* line 53, ../sass/partials/_table.scss */
 .searchClose {
   display: block;
 }
 
-/* line 41, ../sass/partials/_table.scss */
+/* line 56, ../sass/partials/_table.scss */
 .dataTables_scroll {
   overflow: auto;
 }
 
-/* line 45, ../sass/partials/_table.scss */
+/* line 60, ../sass/partials/_table.scss */
 ._pagination li > a,
 ._pagination li > span {
   display: inline-block !important;
@@ -312,14 +328,66 @@ svg#graphics {
   margin: 5px;
 }
 
-/* line 55, ../sass/partials/_table.scss */
+/* line 70, ../sass/partials/_table.scss */
 .dataTables_wrapper.no-footer .dataTables_scrollBody {
   border-bottom: none !important;
 }
 
-/* line 58, ../sass/partials/_table.scss */
+/* line 73, ../sass/partials/_table.scss */
 td.selected {
   background-color: #676a6c !important;
   opacity: 0.5 !important;
   color: #fff !important;
+}
+
+/* width */
+/* line 80, ../sass/partials/_table.scss */
+.dataTables_scroll::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+  border-radius: 5px;
+}
+
+/* Track */
+/* line 87, ../sass/partials/_table.scss */
+.dataTables_scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+/* line 92, ../sass/partials/_table.scss */
+.dataTables_scroll::-webkit-scrollbar-thumb {
+  background: rgba(136, 139, 142, 0.5);
+}
+
+/* Handle on hover */
+/* line 97, ../sass/partials/_table.scss */
+.dataTables_scroll::-webkit-scrollbar-thumb:hover {
+  background: #888b8e;
+}
+
+/* line 101, ../sass/partials/_table.scss */
+table.dataTable thead th.ui-state-default,
+table.dataTable tfoot th.ui-state-default {
+  border-left-width: 1px;
+  border: 1px solid #dddddd;
+  border-top: none;
+  padding: 4px 5px;
+}
+
+/* line 109, ../sass/partials/_table.scss */
+table.dataTable.display tbody td {
+  border: 1px solid #dddddd;
+}
+
+/* line 113, ../sass/partials/_table.scss */
+table.dataTable tfoot tr:first-child th,
+table.dataTable thead tr:first-child th {
+  border-top: 1px solid #dddddd;
+}
+
+/* line 118, ../sass/partials/_table.scss */
+table.dataTable tbody th,
+table.dataTable tbody td {
+  padding: 4px 5px;
 }
