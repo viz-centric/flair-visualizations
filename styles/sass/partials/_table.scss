@@ -4,6 +4,21 @@
   border-left: 1px solid #d3d4d4;
   border-right: 1px solid #d3d4d4;
 }
+
+#viz_table {
+  margin: 0 auto;
+  width: 100% !important;
+  clear: both;
+  border-collapse: collapse;
+  table-layout: fixed;
+  word-wrap: break-word;
+}
+
+div.dataTables_wrapper {
+  width: 100% !important;
+  margin: 0 auto;
+}
+
 .dataTables_length {
   text-align: left !important;
 
@@ -59,4 +74,48 @@ td.selected {
   background-color: #676a6c !important;
   opacity: 0.5 !important;
   color: #fff !important;
+}
+
+/* width */
+.dataTables_scroll::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+  border-radius: 5px;
+}
+
+/* Track */
+.dataTables_scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+.dataTables_scroll::-webkit-scrollbar-thumb {
+  background: rgba(136, 139, 142, 0.5);
+}
+
+/* Handle on hover */
+.dataTables_scroll::-webkit-scrollbar-thumb:hover {
+  background: rgb(136, 139, 142);
+}
+
+table.dataTable thead th.ui-state-default,
+table.dataTable tfoot th.ui-state-default {
+  border-left-width: 1px;
+  border: 1px solid #dddddd;
+  border-top: none;
+  padding: 4px 5px;
+}
+
+table.dataTable.display tbody td {
+  border: 1px solid #dddddd;
+}
+
+table.dataTable tfoot tr:first-child th,
+table.dataTable thead tr:first-child th {
+  border-top: 1px solid #dddddd;
+}
+
+table.dataTable tbody th,
+table.dataTable tbody td {
+  padding: 4px 5px;
 }
