@@ -453,7 +453,7 @@ function clusteredhorizontalbar() {
     var drawPlot = function (data) {
         var me = this;
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         var plot = container.append('g')
             .attr('class', 'clusteredhorizontalbar-plot')
@@ -570,12 +570,14 @@ function clusteredhorizontalbar() {
             .text(function () {
                 var text = _displayNameForMeasure.map(function (p) { return p; }).join(', ');
                 if (!_print) {
-                    return UTIL.getTruncatedLabel(this, text, plotHeight - 200)
+                    return UTIL.getTruncatedLabel(this, text, plotWidth - 150)
                 }
                 else {
                     return text;
                 }
-            });
+            })
+            .append("svg:title")
+            .text(function (d, i) { return _displayNameForMeasure.map(function (p) { return p; }).join(', '); });
 
 
         _localYAxis = d3.axisLeft(x0)
@@ -1158,7 +1160,7 @@ function clusteredhorizontalbar() {
         }
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         var DURATION = COMMON.DURATION;
         var svg = _local_svg;

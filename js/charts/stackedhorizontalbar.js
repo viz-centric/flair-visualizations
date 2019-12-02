@@ -635,7 +635,7 @@ function stackedhorizontalbar() {
         var me = this,
             labelStack = [];
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         var plot = container.append('g')
             .attr('class', 'stackedhorizontalbar-plot')
@@ -769,12 +769,15 @@ function stackedhorizontalbar() {
             .text(function () {
                 var text = _displayNameForMeasure.map(function (p) { return p; }).join(', ');
                 if (!_print) {
-                    return UTIL.getTruncatedLabel(this, text, plotWidth-200)
+                    return UTIL.getTruncatedLabel(this, text, plotWidth - 150)
                 }
                 else {
                     return text;
                 }
-            });
+            })
+            .append("svg:title")
+            .text(function (d, i) { return _displayNameForMeasure.map(function (p) { return p; }).join(', '); });
+
 
         _localYAxis = d3.axisLeft(x)
             .tickSize(0)
@@ -1138,7 +1141,7 @@ function stackedhorizontalbar() {
 
         var labelStack = [];
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         var DURATION = COMMON.DURATION;
         if (isLiveEnabled) {

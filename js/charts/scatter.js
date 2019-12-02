@@ -556,7 +556,10 @@ function scatter() {
                 .text(function () {
                     var text = _displayNameForMeasure.map(function (p) { return p; }).join(', ');
                     return UTIL.getTruncatedLabel(this, text, plotHeight)
-                });
+                })
+                .append("svg:title")
+                .text(function (d, i) { return _displayNameForMeasure.map(function (p) { return p; }).join(', '); });
+    
         }
 
         var dataCircle = plot.selectAll("circle")

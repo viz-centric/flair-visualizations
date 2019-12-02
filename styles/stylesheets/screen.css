@@ -85,7 +85,7 @@ text {
   position: absolute;
   z-index: 10;
   padding: 1px;
-  top: 0px;
+  top: -5px !important;
   right: 45px;
   margin: 5px;
 }
@@ -292,7 +292,7 @@ div.dataTables_wrapper {
   margin: 5px;
   top: -13px;
   right: 65px;
-  z-index: 9999;
+  z-index: 999;
   font-size: 35px;
 }
 
