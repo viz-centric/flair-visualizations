@@ -846,7 +846,10 @@ function stackedverticalbar() {
                 else {
                     return text;
                 }
-            });
+            })
+            .append("svg:title")
+            .text(function (d, i) { return _displayNameForMeasure.map(function (p) { return p; }).join(', '); });
+
 
         UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
 
