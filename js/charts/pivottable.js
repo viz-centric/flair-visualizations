@@ -583,7 +583,7 @@ function pivottable() {
         }
 
         _measure.forEach(function (m) {
-             
+
             var style = {
                 'text-align': getTextAlignment(m),
                 'background-color': '#f7f7f7',
@@ -638,15 +638,14 @@ function pivottable() {
             var tableHeight = height - 100;
 
             $('#' + parentContainer.attr('id')).find('#viz_pivot-table').dataTable({
-                scrollY: tableHeight,
-                scrollX: true,
-                scrollCollapse: true,
-                ordering: true,
-                info: true,
-                searching: false,
-                bDestroy: true,
-                'sDom': 't',
-                "aaSorting": []
+                "scrollY": tableHeight,
+                "scrollX": true,
+                "scrollCollapse": true,
+                "ordering": true,
+                "info": true,
+                "searching": false,
+                "aaSorting": [],
+                'sDom': 't'
             });
 
             $($('#' + parentContainer.attr('id') + ' td.filter')).on('click', function () {
@@ -690,15 +689,6 @@ function pivottable() {
 
             svg.select('.removeFilter')
                 .on('click', clearFilter());
-
-            var displayTableHeight = parseFloat($('#' + parentContainer.attr('id')).find('#viz_pivot-table').css('height')) + 110;
-
-            if (displayTableHeight < parseFloat(height)) {
-                $('#' + id + ' ._pagination')
-                    .css('position', 'absolute')
-                    .css('right', '0px')
-                    .css('bottom', '0px')
-            }
         }
     }
 
@@ -998,7 +988,7 @@ function pivottable() {
         isLiveEnabled = value;
         return chart;
     }
-     chart.notification = function (value) {
+    chart.notification = function (value) {
         if (!arguments.length) {
             return _notification;
         }

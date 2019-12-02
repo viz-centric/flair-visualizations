@@ -156,7 +156,7 @@ function table() {
                     }
                 }
             });
-            chart.update(d);
+            // chart.update(d);
             if (broadcast) {
                 broadcast.updateWidget = {};
                 broadcast.filterSelection.id = null;
@@ -287,12 +287,12 @@ function table() {
         _local_svg
             .attr('width', width)
             .attr('height', height)
-            .style('overflow-y', 'auto')
-            .style('overflow-x', 'auto');
+            // .style('overflow-y', 'auto')
+            // .style('overflow-x', 'auto');
 
         var table = _local_svg.append('table')
             .attr('id', 'viz_table')
-            //.style('width', '170%')
+            //.style('width', '100%')
             .classed('display', true)
             .classed('nowrap', true)
             // .classed('table', true)
@@ -307,10 +307,10 @@ function table() {
 
         var tbody = createBody(data);
 
+        table.append('tbody').html(tbody);
+
         table.append('tfoot')
             .html(thead_tfoot.tfoot);
-
-        table.append('tbody').html(tbody);
 
         if (!_print) {
 
@@ -328,9 +328,9 @@ function table() {
 
             var dataTable;
 
-            var tableHeight = height - 170;
+            var tableHeight = height - 100;
             if (_isTotal) {
-                tableHeight = height - 170 - 40;
+                tableHeight = height - 100 - 40;
             }
 
             $('#' + id + " #viz_table thead tr").clone(true).appendTo('#' + id + " #viz_table thead");
@@ -364,9 +364,9 @@ function table() {
                 $('#' + id + ' .searchClose').css('display', 'none')
                 $('#' + id + ' .searchOpen').css('display', 'block')
 
-                tableHeight = height - 170
+                tableHeight = height - 100
                 if (_isTotal) {
-                    tableHeight = height - 170 - 40;
+                    tableHeight = height - 100 - 40;
                 }
                 $('#' + id + ' .dataTables_scrollBody').css('max-height', tableHeight + 'px')
             })
