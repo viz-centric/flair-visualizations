@@ -7,6 +7,7 @@ function pivottable() {
     var _NAME = 'pivottable';
 
     var _isPivoted = [],
+        _showNavigation,
         _config = [],
         _dimension = [],
         _displayNameForDimension = [],
@@ -624,12 +625,14 @@ function pivottable() {
             var _filter = UTIL.createFilterElement()
             $('#' + id).append(_filter)
 
-            var pager = '<ul class="pager pagination _pagination" style="margin:0px;float:right;">'
-                + '<li class="page-item"><span id="previous">Previous</span></li>'
-                + '<li class="page-item"><span id="next">Next</span></li>'
-                + '</ul>';
+            if (_showNavigation) {
+                var pager = '<ul class="pager pagination _pagination" style="margin:0px;float:right;">'
+                    + '<li class="page-item"><span id="previous">Previous</span></li>'
+                    + '<li class="page-item"><span id="next">Next</span></li>'
+                    + '</ul>';
 
-            $('#' + id).append(pager);
+                $('#' + id).append(pager);
+            }
 
             if (activePage == 0) {
                 $('#' + id).find('#previous').parent().addClass('disabled');
@@ -971,6 +974,13 @@ function pivottable() {
             return filterParameters;
         }
         filterParameters = value;
+        return chart;
+    }
+    chart.showNavigation = function (value) {
+        if (!arguments.length) {
+            return _showNavigation;
+        }
+        _showNavigation = value;
         return chart;
     }
 

@@ -483,7 +483,7 @@ function pie() {
         if (_legend) {
             _localLegend = LEGEND.bind(chart);
 
-            var result = _localLegend(_data, container, {
+            var result = _localLegend(_Local_data, container, {
                 width: parentWidth,
                 height: parentHeight,
                 legendBreakCount: legendBreakCount
@@ -509,7 +509,7 @@ function pie() {
         }
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         outerRadius = Math.min(plotWidth, plotHeight) / 2.25;
@@ -801,7 +801,7 @@ function pie() {
         })
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         var svg = _local_svg,
@@ -833,7 +833,7 @@ function pie() {
         if (_legend) {
             _localLegend = LEGEND.bind(chart);
 
-            var result = _localLegend(data, container, {
+            var result = _localLegend(_data, container, {
                 width: parentWidth,
                 height: parentHeight,
                 legendBreakCount: legendBreakCount
