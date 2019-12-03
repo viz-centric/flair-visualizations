@@ -9,6 +9,7 @@ function table() {
 
     var _config = [],
         _dimension = [],
+        _showNavigation,
         _displayNameForDimension = [],
         _cellColorForDimension = [],
         _fontStyleForDimension = [],
@@ -69,6 +70,7 @@ function table() {
         this.showTotal(config.showTotal);
         this.iconFontWeight(config.iconFontWeight);
         this.iconColor(config.iconColor);
+        this.showNavigation(config.showNavigation);
     }
 
     var _baseAccessor = function (value, measure) {
@@ -287,8 +289,8 @@ function table() {
         _local_svg
             .attr('width', width)
             .attr('height', height)
-            // .style('overflow-y', 'auto')
-            // .style('overflow-x', 'auto');
+        // .style('overflow-y', 'auto')
+        // .style('overflow-x', 'auto');
 
         var table = _local_svg.append('table')
             .attr('id', 'viz_table')
@@ -316,12 +318,14 @@ function table() {
 
             $("#" + id).prepend('<div class="searchIcon"><i class="fa fa-caret-down searchOpen"></i><i class="fa fa-caret-up searchClose"></i></div>')
 
-            var pager = '<ul class="pager _pagination" style="margin:0px;float:right;">'
-                + '<li><span id="previous">Previous</span></li>'
-                + '<li><span id="next">Next</span></li>'
-                + '</ul>';
+            if (_showNavigation) {
+                var pager = '<ul class="pager _pagination" style="margin:0px;float:right;">'
+                    + '<li><span id="previous">Previous</span></li>'
+                    + '<li><span id="next">Next</span></li>'
+                    + '</ul>';
 
-            $('#' + id).append(pager)
+                $('#' + id).append(pager)
+            }
 
             var _filter = UTIL.createFilterElement()
             $('#' + id).append(_filter)
@@ -443,6 +447,7 @@ function table() {
 
             parentContainer.select('.removeFilter')
                 .on('click', clearFilter());
+
         }
     }
 
@@ -753,6 +758,14 @@ function table() {
 
     chart.iconColor = function (value, measure) {
         return _baseAccessor.call(_iconColor, value, measure);
+    }
+
+    chart.showNavigation = function (value) {
+        if (!arguments.length) {
+            return _showNavigation;
+        }
+        _showNavigation = value;
+        return chart;
     }
 
     chart.print = function (value) {
