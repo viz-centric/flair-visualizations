@@ -687,6 +687,17 @@ function pivottable() {
                 broadcast.$broadcast('FlairBi:update-table');
             });
 
+            var displayTableHeight = parseFloat($('#' + parentContainer.attr('id')).find('#viz_pivot-table').css('height')) + 110;
+
+            if (displayTableHeight < parseFloat(height)) {
+                var parentElement = "#" + parentContainer.attr('id').replace('pivot-content-', '');
+                $(parentElement)
+                    .css('height', displayTableHeight + 100 + 'px');
+
+                $("#" + parentContainer.attr('id')).find('.dataTables_scrollBody')
+                    .css('height', displayTableHeight - 100 + 'px');
+            }
+
             svg.select('.filterData')
                 .on('click', applyFilter());
 

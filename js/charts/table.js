@@ -436,10 +436,12 @@ function table() {
             var displayTableHeight = parseFloat($('#' + parentContainer.attr('id')).find('#viz_table').css('height')) + 110;
 
             if (displayTableHeight < parseFloat(height)) {
-                $('#' + id + ' ._pagination')
-                    .css('position', 'absolute')
-                    .css('right', '0px')
-                    .css('bottom', '0px')
+                var parentElement = "#" + parentContainer.attr('id').replace('table-content-', '');
+                $(parentElement)
+                    .css('height', displayTableHeight + 100 + 'px');
+
+                $("#" + parentContainer.attr('id')).find('.dataTables_scrollBody')
+                    .css('height', displayTableHeight - 100 + 'px');
             }
 
             parentContainer.select('.filterData')
@@ -502,7 +504,7 @@ function table() {
     }
     function chart(selection) {
         _Local_data = _originalData = _data;
-        if (_print) {
+        if (_print && !_notification) {
             parentContainer = selection;
         }
         else {
