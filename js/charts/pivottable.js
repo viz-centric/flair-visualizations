@@ -7,7 +7,7 @@ function pivottable() {
     var _NAME = 'pivottable';
 
     var _isPivoted = [],
-        _showNavigation,
+        _limit,
         _config = [],
         _dimension = [],
         _displayNameForDimension = [],
@@ -41,7 +41,7 @@ function pivottable() {
         isLiveEnabled = false,
         _data;
 
-    var _local_data, filterData = [], _local_svg, _originalData, parentContainer, mapper, activePage = 0;
+    var _local_data, filterData = [], _showNavigation = true, _local_svg, _originalData, parentContainer, mapper, activePage = 0;
 
     var unpivotedDimension, nester, pivotedDimension, nestedData, pivotedData = [];
     var _setConfigParams = function (config) {
@@ -69,7 +69,7 @@ function pivottable() {
         this.iconPositionForMeasure(config.iconPositionForMeasure);
         this.iconExpressionForMeasure(config.iconExpressionForMeasure);
         this.fontWeightForMeasure(config.fontWeightForMeasure);
-        this.showNavigation(config.showNavigation);
+        this.limit(config.limit);
     }
 
     var _baseAccessor = function (value, measure) {
@@ -625,17 +625,20 @@ function pivottable() {
             var _filter = UTIL.createFilterElement()
             $('#' + id).append(_filter)
 
+            if (data < _limit && activePage == 0) {
+                _showNavigation = false;
+            }
             if (_showNavigation) {
-                var pager = '<ul class="pager pagination _pagination" style="margin:0px;float:right;">'
-                    + '<li class="page-item"><span id="previous">Previous</span></li>'
-                    + '<li class="page-item"><span id="next">Next</span></li>'
+                var pager = '<ul class="pager _pagination" style="margin:0px;float:right;">'
+                    + '<li><span id="previous">Previous</span></li>'
+                    + '<li><span id="next">Next</span></li>'
                     + '</ul>';
 
-                $('#' + id).append(pager);
+                $('#' + id).append(pager)
             }
 
             if (activePage == 0) {
-                $('#' + id).find('#previous').parent().addClass('disabled');
+                $('#' + id).find('#previous').parent().addClass('hidden');
             }
 
             var tableHeight = height;
@@ -666,6 +669,7 @@ function pivottable() {
             $('#' + id).find('#previous').on('click', function (e, i) {
                 if (activePage == 0) {
                     $(this).parent().addClass('disabled');
+                    $(this).parent().addClass('hidden');
                     return;
                 }
                 else {
@@ -678,7 +682,6 @@ function pivottable() {
                     broadcast.$broadcast('FlairBi:update-table');
                 }
             });
-
 
             $('#' + id).find('#next').on('click', function (e, i) {
                 activePage = activePage + 1;
@@ -980,11 +983,11 @@ function pivottable() {
         filterParameters = value;
         return chart;
     }
-    chart.showNavigation = function (value) {
+    chart.limit = function (value) {
         if (!arguments.length) {
-            return _showNavigation;
+            return _limit;
         }
-        _showNavigation = value;
+        _limit = value;
         return chart;
     }
 

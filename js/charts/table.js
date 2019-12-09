@@ -9,7 +9,7 @@ function table() {
 
     var _config = [],
         _dimension = [],
-        _showNavigation,
+        _limit,
         _displayNameForDimension = [],
         _cellColorForDimension = [],
         _fontStyleForDimension = [],
@@ -41,7 +41,7 @@ function table() {
         filterParameters,
         _data;
 
-    var _Local_data, _updatedHeight, filterData = [], _originalData, _local_svg, parentContainer, activePage = 0;
+    var _Local_data, _showNavigation = true, filterData = [], _originalData, _local_svg, parentContainer, activePage = 0;
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
@@ -70,7 +70,7 @@ function table() {
         this.showTotal(config.showTotal);
         this.iconFontWeight(config.iconFontWeight);
         this.iconColor(config.iconColor);
-        this.showNavigation(config.showNavigation);
+        this.limit(config.limit);
     }
 
     var _baseAccessor = function (value, measure) {
@@ -318,6 +318,9 @@ function table() {
 
             $("#" + id).prepend('<div class="searchIcon"><i class="fa fa-caret-down searchOpen"></i><i class="fa fa-caret-up searchClose"></i></div>')
 
+            if (data < _limit && activePage == 0) {
+                _showNavigation = false;
+            }
             if (_showNavigation) {
                 var pager = '<ul class="pager _pagination" style="margin:0px;float:right;">'
                     + '<li><span id="previous">Previous</span></li>'
@@ -325,6 +328,10 @@ function table() {
                     + '</ul>';
 
                 $('#' + id).append(pager)
+            }
+
+            if (activePage == 0) {
+                $('#' + id).find('#previous').parent().addClass('hidden');
             }
 
             var _filter = UTIL.createFilterElement()
@@ -399,6 +406,8 @@ function table() {
             $('#' + id).find('#previous').on('click', function (e, i) {
                 if (activePage == 0) {
                     $(this).parent().addClass('disabled');
+                    $(this).parent().addClass('hidden');
+
                     return;
                 }
                 else {
@@ -754,11 +763,11 @@ function table() {
         return _baseAccessor.call(_iconColor, value, measure);
     }
 
-    chart.showNavigation = function (value) {
+    chart.limit = function (value) {
         if (!arguments.length) {
-            return _showNavigation;
+            return _limit;
         }
-        _showNavigation = value;
+        _limit = value;
         return chart;
     }
 
