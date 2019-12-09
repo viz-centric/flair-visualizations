@@ -69,6 +69,7 @@ function pivottable() {
         this.iconPositionForMeasure(config.iconPositionForMeasure);
         this.iconExpressionForMeasure(config.iconExpressionForMeasure);
         this.fontWeightForMeasure(config.fontWeightForMeasure);
+        this.showNavigation(config.showNavigation);
     }
 
     var _baseAccessor = function (value, measure) {
@@ -484,7 +485,6 @@ function pivottable() {
             svg
                 .attr('width', width)
                 .attr('height', height)
-                .style('overflow-y', 'auto')
                 .style('overflow-x', 'auto');
         }
 
@@ -638,7 +638,11 @@ function pivottable() {
                 $('#' + id).find('#previous').parent().addClass('disabled');
             }
 
-            var tableHeight = height - 100;
+            var tableHeight = height;
+            if (_showNavigation) {
+                tableHeight = tableHeight - 50;
+            }
+
 
             $('#' + parentContainer.attr('id')).find('#viz_pivot-table').dataTable({
                 "scrollY": tableHeight,
@@ -686,17 +690,6 @@ function pivottable() {
                 broadcast.activePage = pageInfo;
                 broadcast.$broadcast('FlairBi:update-table');
             });
-
-            var displayTableHeight = parseFloat($('#' + parentContainer.attr('id')).find('#viz_pivot-table').css('height')) + 110;
-
-            if (displayTableHeight < parseFloat(height)) {
-                var parentElement = "#" + parentContainer.attr('id').replace('pivot-content-', '');
-                $(parentElement)
-                    .css('height', displayTableHeight + 100 + 'px');
-
-                $("#" + parentContainer.attr('id')).find('.dataTables_scrollBody')
-                    .css('height', displayTableHeight - 100 + 'px');
-            }
 
             svg.select('.filterData')
                 .on('click', applyFilter());
