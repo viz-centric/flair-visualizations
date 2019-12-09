@@ -332,9 +332,12 @@ function table() {
 
             var dataTable;
 
-            var tableHeight = height - 100;
+            var tableHeight = height - 50;
             if (_isTotal) {
-                tableHeight = height - 100 - 40;
+                tableHeight = height - 50 - 40;
+            }
+            if (_showNavigation) {
+                tableHeight = tableHeight - 50;
             }
 
             $('#' + id + " #viz_table thead tr").clone(true).appendTo('#' + id + " #viz_table thead");
@@ -357,9 +360,9 @@ function table() {
                 $('#' + id + ' .searchClose').css('display', 'block')
                 $('#' + id + ' .searchOpen').css('display', 'none')
 
-                tableHeight = height - 140
+                tableHeight = height - 120
                 if (_isTotal) {
-                    tableHeight = height - 140 - 40;
+                    tableHeight = height - 120 - 40;
                 }
                 $('#' + id + ' .dataTables_scrollBody').css('max-height', tableHeight + 'px')
             })
@@ -368,9 +371,9 @@ function table() {
                 $('#' + id + ' .searchClose').css('display', 'none')
                 $('#' + id + ' .searchOpen').css('display', 'block')
 
-                tableHeight = height - 100
+                tableHeight = height - 50
                 if (_isTotal) {
-                    tableHeight = height - 100 - 40;
+                    tableHeight = height - 50 - 40;
                 }
                 $('#' + id + ' .dataTables_scrollBody').css('max-height', tableHeight + 'px')
             })
@@ -432,17 +435,6 @@ function table() {
                 }
                 readerTableChart.call(this.textContent, this, parentContainer)
             })
-
-            var displayTableHeight = parseFloat($('#' + parentContainer.attr('id')).find('#viz_table').css('height')) + 110;
-
-            if (displayTableHeight < parseFloat(height)) {
-                var parentElement = "#" + parentContainer.attr('id').replace('table-content-', '');
-                $(parentElement)
-                    .css('height', displayTableHeight + 100 + 'px');
-
-                $("#" + parentContainer.attr('id')).find('.dataTables_scrollBody')
-                    .css('height', displayTableHeight - 100 + 'px');
-            }
 
             parentContainer.select('.filterData')
                 .on('click', applyFilter());
