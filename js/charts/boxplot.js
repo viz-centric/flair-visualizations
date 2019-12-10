@@ -140,7 +140,7 @@ function boxplot() {
             lasso.notSelectedItems()
                 .classed('selected', false);
 
-           d3.select(scope.node().parentNode).select('div.confirm')
+            d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
 
             if (data.length > 0) {
@@ -276,8 +276,8 @@ function boxplot() {
             .attr('width', parentContainer.attr('width'))
             .attr('height', parentContainer.attr('height'))
 
-        width = +svg.attr('width'),
-            height = +svg.attr('height');
+        width = +svg.attr('width');
+        height = +svg.attr('height');
 
         _local_svg = svg;
 
@@ -458,7 +458,7 @@ function boxplot() {
                     }
                     filter = false;
 
-                   parentContainer.select('.confirm')
+                    parentContainer.select('.confirm')
                         .style('visibility', 'visible');
 
                     var point = d3.select(this).selectAll('path');
