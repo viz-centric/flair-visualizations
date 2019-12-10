@@ -76,7 +76,7 @@ function rangefilter() {
             var border = UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor)
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d), container, border);
             }
         }
     }
@@ -86,7 +86,7 @@ function rangefilter() {
         return function (d, i) {
             if (tooltip) {
                 var border = UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor)
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d), container, border);
             }
         }
     }
@@ -143,7 +143,7 @@ function rangefilter() {
         }
     }
 
-    var _buildTooltipData = function (datum, data) {
+    var _buildTooltipData = function (datum) {
         var output = "";
         output += "<table><tr>"
 
@@ -191,7 +191,7 @@ function rangefilter() {
             .attr('class', 'custom_tooltip');
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         var plot = svg.append('g')

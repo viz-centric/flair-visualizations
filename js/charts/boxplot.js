@@ -281,7 +281,7 @@ function boxplot() {
 
         _local_svg = svg;
 
-        container = svg.append('g')
+        svg.append('g')
             .attr("class", "focus")
             .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 

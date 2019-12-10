@@ -1095,10 +1095,6 @@ function clusteredhorizontalbar() {
             tooltip = parentContainer.select('.custom_tooltip');
         }
         var svg = _local_svg;
-        if (isLiveEnabled) {
-            DURATION = 0;
-        }
-
         filterData = [];
 
         var keys = _measure //UTIL.getMeasureList(data[0], _dimension);

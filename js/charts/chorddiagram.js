@@ -34,7 +34,7 @@ function chorddiagram() {
 
     var gradientColor = d3.scaleLinear();
 
-    var filter = false;
+    var filter = false, filterData = [];
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
@@ -113,7 +113,7 @@ function chorddiagram() {
 
             lasso.notSelectedItems().selectAll('path');
 
-           d3.select(scope.node().parentNode).select('div.confirm')
+            d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
 
             var _filter = [];
@@ -254,7 +254,7 @@ function chorddiagram() {
         svg.selectAll('g').remove();
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         svg = svg.attr('width', width)
@@ -278,7 +278,7 @@ function chorddiagram() {
         });
 
         for (var index = 0; index < _keys.length; index++) {
-            var filterData = data.filter(function (val) {
+            filterData = data.filter(function (val) {
                 if (_keys[index] == val[_dimension[0]] || _keys[index] == val[_dimension[1]]) {
                     return val;
                 }
@@ -373,7 +373,7 @@ function chorddiagram() {
                         broadcast.$broadcast('FlairBi:livemode-dialog');
                         return;
                     }
-                   parentContainer.select('.confirm')
+                    parentContainer.select('.confirm')
                         .style('visibility', 'visible');
                     filter = false;
 
@@ -504,7 +504,7 @@ function chorddiagram() {
             height = +svg.attr('height');
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         _local_svg.selectAll('.plot g').remove();
@@ -528,7 +528,7 @@ function chorddiagram() {
         });
 
         for (var index = 0; index < _keys.length; index++) {
-            var filterData = data.filter(function (val) {
+             filterData = data.filter(function (val) {
                 if (_keys[index] == val[_dimension[0]] || _keys[index] == val[_dimension[1]]) {
                     return val;
                 }
