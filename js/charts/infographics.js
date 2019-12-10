@@ -163,13 +163,13 @@ function infographics() {
     var _buildTooltipData = function (datum, chart) {
         var output = "";
 
-        var value = UTIL.getFormattedValue(datum[chart.measure()], UTIL.getNumberFormatterFn(_kpiNumberFormat, datum[chart.measure()]))
+        var value = UTIL.getFormattedValue(datum[_measure[0]], UTIL.getNumberFormatterFn(_kpiNumberFormat, datum[_measure[0]]))
 
         output += "<table><tr>"
-            + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + datum[chart.dimension()] + "</td>"
+            + "<th>" + _dimension[0] + ": </th>"
+            + "<td>" + datum[_dimension[0]] + "</td>"
             + "</tr><tr>"
-            + "<th>" + chart.measure() + ": </th>"
+            + "<th>" + _measure[0]+ ": </th>"
             + "<td>" + value + "</td>"
             + "</tr></table>";
 

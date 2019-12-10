@@ -74,7 +74,7 @@ function clusteredhorizontalbar() {
         .domain([22, 34])
         .range([2, 4]);
 
-    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, parentContainer;
+    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, parentContainer;
     var threshold = [];
     var filter = false, filterData = [];
 
@@ -122,12 +122,12 @@ function clusteredhorizontalbar() {
         }
     }
 
-    var _buildTooltipData = function (datum, chart) {
+    var _buildTooltipData = function (datum, data) {
         var output = "";
 
         output += "<table><tr>"
-            + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + datum[chart.dimension()] + "</td>"
+            + "<th>" + _dimension[0] + ": </th>"
+            + "<td>" + datum[_dimension[0]] + "</td>"
             + "</tr><tr>"
             + "<th>" + datum["measure"] + ": </th>"
             + "<td>" + UTIL.getFormattedValue(datum[datum["measure"]], UTIL.getValueNumberFormat(_measure.indexOf(datum["measure"]), _numberFormat, datum[datum["measure"]])) + " </td>"
@@ -179,7 +179,7 @@ function clusteredhorizontalbar() {
 
             lasso.notSelectedItems().selectAll('rect');
 
-            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
+            d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
 
             var _filter = [];
@@ -205,7 +205,7 @@ function clusteredhorizontalbar() {
                 broadcast.updateWidget = {};
                 broadcast.updateWidget[scope.node().parentNode.id] = idWidget;
 
-                var _filterList = {}, list = []
+                var list = []
 
                 filterData.map(function (val) {
                     list.push(val[_dimension[0]])
@@ -302,12 +302,7 @@ function clusteredhorizontalbar() {
                     }
                 })
                 .style('stroke', function (d, i) {
-                    if (d[d.measure] < 0) {
-                        return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
-                    }
-                    else {
-                        return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
-                    }
+                    return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
                 })
 
             if (tooltip) {
@@ -612,41 +607,13 @@ function clusteredhorizontalbar() {
 
         if (!_print) {
 
-            var confirm = $(_local_svg).parent().find('div.confirm')
+            $(_local_svg).parent().find('div.confirm')
                 .css('visibility', 'hidden');
 
-
-            //remove Threshold modal popup 
-            // var str = UTIL.createAlert($(div).attr('id'), _measure);
-            // $(div).append(str);
             $(me).parent().find('div.confirm').remove()
 
             var _filter = UTIL.createFilterElement()
             $('#' + parentContainer.attr('id')).append(_filter);
-
-            //comment for now working on it
-
-            // $(document).on('click', '_local_svg', function (e) {
-            //     if ($("#myonoffswitch").prop('checked') == false) {
-            //         var element = e.target
-            //         if (element.tagName == "_local_svg") {
-            //             $('#Modal_' + $(div).attr('id') + ' .measure').val('')
-            //             $('#Modal_' + $(div).attr('id') + ' .threshold').val('')
-            //             $('#Modal_' + $(div).attr('id') + ' .measure').attr('disabled', false)
-            //             $('#Modal_' + $(div).attr('id')).modal('toggle');
-            //         }
-            //     }
-            // })
-
-            // $(document).on('click', '#Modal_' + $(div).attr('id') + ' .ThresholdSubmit', function (e) {
-            //     var newValue = $('#Modal_' + $(div).attr('id') + ' .threshold').val();
-            //     var obj = new Object()
-            //     obj.measure = $('#Modal_' + $(div).attr('id') + ' .measure').val()
-            //     obj.threshold = newValue;
-            //     threshold.push(obj);
-            //     $('#Modal_' + $(div).attr('id')).modal('toggle');
-            // })
-
 
             _local_svg.select('g.sort').remove();
             UTIL.sortingView(container, parentHeight, parentWidth + (_showYaxis == true ? margin.left : 0), legendBreakCount, axisLabelSpace, offsetX, _showSorting);
@@ -718,14 +685,6 @@ function clusteredhorizontalbar() {
 
             brush.extent([[0, 0], [FilterControlWidth, parentContainer.attr('height')]])
                 .on("brush", brushed);
-
-            // var separationLine = svgFilter.append("line")
-            //     .attr("stroke", COMMON.SEPARATIONLINE)
-            //     .attr("x1", COMMON.PADDING)
-            //     .attr("x2", parseInt(_local_svg.attr('width') - 2 * COMMON.PADDING))
-            //     .attr("y1", "0")
-            //     .attr("y1", "0")
-            //     .style("stroke-dasharray", ("3, 3"));
 
             var context = svgFilter.append("g")
                 .attr("class", "context")
@@ -810,12 +769,7 @@ function clusteredhorizontalbar() {
                     }
                 })
                 .style('stroke', function (d, i) {
-                    if (d[d.measure] < 0) {
-                        return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
-                    }
-                    else {
-                        return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
-                    }
+                    return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
                 })
                 .style('stroke-width', 1)
                 .style('fill-opacity', 0.6)
@@ -859,12 +813,7 @@ function clusteredhorizontalbar() {
                 }
             })
             .style('stroke', function (d, i) {
-                if (d[d.measure] < 0) {
-                    return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
-                }
-                else {
-                    return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
-                }
+                return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
             })
             .style('stroke-width', 1)
 
@@ -890,7 +839,7 @@ function clusteredhorizontalbar() {
                                 return;
                             }
                             filter = false;
-                            var confirm = parentContainer.select('.confirm')
+                            parentContainer.select('.confirm')
                                 .style('visibility', 'visible');
                             var _filter = _Local_data.filter(function (d1) {
                                 return d[_dimension[0]] === d1[_dimension[0]]
@@ -1020,23 +969,6 @@ function clusteredhorizontalbar() {
             .attr('dy', function (d, i) {
                 return x1.bandwidth() / 2 + d3.select(this).style('font-size').replace('px', '') / 2.5;
             })
-        // .text(function (d, i) {
-        //     if (!_print) {
-        //         var barLength;
-
-        //         if ((d[d.measure] === null) || (isNaN(d[d.measure]))) {
-        //             barLength = 0;
-        //         } else {
-        //             barLength = Math.abs(y(0) - y(d[d.measure]));
-        //         }
-
-        //         return UTIL.getTruncatedLabel(this, d3.select(this).text(), plotWidth - barLength);
-        //     }
-        //     else {
-        //         return UTIL.getFormattedValue(d[d.measure], UTIL.getValueNumberFormat(i, _numberFormat, d[d.measure]));
-        //     }
-
-        // })
     }
     /**
      * Builds the html data for the tooltip
@@ -1162,7 +1094,6 @@ function clusteredhorizontalbar() {
         if (_tooltip) {
             tooltip = parentContainer.select('.custom_tooltip');
         }
-        var DURATION = COMMON.DURATION;
         var svg = _local_svg;
         if (isLiveEnabled) {
             DURATION = 0;
@@ -1247,12 +1178,7 @@ function clusteredhorizontalbar() {
                 }
             })
             .style('stroke', function (d, i) {
-                if (d[d.measure] < 0) {
-                    return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
-                }
-                else {
-                    return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
-                }
+                return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
             })
             .style('stroke-width', 1)
             .attr('class', '')

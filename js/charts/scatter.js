@@ -102,7 +102,7 @@ function scatter() {
         this.legendData(config.displayColor, config.measure);
     }
 
-    var _buildTooltipData = function (datum, chart) {
+    var _buildTooltipData = function (datum, data) {
         var output = "";
         output += "<table>";
 
@@ -175,7 +175,7 @@ function scatter() {
 
             lasso.notSelectedItems().selectAll('circle');
 
-            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
+           d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
 
             var _filter = [];
@@ -586,7 +586,7 @@ function scatter() {
 
         if (!_print) {
 
-            var confirm = $(me).parent().find('div.confirm')
+            $(me).parent().find('div.confirm')
                 .css('visibility', 'hidden');
 
             //remove Threshold modal popup 
@@ -646,7 +646,7 @@ function scatter() {
                             return;
                         }
                         filter = false;
-                        var confirm = parentContainer.select('.confirm')
+                       parentContainer.select('.confirm')
                             .style('visibility', 'visible');
                         var rect = d3.select(this);
                         if (rect.classed('selected')) {
@@ -879,7 +879,7 @@ function scatter() {
                     return;
                 }
                 filter = false;
-                var confirm = parentContainer.select('.confirm')
+               parentContainer.select('.confirm')
                     .style('visibility', 'visible');
                 var rect = d3.select(this);
                 if (rect.classed('selected')) {

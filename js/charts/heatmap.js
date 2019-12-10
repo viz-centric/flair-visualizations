@@ -97,11 +97,11 @@ function heatmap() {
         }
     }
 
-    var _buildTooltipData = function (datum, chart) {
+    var _buildTooltipData = function (datum, data) {
         var output = "";
 
         output += "<table><tr>"
-            + "<th>" + chart.dimension() + ": </th>"
+            + "<th>" + _dimension[0] + ": </th>"
             + "<td>" + datum.y + "</td>"
             + "</tr><tr>"
             + "<th>" + datum.x + ": </th>"
@@ -386,7 +386,7 @@ function heatmap() {
 
             lasso.notSelectedItems().selectAll('rect');
 
-            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
+           d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
 
             var _filter = [];
@@ -633,7 +633,7 @@ function heatmap() {
                         broadcast.$broadcast('FlairBi:livemode-dialog');
                         return;
                     }
-                    var confirm = parentContainer.select('.confirm')
+                   parentContainer.select('.confirm')
                         .style('visibility', 'visible');
                     var _filter = _Local_data.filter(function (d1) {
                         return d.y === d1[_dimension[0]]
@@ -919,7 +919,7 @@ function heatmap() {
                     return;
                 }
                 filter = false;
-                var confirm = parentContainer.select('.confirm')
+               parentContainer.select('.confirm')
                     .style('visibility', 'visible');
                 var _filter = _Local_data.filter(function (d1) {
                     return d.y === d1[_dimension[0]]

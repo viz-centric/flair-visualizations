@@ -314,7 +314,7 @@ function treemap() {
         }
     }
 
-    var _buildTooltipData = function (datum, chart) {
+    var _buildTooltipData = function (datum, data) {
         var output = "";
 
         if (datum.data.key != undefined) {
@@ -405,7 +405,7 @@ function treemap() {
 
             lasso.notSelectedItems().selectAll('rect');
 
-            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
+           d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
 
             var _filter = {};
@@ -523,7 +523,7 @@ function treemap() {
                         return;
                     }
                     filter = false;
-                    var confirm = parentContainer.select('.confirm')
+                   parentContainer.select('.confirm')
                         .style('visibility', 'visible');
 
                     var rect = d3.select(this)

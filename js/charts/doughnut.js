@@ -185,15 +185,15 @@ function doughnut() {
      * @param {function} chart Doughnut chart function
      * @return {string} String encoded HTML data
      */
-    var _buildTooltipData = function (datum, chart) {
+    var _buildTooltipData = function (datum, data) {
         var output = "";
 
         output += "<table><tr>"
-            + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + datum[chart.dimension()] + "</td>"
+            + "<th>" + _dimension[0] + ": </th>"
+            + "<td>" + datum[_dimension[0]] + "</td>"
             + "</tr><tr>"
-            + "<th>" + chart.measure() + ": </th>"
-            + "<td>" + Math.round(datum[chart.measure()] * 100) / 100 + "</td>"
+            + "<th>" + _measure[0] + ": </th>"
+            + "<td>" + datum[_measure[0]] + "</td>"
             + "</tr></table>";
 
         return output;
@@ -267,7 +267,7 @@ function doughnut() {
 
             lasso.notSelectedItems().selectAll('path');
 
-            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
+           d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
 
             var _filter = [];
@@ -478,7 +478,7 @@ function doughnut() {
         var me = this;
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         /* total sum of the measure values */
@@ -727,7 +727,7 @@ function doughnut() {
 
         if (!_print) {
 
-            var confirm = $(me).parent().find('div.confirm')
+            $(me).parent().find('div.confirm')
                 .css('visibility', 'hidden');
 
             var _filter = UTIL.createFilterElement()
@@ -766,7 +766,7 @@ function doughnut() {
                         broadcast.$broadcast('FlairBi:livemode-dialog');
                         return;
                     }
-                    var confirm = parentContainer.select('.confirm')
+                   parentContainer.select('.confirm')
                         .style('visibility', 'visible');
                     filter = false;
 
@@ -858,7 +858,7 @@ function doughnut() {
             d[_measure[0]] = Math.abs(d[_measure[0]]);
         })
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         var svg = _local_svg,
             width = +svg.attr('width'),
@@ -1013,7 +1013,7 @@ function doughnut() {
                     broadcast.$broadcast('FlairBi:livemode-dialog');
                     return;
                 }
-                var confirm = parentContainer.select('.confirm')
+               parentContainer.select('.confirm')
                     .style('visibility', 'visible');
                 filter = false;
 

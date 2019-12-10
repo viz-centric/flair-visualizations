@@ -189,7 +189,7 @@ function combo() {
         }
     }
 
-    var _buildTooltipData = function (datum, chart) {
+    var _buildTooltipData = function (datum, data) {
         var output = "";
         var dimension = datum.dimension != undefined ? datum.dimension : datum.data[_dimension[0]],
             measure = datum.id != undefined ? datum.id : datum.tag,
@@ -249,7 +249,7 @@ function combo() {
 
             lasso.notSelectedItems().selectAll('rect');
 
-            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
+           d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
 
             var _filter = [];
@@ -804,7 +804,7 @@ function combo() {
                         }
                         else {
                             filter = false;
-                            var confirm = parentContainer.select('.confirm')
+                           parentContainer.select('.confirm')
                                 .style('visibility', 'visible');
 
                             var rect = d3.select(this);
@@ -1284,7 +1284,7 @@ function combo() {
                         }
                         else {
                             filter = false;
-                            var confirm = parentContainer.select('.confirm')
+                           parentContainer.select('.confirm')
                                 .style('visibility', 'visible');
                             var _filter = _Local_data.filter(function (d1) {
                                 return d.data[_dimension[0]] === d1[_dimension[0]]
@@ -1870,7 +1870,7 @@ function combo() {
                             return;
                         }
                         filter = false;
-                        var confirm = parentContainer.select('.confirm')
+                       parentContainer.select('.confirm')
                             .style('visibility', 'visible');
 
                         var rect = d3.select(this);

@@ -176,11 +176,11 @@ function pie() {
         var output = "";
 
         output += "<table><tr>"
-            + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + datum[chart.dimension()] + "</td>"
+            + "<th>" + _dimension[0] + ": </th>"
+            + "<td>" + datum[_dimension[0]] + "</td>"
             + "</tr><tr>"
-            + "<th>" + chart.measure() + ": </th>"
-            + "<td>" + Math.round(datum[chart.measure()] * 100) / 100 + "</td>"
+            + "<th>" + _measure[0] + ": </th>"
+            + "<td>" + Math.round(datum[ _measure[0]] * 100) / 100 + "</td>"
             + "</tr></table>";
 
         return output;
@@ -230,15 +230,15 @@ function pie() {
 
             lasso.notSelectedItems().selectAll('path');
 
-            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
+           d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
 
             var _filter = [];
             if (data.length > 0) {
                 data.forEach(function (d) {
                     var obj = new Object();
-                    obj[chart.dimension()] = d.data[chart.dimension()]
-                    obj[chart.measure()] = d.data[chart.measure()]
+                    obj[_dimension[0]] = d.data[_dimension[0]]
+                    obj[ _measure[0]] = d.data[ _measure[0]]
                     _filter.push(obj)
                 });
             }
@@ -670,7 +670,7 @@ function pie() {
 
         if (!_print) {
 
-            var confirm = $(me).parent().find('div.confirm')
+            $(me).parent().find('div.confirm')
                 .css('visibility', 'hidden');
 
             var _filter = UTIL.createFilterElement()
@@ -684,7 +684,7 @@ function pie() {
                         broadcast.$broadcast('FlairBi:livemode-dialog');
                         return;
                     }
-                    var confirm = parentContainer.select('.confirm')
+                   parentContainer.select('.confirm')
                         .style('visibility', 'visible');
                     filter = false;
 
@@ -695,8 +695,8 @@ function pie() {
                         point.classed('selected', true);
                     }
                     var obj = new Object();
-                    obj[chart.dimension()] = d.data[_dimension[0]]
-                    obj[chart.measure()] = d.data[_measure[0]]
+                    obj[_dimension[0]] = d.data[_dimension[0]]
+                    obj[ _measure[0]] = d.data[_measure[0]]
                     filterData.push(obj)
 
                     var _filterDimension = {};
@@ -949,7 +949,7 @@ function pie() {
                     broadcast.$broadcast('FlairBi:livemode-dialog');
                     return;
                 }
-                var confirm = parentContainer.select('.confirm')
+               parentContainer.select('.confirm')
                     .style('visibility', 'visible');
                 filter = false;
 
@@ -960,8 +960,8 @@ function pie() {
                     point.classed('selected', true);
                 }
                 var obj = new Object();
-                obj[chart.dimension()] = d.data[_dimension[0]]
-                obj[chart.measure()] = d.data[_measure[0]]
+                obj[_dimension[0]] = d.data[_dimension[0]]
+                obj[ _measure[0]] = d.data[_measure[0]]
                 filterData.push(obj)
 
                 var _filterDimension = {};

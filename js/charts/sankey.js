@@ -76,7 +76,7 @@ function sankey() {
         }
     }
 
-    var _buildTooltipData = function (datum, chart, element) {
+    var _buildTooltipData = function (datum, prop, element) {
         var output = "";
         if (element == "link") {
             output += "<table><tr>"
@@ -160,7 +160,7 @@ function sankey() {
 
             lasso.notSelectedItems()
 
-            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
+           d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
 
             var _filter = [];
@@ -510,7 +510,7 @@ function sankey() {
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'link'))
                 .on('click', function (d) {
                     filter = false;
-                    var confirm = parentContainer.select('.confirm')
+                   parentContainer.select('.confirm')
                         .style('visibility', 'visible');
 
                     if (d.nodeType == dimension[0]) {
@@ -595,7 +595,7 @@ function sankey() {
                         return;
                     }
                     filter = false;
-                    var confirm = parentContainer.select('.confirm')
+                   parentContainer.select('.confirm')
                         .style('visibility', 'visible');
                     var rect = d3.select(this);
                     if (rect.classed('selected')) {
@@ -717,7 +717,7 @@ function sankey() {
                     return;
                 }
                 filter = false;
-                var confirm = parentContainer.select('.confirm')
+               parentContainer.select('.confirm')
                     .style('visibility', 'visible');
                 var rect = d3.select(this)
                 if (rect.classed('selected')) {
@@ -900,7 +900,7 @@ function sankey() {
                     return;
                 }
                 filter = false;
-                var confirm = parentContainer.select('.confirm')
+               parentContainer.select('.confirm')
                     .style('visibility', 'visible');
 
                 if (d.nodeType == dimension[0]) {

@@ -177,10 +177,10 @@ function line() {
 
     var _buildTooltipData = function (datum) {
         var output = "";
-        output += "<table><tr>"
+        output += "<table><tr>" 
 
-            + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + datum[chart.dimension()] + "</td>"
+            + "<th>" + _dimension[0] + ": </th>"
+            + "<td>" + datum[_dimension[0]] + "</td>"
             + "</tr>";
         _measure.forEach(element => {
             output += "<tr> <th><i class='fa fa-square dataset' style='color:" + _displayColor[_measure.indexOf(element)] + ";'></i>" + element + " : </th>"
@@ -233,7 +233,7 @@ function line() {
 
             lasso.notSelectedItems()
 
-            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
+           d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
 
             var _filter = [];
@@ -954,7 +954,7 @@ function line() {
                             return;
                         }
                         filter = false;
-                        var confirm = parentContainer.select('.confirm')
+                       parentContainer.select('.confirm')
                             .style('visibility', 'visible');
                         var _filter = _Local_data.filter(function (d1) {
                             return d.data[_dimension[0]] === d1[_dimension[0]]
@@ -1097,7 +1097,7 @@ function line() {
             // var str = UTIL.createAlert($(div).attr('id'), _measure);
             // $(div).append(str);
 
-            var confirm = $(me).parent().find('div.confirm')
+            $(me).parent().find('div.confirm')
                 .css('visibility', 'hidden');
 
             var _filter = UTIL.createFilterElement()
@@ -1780,7 +1780,7 @@ function line() {
                     }
                     else {
                         filter = false;
-                        var confirm = parentContainer.select('.confirm')
+                       parentContainer.select('.confirm')
                             .style('visibility', 'visible');
                         var _filter = _Local_data.filter(function (d1) {
                             return d.data[_dimension[0]] === d1[_dimension[0]]

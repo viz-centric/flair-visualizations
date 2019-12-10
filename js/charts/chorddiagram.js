@@ -13,7 +13,6 @@ function chorddiagram() {
     var _config,
         _dimension,
         _measure,
-        _sort,
         _tooltip,
         _showLabels,
         _fontStyle,
@@ -35,7 +34,7 @@ function chorddiagram() {
 
     var gradientColor = d3.scaleLinear();
 
-    var filter = false, filterData = [];
+    var filter = false;
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
@@ -50,7 +49,7 @@ function chorddiagram() {
         this.fontSize(config.fontSize);
     }
 
-    var _buildTooltipData = function (datum, chart) {
+    var _buildTooltipData = function (datum, data) {
         var output = "";
 
         var _filter = _local_svg.selectAll('.chord')
@@ -114,7 +113,7 @@ function chorddiagram() {
 
             lasso.notSelectedItems().selectAll('path');
 
-            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
+           d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
 
             var _filter = [];
@@ -374,7 +373,7 @@ function chorddiagram() {
                         broadcast.$broadcast('FlairBi:livemode-dialog');
                         return;
                     }
-                    var confirm = parentContainer.select('.confirm')
+                   parentContainer.select('.confirm')
                         .style('visibility', 'visible');
                     filter = false;
 

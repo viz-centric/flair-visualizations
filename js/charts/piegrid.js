@@ -44,7 +44,7 @@ function piegrid() {
         this.colorSet(config.colorSet);
     }
 
-    var _buildTooltipData = function (datum, chart, data) {
+    var _buildTooltipData = function (datum, prop, data) {
         var output = "";
 
 
@@ -256,7 +256,7 @@ function piegrid() {
             .attr("transform", "translate(" + (r + m - 10) + "," + (r + m - 10) + ")")
 
         if (!_print) {
-            var confirm = $(me).parent().find('div.confirm')
+            $(me).parent().find('div.confirm')
                 .css('visibility', 'hidden');
 
             var _filter = UTIL.createFilterElement()
@@ -272,7 +272,7 @@ function piegrid() {
                     }
                     var index = parseInt(d3.select(this.parentNode).attr('class'));
 
-                    var confirm = parentContainer.select('.confirm')
+                   parentContainer.select('.confirm')
                         .style('visibility', 'visible');
 
                     var point = d3.select(this).selectAll('path');
@@ -417,7 +417,7 @@ function piegrid() {
                     }
                     var index = parseInt(d3.select(this.parentNode).attr('class'));
 
-                    var confirm = parentContainer.select('.confirm')
+                   parentContainer.select('.confirm')
                         .style('visibility', 'visible');
 
                     var point = d3.select(this).selectAll('path');

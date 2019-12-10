@@ -143,11 +143,11 @@ function rangefilter() {
         }
     }
 
-    var _buildTooltipData = function (datum, chart) {
+    var _buildTooltipData = function (datum, data) {
         var output = "";
         output += "<table><tr>"
 
-            + "<th>" + chart.dimension() + ": </th>"
+            + "<th>" + _dimension + ": </th>"
             + "<td>" + datum.data[_dimension[0]] + "</td>"
             + "</tr><tr>"
             + "<th>" + datum.tag + ": </th>"

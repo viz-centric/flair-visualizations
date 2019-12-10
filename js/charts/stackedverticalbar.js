@@ -126,11 +126,11 @@ function stackedverticalbar() {
         }
     }
 
-    var _buildTooltipData = function (datum, chart) {
+    var _buildTooltipData = function (datum, data) {
         var output = "";
         output += "<table><tr>"
-            + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + datum.data[chart.dimension()] + "</td>"
+            + "<th>" + _dimension[0] + ": </th>"
+            + "<td>" + datum.data[_dimension[0]] + "</td>"
             + "</tr><tr>"
             + "<th>" + datum.key + ": </th>"
             + "<td>" + UTIL.getFormattedValue(datum.data[datum.key], UTIL.getValueNumberFormat(_measure.indexOf(datum.key), _numberFormat, datum.data[datum.key])) + " </td>"
@@ -189,7 +189,7 @@ function stackedverticalbar() {
 
             lasso.notSelectedItems().selectAll('rect');
 
-            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
+           d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
 
             var _filter = [];
@@ -318,12 +318,7 @@ function stackedverticalbar() {
                     }
                 })
                 .style('stroke', function (d, i) {
-                    if (d.data[d.key] < 0) {
-                        return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
-                    }
-                    else {
-                        return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
-                    }
+                    return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
                 })
             if (tooltip) {
                 UTIL.hideTooltip(tooltip);
@@ -484,12 +479,7 @@ function stackedverticalbar() {
                 }
             })
             .style('stroke', function (d, i) {
-                if (d.data[d.key] < 0) {
-                    return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
-                }
-                else {
-                    return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
-                }
+                return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
             })
             .attr('class', function (d, i) {
                 return d.data[_dimension[0]];
@@ -525,7 +515,7 @@ function stackedverticalbar() {
                                 return;
                             }
                             filter = false;
-                            var confirm = parentContainer.select('.confirm')
+                           parentContainer.select('.confirm')
                                 .style('visibility', 'visible');
 
                             var _filter = _Local_data.filter(function (d1) {
@@ -661,7 +651,7 @@ function stackedverticalbar() {
     var drawPlot = function (data) {
         var me = this;
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         var plot = container.append('g')
@@ -854,7 +844,7 @@ function stackedverticalbar() {
         UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
 
         if (!_print) {
-            var confirm = $(me).parent().find('div.confirm')
+            $(me).parent().find('div.confirm')
                 .css('visibility', 'hidden');
 
             _local_svg.select('g.sort').remove();
@@ -1053,12 +1043,7 @@ function stackedverticalbar() {
                     }
                 })
                 .style('stroke', function (d, i) {
-                    if (d.data[d.key] < 0) {
-                        return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
-                    }
-                    else {
-                        return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
-                    }
+                    return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
                 })
                 .attr('class', function (d, i) {
                     return d.data[_dimension[0]];
@@ -1191,7 +1176,7 @@ function stackedverticalbar() {
 
         var labelStack = [];
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         filterData = [];
@@ -1282,12 +1267,7 @@ function stackedverticalbar() {
                 }
             })
             .style('stroke', function (d, i) {
-                if (d.data[d.key] < 0) {
-                    return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
-                }
-                else {
-                    return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
-                }
+                return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
             })
             .attr('class', function (d, i) {
                 return d.data[_dimension[0]];
