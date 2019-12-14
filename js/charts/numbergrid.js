@@ -116,8 +116,6 @@ function numbergrid() {
     }
 
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
-
         return function (d, i) {
             filter = container.selectAll('.chord')
                 .filter(function (d1) {
@@ -260,7 +258,7 @@ function numbergrid() {
                     var path = d3.select(this.parentNode)
                     var index = parseInt(d3.select(path.node().parentElement).attr('class'))
 
-                   parentContainer.select('.confirm')
+                    parentContainer.select('.confirm')
                         .style('visibility', 'visible');
 
                     var point = d3.select(this);
@@ -381,7 +379,7 @@ function numbergrid() {
                     var path = d3.select(this.parentNode)
                     var index = parseInt(d3.select(path.node().parentElement).attr('class'))
 
-                   parentContainer.select('.confirm')
+                    parentContainer.select('.confirm')
                         .style('visibility', 'visible');
 
                     var point = d3.select(this);

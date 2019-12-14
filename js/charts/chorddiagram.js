@@ -211,7 +211,6 @@ function chorddiagram() {
     }
 
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
 
         return function (d, i) {
             var filter = container.selectAll('.chord')
@@ -446,7 +445,7 @@ function chorddiagram() {
                 _legendMouseOut(data, plot);
                 break;
             case 'click':
-                _legendClick(data, plot);
+                _legendClick(data);
                 break;
         }
     }
@@ -481,7 +480,7 @@ function chorddiagram() {
             });
     }
 
-    var _legendClick = function (data, plot) {
+    var _legendClick = function (data) {
         var _filter = UTIL.getFilterData(_localLabelStack, data, _Local_data)
         drawPlot.call(this, _filter);
     }
@@ -528,7 +527,7 @@ function chorddiagram() {
         });
 
         for (var index = 0; index < _keys.length; index++) {
-             filterData = data.filter(function (val) {
+            filterData = data.filter(function (val) {
                 if (_keys[index] == val[_dimension[0]] || _keys[index] == val[_dimension[1]]) {
                     return val;
                 }

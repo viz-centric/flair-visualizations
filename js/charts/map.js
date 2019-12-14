@@ -145,8 +145,6 @@ function map() {
     }
 
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
-
         return function (d, i) {
             d3.select(this).style('cursor', 'default')
             if (tooltip) {

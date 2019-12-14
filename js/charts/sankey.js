@@ -160,7 +160,7 @@ function sankey() {
 
             lasso.notSelectedItems()
 
-           d3.select(scope.node().parentNode).select('div.confirm')
+            d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
 
             var _filter = [];
@@ -253,8 +253,6 @@ function sankey() {
     }
 
     var _handleMouseOutFn = function (tooltip, container, element) {
-        var me = this;
-
         return function (d, i) {
             d3.select(this).style('cursor', 'default')
 
@@ -361,7 +359,7 @@ function sankey() {
         _local_svg = svg;
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         var me = this;
         svg.selectAll('g').remove();
@@ -412,10 +410,12 @@ function sankey() {
             })
         //.call(drag);
 
-        var rect = node.append('rect')
+        node.append('rect')
             .attr('width', sankey.nodeWidth())
             .attr('height', function (d) { return d.dy; })
-            .attr('class', function (d) { return d.name.replace(/ /g, "_"); })
+            .attr('class', function (d) {
+                return d.name.replace(/ /g, "_");
+            })
             .style('cursor', 'move')
             .style('fill', function (d, i) {
                 return getFillColor(d, i);
@@ -488,7 +488,7 @@ function sankey() {
                 if (colorPattern == 'single_color') {
                     return _colorList[0];
                 } else if (colorPattern == 'unique_color') {
-                    return _colorList[d.index]!=undefined?_colorList[d.index]:UTIL.getUniqueColour(d.index);
+                    return _colorList[d.index] != undefined ? _colorList[d.index] : UTIL.getUniqueColour(d.index);
                 } else if (colorPattern == 'gradient_color') {
                     if (_print) {
                         return _colorList[0];
@@ -510,7 +510,7 @@ function sankey() {
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg, 'link'))
                 .on('click', function (d) {
                     filter = false;
-                   parentContainer.select('.confirm')
+                    parentContainer.select('.confirm')
                         .style('visibility', 'visible');
 
                     if (d.nodeType == dimension[0]) {
@@ -535,20 +535,20 @@ function sankey() {
                     }
 
                     var _filter = _Local_data.filter(function (d1) {
-                        return d.data[_dimension[0]] === d1[_dimension[0]]
+                        return d.data[dimension[0]] === d1[dimension[0]]
                     })
                     var rect = d3.select(this);
                     if (rect.classed('selected')) {
                         rect.classed('selected', false);
                         filterData.map(function (val, i) {
-                            if (val[_dimension[0]] == d.data[_dimension[0]]) {
+                            if (val[dimension[0]] == d.data[dimension[0]]) {
                                 filterData.splice(i, 1)
                             }
                         })
                     } else {
                         rect.classed('selected', true);
                         var isExist = filterData.filter(function (val) {
-                            if (val[_dimension[0]] == d.data[_dimension[0]]) {
+                            if (val[dimension[0]] == d.data[dimension[0]]) {
                                 return val
                             }
                         })
@@ -563,17 +563,17 @@ function sankey() {
                     } else {
                         broadcast.filterSelection.id = parentContainer.attr('id');
                     }
-                    var dimension = _dimension[0];
-                    if (_filterDimension[dimension]) {
-                        var temp = _filterDimension[dimension];
-                        if (temp.indexOf(d.data[_dimension[0]]) < 0) {
-                            temp.push(d.data[_dimension[0]]);
+                    var _dimension = dimension[0];
+                    if (_filterDimension[_dimension]) {
+                        var temp = _filterDimension[_dimension];
+                        if (temp.indexOf(d.data[_dimension]) < 0) {
+                            temp.push(d.data[_dimension]);
                         } else {
-                            temp.splice(temp.indexOf(d.data[_dimension[0]]), 1);
+                            temp.splice(temp.indexOf(d.data[_dimension]), 1);
                         }
                         _filterDimension[dimension] = temp;
                     } else {
-                        _filterDimension[dimension] = [d.data[_dimension[0]]];
+                        _filterDimension[dimension] = [d.data[_dimension]];
                     }
 
                     var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
@@ -595,7 +595,7 @@ function sankey() {
                         return;
                     }
                     filter = false;
-                   parentContainer.select('.confirm')
+                    parentContainer.select('.confirm')
                         .style('visibility', 'visible');
                     var rect = d3.select(this);
                     if (rect.classed('selected')) {
@@ -678,7 +678,7 @@ function sankey() {
             return d.value;
         }));
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         var nodeDistance = data.nodes[0].sourceLinks[0].target.x - data.nodes[0].x - sankey.nodeWidth();
 
@@ -699,7 +699,9 @@ function sankey() {
         node.select('rect')
             .attr('width', sankey.nodeWidth())
             .attr('height', function (d) { return d.dy; })
-            .attr('class', function (d) { return d.name.replace(/ /g, "_"); })
+            .attr('class', function (d) {
+                return d.name.replace(/ /g, "_");
+            })
             .style('cursor', 'move')
             .style('fill', function (d, i) {
                 return getFillColor(d, i);
@@ -717,7 +719,7 @@ function sankey() {
                     return;
                 }
                 filter = false;
-               parentContainer.select('.confirm')
+                parentContainer.select('.confirm')
                     .style('visibility', 'visible');
                 var rect = d3.select(this)
                 if (rect.classed('selected')) {
@@ -881,7 +883,7 @@ function sankey() {
                 if (colorPattern == 'single_color') {
                     return _colorList[0];
                 } else if (colorPattern == 'unique_color') {
-                    return _colorList[d.index]!=undefined?_colorList[d.index]:UTIL.getUniqueColour(d.index);
+                    return _colorList[d.index] != undefined ? _colorList[d.index] : UTIL.getUniqueColour(d.index);
                 } else if (colorPattern == 'gradient_color') {
                     if (_print) {
                         return _colorList[0];
@@ -900,7 +902,7 @@ function sankey() {
                     return;
                 }
                 filter = false;
-               parentContainer.select('.confirm')
+                parentContainer.select('.confirm')
                     .style('visibility', 'visible');
 
                 if (d.nodeType == dimension[0]) {

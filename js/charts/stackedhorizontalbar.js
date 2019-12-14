@@ -291,8 +291,6 @@ function stackedhorizontalbar() {
     }
 
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
-
         return function (d, i) {
             d3.select(this).style('cursor', 'default')
                 .style('fill', function (d, i) {
@@ -507,7 +505,7 @@ function stackedhorizontalbar() {
                                 return;
                             }
                             filter = false;
-                           parentContainer.select('.confirm')
+                            parentContainer.select('.confirm')
                                 .style('visibility', 'visible');
                             var _filter = _Local_data.filter(function (d1) {
                                 return d.data[_dimension[0]] === d1[_dimension[0]]
@@ -1035,7 +1033,7 @@ function stackedhorizontalbar() {
                 _legendMouseOut(data, plot);
                 break;
             case 'click':
-                _legendClick(data, plot);
+                _legendClick(data);
                 break;
         }
     }

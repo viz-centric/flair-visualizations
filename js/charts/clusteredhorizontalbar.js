@@ -284,7 +284,6 @@ function clusteredhorizontalbar() {
     }
 
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
 
         return function (d, i) {
             d3.select(this).style('cursor', 'default')
@@ -993,7 +992,7 @@ function clusteredhorizontalbar() {
                 _legendMouseOut(data, plot);
                 break;
             case 'click':
-                _legendClick(data, plot);
+                _legendClick(data);
                 break;
         }
     }

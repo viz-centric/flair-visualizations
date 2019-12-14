@@ -88,7 +88,7 @@ function bullet() {
         }
 
         output += "<table><tr>"
-            + "<th>" + _dimension[0] + ": </th>"
+            + "<th>" + dimension[0] + ": </th>"
             + "<td>" + datum.title + "</td>"
             + "</tr><tr>"
             + "<th>" + 'Value' + ": </th>"
@@ -255,8 +255,6 @@ function bullet() {
     }
 
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
-
         return function (d, i) {
 
             d3.select(this).style('cursor', 'default')
@@ -351,18 +349,6 @@ function bullet() {
         //set from config
         //bullet.find('.title').css('font-size', '1.1em');
 
-        if (orientation == 'Vertical') {
-            bullet.selectAll('.tick text').each(function (i, d) {
-                var text = d;
-                //  $(d).text(UTIL.getTruncatedLabel(d, UTIL.shortScale(2)(UTIL.convertToNumber(text)), 25));
-            });
-        } else {
-            bullet.selectAll('.tick text').each(function (i, d) {
-                var text = d;
-                //  $(d).text(UTIL.getTruncatedLabel(d, UTIL.shortScale(2)(UTIL.convertToNumber(text)), 25));
-            });
-        }
-
         var obj;
         for (var property in obj = getSegmentColors(this)) {
             if (obj.hasOwnProperty(property)) {
@@ -385,8 +371,8 @@ function bullet() {
             .attr('width', parentContainer.attr('width'))
             .attr('height', parentContainer.attr('height'))
 
-        width = +svg.attr('width'),
-            height = +svg.attr('height');
+        width = +svg.attr('width');
+        height = +svg.attr('height');
 
         parentContainer.append('div')
             .attr('class', 'custom_tooltip');
@@ -520,7 +506,7 @@ function bullet() {
                         broadcast.$broadcast('FlairBi:livemode-dialog');
                         return;
                     }
-                   parentContainer.select('.confirm')
+                    parentContainer.select('.confirm')
                         .style('visibility', 'visible');
 
                     var rect = d3.select(this).select('rect.measure');

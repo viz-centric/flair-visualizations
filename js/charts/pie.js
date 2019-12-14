@@ -132,7 +132,6 @@ function pie() {
     var _pythagorousTheorem = function (x, y) {
         if (isNaN(+x) || isNaN(+y)) {
             throw new Error('TypeError: Not a number');
-            return 0;
         }
 
         return Math.sqrt(Math.pow(+x, 2) + Math.pow(+y, 2));
@@ -339,8 +338,7 @@ function pie() {
     }
 
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
-
+       
         return function (d, i) {
             d3.select(this).style('cursor', 'default');
 

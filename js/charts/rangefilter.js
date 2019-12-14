@@ -81,8 +81,6 @@ function rangefilter() {
         }
     }
     var _handleMouseMoveFn = function (tooltip, container) {
-        var me = this;
-
         return function (d, i) {
             if (tooltip) {
                 var border = UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor)
@@ -91,8 +89,6 @@ function rangefilter() {
         }
     }
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
-
         return function (d, i) {
             d3.select(this).style('cursor', 'pointer')
                 .style('fill', function (d1, i) {

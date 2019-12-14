@@ -291,8 +291,6 @@ function treemap() {
     }
 
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
-
         return function (d, i) {
             var border = d3.select(this).attr('fill');
             d3.select(this).style('cursor', 'default')

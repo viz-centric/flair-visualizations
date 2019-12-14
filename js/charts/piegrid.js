@@ -88,8 +88,6 @@ function piegrid() {
     }
 
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
-
         return function (d, i) {
             if (tooltip) {
                 UTIL.hideTooltip(tooltip);
@@ -231,7 +229,7 @@ function piegrid() {
             .attr('class', 'custom_tooltip');
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         var width = parentContainer.attr('width'),
@@ -272,7 +270,7 @@ function piegrid() {
                     }
                     var index = parseInt(d3.select(this.parentNode).attr('class'));
 
-                   parentContainer.select('.confirm')
+                    parentContainer.select('.confirm')
                         .style('visibility', 'visible');
 
                     var point = d3.select(this).selectAll('path');
@@ -417,7 +415,7 @@ function piegrid() {
                     }
                     var index = parseInt(d3.select(this.parentNode).attr('class'));
 
-                   parentContainer.select('.confirm')
+                    parentContainer.select('.confirm')
                         .style('visibility', 'visible');
 
                     var point = d3.select(this).selectAll('path');

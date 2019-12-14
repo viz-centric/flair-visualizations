@@ -108,10 +108,7 @@ function wordcloud() {
     }
 
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
-
         return function (d, i) {
-            var border = d3.select(this).style('fill')
             d3.select(this)
                 .style('cursor', 'default')
                 .style('fill-opacity', '1')
@@ -273,7 +270,7 @@ function wordcloud() {
                             broadcast.$broadcast('FlairBi:livemode-dialog');
                             return;
                         }
-                       parentContainer.select('.confirm')
+                        parentContainer.select('.confirm')
                             .style('visibility', 'visible');
                         filter = false;
 

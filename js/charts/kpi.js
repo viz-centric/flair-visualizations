@@ -162,7 +162,7 @@ function kpi() {
         numberOutput += "<span style='" + style + "'>"
             + UTIL.getFormattedValue(value, UTIL.getNumberFormatterFn(_kpiNumberFormat[index], value));
 
-        + "</span>";
+        numberOutput = + "</span>";
 
         var iconStyle = {
             'font-weight': _kpiIconFontWeight[index] || COMMON.DEFAULT_FONTWEIGHT,
@@ -196,9 +196,7 @@ function kpi() {
     }
 
     function chart(selection) {
-
-        var kpi = selection;
-
+        
         _Local_data = _originalData = _data;
 
         if (_print && !_notification) {
@@ -342,8 +340,6 @@ function kpi() {
 
         }
     }
-
-
 
     chart._getName = function () {
         return _NAME;

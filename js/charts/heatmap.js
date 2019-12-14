@@ -137,7 +137,6 @@ function heatmap() {
     }
 
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
 
         return function (d, i) {
             d3.select(this).select('rect').style('cursor', 'default')
@@ -386,7 +385,7 @@ function heatmap() {
 
             lasso.notSelectedItems().selectAll('rect');
 
-           d3.select(scope.node().parentNode).select('div.confirm')
+            d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
 
             var _filter = [];
@@ -413,7 +412,7 @@ function heatmap() {
                 broadcast.updateWidget = {};
                 broadcast.updateWidget[scope.node().parentNode.id] = idWidget;
 
-                var _filterList = {}, list = []
+                var list = [];
 
                 filterData.map(function (val) {
                     list.push(val[_dimension[0]])
@@ -506,7 +505,7 @@ function heatmap() {
         cellHeight = parseInt((height - margin.top - margin.bottom) / _data.length);
 
         var offset = 6;
-        var dimLabel = plot.selectAll('.dimLabel')
+        plot.selectAll('.dimLabel')
             .data(yElement)
             .enter().append('text')
             .attr('class', 'dimLabel')
@@ -568,7 +567,7 @@ function heatmap() {
         }));
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         var cell = plot.selectAll(".node")
@@ -633,12 +632,9 @@ function heatmap() {
                         broadcast.$broadcast('FlairBi:livemode-dialog');
                         return;
                     }
-                   parentContainer.select('.confirm')
+                    parentContainer.select('.confirm')
                         .style('visibility', 'visible');
-                    var _filter = _Local_data.filter(function (d1) {
-                        return d.y === d1[_dimension[0]]
-                    })
-
+                   
                     var rect = d3.select(this).select('rect');
 
                     if (rect.classed('selected')) {
@@ -754,7 +750,7 @@ function heatmap() {
 
     chart.update = function (data) {
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         _Local_data = data;
         filterData = [];
@@ -766,14 +762,14 @@ function heatmap() {
             xElement.set(i, _measure[i]);
         }
 
-        cellWidth = parseInt((width - margin.left - margin.right) / _measure.length),
-            cellHeight = parseInt((height - margin.top - margin.bottom) / data.length);
+        cellWidth = parseInt((width - margin.left - margin.right) / _measure.length);
+        cellHeight = parseInt((height - margin.top - margin.bottom) / data.length);
         var offset = 6;
         var plot = svg.select('.plot');
 
         plot.selectAll('.dimLabel').remove()
 
-        var dimLabel = plot.selectAll('.dimLabel')
+        plot.selectAll('.dimLabel')
             .data(yElement)
             .enter().append('text')
             .attr('class', 'dimLabel')
@@ -919,7 +915,7 @@ function heatmap() {
                     return;
                 }
                 filter = false;
-               parentContainer.select('.confirm')
+                parentContainer.select('.confirm')
                     .style('visibility', 'visible');
                 var _filter = _Local_data.filter(function (d1) {
                     return d.y === d1[_dimension[0]]

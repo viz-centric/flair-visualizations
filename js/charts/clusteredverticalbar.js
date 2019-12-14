@@ -286,7 +286,6 @@ function clusteredverticalbar() {
     }
 
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
 
         return function (d, i) {
             d3.select(this).style('cursor', 'default')
@@ -542,7 +541,7 @@ function clusteredverticalbar() {
             .enter().append('g')
             .attr('class', 'clusteredverticalbar');
 
-        var rect = drawViz(clusteredverticalbar, keys);
+        drawViz(clusteredverticalbar, keys);
 
         /* Axes */
         var xAxisGroup,
@@ -1033,7 +1032,7 @@ function clusteredverticalbar() {
                 _legendMouseOut(data, plot);
                 break;
             case 'click':
-                _legendClick(data, plot);
+                _legendClick(data);
                 break;
         }
     }
@@ -1073,7 +1072,7 @@ function clusteredverticalbar() {
             });
     }
 
-    var _legendClick = function (data, plot) {
+    var _legendClick = function (data) {
         var _filter = UTIL.getFilterData(_localLabelStack, data, _Local_data)
         drawPlot.call(this, _filter);
     }

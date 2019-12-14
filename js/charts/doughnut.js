@@ -145,7 +145,6 @@ function doughnut() {
     var _pythagorousTheorem = function (x, y) {
         if (isNaN(+x) || isNaN(+y)) {
             throw new Error('TypeError: Not a number');
-            return 0;
         }
 
         return Math.sqrt(Math.pow(+x, 2) + Math.pow(+y, 2));
@@ -267,7 +266,7 @@ function doughnut() {
 
             lasso.notSelectedItems().selectAll('path');
 
-           d3.select(scope.node().parentNode).select('div.confirm')
+            d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
 
             var _filter = [];
@@ -352,8 +351,6 @@ function doughnut() {
     }
 
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
-
         return function (d, i) {
             d3.select(this).style('cursor', 'default');
 
@@ -766,7 +763,7 @@ function doughnut() {
                         broadcast.$broadcast('FlairBi:livemode-dialog');
                         return;
                     }
-                   parentContainer.select('.confirm')
+                    parentContainer.select('.confirm')
                         .style('visibility', 'visible');
                     filter = false;
 
@@ -1013,7 +1010,7 @@ function doughnut() {
                     broadcast.$broadcast('FlairBi:livemode-dialog');
                     return;
                 }
-               parentContainer.select('.confirm')
+                parentContainer.select('.confirm')
                     .style('visibility', 'visible');
                 filter = false;
 
