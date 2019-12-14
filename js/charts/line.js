@@ -179,8 +179,8 @@ function line() {
         var output = "";
         output += "<table><tr>"
 
-            + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + datum[chart.dimension()] + "</td>"
+            + "<th>" + _dimension[0] + ": </th>"
+            + "<td>" + datum[_dimension[0]] + "</td>"
             + "</tr>";
         _measure.forEach(element => {
             output += "<tr> <th><i class='fa fa-square dataset' style='color:" + _displayColor[_measure.indexOf(element)] + ";'></i>" + element + " : </th>"
@@ -233,7 +233,7 @@ function line() {
 
             lasso.notSelectedItems()
 
-            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
+            d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
 
             var _filter = [];
@@ -309,8 +309,6 @@ function line() {
         }
     }
     var _handleMouseOverFn = function (tooltip, container) {
-        var me = this;
-
         return function (d, i) {
             d3.select(this).style('cursor', 'pointer')
                 .style('fill', COMMON.HIGHLIGHTER)
@@ -319,13 +317,11 @@ function line() {
             var border = UTIL.getDisplayColor(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key), _displayColor)
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d), container, border);
             }
         }
     }
     var _handleMouseMoveFn = function (tooltip, container) {
-        var me = this;
-
         return function (d, i) {
             if (tooltip) {
                 var mouse = d3.mouse(d3.select('.overlayTooltip').node()),
@@ -388,8 +384,6 @@ function line() {
         }
     }
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
-
         return function (d, i) {
             d3.select(this).style('cursor', 'pointer')
                 .style('fill', function (d1, i) {
@@ -907,7 +901,6 @@ function line() {
                 else {
                     return 'hidden'
                 }
-                return showText;
             })
             .style('font-style', function (d, i) {
                 return _fontStyle[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
@@ -954,7 +947,7 @@ function line() {
                             return;
                         }
                         filter = false;
-                        var confirm = parentContainer.select('.confirm')
+                        parentContainer.select('.confirm')
                             .style('visibility', 'visible');
                         var _filter = _Local_data.filter(function (d1) {
                             return d.data[_dimension[0]] === d1[_dimension[0]]
@@ -1097,7 +1090,7 @@ function line() {
             // var str = UTIL.createAlert($(div).attr('id'), _measure);
             // $(div).append(str);
 
-            var confirm = $(me).parent().find('div.confirm')
+            $(me).parent().find('div.confirm')
                 .css('visibility', 'hidden');
 
             var _filter = UTIL.createFilterElement()
@@ -1419,7 +1412,7 @@ function line() {
                 _legendMouseOut(data, plot);
                 break;
             case 'click':
-                _legendClick(data, plot);
+                _legendClick(data);
                 break;
         }
     }
@@ -1780,7 +1773,7 @@ function line() {
                     }
                     else {
                         filter = false;
-                        var confirm = parentContainer.select('.confirm')
+                        parentContainer.select('.confirm')
                             .style('visibility', 'visible');
                         var _filter = _Local_data.filter(function (d1) {
                             return d.data[_dimension[0]] === d1[_dimension[0]]
@@ -1900,7 +1893,6 @@ function line() {
                 else {
                     return 'hidden'
                 }
-                return showText;
             })
             .style('font-style', function (d, i) {
                 return _fontStyle[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];

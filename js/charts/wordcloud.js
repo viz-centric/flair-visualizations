@@ -48,10 +48,10 @@ function wordcloud() {
     var _buildTooltipData = function (datum, chart) {
         var output = "";
         output += "<table><tr>"
-            + "<th>" + chart.dimension() + ": </th>"
+            + "<th>" + _dimension + ": </th>"
             + "<td>" + datum.text + "</td>"
             + "</tr><tr>"
-            + "<th>" + chart.measure() + ": </th>"
+            + "<th>" + _measure + ": </th>"
             + "<td>" + getValue(datum.text) + " </td>"
             + "</tr></table>";
 
@@ -108,10 +108,7 @@ function wordcloud() {
     }
 
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
-
         return function (d, i) {
-            var border = d3.select(this).style('fill')
             d3.select(this)
                 .style('cursor', 'default')
                 .style('fill-opacity', '1')
@@ -209,7 +206,7 @@ function wordcloud() {
 
         _Local_data = data;
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         var colour = d3.schemePaired;
 
@@ -273,7 +270,7 @@ function wordcloud() {
                             broadcast.$broadcast('FlairBi:livemode-dialog');
                             return;
                         }
-                        var confirm = parentContainer.select('.confirm')
+                        parentContainer.select('.confirm')
                             .style('visibility', 'visible');
                         filter = false;
 

@@ -118,7 +118,6 @@ function gauge() {
     }
 
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
 
         return function (d, i) {
             d3.select(this).style('cursor', 'default')
@@ -163,7 +162,7 @@ function gauge() {
         _local_svg = svg;
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         var radius;
@@ -177,8 +176,8 @@ function gauge() {
             radius = radius > Math.min(width, height) ? Math.min(width, height) : radius;
         }
 
-        ringInset = radius * 0.3,
-            ringWidth = radius * 0.2;
+        ringInset = radius * 0.3;
+        ringWidth = radius * 0.2;
 
         arc = d3.arc()
             .innerRadius(radius - ringInset - ringWidth)
@@ -270,7 +269,7 @@ function gauge() {
 
         var plot = container
             .append("g")
-            .attr("transform", getTxCenter(width, height))
+            .attr("transform", getTxCenter(width, height));
 
         emptyArc = plot.append("path")
             .datum({

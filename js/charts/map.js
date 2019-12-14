@@ -54,14 +54,14 @@ function map() {
         this.showValue(config.showValue);
     }
 
-    var _buildTooltipData = function (datum, chart) {
+    var _buildTooltipData = function (datum, data) {
         var output = "";
         output += "<table><tr>"
-            + "<th>" + chart.dimension() + ": </th>"
+            + "<th>" + _dimension[0] + ": </th>"
             + "<td>" + datum.properties.name + "</td>"
             + "</tr>"
             + "<tr>"
-            + "<th>" + chart.measure() + ": </th>"
+            + "<th>" + _measure[0] + ": </th>"
             + "<td>" + valueMapper[datum.properties.name] + "</td>"
             + "</tr>"
             + "</table>";
@@ -145,8 +145,6 @@ function map() {
     }
 
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
-
         return function (d, i) {
             d3.select(this).style('cursor', 'default')
             if (tooltip) {
@@ -206,7 +204,7 @@ function map() {
             lasso.notSelectedItems()
                 .classed('selected', false);
 
-            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
+           d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
 
             if (data.length > 0) {
@@ -380,7 +378,7 @@ function map() {
 
         if (!_print) {
 
-            var confirm = $(me).parent().find('div.confirm')
+            $(me).parent().find('div.confirm')
                 .css('visibility', 'hidden');
 
             var _filter = UTIL.createFilterElement()
@@ -392,7 +390,7 @@ function map() {
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d, i) {
 
-                    var confirm = parentContainer.select('.confirm')
+                   parentContainer.select('.confirm')
                         .style('visibility', 'visible');
 
                     var point = d3.select(this);
@@ -481,7 +479,7 @@ function map() {
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d, i) {
 
-                    var confirm = parentContainer.select('.confirm')
+                   parentContainer.select('.confirm')
                         .style('visibility', 'visible');
 
                     var point = d3.select(this);

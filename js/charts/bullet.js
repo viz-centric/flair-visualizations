@@ -37,12 +37,6 @@ function bullet() {
     var _local_svg, _Local_data, _originalData;
 
     var height, width, gWidth, gHeight, bullet;
-    var margin = {
-        top: 15,
-        right: 0,
-        bottom: 15,
-        left: 0
-    };
 
     var offset = 6, parentContainer;
 
@@ -65,7 +59,7 @@ function bullet() {
 
     }
 
-    var _buildTooltipData = function (datum, chart) {
+    var _buildTooltipData = function (datum, data) {
         var output = "";
 
         var measureNf = UTIL.getNumberFormatter(measureNumberFormat),
@@ -94,7 +88,7 @@ function bullet() {
         }
 
         output += "<table><tr>"
-            + "<th>" + chart.dimension() + ": </th>"
+            + "<th>" + dimension[0] + ": </th>"
             + "<td>" + datum.title + "</td>"
             + "</tr><tr>"
             + "<th>" + 'Value' + ": </th>"
@@ -159,7 +153,7 @@ function bullet() {
 
             lasso.notSelectedItems().selectAll('rect.measure');
 
-            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
+            d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
 
             var _filter = [];
@@ -184,7 +178,7 @@ function bullet() {
                 broadcast.updateWidget = {};
                 broadcast.updateWidget[scope.node().parentNode.id] = idWidget;
 
-                var _filterList = {}, list = []
+                var list = [];
 
                 filterData.map(function (val) {
                     list.push(val[dimension[0]])
@@ -261,8 +255,6 @@ function bullet() {
     }
 
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
-
         return function (d, i) {
 
             d3.select(this).style('cursor', 'default')
@@ -357,18 +349,6 @@ function bullet() {
         //set from config
         //bullet.find('.title').css('font-size', '1.1em');
 
-        if (orientation == 'Vertical') {
-            bullet.selectAll('.tick text').each(function (i, d) {
-                var text = d;
-                //  $(d).text(UTIL.getTruncatedLabel(d, UTIL.shortScale(2)(UTIL.convertToNumber(text)), 25));
-            });
-        } else {
-            bullet.selectAll('.tick text').each(function (i, d) {
-                var text = d;
-                //  $(d).text(UTIL.getTruncatedLabel(d, UTIL.shortScale(2)(UTIL.convertToNumber(text)), 25));
-            });
-        }
-
         var obj;
         for (var property in obj = getSegmentColors(this)) {
             if (obj.hasOwnProperty(property)) {
@@ -391,8 +371,8 @@ function bullet() {
             .attr('width', parentContainer.attr('width'))
             .attr('height', parentContainer.attr('height'))
 
-        width = +svg.attr('width'),
-            height = +svg.attr('height');
+        width = +svg.attr('width');
+        height = +svg.attr('height');
 
         parentContainer.append('div')
             .attr('class', 'custom_tooltip');
@@ -411,7 +391,7 @@ function bullet() {
             .attr('class', 'plot')
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         data = _data.map(function (item) {
@@ -526,7 +506,7 @@ function bullet() {
                         broadcast.$broadcast('FlairBi:livemode-dialog');
                         return;
                     }
-                    var confirm = parentContainer.select('.confirm')
+                    parentContainer.select('.confirm')
                         .style('visibility', 'visible');
 
                     var rect = d3.select(this).select('rect.measure');
@@ -612,7 +592,7 @@ function bullet() {
     chart.update = function (data) {
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         _Local_data = data;
         filterData = [];
@@ -695,7 +675,7 @@ function bullet() {
                     broadcast.$broadcast('FlairBi:livemode-dialog');
                     return;
                 }
-                var confirm = parentContainer.select('.confirm')
+                parentContainer.select('.confirm')
                     .style('visibility', 'visible');
 
                 var rect = d3.select(this).select('rect.measure');

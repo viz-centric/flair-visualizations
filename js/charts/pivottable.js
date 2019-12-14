@@ -299,7 +299,7 @@ function pivottable() {
     }
     var readerTableChart = function (str, ctr, element) {
 
-        var confirm = ctr.select('div.confirm')
+        ctr.select('div.confirm')
             .style('visibility', 'visible');
         var searchObj = filterData.find(o => o[str.id] === str.textContent);
         if (searchObj == undefined) {
@@ -488,8 +488,8 @@ function pivottable() {
                 .style('overflow-x', 'auto');
         }
 
-        nester = d3.nest(),
-            pivotedDimension = getPivotedDimension();
+        nester = d3.nest();
+        pivotedDimension = getPivotedDimension();
 
         unpivotedDimension = getUnPivotedDimension();
 
@@ -541,8 +541,8 @@ function pivottable() {
             return result;
         });
 
-        nestedData = nester.entries(data),
-            pivotedData = [];
+        nestedData = nester.entries(data);
+        pivotedData = [];
 
         getGeneratedPivotData(nestedData, 0);
 

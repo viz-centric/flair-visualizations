@@ -13,7 +13,6 @@ function boxplot() {
     var _config,
         _dimension,
         _measure,
-        _sort,
         _tooltip,
         showXaxis,
         showYaxis,
@@ -36,16 +35,15 @@ function boxplot() {
         bottom: 35,
         left: 35
     };
-    var _local_svg, _Local_data, _originalData, horizontalLineConfigs, legendBreakCount = 1;
+    var _local_svg, _Local_data, _originalData, horizontalLineConfigs;
 
-    var width, gWidth, height, gHeight, container, div;
+    var width, gWidth, height, gHeight;
 
     var tickLength = d3.scaleLinear()
         .domain([22, 34])
         .range([2, 4]);
 
     var filter = false, filterData = [];
-    var threshold = [];
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
@@ -59,7 +57,7 @@ function boxplot() {
         this.colorPattern(config.colorPattern);
     }
 
-    var _buildTooltipData = function (datum, chart) {
+    var _buildTooltipData = function (datum, data) {
         var output = "";
         output += "<table>"
             + "<tr>"
@@ -142,7 +140,7 @@ function boxplot() {
             lasso.notSelectedItems()
                 .classed('selected', false);
 
-            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
+            d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
 
             if (data.length > 0) {
@@ -220,8 +218,6 @@ function boxplot() {
     }
 
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
-
         return function (d, i) {
             d3.select(this).style('cursor', 'default')
                 .attr("fill", function (datum) {
@@ -278,12 +274,12 @@ function boxplot() {
             .attr('width', parentContainer.attr('width'))
             .attr('height', parentContainer.attr('height'))
 
-        var width = +svg.attr('width'),
-            height = +svg.attr('height');
+        width = +svg.attr('width');
+        height = +svg.attr('height');
 
         _local_svg = svg;
 
-        container = svg.append('g')
+        svg.append('g')
             .attr("class", "focus")
             .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
 
@@ -307,7 +303,7 @@ function boxplot() {
         var barWidth = Math.floor(gWidth / _data.length / 2);
         var me = this;
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         x = d3
@@ -327,7 +323,7 @@ function boxplot() {
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 
-        var verticalLines = plot.selectAll(".verticalLines")
+        plot.selectAll(".verticalLines")
             .data(_data)
             .enter()
             .append("line")
@@ -376,7 +372,7 @@ function boxplot() {
             .style("stroke-width", 1);
 
         // Now render all the horizontal lines at once - the whiskers and the median
-        var horizontalLineConfigs = [
+        horizontalLineConfigs = [
             // Top whisker
             {
                 x1: function (datum) { return x(datum[_dimension[0]]) - barWidth / 2 },
@@ -404,7 +400,7 @@ function boxplot() {
             var lineConfig = horizontalLineConfigs[i];
 
             // Draw the whiskers at the min for this series
-            var horizontalLine = plot.selectAll(".whiskers")
+            plot.selectAll(".whiskers")
                 .data(data)
                 .enter()
                 .append("line")
@@ -442,9 +438,8 @@ function boxplot() {
 
         UTIL.setAxisColor("", true, "", true, _local_svg);
 
-
         if (!_print) {
-            var confirm = $(me).parent().find('div.confirm')
+            $(me).parent().find('div.confirm')
                 .css('visibility', 'hidden');
 
             var _filter = UTIL.createFilterElement()
@@ -461,7 +456,7 @@ function boxplot() {
                     }
                     filter = false;
 
-                    var confirm = parentContainer.select('.confirm')
+                    parentContainer.select('.confirm')
                         .style('visibility', 'visible');
 
                     var point = d3.select(this).selectAll('path');
@@ -538,7 +533,7 @@ function boxplot() {
         plot.selectAll('line').remove();
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         var globalMin, globalMax, xLabels;
@@ -562,7 +557,7 @@ function boxplot() {
             .domain([globalMin, globalMax])
             .range([gHeight, 0]);
 
-        var verticalLines = plot.selectAll(".verticalLines")
+        plot.selectAll(".verticalLines")
             .data(data)
             .enter()
             .append("line")
@@ -611,7 +606,7 @@ function boxplot() {
             .style("stroke-width", 1);
 
         // Now render all the horizontal lines at once - the whiskers and the median
-        var horizontalLineConfigs = [
+        horizontalLineConfigs = [
             // Top whisker
             {
                 x1: function (datum) { return x(datum[_dimension[0]]) - barWidth / 2 },
@@ -639,7 +634,7 @@ function boxplot() {
             var lineConfig = horizontalLineConfigs[i];
 
             // Draw the whiskers at the min for this series
-            var horizontalLine = plot.selectAll(".whiskers")
+            plot.selectAll(".whiskers")
                 .data(data)
                 .enter()
                 .append("line")

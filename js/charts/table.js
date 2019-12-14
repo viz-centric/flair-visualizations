@@ -177,7 +177,7 @@ function table() {
     }
     var readerTableChart = function (str, ctr, element) {
 
-        var confirm = ctr.select('div.confirm')
+       ctr.select('div.confirm')
             .style('visibility', 'visible');
         var searchObj = filterData.find(o => o[str.id] === str.textContent);
         if (searchObj == undefined) {

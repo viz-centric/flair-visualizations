@@ -76,23 +76,19 @@ function rangefilter() {
             var border = UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor)
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d), container, border);
             }
         }
     }
     var _handleMouseMoveFn = function (tooltip, container) {
-        var me = this;
-
         return function (d, i) {
             if (tooltip) {
                 var border = UTIL.getDisplayColor(_measure.indexOf(d.tag), _displayColor)
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
+                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d), container, border);
             }
         }
     }
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
-
         return function (d, i) {
             d3.select(this).style('cursor', 'pointer')
                 .style('fill', function (d1, i) {
@@ -143,11 +139,11 @@ function rangefilter() {
         }
     }
 
-    var _buildTooltipData = function (datum, chart) {
+    var _buildTooltipData = function (datum) {
         var output = "";
         output += "<table><tr>"
 
-            + "<th>" + chart.dimension() + ": </th>"
+            + "<th>" + _dimension + ": </th>"
             + "<td>" + datum.data[_dimension[0]] + "</td>"
             + "</tr><tr>"
             + "<th>" + datum.tag + ": </th>"
@@ -191,7 +187,7 @@ function rangefilter() {
             .attr('class', 'custom_tooltip');
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         var plot = svg.append('g')

@@ -52,7 +52,7 @@ function stackedhorizontalbar() {
 
     var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
 
-    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, parentContainer;
+    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, parentContainer;
 
     var parentWidth, parentHeight, plotWidth, plotHeight, container;
 
@@ -126,11 +126,11 @@ function stackedhorizontalbar() {
         }
     }
 
-    var _buildTooltipData = function (datum, chart) {
+    var _buildTooltipData = function (datum, data) {
         var output = "";
 
         output += "<table><tr>"
-            + "<th>" + chart.dimension() + ": </th>"
+            + "<th>" + _dimension[0] + ": </th>"
             + "<td>" + datum.data[_dimension[0]] + "</td>"
             + "</tr><tr>"
             + "<th>" + datum.key + ": </th>"
@@ -183,7 +183,7 @@ function stackedhorizontalbar() {
 
             lasso.notSelectedItems().selectAll('rect');
 
-            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
+            d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
 
             var _filter = [];
@@ -291,8 +291,6 @@ function stackedhorizontalbar() {
     }
 
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
-
         return function (d, i) {
             d3.select(this).style('cursor', 'default')
                 .style('fill', function (d, i) {
@@ -309,12 +307,7 @@ function stackedhorizontalbar() {
                     }
                 })
                 .style('stroke', function (d, i) {
-                    if (d.data[d.key] < 0) {
-                        return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
-                    }
-                    else {
-                        return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
-                    }
+                    return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
                 })
 
             if (tooltip) {
@@ -476,12 +469,7 @@ function stackedhorizontalbar() {
                 }
             })
             .style('stroke', function (d, i) {
-                if (d.data[d.key] < 0) {
-                    return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
-                }
-                else {
-                    return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
-                }
+                return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
             })
             .attr("y", function (d) {
                 return x(d.data[_dimension[0]]);
@@ -517,7 +505,7 @@ function stackedhorizontalbar() {
                                 return;
                             }
                             filter = false;
-                            var confirm = parentContainer.select('.confirm')
+                            parentContainer.select('.confirm')
                                 .style('visibility', 'visible');
                             var _filter = _Local_data.filter(function (d1) {
                                 return d.data[_dimension[0]] === d1[_dimension[0]]
@@ -811,7 +799,7 @@ function stackedhorizontalbar() {
 
         if (!_print) {
 
-            var confirm = $(me).parent().find('div.confirm')
+            $(me).parent().find('div.confirm')
                 .css('visibility', 'hidden');
 
             //remove Threshold modal popup 
@@ -1011,12 +999,7 @@ function stackedhorizontalbar() {
                     }
                 })
                 .style('stroke', function (d, i) {
-                    if (d.data[d.key] < 0) {
-                        return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
-                    }
-                    else {
-                        return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
-                    }
+                    return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
                 })
                 .attr("y", function (d) {
                     return _x(d.data[_dimension[0]]);
@@ -1050,7 +1033,7 @@ function stackedhorizontalbar() {
                 _legendMouseOut(data, plot);
                 break;
             case 'click':
-                _legendClick(data, plot);
+                _legendClick(data);
                 break;
         }
     }
@@ -1230,12 +1213,7 @@ function stackedhorizontalbar() {
                 }
             })
             .style('stroke', function (d, i) {
-                if (d.data[d.key] < 0) {
-                    return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
-                }
-                else {
-                    return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
-                }
+                return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
             })
             .attr("y", function (d) {
                 return x(d.data[_dimension[0]]);

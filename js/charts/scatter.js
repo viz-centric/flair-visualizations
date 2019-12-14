@@ -102,7 +102,7 @@ function scatter() {
         this.legendData(config.displayColor, config.measure);
     }
 
-    var _buildTooltipData = function (datum, chart) {
+    var _buildTooltipData = function (datum, data) {
         var output = "";
         output += "<table>";
 
@@ -175,7 +175,7 @@ function scatter() {
 
             lasso.notSelectedItems().selectAll('circle');
 
-            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
+            d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
 
             var _filter = [];
@@ -266,8 +266,6 @@ function scatter() {
     }
 
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
-
         return function (d, i) {
             d3.select(this).style('cursor', 'default')
                 .style('fill-opacity', 1)
@@ -476,7 +474,7 @@ function scatter() {
             .call(_localYGrid);
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         var xAxisGroup,
@@ -559,7 +557,7 @@ function scatter() {
                 })
                 .append("svg:title")
                 .text(function (d, i) { return _displayNameForMeasure.map(function (p) { return p; }).join(', '); });
-    
+
         }
 
         var dataCircle = plot.selectAll("circle")
@@ -586,7 +584,7 @@ function scatter() {
 
         if (!_print) {
 
-            var confirm = $(me).parent().find('div.confirm')
+            $(me).parent().find('div.confirm')
                 .css('visibility', 'hidden');
 
             //remove Threshold modal popup 
@@ -646,7 +644,7 @@ function scatter() {
                             return;
                         }
                         filter = false;
-                        var confirm = parentContainer.select('.confirm')
+                        parentContainer.select('.confirm')
                             .style('visibility', 'visible');
                         var rect = d3.select(this);
                         if (rect.classed('selected')) {
@@ -718,7 +716,7 @@ function scatter() {
                 _legendMouseOut(data, plot);
                 break;
             case 'click':
-                _legendClick(data, plot);
+                _legendClick(data);
                 break;
         }
     }
@@ -784,11 +782,11 @@ function scatter() {
         plotHeight = parentHeight;
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
-        _Local_data = data,
-            filterData = [];
+        _Local_data = data;
+        filterData = [];
         var plot = _local_svg.select('.plot')
 
         var keys = UTIL.getMeasureList(data[0], _dimension);
@@ -879,7 +877,7 @@ function scatter() {
                     return;
                 }
                 filter = false;
-                var confirm = parentContainer.select('.confirm')
+                parentContainer.select('.confirm')
                     .style('visibility', 'visible');
                 var rect = d3.select(this);
                 if (rect.classed('selected')) {

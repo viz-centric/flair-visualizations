@@ -126,34 +126,6 @@ function util() {
             }
             return 'hidden';
         },
-        setAxisColor: function (_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis) {
-            var svg = _local_svg;
-
-            svg.selectAll('.y_axis text')
-                .style('fill', _yAxisColor)
-
-            svg.selectAll('.x_axis text')
-                .style('fill', _xAxisColor)
-
-            svg.selectAll('.y_axis path')
-                .style('stroke', _yAxisColor)
-
-            svg.selectAll('.x_axis path')
-                .style('stroke', _xAxisColor)
-
-            svg.selectAll('.y_axis line')
-                .style('stroke', _yAxisColor)
-
-            svg.selectAll('.x_axis line')
-                .style('stroke', _xAxisColor)
-
-            svg.selectAll('.x_axis .tick')
-                .style('visibility', UTIL.getVisibility(_showXaxis))
-
-            svg.selectAll('.y_axis .tick')
-                .style('visibility', UTIL.getVisibility(_showYaxis))
-
-        },
 
         getSum: function (data, key) {
             var sum = 0;
@@ -258,6 +230,7 @@ function util() {
             sortSelectDom.style.left = (left + width - tipWidth - offsetLeft) + 'px';
             sortSelectDom.style.top = (top + height - tipHeight - offsetTop) + 'px';
         },
+        
         getTruncatedTick: function (label, containerLength, scale) {
             if (typeof (label) === 'undefined') {
                 return "";
@@ -385,35 +358,6 @@ function util() {
                 var charLength = Math.floor(scale(containerLength)) - 3;
                 charLength = (charLength < 0) ? 0 : charLength;
                 truncLabel = arr.splice(0, charLength).join('') + '...';
-            }
-
-            return truncLabel;
-        },
-        getTruncatedLabel: function (element, label, containerLength, offset) {
-            if (typeof (label) === 'undefined') {
-                return "";
-            }
-
-            if (label === null) {
-                label = "null";
-            }
-
-            label = label.toString();
-
-            if (offset === void 0) {
-                offset = 0;
-            }
-
-            offset += 3;
-
-            var truncLabel = label,
-                arr = label.split('');
-
-            if (containerLength < element.getComputedTextLength()) {
-                var charLength = parseInt(containerLength * element.getNumberOfChars() / element.getComputedTextLength()) - offset;
-                charLength = (charLength < 0) ? 0 : charLength;
-                truncLabel = arr.splice(0, charLength).join('') + '...';
-                truncLabel = truncLabel == '...' ? '' : truncLabel;
             }
 
             return truncLabel;
@@ -704,34 +648,7 @@ function util() {
             }
             return result;
         },
-        setAxisColor: function (_local_svg, _yAxisColor, _xAxisColor, _showYaxis, _showXaxis) {
-            var svg = _local_svg;
-
-            svg.selectAll('.y_axis text')
-                .style('fill', _yAxisColor)
-
-            svg.selectAll('.x_axis text')
-                .style('fill', _xAxisColor)
-
-            svg.selectAll('.y_axis path')
-                .style('stroke', _yAxisColor)
-
-            svg.selectAll('.x_axis path')
-                .style('stroke', _xAxisColor)
-
-            svg.selectAll('.y_axis line')
-                .style('stroke', _yAxisColor)
-
-            svg.selectAll('.x_axis line')
-                .style('stroke', _xAxisColor)
-
-            svg.selectAll('.x_axis .tick')
-                .style('visibility', _showXaxis == true ? 'visible' : 'hidden');
-
-            svg.selectAll('.y_axis .tick')
-                .style('visibility', _showYaxis == true ? 'visible' : 'hidden');
-
-        },
+    
         getMeasureList: function (data, dimension, measure) {
             var keys = Object.keys(data);
             keys.splice(keys.indexOf(dimension[0]), 1);

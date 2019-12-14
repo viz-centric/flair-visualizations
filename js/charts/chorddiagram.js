@@ -13,7 +13,6 @@ function chorddiagram() {
     var _config,
         _dimension,
         _measure,
-        _sort,
         _tooltip,
         _showLabels,
         _fontStyle,
@@ -50,7 +49,7 @@ function chorddiagram() {
         this.fontSize(config.fontSize);
     }
 
-    var _buildTooltipData = function (datum, chart) {
+    var _buildTooltipData = function (datum, data) {
         var output = "";
 
         var _filter = _local_svg.selectAll('.chord')
@@ -114,7 +113,7 @@ function chorddiagram() {
 
             lasso.notSelectedItems().selectAll('path');
 
-            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
+            d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
 
             var _filter = [];
@@ -212,7 +211,6 @@ function chorddiagram() {
     }
 
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
 
         return function (d, i) {
             var filter = container.selectAll('.chord')
@@ -255,7 +253,7 @@ function chorddiagram() {
         svg.selectAll('g').remove();
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         svg = svg.attr('width', width)
@@ -279,7 +277,7 @@ function chorddiagram() {
         });
 
         for (var index = 0; index < _keys.length; index++) {
-            var filterData = data.filter(function (val) {
+            filterData = data.filter(function (val) {
                 if (_keys[index] == val[_dimension[0]] || _keys[index] == val[_dimension[1]]) {
                     return val;
                 }
@@ -374,7 +372,7 @@ function chorddiagram() {
                         broadcast.$broadcast('FlairBi:livemode-dialog');
                         return;
                     }
-                    var confirm = parentContainer.select('.confirm')
+                    parentContainer.select('.confirm')
                         .style('visibility', 'visible');
                     filter = false;
 
@@ -447,7 +445,7 @@ function chorddiagram() {
                 _legendMouseOut(data, plot);
                 break;
             case 'click':
-                _legendClick(data, plot);
+                _legendClick(data);
                 break;
         }
     }
@@ -482,7 +480,7 @@ function chorddiagram() {
             });
     }
 
-    var _legendClick = function (data, plot) {
+    var _legendClick = function (data) {
         var _filter = UTIL.getFilterData(_localLabelStack, data, _Local_data)
         drawPlot.call(this, _filter);
     }
@@ -505,7 +503,7 @@ function chorddiagram() {
             height = +svg.attr('height');
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         _local_svg.selectAll('.plot g').remove();
@@ -529,7 +527,7 @@ function chorddiagram() {
         });
 
         for (var index = 0; index < _keys.length; index++) {
-            var filterData = data.filter(function (val) {
+            filterData = data.filter(function (val) {
                 if (_keys[index] == val[_dimension[0]] || _keys[index] == val[_dimension[1]]) {
                     return val;
                 }

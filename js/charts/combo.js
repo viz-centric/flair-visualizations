@@ -189,7 +189,7 @@ function combo() {
         }
     }
 
-    var _buildTooltipData = function (datum, chart) {
+    var _buildTooltipData = function (datum, data) {
         var output = "";
         var dimension = datum.dimension != undefined ? datum.dimension : datum.data[_dimension[0]],
             measure = datum.id != undefined ? datum.id : datum.tag,
@@ -249,7 +249,7 @@ function combo() {
 
             lasso.notSelectedItems().selectAll('rect');
 
-            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
+            d3.select(scope.node().parentNode).select('div.confirm')
                 .style('visibility', 'visible')
 
             var _filter = [];
@@ -357,7 +357,6 @@ function combo() {
     }
 
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
 
         return function (d, i) {
             d3.select(this).style('cursor', 'default')
@@ -520,12 +519,12 @@ function combo() {
     var drawPlot = function (data) {
         var me = this;
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         var keys = UTIL.getMeasureList(data[0], _dimension, _measure);
 
-        measuresBar = [],
-            measuresLine = [];
+        measuresBar = [];
+        measuresLine = [];
         keys.forEach(function (m, i) {
             if (_comboChartType[_measure.indexOf(m)] == "Bar") {
                 measuresBar.push(m);
@@ -804,7 +803,7 @@ function combo() {
                         }
                         else {
                             filter = false;
-                            var confirm = parentContainer.select('.confirm')
+                            parentContainer.select('.confirm')
                                 .style('visibility', 'visible');
 
                             var rect = d3.select(this);
@@ -1284,7 +1283,7 @@ function combo() {
                         }
                         else {
                             filter = false;
-                            var confirm = parentContainer.select('.confirm')
+                            parentContainer.select('.confirm')
                                 .style('visibility', 'visible');
                             var _filter = _Local_data.filter(function (d1) {
                                 return d.data[_dimension[0]] === d1[_dimension[0]]
@@ -1353,7 +1352,7 @@ function combo() {
                 }
                 return y(0) + _fontSize[i];
             })
-            .attr("x", function (d,i) {
+            .attr("x", function (d, i) {
                 return x1(measuresBar[i]) + (x1.bandwidth() / 2);
             })
             .attr('dy', function (d, i) {
@@ -1419,7 +1418,7 @@ function combo() {
                 _legendMouseOut(data, plot);
                 break;
             case 'click':
-                _legendClick(data, plot);
+                _legendClick(data);
                 break;
         }
     }
@@ -1538,7 +1537,7 @@ function combo() {
         }
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         svg = _local_svg;
@@ -1552,7 +1551,7 @@ function combo() {
         var keys = Object.keys(data[0]);
 
         keys.splice(keys.indexOf(_dimension[0]), 1);
-        measuresBar = [], measuresLine = [];
+        measuresBar = []; measuresLine = [];
         keys.forEach(function (m, i) {
             if (_comboChartType[_measure.indexOf(m)] == "Bar") {
                 measuresBar.push(m);
@@ -1657,7 +1656,7 @@ function combo() {
                 }
                 return y(0) + _fontSize[i];
             })
-            .attr("x", function (d,i) {
+            .attr("x", function (d, i) {
                 return x1(measuresBar[i]) + (x1.bandwidth() / 2);
             })
             .attr('dy', function (d, i) {
@@ -1870,7 +1869,7 @@ function combo() {
                             return;
                         }
                         filter = false;
-                        var confirm = parentContainer.select('.confirm')
+                        parentContainer.select('.confirm')
                             .style('visibility', 'visible');
 
                         var rect = d3.select(this);

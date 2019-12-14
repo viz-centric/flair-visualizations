@@ -42,7 +42,7 @@ function numbergrid() {
         this.colorSet(config.colorSet);
     }
 
-    var _buildTooltipData = function (datum, chart) {
+    var _buildTooltipData = function (datum, data) {
         var output = "";
 
         var filter = _local_svg.selectAll('.chord')
@@ -116,8 +116,6 @@ function numbergrid() {
     }
 
     var _handleMouseOutFn = function (tooltip, container) {
-        var me = this;
-
         return function (d, i) {
             filter = container.selectAll('.chord')
                 .filter(function (d1) {
@@ -243,7 +241,7 @@ function numbergrid() {
         addText(svg);
 
         if (!_print) {
-            var confirm = $(me).parent().find('div.confirm')
+            $(me).parent().find('div.confirm')
                 .css('visibility', 'hidden');
 
             var _filter = UTIL.createFilterElement()
@@ -260,7 +258,7 @@ function numbergrid() {
                     var path = d3.select(this.parentNode)
                     var index = parseInt(d3.select(path.node().parentElement).attr('class'))
 
-                    var confirm = parentContainer.select('.confirm')
+                    parentContainer.select('.confirm')
                         .style('visibility', 'visible');
 
                     var point = d3.select(this);
@@ -381,7 +379,7 @@ function numbergrid() {
                     var path = d3.select(this.parentNode)
                     var index = parseInt(d3.select(path.node().parentElement).attr('class'))
 
-                    var confirm = parentContainer.select('.confirm')
+                    parentContainer.select('.confirm')
                         .style('visibility', 'visible');
 
                     var point = d3.select(this);
