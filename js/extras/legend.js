@@ -137,6 +137,7 @@ function legend() {
                 }
             })
             .style('fill', COMMON.LEGEND_COLOR)
+            .style('font-size', '9pt')
             .style('font-weight', 'bold')
 
         var legendWidth = legend.node().getBBox().width,

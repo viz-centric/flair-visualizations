@@ -120,10 +120,11 @@ function legend() {
                     }
                 }
                 else {
-                    return measure.displayName[i].substring(0, 15) + "...";
+                    return measure.displayName[i].substring(0, 14) + "...";
                 }
             })
             .style('font-weight', 'bold')
+            .style('font-size', '10pt')
 
 
         var legendBreak = 0,
