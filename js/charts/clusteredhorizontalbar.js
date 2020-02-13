@@ -372,7 +372,7 @@ function clusteredhorizontalbar() {
         }
         else {
             legendSpace = 0;
-            parentHeight = parentHeight - axisLabelSpace;
+            parentHeight = parentHeight - (_notification == true ? 0 : axisLabelSpace);
             plotWidth = parentWidth;
             plotHeight = parentHeight;
         }
@@ -429,6 +429,10 @@ function clusteredhorizontalbar() {
 
         parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
         parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
+
+        if (!_showXaxis && !_showXaxisLabel) {
+            parentHeight = height - 2 * COMMON.PADDING;
+        }
 
         container = svg.append('g')
             .attr("class", "focus")
@@ -1141,6 +1145,10 @@ function clusteredhorizontalbar() {
 
         parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
         parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
+
+        if (!_showXaxis && !_showXaxisLabel) {
+            parentHeight = height - 2 * COMMON.PADDING;
+        }
 
         parentContainer.select('.filterElement')
             .style('visibility', UTIL.getVisibility(_isFilterGrid));

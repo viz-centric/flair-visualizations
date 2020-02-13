@@ -371,6 +371,10 @@ function clusteredverticalbar() {
         parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
         parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
 
+        if (!_showXaxis && !_showXaxisLabel) {
+            parentHeight = height - 2 * COMMON.PADDING;
+        }
+
         container = svg.append('g')
             .attr("class", "focus")
             .attr('transform', 'translate(' + COMMON.PADDING + ', ' + COMMON.PADDING + ')');
@@ -619,9 +623,7 @@ function clusteredverticalbar() {
                 if (!_print) {
                     return UTIL.getTruncatedLabel(this, text, plotHeight)
                 }
-                else {
-                    return text;
-                }
+               return text.substring(0, 50) + "...";
             })
             .append("svg:title")
             .text(function (d, i) { return _displayNameForMeasure.map(function (p) { return p; }).join(', '); });
@@ -1113,6 +1115,10 @@ function clusteredverticalbar() {
 
         parentWidth = width - 2 * COMMON.PADDING - (_showYaxis == true ? margin.left : 0);
         parentHeight = (height - 2 * COMMON.PADDING - (_showXaxis == true ? axisLabelSpace * 2 : axisLabelSpace));
+
+        if (!_showXaxis && !_showXaxisLabel) {
+            parentHeight = height - 2 * COMMON.PADDING;
+        }
 
         parentContainer.select('.filterElement')
             .style('visibility', UTIL.getVisibility(_isFilterGrid));
