@@ -14,7 +14,9 @@ function numbergrid() {
         filterParameters,
         _measureDisplayName,
         _showLabel,
+        _showValue,
         _fontSize,
+        _numberFormat,
         _fontStyle,
         _fontWeight,
         _fontColor,
@@ -33,6 +35,7 @@ function numbergrid() {
         this.measure(config.measure);
         this.tooltip(config.tooltip);
         this.showLabel(config.showLabel);
+        this.showValue(config.showValue);
         this.fontSize(config.fontSize);
         this.fontStyle(config.fontStyle);
         this.fontWeight(config.fontWeight);
@@ -40,6 +43,7 @@ function numbergrid() {
         this.measureDisplayName(config.measureDisplayName);
         this.fontSizeforDisplayName(config.fontSizeforDisplayName);
         this.colorSet(config.colorSet);
+        this.numberFormat(config.numberFormat);
     }
 
     var _buildTooltipData = function (datum, chart) {
@@ -132,10 +136,27 @@ function numbergrid() {
         }
     }
 
+    var setText = function (textElement, d) {
+
+        var element = textElement.getBBox();
+        if (element.width > w) {
+            element = textElement.getBBox();
+            if (element.width > w) {
+                var text = textElement.innerHTML;
+                textElement.innerHTML = textElement.innerHTML.substring(0, textElement.innerHTML.length - 3)
+                setText(textElement, textElement.innerHTML);
+            }
+            return textElement.innerHTML + "...";
+        }
+        else {
+            return textElement.innerHTML + "...";
+        }
+    }
+
     var addText = function (svg) {
         svg.append('text')
             .text(function (d) {
-                var value = UTIL.getFormattedValue(d[_measure], UTIL.getNumberFormatterFn('Actual', d[_measure]));
+                var value = UTIL.getFormattedValue(d[_measure], UTIL.getNumberFormatterFn(_numberFormat, d[_measure]));
                 return value;
             })
             .attr('y', (r + m) / 2)
@@ -144,6 +165,7 @@ function numbergrid() {
             .style('font-size', _fontSize + 'px')
             .style('font-weight', _fontWeight)
             .style('font-style', _fontStyle)
+            .attr('visibility', _showValue == true ? 'visible' : 'hidden')
 
         svg.append('text')
             .text(function (d) {
@@ -163,9 +185,16 @@ function numbergrid() {
                         parseFloat((w + m) * 2) - 20)
                 }
                 else {
-                    return d[_dimension].substring(0, 4);
+                    var element = this.getBBox();
+                    if (element.width > w) {
+                        return setText(this, d);
+                    }
+                    else {
+                        return d[_dimension];
+                    }
                 }
             })
+            .attr('visibility', _showLabel == true ? 'visible' : 'hidden')
     }
 
     function setRadius(width, height) {
@@ -480,6 +509,14 @@ function numbergrid() {
         return chart;
     }
 
+    chart.showValue = function (value) {
+        if (!arguments.length) {
+            return _showValue;
+        }
+        _showValue = value;
+        return chart;
+    }
+
     chart.fontSize = function (value) {
         if (!arguments.length) {
             return _fontSize;
@@ -568,6 +605,13 @@ function numbergrid() {
             return isLiveEnabled;
         }
         isLiveEnabled = value;
+        return chart;
+    }
+    chart.numberFormat = function (value) {
+        if (!arguments.length) {
+            return _numberFormat;
+        }
+        _numberFormat = value;
         return chart;
     }
     return chart;

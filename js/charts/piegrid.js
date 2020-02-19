@@ -16,6 +16,7 @@ function piegrid() {
         filterParameters,
         _measureDisplayName,
         _showLabel,
+        _numberFormat,
         _showValue,
         _fontSize,
         _fontStyle,
@@ -42,14 +43,14 @@ function piegrid() {
         this.fontColor(config.fontColor);
         this.measureDisplayName(config.measureDisplayName);
         this.colorSet(config.colorSet);
+        this.numberFormat(config.numberFormat);
+
     }
 
     var _buildTooltipData = function (datum, chart, data) {
         var output = "";
 
-
         var value = UTIL.getFormattedValue(_Local_data[data][_measure], UTIL.getNumberFormatterFn('Actual', _Local_data[data][_measure]));
-
 
         output += "<table><tr>"
             + "<th>" + _dimension + ": </th>"
@@ -135,11 +136,11 @@ function piegrid() {
         svg.append("text")
             .attr("x", 0)
             .text(function (d, i) {
-                var value = UTIL.getFormattedValue(data[i][_measure], UTIL.getNumberFormatterFn('Actual', data[i][_measure]));
+                var value = UTIL.getFormattedValue(data[i][_measure], UTIL.getNumberFormatterFn(_numberFormat, data[i][_measure]));
                 return value;
             })
             .text(function (d, i) {
-                var value = UTIL.getFormattedValue(data[i][_measure], UTIL.getNumberFormatterFn('Actual', data[i][_measure]));
+                var value = UTIL.getFormattedValue(data[i][_measure], UTIL.getNumberFormatterFn(_numberFormat, data[i][_measure]));
                 if (!_print) {
                     return UTIL.getTruncatedLabel(
                         this,
@@ -231,7 +232,7 @@ function piegrid() {
             .attr('class', 'custom_tooltip');
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         var width = parentContainer.attr('width'),
@@ -610,6 +611,13 @@ function piegrid() {
             return isLiveEnabled;
         }
         isLiveEnabled = value;
+        return chart;
+    }
+    chart.numberFormat = function (value) {
+        if (!arguments.length) {
+            return _numberFormat;
+        }
+        _numberFormat = value;
         return chart;
     }
     return chart;
