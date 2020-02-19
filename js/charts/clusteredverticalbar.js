@@ -11,6 +11,7 @@ function clusteredverticalbar() {
 
     var _config,
         _dimension,
+        _dimensionType,
         _measure,
         _showLegend,
         _legendPosition,
@@ -78,6 +79,7 @@ function clusteredverticalbar() {
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
+        this.dimensionType(config.dimensionType);
         this.measure(config.measure);
 
         this.showLegend(config.showLegend);
@@ -223,7 +225,13 @@ function clusteredverticalbar() {
                 }
                 var dimension = _dimension[0];
 
-                _filterDimension[dimension] = filterData.map(function (d) {
+                _filterDimension[dimension] = {}
+                _filterDimension[dimension].metaData = {
+                    dataType: _dimensionType[0],
+                    valueType: 'castValueType'
+                };
+
+                _filterDimension[dimension].values = filterData.map(function (d) {
                     return d[_dimension[0]];
                 });
 
@@ -623,7 +631,7 @@ function clusteredverticalbar() {
                 if (!_print) {
                     return UTIL.getTruncatedLabel(this, text, plotHeight)
                 }
-               return text.substring(0, 50) + "...";
+                return text.substring(0, 50) + "...";
             })
             .append("svg:title")
             .text(function (d, i) { return _displayNameForMeasure.map(function (p) { return p; }).join(', '); });
@@ -915,11 +923,16 @@ function clusteredverticalbar() {
                             }
                             var dimension = _dimension[0];
                             if (_filterDimension[dimension]) {
-                                _filterDimension[dimension] = filterData.map(function (d) {
+                                _filterDimension[dimension].values = filterData.map(function (d) {
                                     return d[_dimension[0]];
                                 });
                             } else {
-                                _filterDimension[dimension] = [d[dimension]];
+                                _filterDimension[dimension] = {}
+                                _filterDimension[dimension].values = [d[dimension]];
+                                _filterDimension[dimension].metaData = {
+                                    dataType: _dimensionType[0],
+                                    valueType: 'castValueType'
+                                };
                             }
 
                             var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
@@ -1415,6 +1428,14 @@ function clusteredverticalbar() {
             return _dimension;
         }
         _dimension = value;
+        return chart;
+    }
+
+    chart.dimensionType = function (value) {
+        if (!arguments.length) {
+            return _dimensionType;
+        }
+        _dimensionType = value;
         return chart;
     }
 
