@@ -30,6 +30,9 @@ function util() {
 
         if (tipLeft + tipWidth > left + width) {
             tooltip.style.left = (left + width - tipWidth) + 'px';
+            if ((left + width - tipWidth) <= 0) {
+                tooltip.style.left = '10px';
+            }
         }
 
         if (tipTop < top) {
@@ -80,6 +83,8 @@ function util() {
                 height = c.clientHeight,
                 top = 0;
 
+            this.style('max-width', width - 10)
+
             var tipLeft = tooltip.offsetLeft,
                 tipWidth = tooltip.offsetWidth,
                 tipHeight = tooltip.offsetHeight,
@@ -96,11 +101,13 @@ function util() {
 
             if (tipLeft + tipWidth > left + width) {
                 tooltip.style.left = (left + width - tipWidth - 20) - (width - x) + 'px';
-
             }
             else {
                 if (parseInt(container.node().getAttribute('width')) - x <= (tipWidth + 20)) {
                     tooltip.style.left = (left + width - tipWidth - 20) - (width - x) + 'px';
+                    if (((left + width - tipWidth - 20) - (width - x)) <= 0) {
+                        tooltip.style.left = '10px';
+                    }
                 }
                 else {
                     tooltip.style.left = x + 'px';
