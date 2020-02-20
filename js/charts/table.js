@@ -246,7 +246,15 @@ function table() {
 
         });
 
-        tfoot += "<th colspan=" + _dimension.length + "></th>";
+        style = {
+            'background-color': '#f1f1f1',
+            'font-weight': 'bold'
+        };
+
+        style = JSON.stringify(style);
+        style = style.replace(/","/g, ';').replace(/["{}]/g, '');
+
+        tfoot += "<th style=\"" + style + "\" colspan=" + _dimension.length + "></th>";
 
         _measure.forEach(function (item, index) {
             var title = _displayNameForMeasure[index],
@@ -266,7 +274,7 @@ function table() {
             }
             var total = d3.sum(data.map(function (d) { return d[_measure[index]]; }));
 
-            tfoot += "<th style='text-align:" + _textAlignmentForMeasure[index] + "'>" + total.toFixed(2) + "</th>";
+            tfoot += "<th style=\"" + style + "\" >" + total.toFixed(2) + "</th>";
         });
 
         thead += "</tr></thead>";

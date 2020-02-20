@@ -70,11 +70,6 @@ function util() {
             //         .html(data);
             // }
             // else {
-            this.style('Top', y + 'px')
-                .style('Left', x + 'px')
-                .style('border', 'solid 2px')
-                .style('border-color', borderColor)
-                .html(data);
 
             var tooltip = this.node()
             var c = container.node();
@@ -83,7 +78,12 @@ function util() {
                 height = c.clientHeight,
                 top = 0;
 
-            this.style('max-width', width - 10)
+            this.style('Top', y + 'px')
+                .style('Left', x + 'px')
+                .style('border', 'solid 2px')
+                .style('border-color', borderColor)
+                .html(data)
+                .style('max-width', width - 20 + "px");
 
             var tipLeft = tooltip.offsetLeft,
                 tipWidth = tooltip.offsetWidth,
@@ -101,6 +101,9 @@ function util() {
 
             if (tipLeft + tipWidth > left + width) {
                 tooltip.style.left = (left + width - tipWidth - 20) - (width - x) + 'px';
+                if ((left + width - tipWidth - 20) - (width - x) <= 0) {
+                    tooltip.style.left = '10px';
+                }
             }
             else {
                 if (parseInt(container.node().getAttribute('width')) - x <= (tipWidth + 20)) {
