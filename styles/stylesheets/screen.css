@@ -223,21 +223,22 @@ svg#graphics {
   transition-timing-function: ease;
   -moz-transition-timing-function: ease;
   -webkit-transition-timing-function: ease;
+  word-break: break-all;
 }
-/* line 20, ../sass/partials/_tooltip.scss */
+/* line 21, ../sass/partials/_tooltip.scss */
 .custom_tooltip table {
   font-size: 10px;
   font-weight: bold;
   border-collapse: separate;
   border-spacing: 1px;
 }
-/* line 27, ../sass/partials/_tooltip.scss */
+/* line 28, ../sass/partials/_tooltip.scss */
 .custom_tooltip table tr th {
   text-align: left;
   color: #6f6f6f;
   padding: 2px 5px;
 }
-/* line 33, ../sass/partials/_tooltip.scss */
+/* line 34, ../sass/partials/_tooltip.scss */
 .custom_tooltip table tr td {
   text-align: left;
   color: #28689c;
@@ -412,4 +413,11 @@ div.dataTables_wrapper {
 /* line 140, ../sass/partials/_table.scss */
 #viz_pivot-table_wrapper tbody tr td {
   padding: 4px 5px;
+}
+
+/* line 147, ../sass/partials/_table.scss */
+#viz_table_wrapper table.dataTable tbody td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
