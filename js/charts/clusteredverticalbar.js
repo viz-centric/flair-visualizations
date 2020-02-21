@@ -226,7 +226,7 @@ function clusteredverticalbar() {
                 var dimension = _dimension[0];
 
                 _filterDimension[dimension] = {}
-                _filterDimension[dimension].metaData = {
+                _filterDimension[dimension]._mata = {
                     dataType: _dimensionType[0],
                     valueType: 'castValueType'
                 };
