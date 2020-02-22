@@ -37,6 +37,10 @@ function chorddiagram() {
 
     var filter = false, filterData = [];
 
+    var τ = 2 * Math.PI,
+        π = Math.PI,
+        π2 = Math.PI / 2;
+
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
         this.measure(config.measure);
@@ -228,6 +232,24 @@ function chorddiagram() {
         }
     }
 
+    var _pythagorousTheorem = function (x, y) {
+        if (isNaN(+x) || isNaN(+y)) {
+            throw new Error('TypeError: Not a number');
+            return 0;
+        }
+
+        return Math.sqrt(Math.pow(+x, 2) + Math.pow(+y, 2));
+    }
+    var angle = function (d) {
+        return viz_reduceAngle((d.startAngle + d.endAngle) / 2);
+    }
+
+    var viz_reduceAngle = function (a) {
+        while (a > τ) a -= τ;
+        while (a < 0) a += τ;
+        return a;
+    }
+
     function chart(selection) {
         var data = _Local_data = _originalData = _data;
 
@@ -255,7 +277,7 @@ function chorddiagram() {
         svg.selectAll('g').remove();
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         svg = svg.attr('width', width)
@@ -319,6 +341,7 @@ function chorddiagram() {
             .sort(sort)
             .innerRadius(innerRadius)
             .outerRadius(outerRadius)
+            .width(width)
             .duration(_print == true ? 0 : 1000)
             .chordOpacity(0.8)
             .labelPadding(.03)
@@ -348,12 +371,36 @@ function chorddiagram() {
 
         var groups = parentContainer.selectAll('.groups')
 
+        var r = (1 + .03) * outerRadius;
+
         groups.selectAll('text')
             .style('fill', _labelColor)
             .style('visibility', UTIL.getVisibility(_showLabels))
             .style('font-size', _fontSize)
             .style('font-style', _fontStyle)
             .style('font-weight', _fontWeight)
+            .text(function (d) {
+                var h = _pythagorousTheorem(r * Math.cos(angle(d)), r * Math.sin(angle(d)));
+
+                var a = angle(d);
+                var textAnchor = a < π2 || a > τ - π2 ? "start" : "end";
+                if (textAnchor == "start") {
+                    size = width / 2 - outerRadius * (r * Math.cos(angle(d)) / h) * 1.05
+                }
+                else {
+                    size = width / 2 - Math.abs(outerRadius * (r * Math.cos(angle(d)) / h) * 1.05);
+                }
+                return UTIL.getTruncatedLabel(this, d.source, size);
+            })
+            .text(function (d) {
+                var diff = d.endAngle - d.startAngle;
+                if (diff <= 0.2) {
+                    return ''
+                }
+                else {
+                    return this.textContent;
+                }
+            })
 
         if (!_print) {
             var _filter = UTIL.createFilterElement()
@@ -505,7 +552,7 @@ function chorddiagram() {
             height = +svg.attr('height');
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         _local_svg.selectAll('.plot g').remove();
@@ -592,12 +639,38 @@ function chorddiagram() {
 
         plot.call(ch);
 
-        parentContainer.selectAll('.groups text')
+        var groups = parentContainer.selectAll('.groups')
+
+        var r = (1 + .03) * outerRadius;
+
+        groups.selectAll('text')
             .style('fill', _labelColor)
             .style('visibility', UTIL.getVisibility(_showLabels))
             .style('font-size', _fontSize)
             .style('font-style', _fontStyle)
             .style('font-weight', _fontWeight)
+            .text(function (d) {
+                var h = _pythagorousTheorem(r * Math.cos(angle(d)), r * Math.sin(angle(d)));
+
+                var a = angle(d);
+                var textAnchor = a < π2 || a > τ - π2 ? "start" : "end";
+                if (textAnchor == "start") {
+                    size = width / 2 - outerRadius * (r * Math.cos(angle(d)) / h) * 1.05
+                }
+                else {
+                    size = width / 2 - Math.abs(outerRadius * (r * Math.cos(angle(d)) / h) * 1.05);
+                }
+                return UTIL.getTruncatedLabel(this, d.source, size);
+            })
+            .text(function (d) {
+                var diff = d.endAngle - d.startAngle;
+                if (diff <= 0.2) {
+                    return ''
+                }
+                else {
+                    return this.textContent;
+                }
+            })
 
         parentContainer.selectAll('.groups')
             .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
