@@ -225,15 +225,14 @@ function clusteredverticalbar() {
                 }
                 var dimension = _dimension[0];
 
-                _filterDimension[dimension] = {}
-                _filterDimension[dimension]._mata = {
+                _filterDimension[dimension] = filterData.map(function (d) {
+                    return d[_dimension[0]];
+                });
+
+                _filterDimension[dimension]._meta = {
                     dataType: _dimensionType[0],
                     valueType: 'castValueType'
                 };
-
-                _filterDimension[dimension].values = filterData.map(function (d) {
-                    return d[_dimension[0]];
-                });
 
                 broadcast.filterSelection.filter = _filterDimension;
                 var _filterParameters = filterParameters.get();
@@ -923,17 +922,16 @@ function clusteredverticalbar() {
                             }
                             var dimension = _dimension[0];
                             if (_filterDimension[dimension]) {
-                                _filterDimension[dimension].values = filterData.map(function (d) {
+                                _filterDimension[dimension] = filterData.map(function (d) {
                                     return d[_dimension[0]];
                                 });
                             } else {
-                                _filterDimension[dimension] = {}
-                                _filterDimension[dimension].values = [d[dimension]];
-                                _filterDimension[dimension].metaData = {
-                                    dataType: _dimensionType[0],
-                                    valueType: 'castValueType'
-                                };
+                                _filterDimension[dimension] = [d[dimension]];
                             }
+                            _filterDimension[dimension]._meta = {
+                                dataType: _dimensionType[0],
+                                valueType: 'castValueType'
+                            };
 
                             var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                             broadcast.updateWidget = {};
