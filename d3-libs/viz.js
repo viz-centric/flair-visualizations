@@ -1,5 +1,4 @@
 var d3 = require('d3');
-var UTIL = require('../js/extras/util');
 
 ! function () {
     var viz = { version: "1.1.8" };
@@ -597,42 +596,6 @@ var UTIL = require('../js/extras/util');
 
         return gg;
     }
-    var _pythagorousTheorem = function (x, y) {
-        if (isNaN(+x) || isNaN(+y)) {
-            throw new Error('TypeError: Not a number');
-            return 0;
-        }
-
-        return Math.sqrt(Math.pow(+x, 2) + Math.pow(+y, 2));
-    }
-    var getTruncatedLabel = function (element, label, containerLength, offset) {
-        if (typeof (label) === 'undefined') {
-            return "";
-        }
-
-        if (label === null) {
-            label = "null";
-        }
-
-        label = label.toString();
-
-        if (offset === void 0) {
-            offset = 0;
-        }
-
-        offset += 3;
-
-        var truncLabel = label,
-            arr = label.split('');
-
-        if (containerLength < element.getComputedTextLength()) {
-            var charLength = parseInt(containerLength * element.getNumberOfChars() / element.getComputedTextLength()) - offset;
-            charLength = (charLength < 0) ? 0 : charLength;
-            truncLabel = arr.splice(0, charLength).join('') + '...';
-        }
-
-        return truncLabel;
-    }
     viz.ch = function () {
         var source = function (d) { return d[0]; },
             target = function (d) { return d[1]; },
@@ -647,7 +610,6 @@ var UTIL = require('../js/extras/util');
             labelPadding = 0.02,
             min = 0,
             duration = 500,
-            width=0,
             reComputeLayout = true,
             g, data, fill, keys, subgrp, chordExist, groups, chords, newgroups, newchords;
 
@@ -679,48 +641,14 @@ var UTIL = require('../js/extras/util');
 
                 // HORIZONTAL LABEL
                 // ---------------------------------------------------
-                labels.filter(function (d) {
-                    return d.type == "g"
-                })
-                    .attr("x", function (d) {
-                        return r * Math.cos(angle(d));
-                    })
-                    .attr("y", function (d) {
-                        return r * Math.sin(angle(d));
-                    })
+                labels.filter(function(d) { return d.type == "g" })
+                    .attr("x", function(d) { return r * Math.cos(angle(d)); })
+                    .attr("y", function(d) { return r * Math.sin(angle(d)); })
                     .text((d) => {
                         return `${d.source} `;
                     })
-                    .style("text-anchor", function (d) {
-                        var a = angle(d);
-                        return a < π2 || a > τ - π2 ? "start" : "end";
-                    })
-                    // .text(function (d) {
-                    //     var h = _pythagorousTheorem(r * Math.cos(angle(d)), r * Math.sin(angle(d)));
-
-                    //     var a = angle(d);
-                    //     var textAnchor = a < π2 || a > τ - π2 ? "start" : "end";
-                    //     if (textAnchor == "start") {
-                    //         size = width / 2 - outerRadius * (r * Math.cos(angle(d)) / h) * 1.05
-                    //     }
-                    //     else {
-                    //         size = width / 2 - Math.abs(outerRadius * (r * Math.cos(angle(d)) / h) * 1.05);
-                    //     }
-                    //     return getTruncatedLabel(this, d.source, size);
-                    // })
-                    // .text(function (d) {
-                    //     var diff = d.endAngle - d.startAngle;
-                    //     if (diff <= 0.2) {
-                    //         return ''
-                    //     }
-                    //     else {
-                    //         return this.textContent;
-                    //     }
-                    // })
-
-                    .each(function (d) {
-                        this._current = d;
-                    });
+                    .style("text-anchor", function(d) { var a = angle(d); return a < π2 || a > τ - π2 ? "start" : "end"; })
+                    .each(function(d) { this._current = d; });
 
                 // ORIENTED LABEL
                 // ------------------------------------------------
@@ -790,11 +718,6 @@ var UTIL = require('../js/extras/util');
         ch.duration = function (_) {
             if (!arguments.length) return duration;
             duration = _;
-            return ch;
-        }
-        ch.width = function (_) {
-            if (!arguments.length) return width;
-            width = _;
             return ch;
         }
         ch.chordOpacity = function (_) {
