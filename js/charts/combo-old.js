@@ -13,7 +13,8 @@ function combo() {
      */
 
     var _config,
-        _dimension,
+       _dimension,
+        _dimensionType,
         _measure,
         _xAxis,
         _yAxis,
@@ -53,6 +54,7 @@ function combo() {
     };
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
+        this.dimensionType(config.dimensionType);
         this.measure(config.measure);
         this.xAxis(config.xAxis);
         this.yAxis(config.yAxis);
@@ -1339,11 +1341,19 @@ function combo() {
         return chart;
     }
 
-    chart.dimension = function (value) {
+      chart.dimension = function (value) {
         if (!arguments.length) {
             return _dimension;
         }
         _dimension = value;
+        return chart;
+    }
+
+    chart.dimensionType = function (value) {
+        if (!arguments.length) {
+            return _dimensionType;
+        }
+        _dimensionType = value;
         return chart;
     }
 

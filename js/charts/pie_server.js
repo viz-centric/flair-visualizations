@@ -13,7 +13,8 @@ function pie() {
      * by the users and can be updated using public methods.
      */
     var _config,
-        _dimension,
+       _dimension,
+        _dimensionType,
         _measure,
         _legend,
         _legendPosition,
@@ -54,6 +55,7 @@ function pie() {
     /* -------------------------------------------------------------------------------- */
     var _setConfigParams = function(config) {
         this.dimension(config.dimension);
+        this.dimensionType(config.dimensionType);
         this.measure(config.measure);
         this.legend(config.legend);
         this.legendPosition(config.legendPosition);

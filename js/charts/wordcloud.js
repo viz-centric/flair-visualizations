@@ -10,7 +10,8 @@ function wordcloud() {
     var _NAME = 'wordcloud';
 
     var _config,
-        _dimension,
+       _dimension,
+        _dimensionType,
         _measure,
         _colorSet = [],
         _tooltip,
@@ -30,6 +31,7 @@ function wordcloud() {
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
+        this.dimensionType(config.dimensionType);
         this.measure(config.measure);
         this.colorSet(config.colorSet);
         this.labelColor(config.labelColor);
@@ -303,7 +305,10 @@ function wordcloud() {
                         } else {
                             _filterDimension[dimension] = [d.text];
                         }
-
+                        _filterDimension[dimension]._meta = {
+                            dataType: _dimensionType[0],
+                            valueType: 'castValueType'
+                        };
                         var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                         broadcast.updateWidget = {};
                         broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
@@ -346,11 +351,19 @@ function wordcloud() {
         return chart;
     }
 
-    chart.dimension = function (value) {
+      chart.dimension = function (value) {
         if (!arguments.length) {
             return _dimension;
         }
         _dimension = value;
+        return chart;
+    }
+
+    chart.dimensionType = function (value) {
+        if (!arguments.length) {
+            return _dimensionType;
+        }
+        _dimensionType = value;
         return chart;
     }
 

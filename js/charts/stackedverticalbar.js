@@ -14,7 +14,8 @@ function stackedverticalbar() {
     var _NAME = 'stackedverticalbar';
 
     var _config,
-        _dimension,
+       _dimension,
+        _dimensionType,
         _measure,
         _showLegend,
         _legendPosition,
@@ -82,6 +83,7 @@ function stackedverticalbar() {
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
+        this.dimensionType(config.dimensionType);
         this.measure(config.measure);
         this.showLegend(config.showLegend);
         this.legendPosition(config.legendPosition);
@@ -237,7 +239,10 @@ function stackedverticalbar() {
                 _filterDimension[dimension] = filterData.map(function (d) {
                     return d[_dimension[0]];
                 });
-
+                _filterDimension[dimension]._meta = {
+                    dataType: _dimensionType[0],
+                    valueType: 'castValueType'
+                };
 
                 broadcast.filterSelection.filter = _filterDimension;
                 var _filterParameters = filterParameters.get();
@@ -569,7 +574,10 @@ function stackedverticalbar() {
                             } else {
                                 _filterDimension[dimension] = [d.data[_dimension[0]]];
                             }
-
+                            _filterDimension[dimension]._meta = {
+                                dataType: _dimensionType[0],
+                                valueType: 'castValueType'
+                            };
                             var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                             broadcast.updateWidget = {};
                             broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
@@ -1472,11 +1480,19 @@ function stackedverticalbar() {
         return chart;
     }
 
-    chart.dimension = function (value) {
+      chart.dimension = function (value) {
         if (!arguments.length) {
             return _dimension;
         }
         _dimension = value;
+        return chart;
+    }
+
+    chart.dimensionType = function (value) {
+        if (!arguments.length) {
+            return _dimensionType;
+        }
+        _dimensionType = value;
         return chart;
     }
 

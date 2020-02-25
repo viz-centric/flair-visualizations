@@ -18,6 +18,7 @@ function treemap() {
 
     var _config,
         _dimension,
+        _dimensionType,
         _measure,
         showLabel,
         colorPattern,
@@ -67,6 +68,7 @@ function treemap() {
     /* -------------------------------------------------------------------------------- */
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
+        this.dimensionType(config.dimensionType);
         this.measure(config.measure);
         this.showLabel(config.showLabel);
         this.colorPattern(config.colorPattern);
@@ -424,6 +426,12 @@ function treemap() {
                                 } else {
                                     _filter[_dimension[0]] = [d.data.key];
                                 }
+
+                                _filter[_dimension[0]]._meta = {
+                                    dataType: _dimensionType[0],
+                                    valueType: 'castValueType'
+                                };
+
                             } else {
                                 if (_filter[_dimension[1]]) {
                                     var temp = _filter[_dimension[1]];
@@ -434,6 +442,10 @@ function treemap() {
                                 } else {
                                     _filter[_dimension[1]] = [d.data.key];
                                 }
+                                _filter[_dimension[1]]._meta = {
+                                    dataType: _dimensionType[1],
+                                    valueType: 'castValueType'
+                                };
                             }
                         } else {
 
@@ -446,6 +458,10 @@ function treemap() {
                             } else {
                                 _filter[_dimension[0]] = [d.data.key];
                             }
+                            _filter[_dimension[0]]._meta = {
+                                dataType: _dimensionType[0],
+                                valueType: 'castValueType'
+                            };
 
                         }
                     }
@@ -552,6 +568,10 @@ function treemap() {
                             } else {
                                 filterList[_dimension[0]] = [d.data.key];
                             }
+                            filterList[_dimension[0]]._meta = {
+                                dataType: _dimensionType[0],
+                                valueType: 'castValueType'
+                            };
                         } else {
                             if (filterList[_dimension[1]]) {
                                 var temp = filterList[_dimension[1]];
@@ -564,6 +584,10 @@ function treemap() {
                             } else {
                                 filterList[_dimension[1]] = [d.data.key];
                             }
+                            filterList[_dimension[1]]._meta = {
+                                dataType: _dimensionType[1],
+                                valueType: 'castValueType'
+                            };
                         }
                     } else {
                         if (filterList[_dimension[0]]) {
@@ -577,6 +601,10 @@ function treemap() {
                         } else {
                             filterList[_dimension[0]] = [d.data.key];
                         }
+                        filterList[_dimension[0]]._meta = {
+                            dataType: _dimensionType[0],
+                            valueType: 'castValueType'
+                        };
                     }
 
                     var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
@@ -680,7 +708,7 @@ function treemap() {
             .attr('transform', 'translate(' + 0 + ', ' + COMMON.PADDING + ')');
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         treemap = d3.treemap()
@@ -920,6 +948,14 @@ function treemap() {
             return _dimension;
         }
         _dimension = value;
+        return chart;
+    }
+
+    chart.dimensionType = function (value) {
+        if (!arguments.length) {
+            return _dimensionType;
+        }
+        _dimensionType = value;
         return chart;
     }
 

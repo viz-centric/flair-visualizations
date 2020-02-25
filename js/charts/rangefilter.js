@@ -9,6 +9,7 @@ function rangefilter() {
 
     var _config,
         _dimension,
+        _dimensionType,
         _measure,
         _dateFormat,
         _colorSet = [],
@@ -50,6 +51,7 @@ function rangefilter() {
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
+        this.dimensionType(config.dimensionType);
         this.measure(config.measure);
         this.dateFormat(config.dateFormat);
         this.colorSet(config.colorSet);
@@ -135,6 +137,11 @@ function rangefilter() {
 
                 _filterParameters["date-range|" + dimension] = [dates[0], dates[1]];
 
+                _filterDimension["date-range|" + dimension]._meta = {
+                    dataType: _dimensionType[0],
+                    valueType: 'castValueType'
+                };
+
                 filterParameters.save(_filterParameters);
 
                 broadcast.$broadcast('flairbiApp:filter');
@@ -191,7 +198,7 @@ function rangefilter() {
             .attr('class', 'custom_tooltip');
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         var plot = svg.append('g')
@@ -348,6 +355,14 @@ function rangefilter() {
             return _dimension;
         }
         _dimension = value;
+        return chart;
+    }
+
+    chart.dimensionType = function (value) {
+        if (!arguments.length) {
+            return _dimensionType;
+        }
+        _dimensionType = value;
         return chart;
     }
 

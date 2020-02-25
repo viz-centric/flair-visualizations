@@ -7,7 +7,8 @@ function donut() {
     var _NAME = 'donut';
 
     var _config,
-        _dimension,
+       _dimension,
+        _dimensionType,
         _measure,
         _showLegend,
         _legendPosition,
@@ -40,6 +41,7 @@ function donut() {
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
+        this.dimensionType(config.dimensionType);
         this.measure(config.measure);
         this.showLegend(config.showLegend);
         this.legendPosition(config.legendPosition);

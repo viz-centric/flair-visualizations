@@ -198,6 +198,10 @@ function bullet() {
                 _filterDimension[dimension] = filterData.map(function (d) {
                     return d[dimension[0]];
                 });
+                _filterDimension[dimension]._meta = {
+                    dataType: _dimensionType[0],
+                    valueType: 'castValueType'
+                };
 
                 broadcast.filterSelection.filter = _filterDimension;
                 var _filterParameters = filterParameters.get();
@@ -411,7 +415,7 @@ function bullet() {
             .attr('class', 'plot')
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         data = _data.map(function (item) {
@@ -567,6 +571,11 @@ function bullet() {
                         _filterDimension[_dimension] = [d.title];
                     }
 
+                    _filterDimension[_dimension]._meta = {
+                        dataType: _dimensionType[0],
+                        valueType: 'castValueType'
+                    };
+
                     var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                     broadcast.updateWidget = {};
                     broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
@@ -612,7 +621,7 @@ function bullet() {
     chart.update = function (data) {
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         _Local_data = data;
         filterData = [];
@@ -735,6 +744,11 @@ function bullet() {
                 } else {
                     _filterDimension[_dimension] = [d.title];
                 }
+
+                _filterDimension[_dimension]._meta = {
+                    dataType: _dimensionType[0],
+                    valueType: 'castValueType'
+                };
 
                 var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                 broadcast.updateWidget = {};

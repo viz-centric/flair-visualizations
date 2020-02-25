@@ -13,6 +13,7 @@ function sankey() {
 
     var _config,
         dimension = [],
+        _dimensionType = [],
         measure = [],
         showLabels = [],
         fontStyle = [],
@@ -49,6 +50,7 @@ function sankey() {
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
+        this.dimensionType(config.dimensionType);
         this.measure(config.measure);
         this.showLabels(config.showLabels);
         this.fontStyle(config.fontStyle);
@@ -177,6 +179,10 @@ function sankey() {
                     } else {
                         _filterList[d.nodeType] = [d.name];
                     }
+                    _filterList[d.nodeType]._meta = {
+                        dataType: _dimensionType[dimension.indexOf(d.nodeType)],
+                        valueType: 'castValueType'
+                    };
                 });
             }
             else {
@@ -361,7 +367,7 @@ function sankey() {
         _local_svg = svg;
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         var me = this;
         svg.selectAll('g').remove();
@@ -488,7 +494,7 @@ function sankey() {
                 if (colorPattern == 'single_color') {
                     return _colorList[0];
                 } else if (colorPattern == 'unique_color') {
-                    return _colorList[d.index]!=undefined?_colorList[d.index]:UTIL.getUniqueColour(d.index);
+                    return _colorList[d.index] != undefined ? _colorList[d.index] : UTIL.getUniqueColour(d.index);
                 } else if (colorPattern == 'gradient_color') {
                     if (_print) {
                         return _colorList[0];
@@ -576,6 +582,11 @@ function sankey() {
                         _filterDimension[dimension] = [d.data[_dimension[0]]];
                     }
 
+                    _filterDimension[dimension]._meta = {
+                        dataType: _dimensionType[dimension.indexOf(dimension)],
+                        valueType: 'castValueType'
+                    };
+
                     var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                     broadcast.updateWidget = {};
                     broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
@@ -623,6 +634,11 @@ function sankey() {
                     } else {
                         _filterDimension[_dimension] = [d.name];
                     }
+
+                    _filterDimension[_dimension]._meta = {
+                        dataType: _dimensionType[dimension.indexOf(d.nodeType)],
+                        valueType: 'castValueType'
+                    };
 
                     var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                     broadcast.updateWidget = {};
@@ -678,7 +694,7 @@ function sankey() {
             return d.value;
         }));
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         var nodeDistance = data.nodes[0].sourceLinks[0].target.x - data.nodes[0].x - sankey.nodeWidth();
 
@@ -881,7 +897,7 @@ function sankey() {
                 if (colorPattern == 'single_color') {
                     return _colorList[0];
                 } else if (colorPattern == 'unique_color') {
-                    return _colorList[d.index]!=undefined?_colorList[d.index]:UTIL.getUniqueColour(d.index);
+                    return _colorList[d.index] != undefined ? _colorList[d.index] : UTIL.getUniqueColour(d.index);
                 } else if (colorPattern == 'gradient_color') {
                     if (_print) {
                         return _colorList[0];
@@ -972,6 +988,14 @@ function sankey() {
             return dimension;
         }
         dimension = value;
+        return chart;
+    }
+
+    chart.dimensionType = function (value) {
+        if (!arguments.length) {
+            return _dimensionType;
+        }
+        _dimensionType = value;
         return chart;
     }
 

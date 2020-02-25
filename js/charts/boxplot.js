@@ -12,6 +12,7 @@ function boxplot() {
 
     var _config,
         _dimension,
+        _dimensionType,
         _measure,
         _sort,
         _tooltip,
@@ -49,6 +50,7 @@ function boxplot() {
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
+        this.dimensionType(config.dimensionType);
         this.measure(config.measure);
         this.showXaxis(config.showXaxis);
         this.showYaxis(config.showYaxis);
@@ -307,7 +309,7 @@ function boxplot() {
         var barWidth = Math.floor(gWidth / _data.length / 2);
         var me = this;
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         x = d3
@@ -489,6 +491,10 @@ function boxplot() {
                     } else {
                         _filterDimension[dimension] = [d[_dimension[0]]];
                     }
+                    _filterDimension[dimension]._meta = {
+                        dataType: _dimensionType[0],
+                        valueType: 'castValueType'
+                    };
 
                     var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                     broadcast.updateWidget = {};
@@ -538,7 +544,7 @@ function boxplot() {
         plot.selectAll('line').remove();
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         var globalMin, globalMax, xLabels;
@@ -689,6 +695,14 @@ function boxplot() {
             return _dimension;
         }
         _dimension = value;
+        return chart;
+    }
+
+    chart.dimensionType = function (value) {
+        if (!arguments.length) {
+            return _dimensionType;
+        }
+        _dimensionType = value;
         return chart;
     }
 

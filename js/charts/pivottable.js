@@ -46,6 +46,7 @@ function pivottable() {
     var unpivotedDimension, nester, pivotedDimension, nestedData, pivotedData = [];
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
+        this.dimensionType(config.dimensionType);
         this.measure(config.measure);
         this.displayNameForDimension(config.displayNameForDimension);
         this.cellColorForDimension(config.cellColorForDimension);
@@ -328,6 +329,11 @@ function pivottable() {
         } else {
             _filterDimension[dimension] = [str.textContent]
         }
+
+        _filterDimension[dimension]._meta = {
+            dataType: _dimensionType[0],
+            valueType: 'castValueType'
+        };
 
         var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
         broadcast.updateWidget = {};
@@ -741,11 +747,19 @@ function pivottable() {
         return chart;
     }
 
-    chart.dimension = function (value) {
+      chart.dimension = function (value) {
         if (!arguments.length) {
             return _dimension;
         }
         _dimension = value;
+        return chart;
+    }
+
+    chart.dimensionType = function (value) {
+        if (!arguments.length) {
+            return _dimensionType;
+        }
+        _dimensionType = value;
         return chart;
     }
 
