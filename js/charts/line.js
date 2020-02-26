@@ -13,7 +13,8 @@ function line() {
     var _NAME = 'Line';
 
     var _config,
-        _dimension,
+       _dimension,
+        _dimensionType,
         _measure,
         _showLegend,
         _legendPosition,
@@ -82,6 +83,7 @@ function line() {
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
+        this.dimensionType(config.dimensionType);
         this.measure(config.measure);
         this.showLegend(config.showLegend);
         this.legendPosition(config.legendPosition);
@@ -276,6 +278,11 @@ function line() {
                 var dimension = _dimension[0];
 
                 _filterDimension[dimension] = list;
+
+                _filterDimension[dimension]._meta = {
+                    dataType: _dimensionType[0],
+                    valueType: 'castValueType'
+                };
 
                 broadcast.filterSelection.filter = _filterDimension;
                 var _filterParameters = filterParameters.get();
@@ -997,6 +1004,10 @@ function line() {
                         } else {
                             _filterDimension[dimension] = [d.data[_dimension[0]]];
                         }
+                        _filterDimension[dimension]._meta = {
+                            dataType: _dimensionType[0],
+                            valueType: 'castValueType'
+                        };
 
                         var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                         broadcast.updateWidget = {};
@@ -1825,6 +1836,10 @@ function line() {
                         } else {
                             _filterDimension[dimension] = [d.data[_dimension[0]]];
                         }
+                        _filterDimension[dimension]._meta = {
+                            dataType: _dimensionType[0],
+                            valueType: 'castValueType'
+                        };
 
                         var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                         broadcast.updateWidget = {};
@@ -1835,9 +1850,7 @@ function line() {
                         filterParameters.save(_filterParameters);
                     }
                 }
-
             })
-
 
         var lineText = clusterLine.selectAll('text')
             .data(function (d, i) {
@@ -2112,11 +2125,19 @@ function line() {
         return chart;
     }
 
-    chart.dimension = function (value) {
+      chart.dimension = function (value) {
         if (!arguments.length) {
             return _dimension;
         }
         _dimension = value;
+        return chart;
+    }
+
+    chart.dimensionType = function (value) {
+        if (!arguments.length) {
+            return _dimensionType;
+        }
+        _dimensionType = value;
         return chart;
     }
 

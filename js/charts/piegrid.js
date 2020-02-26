@@ -8,6 +8,7 @@ function piegrid() {
 
     var _config,
         _dimension,
+        _dimensionType,
         _measure,
         _sort,
         _tooltip,
@@ -33,6 +34,7 @@ function piegrid() {
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
+        this.dimensionType(config.dimensionType);
         this.measure(config.measure);
         this.tooltip(config.tooltip);
         this.showLabel(config.showLabel);
@@ -301,6 +303,10 @@ function piegrid() {
                     } else {
                         _filterDimension[dimension] = [_Local_data[index][_dimension]];
                     }
+                    _filterDimension[dimension]._meta = {
+                        dataType: _dimensionType[0],
+                        valueType: 'castValueType'
+                    };
 
                     var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                     broadcast.updateWidget = {};
@@ -446,6 +452,10 @@ function piegrid() {
                     } else {
                         _filterDimension[dimension] = [_Local_data[index][_dimension]];
                     }
+                    _filterDimension[dimension]._meta = {
+                        dataType: _dimensionType[0],
+                        valueType: 'castValueType'
+                    };
 
                     var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                     broadcast.updateWidget = {};
@@ -481,6 +491,14 @@ function piegrid() {
             return _dimension;
         }
         _dimension = value;
+        return chart;
+    }
+
+    chart.dimensionType = function (value) {
+        if (!arguments.length) {
+            return _dimensionType;
+        }
+        _dimensionType = value;
         return chart;
     }
 

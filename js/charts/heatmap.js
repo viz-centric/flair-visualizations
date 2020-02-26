@@ -10,7 +10,8 @@ function heatmap() {
     var _NAME = 'heatmap';
 
     var _config,
-        _dimension,
+       _dimension,
+        _dimensionType,
         _measure,
         dimLabelColor,
         displayName,
@@ -61,6 +62,7 @@ function heatmap() {
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
+        this.dimensionType(config.dimensionType);
         this.measure(config.measure);
         this.dimLabelColor(config.dimLabelColor);
         this.displayName(config.displayName);
@@ -431,6 +433,11 @@ function heatmap() {
                     return d[_dimension[0]];
                 });
 
+                _filterDimension[dimension]._meta = {
+                    dataType: _dimensionType[0],
+                    valueType: 'castValueType'
+                };
+
                 broadcast.filterSelection.filter = _filterDimension;
                 var _filterParameters = filterParameters.get();
                 _filterParameters[dimension] = _filterDimension[dimension];
@@ -665,6 +672,11 @@ function heatmap() {
                     } else {
                         _filterDimension[dimension] = [d.y];
                     }
+
+                    _filterDimension[dimension]._meta = {
+                        dataType: _dimensionType[0],
+                        valueType: 'castValueType'
+                    };
 
                     var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                     broadcast.updateWidget = {};
@@ -952,6 +964,11 @@ function heatmap() {
                     _filterDimension[dimension] = [d.y];
                 }
 
+                _filterDimension[dimension]._meta = {
+                    dataType: _dimensionType[0],
+                    valueType: 'castValueType'
+                };
+
                 var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                 broadcast.updateWidget = {};
                 broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
@@ -1061,11 +1078,19 @@ function heatmap() {
         return chart;
     }
 
-    chart.dimension = function (value) {
+      chart.dimension = function (value) {
         if (!arguments.length) {
             return _dimension;
         }
         _dimension = value;
+        return chart;
+    }
+
+    chart.dimensionType = function (value) {
+        if (!arguments.length) {
+            return _dimensionType;
+        }
+        _dimensionType = value;
         return chart;
     }
 

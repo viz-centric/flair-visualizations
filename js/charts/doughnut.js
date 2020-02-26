@@ -17,6 +17,7 @@ function doughnut() {
      */
     var _config,
         _dimension,
+        _dimensionType,
         _measure,
         _legend,
         _legendPosition,
@@ -70,6 +71,7 @@ function doughnut() {
     /* -------------------------------------------------------------------------------- */
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
+        this.dimensionType(config.dimensionType);
         this.measure(config.measure);
         this.legend(config.legend);
         this.legendPosition(config.legendPosition);
@@ -302,6 +304,10 @@ function doughnut() {
                     return d[_dimension[0]];
                 });
 
+                _filterDimension[dimension]._meta = {
+                    dataType: _dimensionType[0],
+                    valueType: 'castValueType'
+                };
 
                 broadcast.filterSelection.filter = _filterDimension;
                 var _filterParameters = filterParameters.get();
@@ -478,7 +484,7 @@ function doughnut() {
         var me = this;
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         /* total sum of the measure values */
@@ -800,6 +806,11 @@ function doughnut() {
                         _filterDimension[dimension] = [d.data[_dimension[0]]];
                     }
 
+                    _filterDimension[dimension]._meta = {
+                        dataType: _dimensionType[0],
+                        valueType: 'castValueType'
+                    };
+
                     var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                     broadcast.updateWidget = {};
                     broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
@@ -858,7 +869,7 @@ function doughnut() {
             d[_measure[0]] = Math.abs(d[_measure[0]]);
         })
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         var svg = _local_svg,
             width = +svg.attr('width'),
@@ -1046,6 +1057,10 @@ function doughnut() {
                 } else {
                     _filterDimension[dimension] = [d.data[_dimension[0]]];
                 }
+                _filterDimension[dimension]._meta = {
+                    dataType: _dimensionType[0],
+                    valueType: 'castValueType'
+                };
 
                 var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                 broadcast.updateWidget = {};
@@ -1201,6 +1216,14 @@ function doughnut() {
             return _dimension;
         }
         _dimension = value;
+        return chart;
+    }
+
+    chart.dimensionType = function (value) {
+        if (!arguments.length) {
+            return _dimensionType;
+        }
+        _dimensionType = value;
         return chart;
     }
 

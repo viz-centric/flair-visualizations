@@ -11,7 +11,8 @@ function chorddiagram() {
     var _NAME = 'chorddiagram';
 
     var _config,
-        _dimension,
+       _dimension,
+        _dimensionType,
         _measure,
         _sort,
         _tooltip,
@@ -43,6 +44,7 @@ function chorddiagram() {
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
+        this.dimensionType(config.dimensionType);
         this.measure(config.measure);
         this.showLabels(config.showLabels);
         this.colorPattern(config.colorPattern);
@@ -149,6 +151,11 @@ function chorddiagram() {
                 var dimension = _dimension[0];
 
                 _filterDimension[dimension] = _filter;
+
+                _filterDimension[dimension]._meta = {
+                    dataType: _dimensionType[0],
+                    valueType: 'castValueType'
+                };
 
                 broadcast.filterSelection.filter = _filterDimension;
                 var _filterParameters = filterParameters.get();
@@ -341,7 +348,6 @@ function chorddiagram() {
             .sort(sort)
             .innerRadius(innerRadius)
             .outerRadius(outerRadius)
-            .width(width)
             .duration(_print == true ? 0 : 1000)
             .chordOpacity(0.8)
             .labelPadding(.03)
@@ -449,6 +455,11 @@ function chorddiagram() {
                     } else {
                         _filterDimension[dimension] = [d.source];
                     }
+
+                    _filterDimension[dimension]._meta = {
+                        dataType: _dimensionType[0],
+                        valueType: 'castValueType'
+                    };
 
                     var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
                     broadcast.updateWidget = {};
@@ -688,11 +699,19 @@ function chorddiagram() {
         return chart;
     }
 
-    chart.dimension = function (value) {
+      chart.dimension = function (value) {
         if (!arguments.length) {
             return _dimension;
         }
         _dimension = value;
+        return chart;
+    }
+
+    chart.dimensionType = function (value) {
+        if (!arguments.length) {
+            return _dimensionType;
+        }
+        _dimensionType = value;
         return chart;
     }
 
