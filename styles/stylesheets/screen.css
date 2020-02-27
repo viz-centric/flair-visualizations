@@ -182,7 +182,6 @@ text {
 
 /* line 44, ../sass/partials/_infographics.scss */
 svg#graphics {
-  position: absolute;
   width: 100%;
   height: 100%;
 }

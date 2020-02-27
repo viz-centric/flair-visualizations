@@ -9,6 +9,7 @@ function table() {
 
     var _config = [],
         _dimension = [],
+        _dimensionType = [],
         _limit,
         _displayNameForDimension = [],
         _cellColorForDimension = [],
@@ -37,6 +38,7 @@ function table() {
         _isTotal = false,
         isLiveEnabled = false,
         _print,
+        _notification = false,
         broadcast,
         filterParameters,
         _data;
@@ -558,7 +560,7 @@ function table() {
         return chart;
     }
 
-      chart.dimension = function (value) {
+    chart.dimension = function (value) {
         if (!arguments.length) {
             return _dimension;
         }

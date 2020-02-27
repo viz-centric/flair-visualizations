@@ -343,6 +343,13 @@ var COMMON = require('../extras/common.js')(),
                     .style('left', 0)
     
             }
+            if(_notification){
+                container.style('top', 0)
+                    .style('left', 0)
+                    .style('position','relative')
+                    .style('transform','translate(10%, 10%)')
+                    
+            }
         }
     
     

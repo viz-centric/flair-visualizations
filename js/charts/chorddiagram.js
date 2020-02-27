@@ -11,7 +11,7 @@ function chorddiagram() {
     var _NAME = 'chorddiagram';
 
     var _config,
-       _dimension,
+        _dimension,
         _dimensionType,
         _measure,
         _sort,
@@ -386,17 +386,23 @@ function chorddiagram() {
             .style('font-style', _fontStyle)
             .style('font-weight', _fontWeight)
             .text(function (d) {
-                var h = _pythagorousTheorem(r * Math.cos(angle(d)), r * Math.sin(angle(d)));
+                if (!_print) {
+                    var h = _pythagorousTheorem(r * Math.cos(angle(d)), r * Math.sin(angle(d)));
 
-                var a = angle(d);
-                var textAnchor = a < π2 || a > τ - π2 ? "start" : "end";
-                if (textAnchor == "start") {
-                    size = width / 2 - outerRadius * (r * Math.cos(angle(d)) / h) * 1.05
+                    var a = angle(d);
+                    var textAnchor = a < π2 || a > τ - π2 ? "start" : "end";
+                    if (textAnchor == "start") {
+                        size = width / 2 - outerRadius * (r * Math.cos(angle(d)) / h) * 1.05
+                    }
+                    else {
+                        size = width / 2 - Math.abs(outerRadius * (r * Math.cos(angle(d)) / h) * 1.05);
+                    }
+                    return UTIL.getTruncatedLabel(this, d.source, size);
                 }
                 else {
-                    size = width / 2 - Math.abs(outerRadius * (r * Math.cos(angle(d)) / h) * 1.05);
+                    return this.textContent;
                 }
-                return UTIL.getTruncatedLabel(this, d.source, size);
+
             })
             .text(function (d) {
                 var diff = d.endAngle - d.startAngle;
@@ -699,7 +705,7 @@ function chorddiagram() {
         return chart;
     }
 
-      chart.dimension = function (value) {
+    chart.dimension = function (value) {
         if (!arguments.length) {
             return _dimension;
         }

@@ -14,7 +14,7 @@ function scatter() {
     var _NAME = 'scatterChart';
 
     var _config,
-       _dimension,
+        _dimension,
         _dimensionType,
         _measure,
         _showLegend,
@@ -481,13 +481,35 @@ function scatter() {
             .call(_localYGrid);
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         var xAxisGroup,
             yAxisGroup;
 
         var isRotate = false;
+
+        var dataCircle = plot.selectAll("circle")
+            .data(data)
+            .enter()
+            .append("circle")
+            .attr("class", "circle")
+            .attr("cx", function (d) {
+                return x(d[_measure[2]]);
+            })
+            .attr("cy", function (d) {
+                return y(d[_measure[0]]);
+            })
+            .attr("r", function (d) {
+                return rScale(parseInt(d[_measure[1]]));
+            })
+            .style("fill", function (d) {
+                return color(d[_dimension[0]]);
+            })
+            .attr("stroke", function (d) {
+                return color(d[_dimension[0]]);
+            })
+            .style('fill-opacity', 1)
 
         if (_showXaxis) {
             _localXAxis = d3.axisBottom(x)
@@ -560,34 +582,17 @@ function scatter() {
                 })
                 .text(function () {
                     var text = _displayNameForMeasure.map(function (p) { return p; }).join(', ');
-                    return UTIL.getTruncatedLabel(this, text, plotHeight)
+                    if (!_print) {
+                        return UTIL.getTruncatedLabel(this, text, plotHeight)
+                    }
+                    else {
+                        return text;
+                    }
                 })
                 .append("svg:title")
                 .text(function (d, i) { return _displayNameForMeasure.map(function (p) { return p; }).join(', '); });
-    
-        }
 
-        var dataCircle = plot.selectAll("circle")
-            .data(data)
-            .enter()
-            .append("circle")
-            .attr("class", "circle")
-            .attr("cx", function (d) {
-                return x(d[_measure[2]]);
-            })
-            .attr("cy", function (d) {
-                return y(d[_measure[0]]);
-            })
-            .attr("r", function (d) {
-                return rScale(parseInt(d[_measure[1]]));
-            })
-            .style("fill", function (d) {
-                return color(d[_dimension[0]]);
-            })
-            .attr("stroke", function (d) {
-                return color(d[_dimension[0]]);
-            })
-            .style('fill-opacity', 1)
+        }
 
         if (!_print) {
 
@@ -792,7 +797,7 @@ function scatter() {
         plotHeight = parentHeight;
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         _Local_data = data,
@@ -1027,7 +1032,7 @@ function scatter() {
         return chart;
     }
 
-      chart.dimension = function (value) {
+    chart.dimension = function (value) {
         if (!arguments.length) {
             return _dimension;
         }

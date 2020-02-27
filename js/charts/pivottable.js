@@ -10,6 +10,7 @@ function pivottable() {
         _limit,
         _config = [],
         _dimension = [],
+        _dimensionType = [],
         _displayNameForDimension = [],
         _cellColorForDimension = [],
         _fontStyleForDimension = [],

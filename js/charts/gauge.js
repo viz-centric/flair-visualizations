@@ -163,7 +163,7 @@ function gauge() {
         _local_svg = svg;
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         var radius;
@@ -252,11 +252,13 @@ function gauge() {
                 return d3.select(this).style('font-size').replace('px', '') / 2.5;
             })
             .text(function (d, i) {
-                return measures[i];
-            })
-            .text(function (d, i) {
-                return UTIL.getTruncatedLabel(this, measures[i], Math.floor(width / measures
-                    .length), 5);
+                if (!_print) {
+                    return UTIL.getTruncatedLabel(this, measures[i], Math.floor(width / measures
+                        .length), 5);
+                }
+                else {
+                    return measures[i];
+                }
             });
 
         legend.attr('transform', function (d, i) {
@@ -316,9 +318,6 @@ function gauge() {
             .text(function () {
                 return displayName + " " + UTIL.getFormattedValue(_data[0][measures[0]], UTIL.getNumberFormatterFn(numberFormat, _data[0][measures[0]]));
             })
-            .text(function () {
-                return UTIL.getTruncatedLabel(this, displayName + " " + UTIL.getFormattedValue(_data[0][measures[0]], UTIL.getNumberFormatterFn(numberFormat, _data[0][measures[0]])), ringInset)
-            })
 
         // displayName + " " + data[0][measures[0]])
 
@@ -339,9 +338,6 @@ function gauge() {
             })
             .text(function () {
                 return displayName + " " + UTIL.getFormattedValue(_data[0][measures[1]], UTIL.getNumberFormatterFn(targetNumberFormat, _data[0][measures[1]]));
-            })
-            .text(function () {
-                return UTIL.getTruncatedLabel(this, displayName + " " + UTIL.getFormattedValue(_data[0][measures[1]], UTIL.getNumberFormatterFn(targetNumberFormat, _data[0][measures[1]])), ringInset)
             })
 
         chart.update(_data);
@@ -366,6 +362,7 @@ function gauge() {
         }
         var _measurePi = degToRad(Math.floor(_data[0][measures[0]] * 180 / maxVal - point));
         var targetPi = degToRad(Math.floor(_data[0][measures[1]] * 180 / maxVal - point));
+
         var _measureValue = UTIL.getFormattedValue(_data[0][measures[0]], UTIL.getNumberFormatterFn(numberFormat, _data[0][measures[0]]));
         var _tragetValue = UTIL.getFormattedValue(_data[0][measures[1]], UTIL.getNumberFormatterFn(targetNumberFormat, _data[0][measures[1]]));
         _measure.transition()
@@ -373,7 +370,12 @@ function gauge() {
                 return displayName + " " + _measureValue;
             })
             .text(function () {
-                return UTIL.getTruncatedLabel(this, displayName + " " + _measureValue, ringInset)
+                if (_print) {
+                    return displayName + " " + _measureValue;
+                }
+                else {
+                    return UTIL.getTruncatedLabel(this, displayName + " " + _measureValue, ringInset)
+                }
             })
 
         target.transition()
@@ -381,7 +383,12 @@ function gauge() {
                 return targetDisplayName + " " + _tragetValue;
             })
             .text(function () {
-                return UTIL.getTruncatedLabel(this, targetDisplayName + " " + _tragetValue, ringInset)
+                if (_print) {
+                    return targetDisplayName + " " + _tragetValue;
+                }
+                else {
+                    return UTIL.getTruncatedLabel(this, targetDisplayName + " " + _tragetValue, ringInset)
+                }
             })
 
         if (!_print) {
