@@ -1384,7 +1384,7 @@ function line() {
                     return UTIL.getBorderColor(i, _borderColor);
                 })
                 .attr('visibility', function (d, i) {
-                    if (_lineType[i].toUpperCase() == "AREA") {
+                    if (_isFilterGrid && _lineType[i].toUpperCase() == "AREA") {
                         return 'visible'
                     }
                     else {
@@ -1413,6 +1413,7 @@ function line() {
                 .attr('stroke-width', '1px')
                 .attr('d', _lineGenerator)
                 .style('stroke-opacity', 0.6)
+                .style('visibility', UTIL.getVisibility(_isFilterGrid));
         }
     }
 
