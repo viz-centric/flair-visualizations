@@ -210,7 +210,7 @@ function table() {
             _filterDimension[dimension] = [str.textContent]
         }
         _filterDimension[dimension]._meta = {
-            dataType: _dimensionType[0],
+            dataType: _dimensionType[_dimension.indexOf(dimension)],
             valueType: 'castValueType'
         };
         var idWidget = broadcast.updateWidget[parentContainer.attr('id')];

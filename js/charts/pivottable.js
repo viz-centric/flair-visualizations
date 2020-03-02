@@ -318,7 +318,7 @@ function pivottable() {
         } else {
             broadcast.filterSelection.id = parentContainer.attr('id');
         }
-        var dimension = _dimension[0];
+        var dimension = _str.id;
         if (_filterDimension[dimension]) {
             var temp = _filterDimension[dimension];
             if (temp.indexOf(str.textContent) < 0) {
@@ -332,7 +332,7 @@ function pivottable() {
         }
 
         _filterDimension[dimension]._meta = {
-            dataType: _dimensionType[0],
+            dataType: _dimensionType[_dimension.indexOf(dimension)],
             valueType: 'castValueType'
         };
 
@@ -748,7 +748,7 @@ function pivottable() {
         return chart;
     }
 
-      chart.dimension = function (value) {
+    chart.dimension = function (value) {
         if (!arguments.length) {
             return _dimension;
         }
