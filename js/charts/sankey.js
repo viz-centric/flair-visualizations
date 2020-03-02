@@ -503,6 +503,7 @@ function sankey() {
                 }
             })
             .style('stroke-opacity', '0.5')
+            .style('fill', 'none')
             .style('stroke-width', function (d) { return Math.max(1, d.dy); })
             .sort(function (a, b) { return b.dy - a.dy; })
 
