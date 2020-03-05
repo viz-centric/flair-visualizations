@@ -5,7 +5,7 @@ function numbergrid() {
     var _NAME = 'numbergrid';
 
     var _config,
-       _dimension,
+        _dimension,
         _dimensionType,
         _measure,
         _sort,
@@ -284,56 +284,58 @@ function numbergrid() {
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, parentContainer))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, parentContainer))
                 .on('click', function (d) {
-                    if (isLiveEnabled) {
-                        broadcast.$broadcast('FlairBi:livemode-dialog');
-                        return;
-                    }
-                    var path = d3.select(this.parentNode)
-                    var index = parseInt(d3.select(path.node().parentElement).attr('class'))
-
-                    var confirm = parentContainer.select('.confirm')
-                        .style('visibility', 'visible');
-
-                    var point = d3.select(this);
-                    if (point.classed('_selected')) {
-                        point.classed('_selected', false);
-                        point.style('fill-opacity', 1);
-                    } else {
-                        point.classed('_selected', true);
-                        point.style('fill-opacity', 0.5);
-                    }
-
-                    var _filterDimension = {};
-                    if (broadcast.filterSelection.id) {
-                        _filterDimension = broadcast.filterSelection.filter;
-                    } else {
-                        broadcast.filterSelection.id = parentContainer.attr('id');
-                    }
-                    var dimension = _dimension;
-                    if (_filterDimension[dimension]) {
-                        var temp = _filterDimension[dimension];
-                        if (temp.indexOf(_Local_data[index][_dimension]) < 0) {
-                            temp.push(_Local_data[index][_dimension]);
-                        } else {
-                            temp.splice(temp.indexOf(_Local_data[index][_dimension]), 1);
+                    if (COMMON.COMPARABLE_DATA_TYPES.indexOf(_dimensionType[0]) === -1) {
+                        if (isLiveEnabled) {
+                            broadcast.$broadcast('FlairBi:livemode-dialog');
+                            return;
                         }
-                        _filterDimension[dimension] = temp;
-                    } else {
-                        _filterDimension[dimension] = [_Local_data[index][_dimension]];
+                        var path = d3.select(this.parentNode)
+                        var index = parseInt(d3.select(path.node().parentElement).attr('class'))
+
+                        var confirm = parentContainer.select('.confirm')
+                            .style('visibility', 'visible');
+
+                        var point = d3.select(this);
+                        if (point.classed('_selected')) {
+                            point.classed('_selected', false);
+                            point.style('fill-opacity', 1);
+                        } else {
+                            point.classed('_selected', true);
+                            point.style('fill-opacity', 0.5);
+                        }
+
+                        var _filterDimension = {};
+                        if (broadcast.filterSelection.id) {
+                            _filterDimension = broadcast.filterSelection.filter;
+                        } else {
+                            broadcast.filterSelection.id = parentContainer.attr('id');
+                        }
+                        var dimension = _dimension;
+                        if (_filterDimension[dimension]) {
+                            var temp = _filterDimension[dimension];
+                            if (temp.indexOf(_Local_data[index][_dimension]) < 0) {
+                                temp.push(_Local_data[index][_dimension]);
+                            } else {
+                                temp.splice(temp.indexOf(_Local_data[index][_dimension]), 1);
+                            }
+                            _filterDimension[dimension] = temp;
+                        } else {
+                            _filterDimension[dimension] = [_Local_data[index][_dimension]];
+                        }
+
+                        _filterDimension[dimension]._meta = {
+                            dataType: _dimensionType[0],
+                            valueType: 'castValueType'
+                        };
+
+                        var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
+                        broadcast.updateWidget = {};
+                        broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
+                        broadcast.filterSelection.filter = _filterDimension;
+                        var _filterParameters = filterParameters.get();
+                        _filterParameters[dimension] = _filterDimension[dimension];
+                        filterParameters.save(_filterParameters);
                     }
-
-                    _filterDimension[dimension]._meta = {
-                        dataType: _dimensionType[0],
-                        valueType: 'castValueType'
-                    };
-
-                    var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
-                    broadcast.updateWidget = {};
-                    broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
-                    broadcast.filterSelection.filter = _filterDimension;
-                    var _filterParameters = filterParameters.get();
-                    _filterParameters[dimension] = _filterDimension[dimension];
-                    filterParameters.save(_filterParameters);
                 });
 
             parentContainer.select('.filterData')
@@ -410,56 +412,58 @@ function numbergrid() {
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, parentContainer))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, parentContainer))
                 .on('click', function (d) {
-                    if (isLiveEnabled) {
-                        broadcast.$broadcast('FlairBi:livemode-dialog');
-                        return;
-                    }
-                    var path = d3.select(this.parentNode)
-                    var index = parseInt(d3.select(path.node().parentElement).attr('class'))
-
-                    var confirm = parentContainer.select('.confirm')
-                        .style('visibility', 'visible');
-
-                    var point = d3.select(this);
-                    if (point.classed('_selected')) {
-                        point.classed('_selected', false);
-                        point.style('fill-opacity', 1);
-                    } else {
-                        point.classed('_selected', true);
-                        point.style('fill-opacity', 0.5);
-                    }
-
-                    var _filterDimension = {};
-                    if (broadcast.filterSelection.id) {
-                        _filterDimension = broadcast.filterSelection.filter;
-                    } else {
-                        broadcast.filterSelection.id = parentContainer.attr('id');
-                    }
-                    var dimension = _dimension;
-                    if (_filterDimension[dimension]) {
-                        var temp = _filterDimension[dimension];
-                        if (temp.indexOf(_Local_data[index][_dimension]) < 0) {
-                            temp.push(_Local_data[index][_dimension]);
-                        } else {
-                            temp.splice(temp.indexOf(_Local_data[index][_dimension]), 1);
+                    if (COMMON.COMPARABLE_DATA_TYPES.indexOf(_dimensionType[0]) === -1) {
+                        if (isLiveEnabled) {
+                            broadcast.$broadcast('FlairBi:livemode-dialog');
+                            return;
                         }
-                        _filterDimension[dimension] = temp;
-                    } else {
-                        _filterDimension[dimension] = [_Local_data[index][_dimension]];
+                        var path = d3.select(this.parentNode)
+                        var index = parseInt(d3.select(path.node().parentElement).attr('class'))
+
+                        var confirm = parentContainer.select('.confirm')
+                            .style('visibility', 'visible');
+
+                        var point = d3.select(this);
+                        if (point.classed('_selected')) {
+                            point.classed('_selected', false);
+                            point.style('fill-opacity', 1);
+                        } else {
+                            point.classed('_selected', true);
+                            point.style('fill-opacity', 0.5);
+                        }
+
+                        var _filterDimension = {};
+                        if (broadcast.filterSelection.id) {
+                            _filterDimension = broadcast.filterSelection.filter;
+                        } else {
+                            broadcast.filterSelection.id = parentContainer.attr('id');
+                        }
+                        var dimension = _dimension;
+                        if (_filterDimension[dimension]) {
+                            var temp = _filterDimension[dimension];
+                            if (temp.indexOf(_Local_data[index][_dimension]) < 0) {
+                                temp.push(_Local_data[index][_dimension]);
+                            } else {
+                                temp.splice(temp.indexOf(_Local_data[index][_dimension]), 1);
+                            }
+                            _filterDimension[dimension] = temp;
+                        } else {
+                            _filterDimension[dimension] = [_Local_data[index][_dimension]];
+                        }
+
+                        _filterDimension[dimension]._meta = {
+                            dataType: _dimensionType[0],
+                            valueType: 'castValueType'
+                        };
+
+                        var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
+                        broadcast.updateWidget = {};
+                        broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
+                        broadcast.filterSelection.filter = _filterDimension;
+                        var _filterParameters = filterParameters.get();
+                        _filterParameters[dimension] = _filterDimension[dimension];
+                        filterParameters.save(_filterParameters);
                     }
-
-                    _filterDimension[dimension]._meta = {
-                        dataType: _dimensionType[0],
-                        valueType: 'castValueType'
-                    };
-
-                    var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
-                    broadcast.updateWidget = {};
-                    broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
-                    broadcast.filterSelection.filter = _filterDimension;
-                    var _filterParameters = filterParameters.get();
-                    _filterParameters[dimension] = _filterDimension[dimension];
-                    filterParameters.save(_filterParameters);
                 });
         }
     }
@@ -473,7 +477,7 @@ function numbergrid() {
         return chart;
     }
 
-      chart.dimension = function (value) {
+    chart.dimension = function (value) {
         if (!arguments.length) {
             return _dimension;
         }
