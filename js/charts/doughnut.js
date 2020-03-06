@@ -931,8 +931,7 @@ function doughnut() {
         var doughnutMask = svg.select('#arc-mask-group')
             .selectAll('g.arc-mask')
             .data(_doughnut(data), _localKey)
-            .enter()
-            .insert('g')
+            .enter().append('g')
             .attr('id', function (d, i) {
                 return 'arc-mask-group-' + i;
             })
@@ -941,16 +940,13 @@ function doughnut() {
             .attr('id', function (d, i) {
                 return 'arc-mask-path-' + i;
             })
-            .style('visibility', 'hidden')
+            .attr('d', _arcMask)
             .style('fill', function (d) {
                 return COMMON.COLORSCALE(d.data[_dimension[0]]);
             })
             .each(function (d) {
                 this._current = d;
             });
-
-        doughnutMask = svg.selectAll('g.arc-mask')
-            .data(_doughnut(data), _localKey)
 
         doughnutMask.select('path')
             .transition().duration(0)
@@ -962,9 +958,6 @@ function doughnut() {
                     return _arcMask(_this._current);
                 };
             });
-
-        doughnutMask = svg.selectAll('g.arc-mask')
-            .data(_doughnut(data), _localKey);
 
         doughnutMask.exit()
             .transition()
@@ -995,10 +988,6 @@ function doughnut() {
                 this._current = d;
             })
 
-
-        doughnutArcGroup = svg.selectAll('g.arc')
-            .data(_doughnut(data), _localKey);
-
         doughnutArcGroup.select('path')
             .transition().duration(0)
             .attrTween('d', function (d) {
@@ -1009,9 +998,6 @@ function doughnut() {
                     return _arc(_this._current);
                 };
             });
-
-        doughnutArcGroup = svg.selectAll('g.arc')
-            .data(_doughnut(data), _localKey);
 
         doughnutArcGroup.exit()
             .transition()

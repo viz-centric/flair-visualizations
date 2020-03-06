@@ -896,8 +896,6 @@ function pie() {
                 this._current = d;
             });
 
-        pieMask = svg.selectAll('g.arc-mask')
-            .data(_pie(data), _localKey)
 
         pieMask.select('path')
             .transition().duration(0)
@@ -910,8 +908,6 @@ function pie() {
                 };
             });
 
-        pieMask = svg.selectAll('g.arc-mask')
-            .data(_pie(data), _localKey);
 
         pieMask.exit()
             .remove();
@@ -938,9 +934,6 @@ function pie() {
                 this._current = d;
             })
 
-        pieArcGroup = svg.selectAll('g.arc')
-            .data(_pie(data), _localKey);
-
         pieArcGroup.select('path')
             .transition().duration(0)
             .attrTween('d', function (d) {
@@ -951,9 +944,6 @@ function pie() {
                     return _arc(_this._current);
                 };
             });
-
-        pieArcGroup = svg.selectAll('g.arc')
-            .data(_pie(data), _localKey);
 
         pieArcGroup.exit()
             .remove();
