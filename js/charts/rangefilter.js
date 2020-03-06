@@ -321,6 +321,9 @@ function rangefilter() {
             .style("text-anchor", "middle")
             .attr("class", 'dateRange')
             .attr("x", parentWidth / 2)
+            .style("font-size", "10px")
+            .style("fill", "#28689c")
+            .style("font-weight", "bold")
             .attr("y", 5)
             .attr("dy", ".31em");
     }
