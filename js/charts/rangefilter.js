@@ -137,9 +137,9 @@ function rangefilter() {
 
                 _filterParameters["date-range|" + dimension] = [dates[0], dates[1]];
 
-                _filterDimension["date-range|" + dimension]._meta = {
+                _filterParameters["date-range|" + dimension]._meta = {
                     dataType: _dimensionType[0],
-                    valueType: 'castValueType'
+                    valueType: 'dateRangeValueType'
                 };
 
                 filterParameters.save(_filterParameters);
@@ -321,6 +321,9 @@ function rangefilter() {
             .style("text-anchor", "middle")
             .attr("class", 'dateRange')
             .attr("x", parentWidth / 2)
+            .style("font-size", "10px")
+            .style("fill", "#28689c")
+            .style("font-weight", "bold")
             .attr("y", 5)
             .attr("dy", ".31em");
     }
