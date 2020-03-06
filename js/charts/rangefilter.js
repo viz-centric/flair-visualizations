@@ -137,9 +137,9 @@ function rangefilter() {
 
                 _filterParameters["date-range|" + dimension] = [dates[0], dates[1]];
 
-                _filterDimension["date-range|" + dimension]._meta = {
+                _filterParameters["date-range|" + dimension]._meta = {
                     dataType: _dimensionType[0],
-                    valueType: 'castValueType'
+                    valueType: 'dateRangeValueType'
                 };
 
                 filterParameters.save(_filterParameters);
