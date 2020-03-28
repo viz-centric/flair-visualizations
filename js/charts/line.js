@@ -335,7 +335,7 @@ function line() {
 
         return function (d, i) {
             if (tooltip) {
-                var mouse = d3.mouse(d3.select('.overlayTooltip').node()),
+                var mouse = d3.mouse(container.select('.overlayTooltip').node()),
                     crosshair = container.select('.crosshair');
 
                 var labelStack = [];
@@ -373,10 +373,10 @@ function line() {
 
                     var xScale = x(xVal);
 
-                    d3.selectAll('path.point')
+                    container.selectAll('path.point')
                         .attr("d", d3.symbol().size(40))
 
-                    var filterPoint = d3.selectAll('path.point').filter(function (d, i) {
+                    var filterPoint = container.selectAll('path.point').filter(function (d, i) {
                         return d.data[_dimension[0]] === xVal;
                     })
 
