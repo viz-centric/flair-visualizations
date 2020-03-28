@@ -102,6 +102,54 @@ text {
   padding-right: 5px;
 }
 
+/* line 100, ../sass/partials/_common.scss */
+.sort_selection {
+  font-size: 1rem;
+  line-height: 1.2rem;
+  visibility: hidden;
+  position: absolute;
+  color: white;
+  background-color: rgba(31, 33, 36, 0.8);
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  padding: 10px 10px 0px 10px;
+  z-index: 10;
+  text-align: left;
+}
+
+/* line 115, ../sass/partials/_common.scss */
+.sort_selection div {
+  margin: 0px 0px 5px 0px;
+}
+
+/* line 119, ../sass/partials/_common.scss */
+.sort_selection input {
+  margin-top: 1px;
+}
+
+/* line 123, ../sass/partials/_common.scss */
+.arrow-down {
+  visibility: hidden;
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid rgba(31, 33, 36, 0.8);
+}
+
+/* line 133, ../sass/partials/_common.scss */
+.arrow-left {
+  visibility: hidden;
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-right: 10px solid rgba(31, 33, 36, 0.8);
+}
+
 /* line 2, ../sass/partials/_grid.scss */
 .grid path {
   stroke: #ededed;

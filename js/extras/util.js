@@ -206,7 +206,7 @@ function util() {
                 });
             }
         },
-        positionDownArrow: function (container, arrowDom, sortType, isFilter, chartType) {
+        positionDownArrow: function (container, arrowDom, sortType, isFilter, chartType, sortSelectDom) {
             var left = container.offsetLeft,
                 width = container.offsetWidth,
                 height = container.offsetHeight,
@@ -219,6 +219,10 @@ function util() {
             var offsetLeft,
                 offsetTop = 40;
 
+            var tipWidth = sortSelectDom.offsetWidth,
+                tipHeight = sortSelectDom.offsetHeight;
+
+
             if (isFilter && chartType == "vertical") {
                 offsetTop = offsetTop + COMMON.PADDING + parseInt(d3.select(container).select('.filterElement').attr('height'));
             }
@@ -230,6 +234,11 @@ function util() {
                 case "descending":
                     offsetLeft = 54;
                     break;
+
+                case "alternatedimension":
+                    offsetLeft = width / 2;
+                    break;
+
             }
 
             if (isFilter && chartType == "horizontal" && sortType.toLowerCase() == "ascending") {
@@ -242,8 +251,13 @@ function util() {
 
             arrowDom.style.left = (left + width - offsetLeft) + 'px';
             arrowDom.style.top = (top + height - offsetTop) + 'px';
+
+            if (sortType == "alternatedimension" && chartType == "horizontal") {
+                arrowDom.style.top = height / 2 + tipHeight / 2 + "px";
+                arrowDom.style.left = "20px";
+            }
         },
-        positionSortSelection: function (container, sortSelectDom, isFilter, chartType) {
+        positionSortSelection: function (container, sortSelectDom, isFilter, chartType, sortType, plot) {
             var left = container.offsetLeft,
                 width = container.offsetWidth,
                 height = container.offsetHeight,
@@ -258,7 +272,12 @@ function util() {
             var offsetLeft = 11,
                 offsetTop = 40;
 
-            if (isFilter && chartType == "vertical") {
+            if (sortType == "alternatedimension" && chartType == "vertical") {
+                offsetLeft = plot / 2;
+                tipWidth = tipWidth / 2;
+            }
+
+            if (isFilter && chartType == "vertical" || isFilter && chartType == "alternatedimension") {
                 offsetTop = offsetTop + COMMON.PADDING + parseInt(d3.select(container).select('.filterElement').attr('height'));
             }
             if (isFilter && chartType == "horizontal") {
@@ -267,6 +286,11 @@ function util() {
 
             sortSelectDom.style.left = (left + width - tipWidth - offsetLeft) + 'px';
             sortSelectDom.style.top = (top + height - tipHeight - offsetTop) + 'px';
+
+            if (sortType == "alternatedimension" && chartType == "horizontal") {
+                sortSelectDom.style.top = plot / 2 + "px";
+                sortSelectDom.style.left = "30px";
+            }
         },
         getTruncatedTick: function (label, containerLength, scale) {
             if (typeof (label) === 'undefined') {
@@ -682,7 +706,7 @@ function util() {
                 }, _onRadioButtonClick);
             }
 
-            this.positionDownArrow(div, downArrow.node(), sortType, isFilter, chartType);
+            this.positionDownArrow(div, downArrow.node(), sortType, isFilter, chartType, sortWindow.node());
             this.positionSortSelection(div, sortWindow.node(), isFilter, chartType);
 
         },
@@ -940,6 +964,60 @@ function util() {
                 .text(function () {
                     return "\uf0c9";
                 })
+        },
+
+        toggleAlternateDimension: function (broadcast, plot, _local_svg, alternateDimension, id, isFilter, chartType, displayName) {
+            var me = this;
+            var selectedFeature = JSON.parse(alternateDimension);
+            if (selectedFeature.length > 0) {
+                var _onRadioButtonClick = function (event) {
+                    event.data.selectedFeature.id = id;
+                    console.log(event.data.selectedFeature.featureName);
+                    broadcast.$broadcast('flairbiApp:registerAlternateDimension', event.data.selectedFeature);
+                    var container = _local_svg.node().parentNode;
+                    $(container).find('.sort_selection').css('visibility', 'hidden');
+                    $(container).find('.arrow-down').css('visibility', 'hidden');
+                }
+
+                //  d3.event.stopPropagation();
+                var div = _local_svg.node().parentNode
+                var sortWindow = d3.select(div).select('.sort_selection')
+                    .style('visibility', 'visible');
+
+                sortWindow.selectAll('div').remove();
+
+                var downArrow = d3.select(div).select('.arrow-down')
+                    .style('visibility', 'visible');
+
+                if (chartType == "horizontal") {
+                    downArrow = d3.select(div).select('.arrow-left')
+                        .style('visibility', 'visible');
+                }
+
+                var options,
+                    selected;
+
+                for (var i = 0; i < selectedFeature.length; i++) {
+                    var _divRadio = $('<div></div>').addClass('radio');
+                    options = '<label><input type="radio" '
+                        + (displayName == selectedFeature[i].featureName ? 'checked' : '')
+                        + ' name="optradio">'
+                        + selectedFeature[i].featureName
+                        + '</label>';
+
+                    _divRadio.append(options);
+                    $(sortWindow.node()).append(_divRadio);
+
+                    _divRadio.find('input').click({
+
+                        selectedFeature: selectedFeature[i]
+                    }, _onRadioButtonClick);
+                }
+
+                this.positionDownArrow(div, downArrow.node(), "alternatedimension", isFilter, chartType, sortWindow.node());
+                this.positionSortSelection(div, sortWindow.node(), isFilter, chartType, "alternatedimension", plot);
+            }
+
         },
         /**
        * Base accessor function
