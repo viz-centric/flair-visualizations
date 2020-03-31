@@ -206,7 +206,7 @@ function util() {
                 });
             }
         },
-        positionDownArrow: function (container, arrowDom, sortType, isFilter, chartType, sortSelectDom) {
+        positionDownArrow: function (container, arrowDom, sortType, isFilter, chartType, sortSelectDom, plot) {
             var left = container.offsetLeft,
                 width = container.offsetWidth,
                 height = container.offsetHeight,
@@ -253,7 +253,7 @@ function util() {
             arrowDom.style.top = (top + height - offsetTop) + 'px';
 
             if (sortType == "alternatedimension" && chartType == "horizontal") {
-                arrowDom.style.top = height / 2 + tipHeight / 2 + "px";
+                arrowDom.style.top = plot / 2 + tipHeight / 2 + "px";
                 arrowDom.style.left = "20px";
             }
         },
@@ -977,6 +977,7 @@ function util() {
                     var container = _local_svg.node().parentNode;
                     $(container).find('.sort_selection').css('visibility', 'hidden');
                     $(container).find('.arrow-down').css('visibility', 'hidden');
+                    $(container).find('.arrow-left').css('visibility', 'hidden');
                 }
 
                 //  d3.event.stopPropagation();
@@ -1014,7 +1015,7 @@ function util() {
                     }, _onRadioButtonClick);
                 }
 
-                this.positionDownArrow(div, downArrow.node(), "alternatedimension", isFilter, chartType, sortWindow.node());
+                this.positionDownArrow(div, downArrow.node(), "alternatedimension", isFilter, chartType, sortWindow.node(), plot);
                 this.positionSortSelection(div, sortWindow.node(), isFilter, chartType, "alternatedimension", plot);
             }
 

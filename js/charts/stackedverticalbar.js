@@ -16,6 +16,7 @@ function stackedverticalbar() {
     var _config,
         _dimension,
         _dimensionType,
+        _alternateDimension,
         _measure,
         _showLegend,
         _legendPosition,
@@ -84,6 +85,7 @@ function stackedverticalbar() {
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
         this.dimensionType(config.dimensionType);
+        this.alternateDimension(config.alternateDimension);
         this.measure(config.measure);
         this.showLegend(config.showLegend);
         this.legendPosition(config.legendPosition);
@@ -412,7 +414,7 @@ function stackedverticalbar() {
         });
         var updatedData = UTIL.getFilterDataForGrid(_data, filterList, _dimension[0]);
         if (updatedData.length > 0) {
-            chart.update(updatedData);
+           chart.update(updatedData, null, true);
         }
     }
 
@@ -810,11 +812,15 @@ function stackedverticalbar() {
                 return 'translate(' + (plotWidth / 2) + ', ' + parseFloat((COMMON.AXIS_THICKNESS / 1.5) + COMMON.PADDING) + ')';
             })
             .append('text')
+            .attr('class', 'alternateDimension')
             .style('text-anchor', 'middle')
             .style('font-weight', 'bold')
             .style('fill', _xAxisColor)
             .attr('visibility', UTIL.getVisibility(_showXaxisLabel))
-            .text(_displayName);
+            .text(_displayName)
+            .on('click', function () {
+                UTIL.toggleAlternateDimension(broadcast, plotWidth, _local_svg, _alternateDimension, parentContainer.attr('vizID'), _isFilterGrid, "vertical", _displayName);
+            })
 
         if (isRotate) {
             _local_svg.selectAll('.x_axis .tick text')
@@ -1161,7 +1167,11 @@ function stackedverticalbar() {
         return _local_svg.node().outerHTML;
     }
 
-    chart.update = function (data, filterConfig) {
+    chart.update = function (data, filterConfig, filterGrid) {
+        if (!filterGrid) {
+            _Local_data = data;
+        }
+
         if (_localLabelStack.length > 0) {
             data = UTIL.getFilterDataForLegend(_localLabelStack, _Local_data)
         }
@@ -1204,8 +1214,13 @@ function stackedverticalbar() {
 
         if (filterConfig) {
             if (filterConfig.isFilter) {
-                data = UTIL.sortData(data, filterConfig.key, filterConfig.sortType)
-                drawPlotForFilter.call(this, data);
+                data = UTIL.sortData(_data, filterConfig.key, filterConfig.sortType)
+                drawPlotForFilter.call(this, _data);
+            }
+        }
+        else {
+            if (!filterGrid) {
+                drawPlotForFilter.call(this, _data);
             }
         }
 
@@ -1410,6 +1425,9 @@ function stackedverticalbar() {
             .attr('visibility', 'visible')
             .call(_localXAxis);
 
+        xAxisGroup.select('.alternateDimension')
+            .text(_displayName)
+
         if (isRotate) {
             _local_svg.selectAll('.x_axis .tick text')
                 .attr("transform", "rotate(-15)");
@@ -1499,6 +1517,14 @@ function stackedverticalbar() {
             return _dimensionType;
         }
         _dimensionType = value;
+        return chart;
+    }
+
+    chart.alternateDimension = function (value) {
+        if (!arguments.length) {
+            return _alternateDimension;
+        }
+        _alternateDimension = value;
         return chart;
     }
 

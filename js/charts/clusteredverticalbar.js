@@ -341,7 +341,7 @@ function clusteredverticalbar() {
         });
         var updatedData = UTIL.getFilterDataForGrid(_data, filterList, _dimension[0]);
         if (updatedData.length > 0) {
-            chart.update(updatedData, true);
+            chart.update(updatedData, null, true);
         }
     }
 
@@ -1155,12 +1155,14 @@ function clusteredverticalbar() {
 
         if (filterConfig) {
             if (filterConfig.isFilter) {
-                data = UTIL.sortData(data, filterConfig.key, filterConfig.sortType)
-                drawPlotForFilter.call(this, data);
+                data = UTIL.sortData(_data, filterConfig.key, filterConfig.sortType)
+                drawPlotForFilter.call(this, _data);
             }
         }
         else {
-            drawPlotForFilter.call(this, data);
+            if (!filterGrid) {
+                drawPlotForFilter.call(this, _data);
+            }
         }
 
         if (_tooltip) {
