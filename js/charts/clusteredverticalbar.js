@@ -681,23 +681,20 @@ function clusteredverticalbar() {
             parentContainer.select('.removeFilter')
                 .on('click', clearFilter(parentContainer));
 
-            if (COMMON.COMPARABLE_DATA_TYPES.indexOf(_dimensionType[0]) === -1) {
+            _local_svg.select('g.lasso').remove();
 
-                _local_svg.select('g.lasso').remove();
+            var lasso = d3Lasso.lasso()
+                .hoverSelect(true)
+                .closePathSelect(true)
+                .closePathDistance(100)
+                .items(cluster)
+                .targetArea(_local_svg);
 
-                var lasso = d3Lasso.lasso()
-                    .hoverSelect(true)
-                    .closePathSelect(true)
-                    .closePathDistance(100)
-                    .items(cluster)
-                    .targetArea(_local_svg);
+            lasso.on('start', onLassoStart(lasso, _local_svg))
+                .on('draw', onLassoDraw(lasso, _local_svg))
+                .on('end', onLassoEnd(lasso, _local_svg));
 
-                lasso.on('start', onLassoStart(lasso, _local_svg))
-                    .on('draw', onLassoDraw(lasso, _local_svg))
-                    .on('end', onLassoEnd(lasso, _local_svg));
-
-                _local_svg.call(lasso);
-            }
+            _local_svg.call(lasso);
         }
     }
 
@@ -878,78 +875,76 @@ function clusteredverticalbar() {
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
-                    if (COMMON.COMPARABLE_DATA_TYPES.indexOf(_dimensionType[0]) === -1) {
-                        if (!_print) {
-                            if (broadcast != undefined && broadcast.isThresholdAlert) {
+                    if (!_print) {
+                        if (broadcast != undefined && broadcast.isThresholdAlert) {
 
-                                var ThresholdViz = {};
-                                ThresholdViz.ID = parentContainer.attr('vizID');
-                                ThresholdViz.measure = d.measure;
-                                ThresholdViz.measureValue = d[d.measure];
-                                ThresholdViz.dimension = d.dimension;
-                                ThresholdViz.dimensionValue = d[d.dimension];
-                                broadcast.ThresholdViz = ThresholdViz;
-                                broadcast.$broadcast('FlairBi:threshold-dialog');
+                            var ThresholdViz = {};
+                            ThresholdViz.ID = parentContainer.attr('vizID');
+                            ThresholdViz.measure = d.measure;
+                            ThresholdViz.measureValue = d[d.measure];
+                            ThresholdViz.dimension = d.dimension;
+                            ThresholdViz.dimensionValue = d[d.dimension];
+                            broadcast.ThresholdViz = ThresholdViz;
+                            broadcast.$broadcast('FlairBi:threshold-dialog');
+                        }
+                        else {
+                            if (isLiveEnabled) {
+                                broadcast.$broadcast('FlairBi:livemode-dialog');
+                                return;
                             }
-                            else {
-                                if (isLiveEnabled) {
-                                    broadcast.$broadcast('FlairBi:livemode-dialog');
-                                    return;
-                                }
 
-                                filter = false;
-                                var confirm = parentContainer.select('.confirm')
-                                    .style('visibility', 'visible');
-                                var _filter = _Local_data.filter(function (d1) {
-                                    return d[_dimension[0]] === d1[_dimension[0]]
-                                })
-                                var rect = d3.select(this);
-                                if (rect.classed('selected')) {
-                                    rect.classed('selected', false);
-                                    filterData.map(function (val, i) {
-                                        if (val[_dimension[0]] == d[_dimension[0]]) {
-                                            filterData.splice(i, 1)
-                                        }
-                                    })
-                                } else {
-                                    rect.classed('selected', true);
-                                    var isExist = filterData.filter(function (val) {
-                                        if (val[_dimension[0]] == d[_dimension[0]]) {
-                                            return val
-                                        }
-                                    })
-                                    if (isExist.length == 0) {
-                                        filterData.push(_filter[0]);
+                            filter = false;
+                            var confirm = parentContainer.select('.confirm')
+                                .style('visibility', 'visible');
+                            var _filter = _Local_data.filter(function (d1) {
+                                return d[_dimension[0]] === d1[_dimension[0]]
+                            })
+                            var rect = d3.select(this);
+                            if (rect.classed('selected')) {
+                                rect.classed('selected', false);
+                                filterData.map(function (val, i) {
+                                    if (val[_dimension[0]] == d[_dimension[0]]) {
+                                        filterData.splice(i, 1)
                                     }
+                                })
+                            } else {
+                                rect.classed('selected', true);
+                                var isExist = filterData.filter(function (val) {
+                                    if (val[_dimension[0]] == d[_dimension[0]]) {
+                                        return val
+                                    }
+                                })
+                                if (isExist.length == 0) {
+                                    filterData.push(_filter[0]);
                                 }
-
-                                var _filterDimension = {};
-                                if (broadcast.filterSelection.id) {
-                                    _filterDimension = broadcast.filterSelection.filter;
-                                } else {
-                                    broadcast.filterSelection.id = parentContainer.attr('id');
-                                }
-                                var dimension = _dimension[0];
-                                if (_filterDimension[dimension]) {
-                                    _filterDimension[dimension] = filterData.map(function (d) {
-                                        return d[_dimension[0]];
-                                    });
-                                } else {
-                                    _filterDimension[dimension] = [d[dimension]];
-                                }
-                                _filterDimension[dimension]._meta = {
-                                    dataType: _dimensionType[0],
-                                    valueType: 'castValueType'
-                                };
-
-                                var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
-                                broadcast.updateWidget = {};
-                                broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
-                                broadcast.filterSelection.filter = _filterDimension;
-                                var _filterParameters = filterParameters.get();
-                                _filterParameters[dimension] = _filterDimension[dimension];
-                                filterParameters.save(_filterParameters);
                             }
+
+                            var _filterDimension = {};
+                            if (broadcast.filterSelection.id) {
+                                _filterDimension = broadcast.filterSelection.filter;
+                            } else {
+                                broadcast.filterSelection.id = parentContainer.attr('id');
+                            }
+                            var dimension = _dimension[0];
+                            if (_filterDimension[dimension]) {
+                                _filterDimension[dimension] = filterData.map(function (d) {
+                                    return d[_dimension[0]];
+                                });
+                            } else {
+                                _filterDimension[dimension] = [d[dimension]];
+                            }
+                            _filterDimension[dimension]._meta = {
+                                dataType: _dimensionType[0],
+                                valueType: 'castValueType'
+                            };
+
+                            var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
+                            broadcast.updateWidget = {};
+                            broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
+                            broadcast.filterSelection.filter = _filterDimension;
+                            var _filterParameters = filterParameters.get();
+                            _filterParameters[dimension] = _filterDimension[dimension];
+                            filterParameters.save(_filterParameters);
                         }
                     }
                 })
@@ -1414,21 +1409,18 @@ function clusteredverticalbar() {
 
         _local_svg.select('g.sort')
             .style('visibility', UTIL.getVisibility(_showSorting))
-        if (COMMON.COMPARABLE_DATA_TYPES.indexOf(_dimensionType[0]) === -1) {
-            var lasso = d3Lasso.lasso()
-                .hoverSelect(true)
-                .closePathSelect(true)
-                .closePathDistance(100)
-                .items(cluster)
-                .targetArea(_local_svg);
+        var lasso = d3Lasso.lasso()
+            .hoverSelect(true)
+            .closePathSelect(true)
+            .closePathDistance(100)
+            .items(cluster)
+            .targetArea(_local_svg);
 
-            lasso.on('start', onLassoStart(lasso, _local_svg))
-                .on('draw', onLassoDraw(lasso, _local_svg))
-                .on('end', onLassoEnd(lasso, _local_svg));
+        lasso.on('start', onLassoStart(lasso, _local_svg))
+            .on('draw', onLassoDraw(lasso, _local_svg))
+            .on('end', onLassoEnd(lasso, _local_svg));
 
-            _local_svg.call(lasso);
-        }
-
+        _local_svg.call(lasso);
     }
 
     chart.config = function (value) {

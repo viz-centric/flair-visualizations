@@ -179,49 +179,46 @@ function table() {
         }
     }
     var readerTableChart = function (str, ctr, element) {
-
-        if (COMMON.COMPARABLE_DATA_TYPES.indexOf(_dimensionType[_dimension.indexOf(str.id)]) === -1) {
-            var confirm = ctr.select('div.confirm')
-                .style('visibility', 'visible');
-            var searchObj = filterData.find(o => o[str.id] === str.textContent);
-            if (searchObj == undefined) {
-                var obj = Object();
-                obj.key = str.id;
-                obj.value = str.textContent;
-                filterData.push(obj);
-            }
-            $(str).toggleClass('selected')
-
-            var _filterDimension = {};
-            if (broadcast.filterSelection.id) {
-                _filterDimension = broadcast.filterSelection.filter;
-            } else {
-                broadcast.filterSelection.id = d3.select(parentContainer.node()).attr('id');
-            }
-            var dimension = str.id;
-            if (_filterDimension[dimension]) {
-                var temp = _filterDimension[dimension];
-                if (temp.indexOf(str.textContent) < 0) {
-                    temp.push(str.textContent);
-                } else {
-                    temp.splice(temp.indexOf(str.textContent), 1);
-                }
-                _filterDimension[dimension] = temp;
-            } else {
-                _filterDimension[dimension] = [str.textContent]
-            }
-            _filterDimension[dimension]._meta = {
-                dataType: _dimensionType[_dimension.indexOf(dimension)],
-                valueType: 'castValueType'
-            };
-            var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
-            broadcast.updateWidget = {};
-            broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
-            broadcast.filterSelection.filter = _filterDimension;
-            var _filterParameters = filterParameters.get();
-            _filterParameters[dimension] = _filterDimension[dimension];
-            filterParameters.save(_filterParameters);
+        var confirm = ctr.select('div.confirm')
+            .style('visibility', 'visible');
+        var searchObj = filterData.find(o => o[str.id] === str.textContent);
+        if (searchObj == undefined) {
+            var obj = Object();
+            obj.key = str.id;
+            obj.value = str.textContent;
+            filterData.push(obj);
         }
+        $(str).toggleClass('selected')
+
+        var _filterDimension = {};
+        if (broadcast.filterSelection.id) {
+            _filterDimension = broadcast.filterSelection.filter;
+        } else {
+            broadcast.filterSelection.id = d3.select(parentContainer.node()).attr('id');
+        }
+        var dimension = str.id;
+        if (_filterDimension[dimension]) {
+            var temp = _filterDimension[dimension];
+            if (temp.indexOf(str.textContent) < 0) {
+                temp.push(str.textContent);
+            } else {
+                temp.splice(temp.indexOf(str.textContent), 1);
+            }
+            _filterDimension[dimension] = temp;
+        } else {
+            _filterDimension[dimension] = [str.textContent]
+        }
+        _filterDimension[dimension]._meta = {
+            dataType: _dimensionType[_dimension.indexOf(dimension)],
+            valueType: 'castValueType'
+        };
+        var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
+        broadcast.updateWidget = {};
+        broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
+        broadcast.filterSelection.filter = _filterDimension;
+        var _filterParameters = filterParameters.get();
+        _filterParameters[dimension] = _filterDimension[dimension];
+        filterParameters.save(_filterParameters);
     }
 
     var createHeaderFooter = function (data) {
