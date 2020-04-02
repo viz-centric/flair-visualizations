@@ -1453,7 +1453,7 @@ function line() {
             .style("visibility", "hidden");
 
         plot.selectAll('.area')
-            .style("visibility", "hidden");
+            .attr("visibility", "hidden");
 
         plot.selectAll('path.point')
             .style("opacity", "0");
@@ -1463,26 +1463,33 @@ function line() {
 
         plot.selectAll('.line')
             .filter(function (d, i) {
-                return d[i].tag.key === data;
+                return d[i].tag === data;
             })
             .style("visibility", "visible");
 
 
         plot.selectAll('.area')
             .filter(function (d, i) {
-                return d[i].tag.key === data;
+                return d[i].tag === data;
             })
-            .style("visibility", "visible");
+            .attr('visibility', function (d, i) {
+                if (_lineType[_measure.indexOf(d[i].tag)].toUpperCase() == "AREA") {
+                    return 'visible'
+                }
+                else {
+                    return 'hidden';
+                }
+            })
 
         plot.selectAll('path.point')
             .filter(function (d, i) {
-                return d.tag.key === data;
+                return d.tag === data;
             })
             .style("opacity", "1");
 
         plot.selectAll('.cluster_line').selectAll('text')
             .filter(function (d, i) {
-                return d.tag.key === data;
+                return d.tag === data;
             })
             .style("opacity", "1");
     }
@@ -1502,8 +1509,8 @@ function line() {
             .style("opacity", "1");
 
         var area = plot.selectAll('.area')
-            .style("visibility", function (d, i) {
-                if (_lineType[i].toUpperCase() == "AREA") {
+            .attr("visibility", function (d, i) {
+                if (_lineType[_measure.indexOf(d[i].tag)].toUpperCase() == "AREA") {
                     return "visible";
                 }
                 else {
@@ -1511,6 +1518,7 @@ function line() {
                 }
             });
     }
+
 
     var _legendClick = function (data) {
         var _filter = UTIL.getFilterData(_localLabelStack, data, _Local_data)
