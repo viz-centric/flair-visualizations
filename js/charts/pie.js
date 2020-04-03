@@ -730,13 +730,7 @@ function pie() {
                         valueType: 'castValueType'
                     };
 
-                    var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
-                    broadcast.updateWidget = {};
-                    broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
-                    broadcast.filterSelection.filter = _filterDimension;
-                    var _filterParameters = filterParameters.get();
-                    _filterParameters[dimension] = _filterDimension[dimension];
-                    filterParameters.save(_filterParameters);
+                    UTIL.saveFilterParameters(broadcast, filterParameters, parentContainer, _filterDimension, dimension);
                 });
 
             _local_svg.select('g.lasso').remove()
@@ -989,14 +983,7 @@ function pie() {
                     dataType: _dimensionType[0],
                     valueType: 'castValueType'
                 };
-
-                var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
-                broadcast.updateWidget = {};
-                broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
-                broadcast.filterSelection.filter = _filterDimension;
-                var _filterParameters = filterParameters.get();
-                _filterParameters[dimension] = _filterDimension[dimension];
-                filterParameters.save(_filterParameters);
+                UTIL.saveFilterParameters(broadcast, filterParameters, parentContainer, _filterDimension, dimension);
             });
 
         var plot = _local_svg.select('.plot')

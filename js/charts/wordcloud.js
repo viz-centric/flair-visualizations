@@ -10,7 +10,7 @@ function wordcloud() {
     var _NAME = 'wordcloud';
 
     var _config,
-       _dimension,
+        _dimension,
         _dimensionType,
         _measure,
         _colorSet = [],
@@ -211,7 +211,7 @@ function wordcloud() {
 
         _Local_data = data;
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
         var colour = d3.schemePaired;
 
@@ -309,13 +309,8 @@ function wordcloud() {
                             dataType: _dimensionType[0],
                             valueType: 'castValueType'
                         };
-                        var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
-                        broadcast.updateWidget = {};
-                        broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
-                        broadcast.filterSelection.filter = _filterDimension;
-                        var _filterParameters = filterParameters.get();
-                        _filterParameters[dimension] = _filterDimension[dimension];
-                        filterParameters.save(_filterParameters);
+
+                        UTIL.saveFilterParameters(broadcast, filterParameters, parentContainer, _filterDimension, dimension);
                     });
 
                 parentContainer.select('.filterData')
@@ -351,7 +346,7 @@ function wordcloud() {
         return chart;
     }
 
-      chart.dimension = function (value) {
+    chart.dimension = function (value) {
         if (!arguments.length) {
             return _dimension;
         }

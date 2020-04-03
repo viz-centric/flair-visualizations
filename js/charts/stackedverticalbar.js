@@ -520,15 +520,8 @@ function stackedverticalbar() {
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
                     if (!_print) {
-                        if (broadcast != undefined && broadcast.isThresholdAlert) {
-                            var ThresholdViz = {};
-                            ThresholdViz.ID = parentContainer.attr('vizID');
-                            ThresholdViz.measure = d.key;
-                            ThresholdViz.measureValue = d.data[d.key];
-                            ThresholdViz.dimension = _dimension[0];
-                            ThresholdViz.dimensionValue = d.data[_dimension[0]];
-                            broadcast.ThresholdViz = ThresholdViz;
-                            broadcast.$broadcast('FlairBi:threshold-dialog');
+                        if (broadcast && broadcast.isThresholdAlert) {
+                            UTIL.openSchedulerDialog(parentContainer.attr('vizID'), d.key, d.data[d.key], _dimension[0], d.data[_dimension[0]], broadcast);
                         }
                         else {
                             if (isLiveEnabled) {
@@ -580,13 +573,7 @@ function stackedverticalbar() {
                                 dataType: _dimensionType[0],
                                 valueType: 'castValueType'
                             };
-                            var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
-                            broadcast.updateWidget = {};
-                            broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
-                            broadcast.filterSelection.filter = _filterDimension;
-                            var _filterParameters = filterParameters.get();
-                            _filterParameters[dimension] = _filterDimension[dimension];
-                            filterParameters.save(_filterParameters);
+                            UTIL.saveFilterParameters(broadcast, filterParameters, parentContainer, _filterDimension, dimension);
                         }
                     }
                 })

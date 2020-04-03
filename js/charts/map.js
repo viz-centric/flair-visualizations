@@ -12,7 +12,7 @@ function map() {
     var _NAME = 'map';
 
     var _config,
-       _dimension,
+        _dimension,
         _dimensionType,
         _measure,
         _numberFormat,
@@ -350,7 +350,7 @@ function map() {
             .attr('class', 'custom_tooltip');
 
         if (_tooltip) {
-           tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select('.custom_tooltip');
         }
 
         container = svg.append('g')
@@ -432,13 +432,7 @@ function map() {
                         valueType: 'castValueType'
                     };
 
-                    var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
-                    broadcast.updateWidget = {};
-                    broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
-                    broadcast.filterSelection.filter = _filterDimension;
-                    var _filterParameters = filterParameters.get();
-                    _filterParameters[dimension] = _filterDimension[dimension];
-                    filterParameters.save(_filterParameters);
+                    UTIL.saveFilterParameters(broadcast, filterParameters, parentContainer, _filterDimension, dimension);
                 })
 
             parentContainer.select('.filterData')
@@ -525,14 +519,7 @@ function map() {
                         dataType: _dimensionType[0],
                         valueType: 'castValueType'
                     };
-
-                    var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
-                    broadcast.updateWidget = {};
-                    broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
-                    broadcast.filterSelection.filter = _filterDimension;
-                    var _filterParameters = filterParameters.get();
-                    _filterParameters[dimension] = _filterDimension[dimension];
-                    filterParameters.save(_filterParameters);
+                    UTIL.saveFilterParameters(broadcast, filterParameters, parentContainer, _filterDimension, dimension);
                 })
         }
     }
@@ -546,7 +533,7 @@ function map() {
         return chart;
     }
 
-      chart.dimension = function (value) {
+    chart.dimension = function (value) {
         if (!arguments.length) {
             return _dimension;
         }
