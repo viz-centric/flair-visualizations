@@ -528,66 +528,65 @@ function bullet() {
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
-                    if (COMMON.COMPARABLE_DATA_TYPES.indexOf(_dimensionType[0]) === -1) {
 
-                        if (isLiveEnabled) {
-                            broadcast.$broadcast('FlairBi:livemode-dialog');
-                            return;
-                        }
-                        var confirm = parentContainer.select('.confirm')
-                            .style('visibility', 'visible');
-
-                        var rect = d3.select(this).select('rect.measure');
-
-                        if (rect.classed('selected')) {
-                            rect.classed('selected', false);
-                            filterData = filterData.filter(function (val) {
-                                if (val[dimension[0]] != d.title) {
-                                    return val;
-                                }
-                            })
-                        } else {
-                            rect.classed('selected', true);
-                            var obj = new Object();
-                            obj[dimension] = d.title;
-                            obj[measures[0]] = d.measures.toString();
-                            obj[measures[1]] = d.markers.toString();
-
-                            filterData.push(obj)
-                        }
-
-                        var _filterDimension = {};
-                        if (broadcast.filterSelection.id) {
-                            _filterDimension = broadcast.filterSelection.filter;
-                        } else {
-                            broadcast.filterSelection.id = parentContainer.attr('id');
-                        }
-                        var _dimension = dimension[0];
-                        if (_filterDimension[_dimension]) {
-                            var temp = _filterDimension[_dimension];
-                            if (temp.indexOf(d.title) < 0) {
-                                temp.push(d.title);
-                            } else {
-                                temp.splice(temp.indexOf(d.title), 1);
-                            }
-                            _filterDimension[_dimension] = temp;
-                        } else {
-                            _filterDimension[_dimension] = [d.title];
-                        }
-
-                        _filterDimension[_dimension]._meta = {
-                            dataType: _dimensionType[0],
-                            valueType: 'castValueType'
-                        };
-
-                        var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
-                        broadcast.updateWidget = {};
-                        broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
-                        broadcast.filterSelection.filter = _filterDimension;
-                        var _filterParameters = filterParameters.get();
-                        _filterParameters[_dimension] = _filterDimension[_dimension];
-                        filterParameters.save(_filterParameters);
+                    if (isLiveEnabled) {
+                        broadcast.$broadcast('FlairBi:livemode-dialog');
+                        return;
                     }
+                    var confirm = parentContainer.select('.confirm')
+                        .style('visibility', 'visible');
+
+                    var rect = d3.select(this).select('rect.measure');
+
+                    if (rect.classed('selected')) {
+                        rect.classed('selected', false);
+                        filterData = filterData.filter(function (val) {
+                            if (val[dimension[0]] != d.title) {
+                                return val;
+                            }
+                        })
+                    } else {
+                        rect.classed('selected', true);
+                        var obj = new Object();
+                        obj[dimension] = d.title;
+                        obj[measures[0]] = d.measures.toString();
+                        obj[measures[1]] = d.markers.toString();
+
+                        filterData.push(obj)
+                    }
+
+                    var _filterDimension = {};
+                    if (broadcast.filterSelection.id) {
+                        _filterDimension = broadcast.filterSelection.filter;
+                    } else {
+                        broadcast.filterSelection.id = parentContainer.attr('id');
+                    }
+                    var _dimension = dimension[0];
+                    if (_filterDimension[_dimension]) {
+                        var temp = _filterDimension[_dimension];
+                        if (temp.indexOf(d.title) < 0) {
+                            temp.push(d.title);
+                        } else {
+                            temp.splice(temp.indexOf(d.title), 1);
+                        }
+                        _filterDimension[_dimension] = temp;
+                    } else {
+                        _filterDimension[_dimension] = [d.title];
+                    }
+
+                    _filterDimension[_dimension]._meta = {
+                        dataType: _dimensionType[0],
+                        valueType: 'castValueType'
+                    };
+
+                    var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
+                    broadcast.updateWidget = {};
+                    broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
+                    broadcast.filterSelection.filter = _filterDimension;
+                    var _filterParameters = filterParameters.get();
+                    _filterParameters[_dimension] = _filterDimension[_dimension];
+                    filterParameters.save(_filterParameters);
+
                 })
 
             var _filter = UTIL.createFilterElement()
@@ -599,23 +598,20 @@ function bullet() {
             parentContainer.select('.removeFilter')
                 .on('click', clearFilter(parentContainer));
 
-            if (COMMON.COMPARABLE_DATA_TYPES.indexOf(_dimensionType[0]) === -1) {
+            _local_svg.select('g.lasso').remove()
 
-                _local_svg.select('g.lasso').remove()
+            var lasso = d3Lasso.lasso()
+                .hoverSelect(true)
+                .closePathSelect(true)
+                .closePathDistance(100)
+                .items(g)
+                .targetArea(_local_svg);
 
-                var lasso = d3Lasso.lasso()
-                    .hoverSelect(true)
-                    .closePathSelect(true)
-                    .closePathDistance(100)
-                    .items(g)
-                    .targetArea(_local_svg);
+            lasso.on('start', onLassoStart(lasso, _local_svg))
+                .on('draw', onLassoDraw(lasso, _local_svg))
+                .on('end', onLassoEnd(lasso, _local_svg));
 
-                lasso.on('start', onLassoStart(lasso, _local_svg))
-                    .on('draw', onLassoDraw(lasso, _local_svg))
-                    .on('end', onLassoEnd(lasso, _local_svg));
-
-                _local_svg.call(lasso);
-            }
+            _local_svg.call(lasso);
         }
     }
     chart._getName = function () {
@@ -708,66 +704,64 @@ function bullet() {
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
             .on('click', function (d) {
-                if (COMMON.COMPARABLE_DATA_TYPES.indexOf(_dimensionType[0]) === -1) {
 
-                    if (isLiveEnabled) {
-                        broadcast.$broadcast('FlairBi:livemode-dialog');
-                        return;
-                    }
-                    var confirm = parentContainer.select('.confirm')
-                        .style('visibility', 'visible');
-
-                    var rect = d3.select(this).select('rect.measure');
-
-                    if (rect.classed('selected')) {
-                        rect.classed('selected', false);
-                        filterData = filterData.filter(function (val) {
-                            if (val[dimension[0]] != d.title) {
-                                return val;
-                            }
-                        })
-                    } else {
-                        rect.classed('selected', true);
-                        var obj = new Object();
-                        obj[dimension] = d.title;
-                        obj[measures[0]] = d.measures.toString();
-                        obj[measures[1]] = d.markers.toString();
-
-                        filterData.push(obj)
-                    }
-
-                    var _filterDimension = {};
-                    if (broadcast.filterSelection.id) {
-                        _filterDimension = broadcast.filterSelection.filter;
-                    } else {
-                        broadcast.filterSelection.id = parentContainer.attr('id');
-                    }
-                    var _dimension = dimension[0];
-                    if (_filterDimension[_dimension]) {
-                        var temp = _filterDimension[_dimension];
-                        if (temp.indexOf(d.title) < 0) {
-                            temp.push(d.title);
-                        } else {
-                            temp.splice(temp.indexOf(d.title), 1);
-                        }
-                        _filterDimension[_dimension] = temp;
-                    } else {
-                        _filterDimension[_dimension] = [d.title];
-                    }
-
-                    _filterDimension[_dimension]._meta = {
-                        dataType: _dimensionType[0],
-                        valueType: 'castValueType'
-                    };
-
-                    var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
-                    broadcast.updateWidget = {};
-                    broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
-                    broadcast.filterSelection.filter = _filterDimension;
-                    var _filterParameters = filterParameters.get();
-                    _filterParameters[_dimension] = _filterDimension[_dimension];
-                    filterParameters.save(_filterParameters);
+                if (isLiveEnabled) {
+                    broadcast.$broadcast('FlairBi:livemode-dialog');
+                    return;
                 }
+                var confirm = parentContainer.select('.confirm')
+                    .style('visibility', 'visible');
+
+                var rect = d3.select(this).select('rect.measure');
+
+                if (rect.classed('selected')) {
+                    rect.classed('selected', false);
+                    filterData = filterData.filter(function (val) {
+                        if (val[dimension[0]] != d.title) {
+                            return val;
+                        }
+                    })
+                } else {
+                    rect.classed('selected', true);
+                    var obj = new Object();
+                    obj[dimension] = d.title;
+                    obj[measures[0]] = d.measures.toString();
+                    obj[measures[1]] = d.markers.toString();
+
+                    filterData.push(obj)
+                }
+
+                var _filterDimension = {};
+                if (broadcast.filterSelection.id) {
+                    _filterDimension = broadcast.filterSelection.filter;
+                } else {
+                    broadcast.filterSelection.id = parentContainer.attr('id');
+                }
+                var _dimension = dimension[0];
+                if (_filterDimension[_dimension]) {
+                    var temp = _filterDimension[_dimension];
+                    if (temp.indexOf(d.title) < 0) {
+                        temp.push(d.title);
+                    } else {
+                        temp.splice(temp.indexOf(d.title), 1);
+                    }
+                    _filterDimension[_dimension] = temp;
+                } else {
+                    _filterDimension[_dimension] = [d.title];
+                }
+
+                _filterDimension[_dimension]._meta = {
+                    dataType: _dimensionType[0],
+                    valueType: 'castValueType'
+                };
+
+                var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
+                broadcast.updateWidget = {};
+                broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
+                broadcast.filterSelection.filter = _filterDimension;
+                var _filterParameters = filterParameters.get();
+                _filterParameters[_dimension] = _filterDimension[_dimension];
+                filterParameters.save(_filterParameters);
             })
             .call(bullet);
 
@@ -815,22 +809,20 @@ function bullet() {
 
         formatUsingCss(_local_svg);
 
-        if (COMMON.COMPARABLE_DATA_TYPES.indexOf(_dimensionType[0]) === -1) {
-            _local_svg.select('g.lasso').remove()
+        _local_svg.select('g.lasso').remove()
 
-            var lasso = d3Lasso.lasso()
-                .hoverSelect(true)
-                .closePathSelect(true)
-                .closePathDistance(100)
-                .items(_bullet)
-                .targetArea(_local_svg);
+        var lasso = d3Lasso.lasso()
+            .hoverSelect(true)
+            .closePathSelect(true)
+            .closePathDistance(100)
+            .items(_bullet)
+            .targetArea(_local_svg);
 
-            lasso.on('start', onLassoStart(lasso, _local_svg))
-                .on('draw', onLassoDraw(lasso, _local_svg))
-                .on('end', onLassoEnd(lasso, _local_svg));
+        lasso.on('start', onLassoStart(lasso, _local_svg))
+            .on('draw', onLassoDraw(lasso, _local_svg))
+            .on('end', onLassoEnd(lasso, _local_svg));
 
-            _local_svg.call(lasso);
-        }
+        _local_svg.call(lasso);
     }
 
     chart.config = function (value) {

@@ -534,91 +534,86 @@ function treemap() {
                 .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
-                    if (COMMON.COMPARABLE_DATA_TYPES.indexOf(_dimensionType[0]) === -1) {
-                        if (_dimensionType[1] && COMMON.COMPARABLE_DATA_TYPES.indexOf(_dimensionType[1]) === -1) {
-
-                            if (isLiveEnabled) {
-                                broadcast.$broadcast('FlairBi:livemode-dialog');
-                                return;
-                            }
-                            filter = false;
-                            var confirm = parentContainer.select('.confirm')
-                                .style('visibility', 'visible');
-
-                            var rect = d3.select(this)
-
-                            if (rect.classed('selected')) {
-                                rect.classed('selected', false);
-                            } else {
-                                rect.classed('selected', true);
-                            }
-                            var filterList = {};
-                            if (broadcast.filterSelection.id) {
-                                filterList = broadcast.filterSelection.filter;
-                            } else {
-                                broadcast.filterSelection.id = parentContainer.attr('id');
-                            }
-                            if (_dimension.length == 2) {
-                                if (d.children) {
-                                    if (filterList[_dimension[0]]) {
-                                        var temp = filterList[_dimension[0]];
-                                        if (temp.indexOf(d.data.key) < 0) {
-                                            temp.push(d.data.key);
-                                        } else {
-                                            temp.splice(temp.indexOf(d.data.key), 1);
-                                        }
-                                        filterList[_dimension[0]] = temp;
-                                    } else {
-                                        filterList[_dimension[0]] = [d.data.key];
-                                    }
-                                    filterList[_dimension[0]]._meta = {
-                                        dataType: _dimensionType[0],
-                                        valueType: 'castValueType'
-                                    };
-                                } else {
-                                    if (filterList[_dimension[1]]) {
-                                        var temp = filterList[_dimension[1]];
-                                        if (temp.indexOf(d.data.key) < 0) {
-                                            temp.push(d.data.key);
-                                        } else {
-                                            temp.splice(temp.indexOf(d.data.key), 1);
-                                        }
-                                        filterList[_dimension[1]] = temp;
-                                    } else {
-                                        filterList[_dimension[1]] = [d.data.key];
-                                    }
-                                    filterList[_dimension[1]]._meta = {
-                                        dataType: _dimensionType[1],
-                                        valueType: 'castValueType'
-                                    };
-                                }
-                            } else {
-                                if (filterList[_dimension[0]]) {
-                                    var temp = filterList[_dimension[0]];
-                                    if (temp.indexOf(d.data.key) < 0) {
-                                        temp.push(d.data.key);
-                                    } else {
-                                        temp.splice(temp.indexOf(d.data.key), 1);
-                                    }
-                                    filterList[_dimension[0]] = temp;
-                                } else {
-                                    filterList[_dimension[0]] = [d.data.key];
-                                }
-                                filterList[_dimension[0]]._meta = {
-                                    dataType: _dimensionType[0],
-                                    valueType: 'castValueType'
-                                };
-                            }
-
-                            var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
-                            broadcast.updateWidget = {};
-                            broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
-                            broadcast.filterSelection.filter = filterList;
-                            var _filterParameters = filterParameters.get();
-
-                            filterParameters.save(filterList);
-                        }
+                    if (isLiveEnabled) {
+                        broadcast.$broadcast('FlairBi:livemode-dialog');
+                        return;
                     }
+                    filter = false;
+                    var confirm = parentContainer.select('.confirm')
+                        .style('visibility', 'visible');
+
+                    var rect = d3.select(this)
+
+                    if (rect.classed('selected')) {
+                        rect.classed('selected', false);
+                    } else {
+                        rect.classed('selected', true);
+                    }
+                    var filterList = {};
+                    if (broadcast.filterSelection.id) {
+                        filterList = broadcast.filterSelection.filter;
+                    } else {
+                        broadcast.filterSelection.id = parentContainer.attr('id');
+                    }
+                    if (_dimension.length == 2) {
+                        if (d.children) {
+                            if (filterList[_dimension[0]]) {
+                                var temp = filterList[_dimension[0]];
+                                if (temp.indexOf(d.data.key) < 0) {
+                                    temp.push(d.data.key);
+                                } else {
+                                    temp.splice(temp.indexOf(d.data.key), 1);
+                                }
+                                filterList[_dimension[0]] = temp;
+                            } else {
+                                filterList[_dimension[0]] = [d.data.key];
+                            }
+                            filterList[_dimension[0]]._meta = {
+                                dataType: _dimensionType[0],
+                                valueType: 'castValueType'
+                            };
+                        } else {
+                            if (filterList[_dimension[1]]) {
+                                var temp = filterList[_dimension[1]];
+                                if (temp.indexOf(d.data.key) < 0) {
+                                    temp.push(d.data.key);
+                                } else {
+                                    temp.splice(temp.indexOf(d.data.key), 1);
+                                }
+                                filterList[_dimension[1]] = temp;
+                            } else {
+                                filterList[_dimension[1]] = [d.data.key];
+                            }
+                            filterList[_dimension[1]]._meta = {
+                                dataType: _dimensionType[1],
+                                valueType: 'castValueType'
+                            };
+                        }
+                    } else {
+                        if (filterList[_dimension[0]]) {
+                            var temp = filterList[_dimension[0]];
+                            if (temp.indexOf(d.data.key) < 0) {
+                                temp.push(d.data.key);
+                            } else {
+                                temp.splice(temp.indexOf(d.data.key), 1);
+                            }
+                            filterList[_dimension[0]] = temp;
+                        } else {
+                            filterList[_dimension[0]] = [d.data.key];
+                        }
+                        filterList[_dimension[0]]._meta = {
+                            dataType: _dimensionType[0],
+                            valueType: 'castValueType'
+                        };
+                    }
+
+                    var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
+                    broadcast.updateWidget = {};
+                    broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
+                    broadcast.filterSelection.filter = filterList;
+                    var _filterParameters = filterParameters.get();
+
+                    filterParameters.save(filterList);
                 })
         }
 
@@ -784,24 +779,19 @@ function treemap() {
             parentContainer.select('.removeFilter')
                 .on('click', clearFilter(parentContainer));
 
-            if (COMMON.COMPARABLE_DATA_TYPES.indexOf(_dimensionType[0]) === -1) {
-                if (_dimensionType[1] && COMMON.COMPARABLE_DATA_TYPES.indexOf(_dimensionType[1]) === -1) {
+            _local_svg.select('g.lasso').remove();
+            var lasso = d3Lasso.lasso()
+                .hoverSelect(true)
+                .closePathSelect(true)
+                .closePathDistance(100)
+                .items(cell)
+                .targetArea(_local_svg);
 
-                    _local_svg.select('g.lasso').remove();
-                    var lasso = d3Lasso.lasso()
-                        .hoverSelect(true)
-                        .closePathSelect(true)
-                        .closePathDistance(100)
-                        .items(cell)
-                        .targetArea(_local_svg);
+            lasso.on('start', onLassoStart(lasso, _local_svg))
+                .on('draw', onLassoDraw(lasso, _local_svg))
+                .on('end', onLassoEnd(lasso, _local_svg));
 
-                    lasso.on('start', onLassoStart(lasso, _local_svg))
-                        .on('draw', onLassoDraw(lasso, _local_svg))
-                        .on('end', onLassoEnd(lasso, _local_svg));
-
-                    _local_svg.call(lasso);
-                }
-            }
+            _local_svg.call(lasso);
         }
     }
 
@@ -926,28 +916,21 @@ function treemap() {
         plot.selectAll('.node')
             .attr('transform', function (d) {
                 return 'translate(' + d.x0 + ',' + d.y0 + ')';
-            })
+            });
+            
+        _local_svg.select('g.lasso').remove();
+        var lasso = d3Lasso.lasso()
+            .hoverSelect(true)
+            .closePathSelect(true)
+            .closePathDistance(100)
+            .items(cell)
+            .targetArea(_local_svg);
 
+        lasso.on('start', onLassoStart(lasso, _local_svg))
+            .on('draw', onLassoDraw(lasso, _local_svg))
+            .on('end', onLassoEnd(lasso, _local_svg));
 
-        if (COMMON.COMPARABLE_DATA_TYPES.indexOf(_dimensionType[0]) === -1) {
-            if (_dimensionType[1] && COMMON.COMPARABLE_DATA_TYPES.indexOf(_dimensionType[1]) === -1) {
-
-                _local_svg.select('g.lasso').remove();
-                var lasso = d3Lasso.lasso()
-                    .hoverSelect(true)
-                    .closePathSelect(true)
-                    .closePathDistance(100)
-                    .items(cell)
-                    .targetArea(_local_svg);
-
-                lasso.on('start', onLassoStart(lasso, _local_svg))
-                    .on('draw', onLassoDraw(lasso, _local_svg))
-                    .on('end', onLassoEnd(lasso, _local_svg));
-
-                _local_svg.call(lasso);
-            }
-        }
-
+        _local_svg.call(lasso);
     }
 
     chart.config = function (value) {
