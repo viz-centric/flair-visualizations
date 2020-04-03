@@ -15,6 +15,7 @@ function line() {
     var _config,
         _dimension,
         _dimensionType,
+        _alternateDimension,
         _measure,
         _showLegend,
         _legendPosition,
@@ -84,6 +85,7 @@ function line() {
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
         this.dimensionType(config.dimensionType);
+        this.alternateDimension(config.alternateDimension);
         this.measure(config.measure);
         this.showLegend(config.showLegend);
         this.legendPosition(config.legendPosition);
@@ -710,7 +712,7 @@ function line() {
                 return UTIL.getBorderColor(i, _borderColor);
             })
             .attr('visibility', function (d, i) {
-                if (_lineType[i].toUpperCase() == "AREA") {
+                if (_lineType[i].toUpperCase() == COMMON.LINETYPE.AREA) {
                     return 'visible'
                 }
                 else {
@@ -1049,11 +1051,15 @@ function line() {
                 return 'translate(' + (plotWidth / 2) + ', ' + parseFloat((COMMON.AXIS_THICKNESS / 1.5) + COMMON.PADDING) + ')';
             })
             .append('text')
+            .attr('class', 'alternateDimension')
             .style('text-anchor', 'middle')
             .style('font-weight', 'bold')
             .style('fill', _xAxisColor)
             .attr('visibility', UTIL.getVisibility(_showXaxisLabel))
-            .text(_displayName);
+            .text(_displayName)
+            .on('click', function () {
+                UTIL.toggleAlternateDimension(broadcast, plotWidth, _local_svg, _alternateDimension, parentContainer.attr('vizID'), _isFilterGrid, "vertical", _displayName);
+            })
 
         if (isRotate) {
             _local_svg.selectAll('.x_axis .tick text')
@@ -1384,7 +1390,7 @@ function line() {
                     return UTIL.getBorderColor(i, _borderColor);
                 })
                 .attr('visibility', function (d, i) {
-                    if (_isFilterGrid && _lineType[i].toUpperCase() == "AREA") {
+                    if (_isFilterGrid && _lineType[i].toUpperCase() == COMMON.LINETYPE.AREA) {
                         return 'visible'
                     }
                     else {
@@ -1443,7 +1449,7 @@ function line() {
             .style("visibility", "hidden");
 
         plot.selectAll('.area')
-            .style("visibility", "hidden");
+            .attr("visibility", "hidden");
 
         plot.selectAll('path.point')
             .style("opacity", "0");
@@ -1453,26 +1459,33 @@ function line() {
 
         plot.selectAll('.line')
             .filter(function (d, i) {
-                return d[i].tag.key === data;
+                return d[i].tag === data;
             })
             .style("visibility", "visible");
 
 
         plot.selectAll('.area')
             .filter(function (d, i) {
-                return d[i].tag.key === data;
+                return d[i].tag === data;
             })
-            .style("visibility", "visible");
+            .attr('visibility', function (d, i) {
+                if (_lineType[_measure.indexOf(d[i].tag)].toUpperCase() == COMMON.LINETYPE.AREA) {
+                    return 'visible'
+                }
+                else {
+                    return 'hidden';
+                }
+            })
 
         plot.selectAll('path.point')
             .filter(function (d, i) {
-                return d.tag.key === data;
+                return d.tag === data;
             })
             .style("opacity", "1");
 
         plot.selectAll('.cluster_line').selectAll('text')
             .filter(function (d, i) {
-                return d.tag.key === data;
+                return d.tag === data;
             })
             .style("opacity", "1");
     }
@@ -1492,8 +1505,8 @@ function line() {
             .style("opacity", "1");
 
         var area = plot.selectAll('.area')
-            .style("visibility", function (d, i) {
-                if (_lineType[i].toUpperCase() == "AREA") {
+            .attr("visibility", function (d, i) {
+                if (_lineType[_measure.indexOf(d[i].tag)].toUpperCase() == COMMON.LINETYPE.AREA) {
                     return "visible";
                 }
                 else {
@@ -1502,12 +1515,16 @@ function line() {
             });
     }
 
+
     var _legendClick = function (data) {
         var _filter = UTIL.getFilterData(_localLabelStack, data, _Local_data)
         drawPlot.call(this, _filter);
     }
 
-    chart.update = function (data, filterConfig) {
+    chart.update = function (data, filterConfig, filterGrid) {
+        if (!filterGrid) {
+            _Local_data = data;
+        }
 
         if (_localLabelStack.length > 0) {
             data = UTIL.getFilterDataForLegend(_localLabelStack, _Local_data)
@@ -1551,8 +1568,13 @@ function line() {
 
         if (filterConfig) {
             if (filterConfig.isFilter) {
-                data = UTIL.sortData(data, filterConfig.key, filterConfig.sortType)
-                drawPlotForFilter.call(this, data);
+                data = UTIL.sortData(_data, filterConfig.key, filterConfig.sortType)
+                drawPlotForFilter.call(this, _data);
+            }
+        }
+        else {
+            if (!filterGrid) {
+                drawPlotForFilter.call(this, _data);
             }
         }
         if (_tooltip) {
@@ -1713,7 +1735,7 @@ function line() {
                 return UTIL.getBorderColor(i, _borderColor);
             })
             .attr('visibility', function (d, i) {
-                if (_lineType[i].toUpperCase() == "AREA") {
+                if (_lineType[i].toUpperCase() == COMMON.LINETYPE.AREA) {
                     return 'visible'
                 }
                 else {
@@ -2043,11 +2065,13 @@ function line() {
                 return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength);
             })
 
-
         xAxisGroup = plot.select('.x_axis')
             .attr('transform', 'translate(0, ' + plotHeight + ')')
             .attr('visibility', 'visible')
             .call(_localXAxis);
+
+        xAxisGroup.select('.alternateDimension')
+            .text(_displayName)
 
         if (isRotate) {
             _local_svg.selectAll('.x_axis .tick text')
@@ -2138,6 +2162,14 @@ function line() {
             return _dimensionType;
         }
         _dimensionType = value;
+        return chart;
+    }
+
+    chart.alternateDimension = function (value) {
+        if (!arguments.length) {
+            return _alternateDimension;
+        }
+        _alternateDimension = value;
         return chart;
     }
 

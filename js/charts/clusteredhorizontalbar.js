@@ -15,6 +15,7 @@ function clusteredhorizontalbar() {
     var _config,
         _dimension,
         _dimensionType,
+        _alternateDimension,
         _measure,
         _showLegend,
         _legendPosition,
@@ -82,6 +83,7 @@ function clusteredhorizontalbar() {
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
         this.dimensionType(config.dimensionType);
+        this.alternateDimension(config.alternateDimension);
         this.measure(config.measure);
         this.showLegend(config.showLegend);
         this.legendPosition(config.legendPosition);
@@ -451,6 +453,9 @@ function clusteredhorizontalbar() {
             .attr('class', 'sort_selection');
 
         parentContainer.append('div')
+            .attr('class', 'arrow-left');
+
+        parentContainer.append('div')
             .attr('class', 'arrow-down');
 
         parentContainer.append('div')
@@ -612,11 +617,15 @@ function clusteredhorizontalbar() {
             })
             .append('text')
             .attr('transform', 'rotate(-90)')
+            .attr('class', 'alternateDimension')
             .style('text-anchor', 'middle')
             .style('font-weight', 'bold')
             .style('fill', _yAxisColor)
             .attr('visibility', UTIL.getVisibility(_showYaxisLabel))
-            .text(_displayName);
+            .text(_displayName)
+            .on('click', function () {
+                UTIL.toggleAlternateDimension(broadcast, plotHeight, _local_svg, _alternateDimension, parentContainer.attr('vizID'), _isFilterGrid, "horizontal", _displayName);
+            })
 
         UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
 
@@ -1128,8 +1137,10 @@ function clusteredhorizontalbar() {
         drawPlot.call(this, _filter);
     }
 
-    chart.update = function (data, filterConfig) {
-
+    chart.update = function (data, filterConfig, filterGrid) {
+        if (!filterGrid) {
+            _Local_data = data;
+        }
         if (_localLabelStack.length > 0) {
             data = UTIL.getFilterDataForLegend(_localLabelStack, _Local_data)
         }
@@ -1172,8 +1183,13 @@ function clusteredhorizontalbar() {
 
         if (filterConfig) {
             if (filterConfig.isFilter) {
-                data = UTIL.sortData(data, filterConfig.key, filterConfig.sortType)
-                drawPlotForFilter.call(this, data);
+                data = UTIL.sortData(_data, filterConfig.key, filterConfig.sortType)
+                drawPlotForFilter.call(this, _data);
+            }
+        }
+        else {
+            if (!filterGrid) {
+                drawPlotForFilter.call(this, _data);
             }
         }
 
@@ -1401,6 +1417,9 @@ function clusteredhorizontalbar() {
             .attr('visibility', 'visible')
             .call(_localYAxis);
 
+        yAxisGroup.select('.alternateDimension')
+            .text(_displayName)
+
         UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
 
         UTIL.displayThreshold(threshold, data, keys);
@@ -1446,6 +1465,14 @@ function clusteredhorizontalbar() {
             return _dimensionType;
         }
         _dimensionType = value;
+        return chart;
+    }
+
+    chart.alternateDimension = function (value) {
+        if (!arguments.length) {
+            return _alternateDimension;
+        }
+        _alternateDimension = value;
         return chart;
     }
 
