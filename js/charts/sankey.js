@@ -524,7 +524,7 @@ function sankey() {
                         _Local_data.map(function (val) {
                             if (dimension[0] == d.nodeType && val[dimension[0]] == d.name) {
                                 var searchObj = _filter.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
-                                if (searchObj == undefined) {
+                                if (!searchObj) {
                                     _filter.push(val)
                                 }
                             }
@@ -534,7 +534,7 @@ function sankey() {
                         _Local_data.map(function (val) {
                             if (dimension[1] == d.nodeType && val[dimension[1]] == d.name) {
                                 var searchObj = _filter.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
-                                if (searchObj == undefined) {
+                                if (!searchObj) {
                                     _filter.push(val)
                                 }
                             }
@@ -588,14 +588,7 @@ function sankey() {
                         valueType: 'castValueType'
                     };
 
-                    var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
-                    broadcast.updateWidget = {};
-                    broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
-                    broadcast.filterSelection.filter = _filterDimension;
-                    var _filterParameters = filterParameters.get();
-                    _filterParameters[dimension] = _filterDimension[dimension];
-                    filterParameters.save(_filterParameters);
-
+                    UTIL.saveFilterParameters(broadcast, filterParameters, parentContainer, _filterDimension, dimension);
                 })
 
             node.select('rect')
@@ -641,14 +634,7 @@ function sankey() {
                         dataType: _dimensionType[dimension.indexOf(d.nodeType)],
                         valueType: 'castValueType'
                     };
-
-                    var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
-                    broadcast.updateWidget = {};
-                    broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
-                    broadcast.filterSelection.filter = _filterDimension;
-                    var _filterParameters = filterParameters.get();
-                    _filterParameters[_dimension] = _filterDimension[_dimension];
-                    filterParameters.save(_filterParameters);
+                    UTIL.saveFilterParameters(broadcast, filterParameters, parentContainer, _filterDimension, dimension);
                 })
 
             parentContainer.select('.filterData')
@@ -765,7 +751,7 @@ function sankey() {
                         _Local_data.map(function (val) {
                             if (dimension[0] == d.nodeType && val[dimension[0]] == d.name) {
                                 var searchObj = filterData.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
-                                if (searchObj == undefined) {
+                                if (!searchObj) {
                                     filterData.push(val)
                                 }
                             }
@@ -775,7 +761,7 @@ function sankey() {
                         _Local_data.map(function (val) {
                             if (dimension[1] == d.nodeType && val[dimension[1]] == d.name) {
                                 var searchObj = filterData.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
-                                if (searchObj == undefined) {
+                                if (!searchObj) {
                                     filterData.push(val)
                                 }
                             }
@@ -925,7 +911,7 @@ function sankey() {
                     _Local_data.map(function (val) {
                         if (dimension[0] == d.nodeType && val[dimension[0]] == d.name) {
                             var searchObj = _filter.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
-                            if (searchObj == undefined) {
+                            if (!searchObj) {
                                 _filter.push(val)
                             }
                         }
@@ -935,7 +921,7 @@ function sankey() {
                     _Local_data.map(function (val) {
                         if (dimension[1] == d.nodeType && val[dimension[1]] == d.name) {
                             var searchObj = _filter.find(o => o[dimension[0]] == val[dimension[0]] && o[dimension[1]] == val[dimension[1]])
-                            if (searchObj == undefined) {
+                            if (!searchObj) {
                                 _filter.push(val)
                             }
                         }
