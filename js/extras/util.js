@@ -206,6 +206,13 @@ function util() {
                 });
             }
         },
+        alternateDimensionHorizontalPosition(arrowDom, sortType, chartType, sortSelectDom, plot) {
+            var tipWidth = sortSelectDom.offsetWidth,
+                tipHeight = sortSelectDom.offsetHeight;
+
+            arrowDom.style.top = plot / 2 + tipHeight / 2 + "px";
+            arrowDom.style.left = "20px";
+        },
         positionDownArrow: function (container, arrowDom, sortType, isFilter, chartType, sortSelectDom, plot) {
             var left = container.offsetLeft,
                 width = container.offsetWidth,
@@ -218,10 +225,6 @@ function util() {
 
             var offsetLeft,
                 offsetTop = 40;
-
-            var tipWidth = sortSelectDom.offsetWidth,
-                tipHeight = sortSelectDom.offsetHeight;
-
 
             if (isFilter && chartType == "vertical") {
                 offsetTop = offsetTop + COMMON.PADDING + parseInt(d3.select(container).select('.filterElement').attr('height'));
@@ -238,7 +241,6 @@ function util() {
                 case "alternatedimension":
                     offsetLeft = width / 2;
                     break;
-
             }
 
             if (isFilter && chartType == "horizontal" && sortType.toLowerCase() == "ascending") {
@@ -249,13 +251,14 @@ function util() {
                 offsetLeft = 54 + parseInt(d3.select(container).select('.filterElement').attr('width'));
             }
 
-            arrowDom.style.left = (left + width - offsetLeft) + 'px';
-            arrowDom.style.top = (top + height - offsetTop) + 'px';
-
             if (sortType == "alternatedimension" && chartType == "horizontal") {
-                arrowDom.style.top = plot / 2 + tipHeight / 2 + "px";
-                arrowDom.style.left = "20px";
+                this.alternateDimensionHorizontalPosition(arrowDom, sortType, chartType, sortSelectDom, plot);
             }
+            else {
+                arrowDom.style.left = (left + width - offsetLeft) + 'px';
+                arrowDom.style.top = (top + height - offsetTop) + 'px';
+            }
+
         },
         positionSortSelection: function (container, sortSelectDom, isFilter, chartType, sortType, plot) {
             var left = container.offsetLeft,
