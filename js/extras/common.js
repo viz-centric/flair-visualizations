@@ -20,6 +20,10 @@ function common() {
         DURATION: 1000,
         AXIS_THICKNESS: 50,
         SHOWAXISLABEL: 'Formated',
+        LINETYPE: {
+            AREA: "AREA",
+            LINE: "LINE"
+        },
         COMPARABLE_DATA_TYPES: ['timestamp', 'date', 'datetime'],
         COLORSCALE: d3.scaleOrdinal()
             .range([

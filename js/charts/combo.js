@@ -656,7 +656,7 @@ function combo() {
                 return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
             })
             .attr('visibility', function (d, i) {
-                if (_lineType[(_measure.indexOf(d[0]['tag']))].toUpperCase() == "AREA") {
+                if (_lineType[(_measure.indexOf(d[0]['tag']))].toUpperCase() == COMMON.LINETYPE.AREA) {
                     return 'visible'
                 }
                 else {
@@ -1212,7 +1212,7 @@ function combo() {
                     return UTIL.getBorderColor(_measure.indexOf(d[0]['tag']), _borderColor);
                 })
                 .attr('visibility', function (d, i) {
-                    if (_lineType[(_measure.indexOf(d[0]['tag']))].toUpperCase() == "AREA") {
+                    if (_lineType[(_measure.indexOf(d[0]['tag']))].toUpperCase() == COMMON.LINETYPE.AREA) {
                         return 'visible'
                     }
                     else {
@@ -1846,7 +1846,7 @@ function combo() {
                 return UTIL.getDisplayColor(_measure.indexOf(d[0]['tag']), _displayColor);
             })
             .attr('visibility', function (d, i) {
-                if (_lineType[(_measure.indexOf(d[0]['tag']))].toUpperCase() == "AREA") {
+                if (_lineType[(_measure.indexOf(d[0]['tag']))].toUpperCase() == COMMON.LINETYPE.AREA) {
                     return 'visible'
                 }
                 else {

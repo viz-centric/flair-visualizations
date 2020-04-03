@@ -712,7 +712,7 @@ function line() {
                 return UTIL.getBorderColor(i, _borderColor);
             })
             .attr('visibility', function (d, i) {
-                if (_lineType[i].toUpperCase() == "AREA") {
+                if (_lineType[i].toUpperCase() == COMMON.LINETYPE.AREA) {
                     return 'visible'
                 }
                 else {
@@ -1390,7 +1390,7 @@ function line() {
                     return UTIL.getBorderColor(i, _borderColor);
                 })
                 .attr('visibility', function (d, i) {
-                    if (_isFilterGrid && _lineType[i].toUpperCase() == "AREA") {
+                    if (_isFilterGrid && _lineType[i].toUpperCase() == COMMON.LINETYPE.AREA) {
                         return 'visible'
                     }
                     else {
@@ -1469,7 +1469,7 @@ function line() {
                 return d[i].tag === data;
             })
             .attr('visibility', function (d, i) {
-                if (_lineType[_measure.indexOf(d[i].tag)].toUpperCase() == "AREA") {
+                if (_lineType[_measure.indexOf(d[i].tag)].toUpperCase() == COMMON.LINETYPE.AREA) {
                     return 'visible'
                 }
                 else {
@@ -1506,7 +1506,7 @@ function line() {
 
         var area = plot.selectAll('.area')
             .attr("visibility", function (d, i) {
-                if (_lineType[_measure.indexOf(d[i].tag)].toUpperCase() == "AREA") {
+                if (_lineType[_measure.indexOf(d[i].tag)].toUpperCase() == COMMON.LINETYPE.AREA) {
                     return "visible";
                 }
                 else {
@@ -1735,7 +1735,7 @@ function line() {
                 return UTIL.getBorderColor(i, _borderColor);
             })
             .attr('visibility', function (d, i) {
-                if (_lineType[i].toUpperCase() == "AREA") {
+                if (_lineType[i].toUpperCase() == COMMON.LINETYPE.AREA) {
                     return 'visible'
                 }
                 else {
