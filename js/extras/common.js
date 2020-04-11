@@ -20,6 +20,7 @@ function common() {
         DURATION: 1000,
         AXIS_THICKNESS: 50,
         SHOWAXISLABEL: 'Formated',
+        NULLVALUE:'null',
         LINETYPE: {
             AREA: "AREA",
             LINE: "LINE"
