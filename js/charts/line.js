@@ -1445,17 +1445,17 @@ function line() {
 
         plot.selectAll('.line')
             .filter(function (d, i) {
-                return d[i].tag === data;
+                return d[i].tag.key === data;
             })
             .style("visibility", "visible");
 
 
         plot.selectAll('.area')
             .filter(function (d, i) {
-                return d[i].tag === data;
+                return d[i].tag.key === data;
             })
             .attr('visibility', function (d, i) {
-                if (_lineType[_measure.indexOf(d[i].tag)].toUpperCase() == COMMON.LINETYPE.AREA) {
+                if (_lineType[_measure.indexOf(d[i].tag.key)].toUpperCase() == COMMON.LINETYPE.AREA) {
                     return 'visible'
                 }
                 else {
@@ -1465,13 +1465,13 @@ function line() {
 
         plot.selectAll('path.point')
             .filter(function (d, i) {
-                return d.tag === data;
+                return d.tag.key === data;
             })
             .style("opacity", "1");
 
         plot.selectAll('.cluster_line').selectAll('text')
             .filter(function (d, i) {
-                return d.tag === data;
+                return d.tag.key === data;
             })
             .style("opacity", "1");
     }
@@ -1492,7 +1492,7 @@ function line() {
 
         var area = plot.selectAll('.area')
             .attr("visibility", function (d, i) {
-                if (_lineType[_measure.indexOf(d[i].tag)].toUpperCase() == COMMON.LINETYPE.AREA) {
+                if (_lineType[_measure.indexOf(d[i].tag.key)].toUpperCase() == COMMON.LINETYPE.AREA) {
                     return "visible";
                 }
                 else {

@@ -786,6 +786,9 @@ function stackedhorizontalbar() {
         _localYAxis = d3.axisLeft(x)
             .tickSize(0)
             .tickFormat(function (d) {
+                if (d === null) {
+                    return COMMON.NULLVALUE;
+                }
                 if (d.length > 3) {
                     return d.substring(0, 3) + '...';
                 }

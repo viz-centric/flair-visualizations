@@ -351,6 +351,9 @@ function util() {
             if (typeof (label) === 'undefined') {
                 return isRotate;
             }
+            if (label === null) {
+                return isRotate;
+            }
 
             if (scale != undefined && scale.invert(label.length) >= containerLength) {
                 isRotate = true;

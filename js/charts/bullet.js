@@ -511,6 +511,9 @@ function bullet() {
             .text(function (d) { return d.title; })
             .text(function (d) {
                 if (orientation == 'Horizontal') {
+                    if (d.title === null) {
+                        return COMMON.NULLVALUE;
+                    }
                     if (d.title.length > 3) {
                         return d.title.substring(0, 3) + '...';
                     }
@@ -783,6 +786,9 @@ function bullet() {
             .text(function (d) { return d.title; })
             .text(function (d) {
                 if (orientation == 'Horizontal') {
+                    if (d.title === null) {
+                        return COMMON.NULLVALUE;
+                    }
                     if (d.title.length > 3) {
                         return d.title.substring(0, 3) + '...';
                     }
