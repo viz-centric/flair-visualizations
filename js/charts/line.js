@@ -634,7 +634,6 @@ function line() {
             .attr('visibility', 'visible')
             .call(_localYGrid);
 
-
         if (_stacked) {
             areaGenerator = d3.area()
                 .curve(d3.curveLinear)
@@ -876,12 +875,34 @@ function line() {
                 return -2 * offsetY;
             })
             .style('text-anchor', 'middle')
+            .style('font-style', function (d, i) {
+                return _fontStyle[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
+            })
+            .style('font-weight', function (d, i) {
+                return _fontWeight[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
+            })
+            .style('font-size', function (d, i) {
+                return _fontSize[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
+            })
+            .style('fill', function (d, i) {
+                if (_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)].length) {
+                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d.data[d.tag.key == undefined ? d.tag : d.tag.key], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d.data[d.tag.key == undefined ? d.tag : d.tag.key], 'color')
+                    }
+                    else {
+                        return _textColor[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
+                    }
+                }
+                else {
+                    return _textColor[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
+                }
+            })
             .text(function (d, i) {
                 return UTIL.getFormattedValue(d.data[d.tag.key == undefined ? d.tag : d.tag.key], UTIL.getValueNumberFormat(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key), _numberFormat, d.data[d.tag.key == undefined ? d.tag : d.tag.key]));
             })
             .text(function (d, i) {
                 if (!_print) {
-                    var width = (1 - x.padding()) * plotWidth / (_localXLabels.length - 1);
+                    var width = plotWidth / (_localXLabels.length);
                     return UTIL.getTruncatedLabel(this, d3.select(this).text(), width);
                 }
                 else {
@@ -921,28 +942,6 @@ function line() {
                     return 'hidden'
                 }
                 return showText;
-            })
-            .style('font-style', function (d, i) {
-                return _fontStyle[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
-            })
-            .style('font-weight', function (d, i) {
-                return _fontWeight[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
-            })
-            .style('font-size', function (d, i) {
-                return _fontSize[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
-            })
-            .style('fill', function (d, i) {
-                if (_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)].length) {
-                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d.data[d.tag.key == undefined ? d.tag : d.tag.key], 'color').length > 0) {
-                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d.data[d.tag.key == undefined ? d.tag : d.tag.key], 'color')
-                    }
-                    else {
-                        return _textColor[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
-                    }
-                }
-                else {
-                    return _textColor[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
-                }
             });
 
         if (!_print || _notification) {
@@ -1870,12 +1869,34 @@ function line() {
                 return -2 * offsetY;
             })
             .style('text-anchor', 'middle')
+            .style('font-style', function (d, i) {
+                return _fontStyle[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
+            })
+            .style('font-weight', function (d, i) {
+                return _fontWeight[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
+            })
+            .style('font-size', function (d, i) {
+                return _fontSize[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
+            })
+            .style('fill', function (d, i) {
+                if (_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)].length) {
+                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d.data[d.tag.key == undefined ? d.tag : d.tag.key], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d.data[d.tag.key == undefined ? d.tag : d.tag.key], 'color')
+                    }
+                    else {
+                        return _textColor[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
+                    }
+                }
+                else {
+                    return _textColor[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
+                }
+            })
             .text(function (d, i) {
                 return UTIL.getFormattedValue(d.data[d.tag.key == undefined ? d.tag : d.tag.key], UTIL.getValueNumberFormat(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key), _numberFormat, d.data[d.tag.key == undefined ? d.tag : d.tag.key]));
             })
             .text(function (d, i) {
                 if (!_print) {
-                    var width = (1 - x.padding()) * plotWidth / (_localXLabels.length - 1);
+                    var width = plotWidth / (_localXLabels.length);
                     return UTIL.getTruncatedLabel(this, d3.select(this).text(), width);
                 }
                 else {
@@ -1915,28 +1936,6 @@ function line() {
                     return 'hidden'
                 }
                 return showText;
-            })
-            .style('font-style', function (d, i) {
-                return _fontStyle[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
-            })
-            .style('font-weight', function (d, i) {
-                return _fontWeight[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
-            })
-            .style('font-size', function (d, i) {
-                return _fontSize[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
-            })
-            .style('fill', function (d, i) {
-                if (_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)].length) {
-                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d.data[d.tag.key == undefined ? d.tag : d.tag.key], 'color').length > 0) {
-                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d.data[d.tag.key == undefined ? d.tag : d.tag.key], 'color')
-                    }
-                    else {
-                        return _textColor[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
-                    }
-                }
-                else {
-                    return _textColor[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
-                }
             });
 
         lineText
@@ -1955,12 +1954,34 @@ function line() {
                 return -2 * offsetY;
             })
             .style('text-anchor', 'middle')
+            .style('font-style', function (d, i) {
+                return _fontStyle[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
+            })
+            .style('font-weight', function (d, i) {
+                return _fontWeight[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
+            })
+            .style('font-size', function (d, i) {
+                return _fontSize[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
+            })
+            .style('fill', function (d, i) {
+                if (_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)].length) {
+                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d.data[d.tag.key == undefined ? d.tag : d.tag.key], 'color').length > 0) {
+                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d.data[d.tag.key == undefined ? d.tag : d.tag.key], 'color')
+                    }
+                    else {
+                        return _textColor[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
+                    }
+                }
+                else {
+                    return _textColor[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
+                }
+            })
             .text(function (d, i) {
                 return UTIL.getFormattedValue(d.data[d.tag.key == undefined ? d.tag : d.tag.key], UTIL.getValueNumberFormat(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key), _numberFormat, d.data[d.tag.key == undefined ? d.tag : d.tag.key]));
             })
             .text(function (d, i) {
                 if (!_print) {
-                    var width = (1 - x.padding()) * plotWidth / (_localXLabels.length - 1);
+                    var width = plotWidth / (_localXLabels.length);
                     return UTIL.getTruncatedLabel(this, d3.select(this).text(), width);
                 }
                 else {
@@ -2000,28 +2021,6 @@ function line() {
                     return 'hidden'
                 }
                 return showText;
-            })
-            .style('font-style', function (d, i) {
-                return _fontStyle[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
-            })
-            .style('font-weight', function (d, i) {
-                return _fontWeight[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
-            })
-            .style('font-size', function (d, i) {
-                return _fontSize[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
-            })
-            .style('fill', function (d, i) {
-                if (_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)].length) {
-                    if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d.data[d.tag.key == undefined ? d.tag : d.tag.key], 'color').length > 0) {
-                        return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)], d.data[d.tag.key == undefined ? d.tag : d.tag.key], 'color')
-                    }
-                    else {
-                        return _textColor[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
-                    }
-                }
-                else {
-                    return _textColor[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)];
-                }
             });
 
         var xAxisGroup,
