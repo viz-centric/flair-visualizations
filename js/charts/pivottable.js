@@ -300,43 +300,44 @@ function pivottable() {
         }
     }
     var readerTableChart = function (str, ctr, element) {
-        var confirm = ctr.select('div.confirm')
-            .style('visibility', 'visible');
-        var searchObj = filterData.find(o => o[str.id] === str.textContent);
+        if (COMMON.COMPARABLE_DATA_TYPES.indexOf(_dimensionType[_dimension.indexOf(str.id)]) === -1) {
+            var confirm = ctr.select('div.confirm')
+                .style('visibility', 'visible');
+            var searchObj = filterData.find(o => o[str.id] === str.textContent);
 
-        if (!searchObj) {
-            var obj = Object();
-            obj.key = str.id;
-            obj.value = str.textContent;
-            filterData.push(obj);
-        }
-        $(str).toggleClass('selected')
-
-        var _filterDimension = {};
-        if (broadcast.filterSelection.id) {
-            _filterDimension = broadcast.filterSelection.filter;
-        } else {
-            broadcast.filterSelection.id = parentContainer.attr('id');
-        }
-        var dimension = _str.id;
-        if (_filterDimension[dimension]) {
-            var temp = _filterDimension[dimension];
-            if (temp.indexOf(str.textContent) < 0) {
-                temp.push(str.textContent);
-            } else {
-                temp.splice(temp.indexOf(str.textContent), 1);
+            if (!searchObj) {
+                var obj = Object();
+                obj.key = str.id;
+                obj.value = str.textContent;
+                filterData.push(obj);
             }
-            _filterDimension[dimension] = temp;
-        } else {
-            _filterDimension[dimension] = [str.textContent]
+            $(str).toggleClass('selected')
+
+            var _filterDimension = {};
+            if (broadcast.filterSelection.id) {
+                _filterDimension = broadcast.filterSelection.filter;
+            } else {
+                broadcast.filterSelection.id = parentContainer.attr('id');
+            }
+            var dimension = _str.id;
+            if (_filterDimension[dimension]) {
+                var temp = _filterDimension[dimension];
+                if (temp.indexOf(str.textContent) < 0) {
+                    temp.push(str.textContent);
+                } else {
+                    temp.splice(temp.indexOf(str.textContent), 1);
+                }
+                _filterDimension[dimension] = temp;
+            } else {
+                _filterDimension[dimension] = [str.textContent]
+            }
+
+            _filterDimension[dimension]._meta = {
+                dataType: _dimensionType[_dimension.indexOf(dimension)],
+                valueType: 'castValueType'
+            };
+            UTIL.saveFilterParameters(broadcast, filterParameters, parentContainer, _filterDimension, dimension);
         }
-
-        _filterDimension[dimension]._meta = {
-            dataType: _dimensionType[_dimension.indexOf(dimension)],
-            valueType: 'castValueType'
-        };
-        UTIL.saveFilterParameters(broadcast, filterParameters, parentContainer, _filterDimension, dimension);
-
     }
 
     var getGeneratedPivotData = function (nestedData, depth, obj) {
