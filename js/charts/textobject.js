@@ -70,7 +70,7 @@ function textobject() {
         iconStyle = JSON.stringify(iconStyle);
         iconStyle = iconStyle.replace(/["{}]/g, '').replace(/,/g, ';');
 
-        iconOutput += "<i  class=\"" + _icon[index] + "\" style=\"" + iconStyle + "\" aria-hidden=\"true\"></i>";
+        iconOutput += "<i  class=\"fa " + _icon[index] + "\" style=\"" + iconStyle + "\" aria-hidden=\"true\"></i>";
 
         if (_iconExpression[index] !== "") {
             return iconOutput;

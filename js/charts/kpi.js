@@ -189,7 +189,7 @@ var COMMON = require('../extras/common.js')(),
             iconStyle = JSON.stringify(iconStyle);
             iconStyle = iconStyle.replace(/["{}]/g, '').replace(/,/g, ';');
     
-            iconOutput += "<i class=\"" + _kpiIcon[index] + "\" style=\"" + iconStyle + "\" aria-hidden=\"true\"></i>";
+            iconOutput += "<i class=\"fa " + _kpiIcon[index] + "\" style=\"" + iconStyle + "\" aria-hidden=\"true\"></i>";
     
             return index ? ("<div style='white-space:nowrap;display:flex;align-items:center;'>" + iconOutput + "&nbsp;" + numberOutput + "</div>")
                 : ("<div style='white-space:nowrap;display:flex;align-items:center;'>" + numberOutput + "&nbsp;" + iconOutput + "</div>");
