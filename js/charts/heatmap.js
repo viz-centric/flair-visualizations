@@ -204,7 +204,7 @@ function heatmap() {
         iconStyle = JSON.stringify(iconStyle);
         iconStyle = iconStyle.replace(/["{}]/g, '').replace(/,/g, ';');
 
-        iconOutput += "<i  class=\"" + iconName[index] + "\" style=\"" + iconStyle + "\" aria-hidden=\"true\"></i>";
+        iconOutput += "<i  class=\"fa " + iconName[index] + "\" style=\"" + iconStyle + "\" aria-hidden=\"true\"></i>";
 
         if (getIconName(index) !== "") {
             return iconOutput;

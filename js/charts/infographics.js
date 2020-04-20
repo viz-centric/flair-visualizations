@@ -142,7 +142,7 @@ function infographics() {
         iconStyle = JSON.stringify(iconStyle);
         iconStyle = iconStyle.replace(/["{}]/g, '').replace(/,/g, ';');
 
-        iconOutput += "<i class=\"" + _kpiIcon + "\" style=\"" + iconStyle + "\" aria-hidden=\"true\"></i>";
+        iconOutput += "<i class=\"fa " + _kpiIcon + "\" style=\"" + iconStyle + "\" aria-hidden=\"true\"></i>";
 
         return numberOutput + "&nbsp;" + iconOutput;
     }
