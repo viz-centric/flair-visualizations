@@ -303,7 +303,8 @@ function pivottable() {
         var confirm = ctr.select('div.confirm')
             .style('visibility', 'visible');
         var searchObj = filterData.find(o => o[str.id] === str.textContent);
-        if (searchObj == undefined) {
+
+        if (!searchObj) {
             var obj = Object();
             obj.key = str.id;
             obj.value = str.textContent;
@@ -334,14 +335,8 @@ function pivottable() {
             dataType: _dimensionType[_dimension.indexOf(dimension)],
             valueType: 'castValueType'
         };
+        UTIL.saveFilterParameters(broadcast, filterParameters, parentContainer, _filterDimension, dimension);
 
-        var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
-        broadcast.updateWidget = {};
-        broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
-        broadcast.filterSelection.filter = _filterDimension;
-        var _filterParameters = filterParameters.get();
-        _filterParameters[dimension] = _filterDimension[dimension];
-        filterParameters.save(_filterParameters);
     }
 
     var getGeneratedPivotData = function (nestedData, depth, obj) {

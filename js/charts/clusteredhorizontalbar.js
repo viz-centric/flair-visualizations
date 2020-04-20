@@ -598,6 +598,9 @@ function clusteredhorizontalbar() {
         _localYAxis = d3.axisLeft(x0)
             .tickSize(0)
             .tickFormat(function (d) {
+                if (d === null) {
+                    return COMMON.NULLVALUE;
+                }
                 if (d.length > 3) {
                     return d.substring(0, 3) + '...';
                 }
@@ -894,15 +897,8 @@ function clusteredhorizontalbar() {
                 .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
                 .on('click', function (d) {
                     if (!_print) {
-                        if (broadcast != undefined && broadcast.isThresholdAlert) {
-                            var ThresholdViz = {};
-                            ThresholdViz.ID = parentContainer.attr('vizID');
-                            ThresholdViz.measure = d.measure;
-                            ThresholdViz.measureValue = d[d.measure];
-                            ThresholdViz.dimension = d.dimension;
-                            ThresholdViz.dimensionValue = d[d.dimension];
-                            broadcast.ThresholdViz = ThresholdViz;
-                            broadcast.$broadcast('FlairBi:threshold-dialog');
+                        if (broadcast && broadcast.isThresholdAlert) {
+                            UTIL.openSchedulerDialog(parentContainer.attr('vizID'), d.measure, d[d.measure], d.dimension, d[d.dimension], broadcast);
                         }
                         else {
                             if (isLiveEnabled) {
@@ -952,14 +948,7 @@ function clusteredhorizontalbar() {
                                 dataType: _dimensionType[0],
                                 valueType: 'castValueType'
                             };
-
-                            var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
-                            broadcast.updateWidget = {};
-                            broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
-                            broadcast.filterSelection.filter = _filterDimension;
-                            var _filterParameters = filterParameters.get();
-                            _filterParameters[dimension] = _filterDimension[dimension];
-                            filterParameters.save(_filterParameters);
+                            UTIL.saveFilterParameters(broadcast, filterParameters, parentContainer, _filterDimension, dimension);
                         }
                     }
                 })

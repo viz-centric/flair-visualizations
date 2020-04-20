@@ -126,7 +126,7 @@ function table() {
         var iconStyle = {
             'font-weight': _iconFontWeight[index] || COMMON.DEFAULT_FONTWEIGHT,
             'color': _iconColor[index] || COMMON.DEFAULT_COLOR,
-            'font-size': _fontSizeForMeasure[index] || COMMON.DEFAULT_FONTSIZE + 'px',
+            'font-size': _fontSizeForMeasure[index] + 'px' || COMMON.DEFAULT_FONTSIZE + 'px',
             'text-align': getIconPosition(index),
             'padding-right': '15px'
         };
@@ -220,7 +220,6 @@ function table() {
             valueType: 'castValueType'
         };
         UTIL.saveFilterParameters(broadcast, filterParameters, parentContainer, _filterDimension, dimension);
-        // }
     }
 
     var createHeaderFooter = function (data) {

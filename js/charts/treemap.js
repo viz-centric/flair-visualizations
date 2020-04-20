@@ -612,7 +612,6 @@ function treemap() {
                     broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
                     broadcast.filterSelection.filter = filterList;
                     var _filterParameters = filterParameters.get();
-
                     filterParameters.save(filterList);
                 })
         }
@@ -917,7 +916,7 @@ function treemap() {
             .attr('transform', function (d) {
                 return 'translate(' + d.x0 + ',' + d.y0 + ')';
             });
-            
+
         _local_svg.select('g.lasso').remove();
         var lasso = d3Lasso.lasso()
             .hoverSelect(true)

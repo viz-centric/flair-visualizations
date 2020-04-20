@@ -351,6 +351,9 @@ function util() {
             if (typeof (label) === 'undefined') {
                 return isRotate;
             }
+            if (label === null) {
+                return isRotate;
+            }
 
             if (scale != undefined && scale.invert(label.length) >= containerLength) {
                 isRotate = true;
@@ -1235,6 +1238,25 @@ function util() {
                 valuesSoFar[value] = true;
             }
             return false;
+        },
+        openSchedulerDialog: function (ID, measure, measureValue, dimension, dimensionValue, broadcast) {
+            var ThresholdViz = {};
+            ThresholdViz.ID = ID;
+            ThresholdViz.measure = measure;
+            ThresholdViz.measureValue = measureValue;
+            ThresholdViz.dimension = dimension;
+            ThresholdViz.dimensionValue = dimensionValue;
+            broadcast.ThresholdViz = ThresholdViz;
+            broadcast.$broadcast('FlairBi:threshold-dialog');
+        },
+        saveFilterParameters: function (broadcast, filterParameters, parentContainer, _filterDimension, dimension) {
+            var idWidget = broadcast.updateWidget[parentContainer.attr('id')];
+            broadcast.updateWidget = {};
+            broadcast.updateWidget[parentContainer.attr('id')] = idWidget;
+            broadcast.filterSelection.filter = _filterDimension;
+            var _filterParameters = filterParameters.get();
+            _filterParameters[dimension] = _filterDimension[dimension];
+            filterParameters.save(_filterParameters);
         }
     }
 
