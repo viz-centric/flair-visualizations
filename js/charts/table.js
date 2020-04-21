@@ -140,7 +140,7 @@ function table() {
         iconStyle = iconStyle.replace(/["{}]/g, '').replace(/,/g, ';');
 
 
-        iconOutput += "<i  class=\"" + _iconNameForMeasure[index] + "\" style=\"" + iconStyle + "\" aria-hidden=\"true\"></i>";
+        iconOutput += "<i  class=\"fa " + _iconNameForMeasure[index] + "\" style=\"" + iconStyle + "\" aria-hidden=\"true\"></i>";
         if (getIconName(index) !== "") {
             return iconOutput;
         }
@@ -179,16 +179,23 @@ function table() {
         }
     }
     var readerTableChart = function (str, ctr, element) {
+        //  if (COMMON.COMPARABLE_DATA_TYPES.indexOf(_dimensionType[_dimension.indexOf(str.id)]) === -1) {
         var confirm = ctr.select('div.confirm')
             .style('visibility', 'visible');
-        var searchObj = filterData.find(o => o[str.id] === str.textContent);
+        var filterText = str.textContent === "null" ? null : str.textContent
+        var searchObj = filterData.find(o => o[str.getAttribute("tag")] === str.textContent);
         if (searchObj == undefined) {
             var obj = Object();
-            obj.key = str.id;
-            obj.value = str.textContent;
+            obj.key = str.getAttribute("tag");
+            obj.value = filterText;
             filterData.push(obj);
         }
-        $(str).toggleClass('selected')
+
+        $('#' + parentContainer.attr('id') + ' td[tag=' + str.getAttribute("tag") + ']').each(function () {
+            if (this.textContent === str.textContent) {
+                $(this).toggleClass('selected')
+            }
+        })
 
         var _filterDimension = {};
         if (broadcast.filterSelection.id) {
@@ -196,17 +203,17 @@ function table() {
         } else {
             broadcast.filterSelection.id = d3.select(parentContainer.node()).attr('id');
         }
-        var dimension = str.id;
+        var dimension = str.getAttribute("tag");
         if (_filterDimension[dimension]) {
             var temp = _filterDimension[dimension];
-            if (temp.indexOf(str.textContent) < 0) {
-                temp.push(str.textContent);
+            if (temp.indexOf(filterText) < 0) {
+                temp.push(filterText);
             } else {
-                temp.splice(temp.indexOf(str.textContent), 1);
+                temp.splice(temp.indexOf(filterText), 1);
             }
             _filterDimension[dimension] = temp;
         } else {
-            _filterDimension[dimension] = [str.textContent]
+            _filterDimension[dimension] = [filterText]
         }
         _filterDimension[dimension]._meta = {
             dataType: _dimensionType[_dimension.indexOf(dimension)],
@@ -478,7 +485,7 @@ function table() {
                 style = JSON.stringify(style);
                 style = style.replace(/","/g, ';').replace(/["{}]/g, '');
 
-                tbody += "<td class='filter' id=\"" + item + "\"  style=\"" + style + "\">" + d[_dimension[index]] + "</td>";
+                tbody += "<td class='filter' tag=\"" + item + "\"  style=\"" + style + "\">" + d[_dimension[index]] + "</td>";
             });
 
             _measure.forEach(function (item, index) {
@@ -500,7 +507,7 @@ function table() {
 
                 style = JSON.stringify(style);
                 style = style.replace(/","/g, ';').replace(/["{}]/g, '');
-                tbody += "<td class='sum' id=\"" + item + "\" style=\"" + style + "\">" + getIcon(index, d[_measure[index]]) + UTIL.getFormattedValue(d[_measure[index]], UTIL.getValueNumberFormat(index, _numberFormatForMeasure, d[_measure[index]])) + "</td>";
+                tbody += "<td class='sum' tag=\"" + item + "\" style=\"" + style + "\">" + getIcon(index, d[_measure[index]]) + UTIL.getFormattedValue(d[_measure[index]], UTIL.getValueNumberFormat(index, _numberFormatForMeasure, d[_measure[index]])) + "</td>";
 
             });
             tbody += "</tr>";
