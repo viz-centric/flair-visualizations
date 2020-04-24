@@ -63,15 +63,24 @@ div.dataTables_wrapper {
   }
 }
 
+._pagination {
+  float: right !important;
+  margin-right: 20px !important;
+  position: absolute;
+  right: 0;
+  bottom: 1px;
+  margin: 2px 0px 0 0;
+}
 ._pagination li > a,
 ._pagination li > span {
   display: inline-block !important;
-  padding: 5px 14px !important;
+  padding: 1px 10px !important;
   background-color: #fff !important;
   border: 1px solid #337ab7 !important;
   border-radius: 15px !important;
   color: #337ab7 !important;
-  margin: 5px;
+  margin: 0px 5px;
+  cursor: pointer;
 }
 .dataTables_wrapper.no-footer .dataTables_scrollBody {
   border-bottom: none !important;
