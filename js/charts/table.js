@@ -324,8 +324,10 @@ function table() {
 
         table.append('tbody').html(tbody);
 
-        table.append('tfoot')
-            .html(thead_tfoot.tfoot);
+        if (_isTotal) {
+            table.append('tfoot')
+                .html(thead_tfoot.tfoot);
+        }
 
         if (!_print) {
 
@@ -335,7 +337,7 @@ function table() {
                 _showNavigation = false;
             }
             if (_showNavigation) {
-                var pager = '<ul class="pager _pagination" style="margin:0px;float:right;">'
+                var pager = '<ul class="pager _pagination" >'
                     + '<li><span id="previous">Previous</span></li>'
                     + '<li><span id="next">Next</span></li>'
                     + '</ul>';
@@ -354,10 +356,10 @@ function table() {
 
             var tableHeight = height - 50;
             if (_isTotal) {
-                tableHeight = height - 50 - 40;
+                tableHeight = tableHeight - 30;
             }
             if (_showNavigation) {
-                tableHeight = tableHeight - 50;
+                tableHeight = tableHeight - 30;
             }
 
             $('#' + id + " #viz_table thead tr").clone(true).appendTo('#' + id + " #viz_table thead");
@@ -380,10 +382,7 @@ function table() {
                 $('#' + id + ' .searchClose').css('display', 'block')
                 $('#' + id + ' .searchOpen').css('display', 'none')
 
-                tableHeight = height - 120
-                if (_isTotal) {
-                    tableHeight = height - 120 - 40;
-                }
+                tableHeight = tableHeight - 30;
                 $('#' + id + ' .dataTables_scrollBody').css('max-height', tableHeight + 'px')
             })
             $('#' + id + ' .searchClose').click(function () {
@@ -391,10 +390,9 @@ function table() {
                 $('#' + id + ' .searchClose').css('display', 'none')
                 $('#' + id + ' .searchOpen').css('display', 'block')
 
-                tableHeight = height - 50
-                if (_isTotal) {
-                    tableHeight = height - 50 - 40;
-                }
+
+                tableHeight = tableHeight + 30;
+
                 $('#' + id + ' .dataTables_scrollBody').css('max-height', tableHeight + 'px')
             })
 
@@ -444,10 +442,6 @@ function table() {
                 broadcast.activePage = pageInfo;
                 broadcast.$broadcast('FlairBi:update-table', activePage);
             });
-
-            var footer = _isTotal == true ? "1" : "0";
-
-            $('#' + id + ' .dataTables_scrollFootInner tfoot').css('opacity', footer)
 
             $("#viz_table_paginate").css('display', 'blobk')
             $($('#' + parentContainer.attr('id') + ' td.filter')).on('click', function () {

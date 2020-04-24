@@ -644,9 +644,8 @@ function pivottable() {
 
             var tableHeight = height;
             if (_showNavigation) {
-                tableHeight = tableHeight - 50;
+                tableHeight = tableHeight - 75;
             }
-
 
             $('#' + parentContainer.attr('id')).find('#viz_pivot-table').dataTable({
                 "scrollY": tableHeight,

@@ -312,6 +312,9 @@ function util() {
             if (scale != undefined && scale.invert(label.length) >= containerLength) {
                 var charLength = Math.floor(scale(containerLength)) - 3;
                 charLength = (charLength < 0) ? 0 : charLength;
+                if ((label.length) <= containerLength) {
+                    charLength = charLength / 2;
+                }
                 truncLabel = arr.splice(0, charLength).join('') + '...';
             }
 
@@ -357,6 +360,9 @@ function util() {
 
             if (scale != undefined && scale.invert(label.length) >= containerLength) {
                 isRotate = true;
+                if ((label.length) <= containerLength) {
+                    isRotate = false;
+                }
             }
             return isRotate;
         },
