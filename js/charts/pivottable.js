@@ -680,7 +680,7 @@ function pivottable() {
                         'activePageNo': activePage
                     }
                     broadcast.activePage = pageInfo;
-                    broadcast.$broadcast('FlairBi:update-table');
+                    broadcast.$broadcast('FlairBi:update-table',activePage);
                 }
             });
 
@@ -692,7 +692,7 @@ function pivottable() {
                     'activePageNo': activePage
                 }
                 broadcast.activePage = pageInfo;
-                broadcast.$broadcast('FlairBi:update-table');
+                broadcast.$broadcast('FlairBi:update-table',activePage);
             });
 
             svg.select('.filterData')
