@@ -430,7 +430,7 @@ function table() {
                         'activePageNo': activePage
                     }
                     broadcast.activePage = pageInfo;
-                    broadcast.$broadcast('FlairBi:update-table');
+                    broadcast.$broadcast('FlairBi:update-table', activePage);
                 }
             });
 
@@ -442,7 +442,7 @@ function table() {
                     'activePageNo': activePage
                 }
                 broadcast.activePage = pageInfo;
-                broadcast.$broadcast('FlairBi:update-table');
+                broadcast.$broadcast('FlairBi:update-table', activePage);
             });
 
             var footer = _isTotal == true ? "1" : "0";
