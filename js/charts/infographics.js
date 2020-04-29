@@ -169,7 +169,7 @@ function infographics() {
 
         output += "<table><tr>"
             + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + datum[chart.dimension()] + "</td>"
+            + "<td>" + UTIL.getDimensionFormatedValue(datum[chart.dimension()],_dimensionType[0]) + "</td>"
             + "</tr><tr>"
             + "<th>" + chart.measure() + ": </th>"
             + "<td>" + value + "</td>"

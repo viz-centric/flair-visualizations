@@ -295,13 +295,26 @@ function util() {
                 sortSelectDom.style.left = "30px";
             }
         },
-        getTruncatedTick: function (label, containerLength, scale) {
+        getDimensionFormatedValue(value, type) {
+            if (typeof (value) === 'undefined') {
+                return "";
+            }
+            if (COMMON.COMPARABLE_DATA_TYPES.indexOf(type) !== 1 && value.endsWith("00:00:00.000000")) {
+                value = value.replace("00:00:00.000000", "")
+            }
+            return value;
+        },
+        getTruncatedTick: function (label, containerLength, scale, type) {
             if (typeof (label) === 'undefined') {
                 return "";
             }
 
             if (label === null) {
                 label = "null";
+            }
+
+            if (COMMON.COMPARABLE_DATA_TYPES.indexOf(type) !== 1 && label.endsWith("00:00:00.000000")) {
+                label = label.replace("00:00:00.000000", "")
             }
 
             label = label.toString();

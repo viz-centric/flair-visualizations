@@ -129,7 +129,7 @@ function clusteredverticalbar() {
 
         output += "<table><tr>"
             + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + datum[chart.dimension()] + "</td>"
+            + "<td>" + UTIL.getDimensionFormatedValue(datum[chart.dimension()],_dimensionType[0]) + "</td>"
             + "</tr><tr>"
             + "<th>" + datum["measure"] + ": </th>"
             + "<td>" + UTIL.getFormattedValue(datum[datum["measure"]], UTIL.getValueNumberFormat(_measure.indexOf(datum["measure"]), _numberFormat, datum[datum["measure"]])) + " </td>"
@@ -569,7 +569,7 @@ function clusteredverticalbar() {
                 if (isRotate == false) {
                     isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength,_dimensionType[0]);
             })
             .tickPadding(10);
 
@@ -1339,7 +1339,7 @@ function clusteredverticalbar() {
                 if (isRotate == false) {
                     isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength,_dimensionType[0]);
             })
 
         xAxisGroup = plot.select('.x_axis')

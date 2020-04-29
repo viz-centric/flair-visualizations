@@ -245,7 +245,7 @@ function rangefilter() {
                 if (isRotate == false) {
                     isRotate = UTIL.getTickRotate(d, (parentWidth) / (_localXLabels.length - 1), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (parentWidth) / (_localXLabels.length - 1), tickLength);
+                return UTIL.getTruncatedTick(d, (parentWidth) / (_localXLabels.length - 1), tickLength,_dimensionType[0]);
             })
             .tickPadding(10);
 

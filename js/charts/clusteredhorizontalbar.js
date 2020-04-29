@@ -131,7 +131,7 @@ function clusteredhorizontalbar() {
 
         output += "<table><tr>"
             + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + datum[chart.dimension()] + "</td>"
+            + "<td>" + UTIL.getDimensionFormatedValue(datum[chart.dimension()],_dimensionType[0]) + "</td>"
             + "</tr><tr>"
             + "<th>" + datum["measure"] + ": </th>"
             + "<td>" + UTIL.getFormattedValue(datum[datum["measure"]], UTIL.getValueNumberFormat(_measure.indexOf(datum["measure"]), _numberFormat, datum[datum["measure"]])) + " </td>"
@@ -557,7 +557,7 @@ function clusteredhorizontalbar() {
                     return UTIL.shortScale(2)(d);
                 }
                 else {
-                    return UTIL.getTruncatedTick(d, (plotWidth) / (y.ticks().length) - 5, tickLength);
+                    return UTIL.getTruncatedTick(d, (plotWidth) / (y.ticks().length) - 5, tickLength,_dimensionType[0]);
                 }
             })
         // .tickSize(0)

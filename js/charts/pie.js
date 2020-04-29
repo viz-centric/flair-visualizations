@@ -151,7 +151,7 @@ function pie() {
 
             switch (_valueAs) {
                 case 'label':
-                    result = d.data[_dimension[0]];
+                    result = UTIL.getDimensionFormatedValue(d.data[_dimension[0]], _dimensionType[0]);
                     break;
                 case 'value':
                     result = UTIL.getFormattedValue(d.data[_measure[0]], UTIL.getNumberFormatterFn('Actual', d.data[_measure[0]]));
@@ -160,7 +160,7 @@ function pie() {
                     result = (100 * d.data[_measure[0]] / _localTotal).toFixed(2) + ' %';
                     break;
                 default:
-                    result = d.data[_dimension[0]];
+                    result = UTIL.getDimensionFormatedValue(d.data[_dimension[0]], _dimensionType[0]);
             }
 
             return result;
@@ -179,7 +179,7 @@ function pie() {
 
         output += "<table><tr>"
             + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + datum[chart.dimension()] + "</td>"
+            + "<td>" + UTIL.getDimensionFormatedValue(datum[chart.dimension()], _dimensionType[0]) + "</td>"
             + "</tr><tr>"
             + "<th>" + chart.measure() + ": </th>"
             + "<td>" + Math.round(datum[chart.measure()] * 100) / 100 + "</td>"
