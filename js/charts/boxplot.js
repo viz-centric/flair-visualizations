@@ -429,7 +429,7 @@ function boxplot() {
                     if (isRotate == false) {
                         isRotate = UTIL.getTickRotate(d, (gWidth) / (xLabels.length - 1), tickLength);
                     }
-                    return UTIL.getTruncatedTick(d, (gWidth) / (xLabels.length - 1), tickLength);
+                    return UTIL.getTruncatedTick(d, (gWidth) / (xLabels.length - 1), tickLength,_dimensionType[0]);
                 })
                 .tickPadding(10))
 
@@ -661,7 +661,7 @@ function boxplot() {
                     if (isRotate == false) {
                         isRotate = UTIL.getTickRotate(d, (gWidth) / (xLabels.length - 1), tickLength);
                     }
-                    return UTIL.getTruncatedTick(d, (gWidth) / (xLabels.length - 1), tickLength);
+                    return UTIL.getTruncatedTick(d, (gWidth) / (xLabels.length - 1), tickLength,_dimensionType[0]);
                 })
                 .tickPadding(10))
 

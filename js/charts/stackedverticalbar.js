@@ -134,7 +134,7 @@ function stackedverticalbar() {
         var output = "";
         output += "<table><tr>"
             + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + datum.data[chart.dimension()] + "</td>"
+            + "<td>" + UTIL.getDimensionFormatedValue(datum.data[chart.dimension()], _dimensionType[0]) + "</td>"
             + "</tr><tr>"
             + "<th>" + datum.key + ": </th>"
             + "<td>" + UTIL.getFormattedValue(datum.data[datum.key], UTIL.getValueNumberFormat(_measure.indexOf(datum.key), _numberFormat, datum.data[datum.key])) + " </td>"
@@ -781,7 +781,7 @@ function stackedverticalbar() {
                 if (isRotate == false) {
                     isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength,_dimensionType[0]);
             })
             .tickPadding(10);
 
@@ -1400,7 +1400,7 @@ function stackedverticalbar() {
                 if (isRotate == false) {
                     isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength,_dimensionType[0]);
             })
 
         xAxisGroup = plot.select('.x_axis')

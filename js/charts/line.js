@@ -184,7 +184,7 @@ function line() {
         output += "<table><tr>"
 
             + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + datum[chart.dimension()] + "</td>"
+            + "<td>" + UTIL.getDimensionFormatedValue(datum[chart.dimension()],_dimensionType[0]) + "</td>"
             + "</tr>";
         _measure.forEach(element => {
             output += "<tr> <th><i class='fa fa-square dataset' style='color:" + _displayColor[_measure.indexOf(element)] + ";'></i>" + element + " : </th>"
@@ -1020,7 +1020,7 @@ function line() {
                 if (isRotate == false) {
                     isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength,_dimensionType[0]);
             })
             .tickPadding(10);
 
@@ -2033,7 +2033,7 @@ function line() {
                 if (isRotate == false) {
                     isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength,_dimensionType[0]);
             })
 
         xAxisGroup = plot.select('.x_axis')

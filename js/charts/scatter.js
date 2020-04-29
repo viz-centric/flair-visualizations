@@ -518,7 +518,7 @@ function scatter() {
                     if (isRotate == false) {
                         isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                     }
-                    return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength);
+                    return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength,_dimensionType[0]);
                 })
                 .tickPadding(10);
 
@@ -949,7 +949,7 @@ function scatter() {
             if (isRotate == false) {
                 isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
             }
-            return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength);
+            return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength,_dimensionType[0]);
         })
 
         if (_showXaxis) {

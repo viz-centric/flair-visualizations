@@ -182,7 +182,8 @@ function table() {
         //  if (COMMON.COMPARABLE_DATA_TYPES.indexOf(_dimensionType[_dimension.indexOf(str.id)]) === -1) {
         var confirm = ctr.select('div.confirm')
             .style('visibility', 'visible');
-        var filterText = str.textContent === "null" ? null : str.textContent
+        var filterText = str.getAttribute("filtervalue") === "null" ? null : str.getAttribute("filtervalue")
+
         var searchObj = filterData.find(o => o[str.getAttribute("tag")] === str.textContent);
         if (searchObj == undefined) {
             var obj = Object();
@@ -479,7 +480,7 @@ function table() {
                 style = JSON.stringify(style);
                 style = style.replace(/","/g, ';').replace(/["{}]/g, '');
 
-                tbody += "<td class='filter' tag=\"" + item + "\"  style=\"" + style + "\">" + d[_dimension[index]] + "</td>";
+                tbody += "<td class='filter' filterValue=\"" + d[_dimension[index]] + "\" tag=\"" + item + "\"  style=\"" + style + "\">" + UTIL.getDimensionFormatedValue(d[_dimension[index]], _dimensionType[index]) + "</td>";
             });
 
             _measure.forEach(function (item, index) {

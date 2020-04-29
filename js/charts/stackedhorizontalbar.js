@@ -135,7 +135,7 @@ function stackedhorizontalbar() {
 
         output += "<table><tr>"
             + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + datum.data[_dimension[0]] + "</td>"
+            + "<td>" + UTIL.getDimensionFormatedValue(datum.data[_dimension[0]], _dimensionType[0]) + "</td>"
             + "</tr><tr>"
             + "<th>" + datum.key + ": </th>"
             + "<td>" + UTIL.getFormattedValue(datum.data[datum.key], UTIL.getValueNumberFormat(_measure.indexOf(datum.key), _numberFormat, datum.data[datum.key])) + " </td>"
@@ -747,7 +747,7 @@ function stackedhorizontalbar() {
                     return UTIL.shortScale(2)(d);
                 }
                 else {
-                    return UTIL.getTruncatedTick(d, (plotWidth) / (y.ticks().length) - 5, tickLength);
+                    return UTIL.getTruncatedTick(d, (plotWidth) / (y.ticks().length) - 5, tickLength),_dimensionType[0];
                 }
             })
 

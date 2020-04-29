@@ -303,11 +303,13 @@ function pivottable() {
         var confirm = ctr.select('div.confirm')
             .style('visibility', 'visible');
         var searchObj = filterData.find(o => o[str.id] === str.textContent);
+        var filterText = str.getAttribute("filtervalue") === "null" ? null : str.getAttribute("filtervalue")
+
 
         if (!searchObj) {
             var obj = Object();
-            obj.key = str.id;
-            obj.value = str.textContent;
+            obj.key = str.getAttribute("tag");
+            obj.value = filterText;
             filterData.push(obj);
         }
         $(str).toggleClass('selected')
@@ -318,17 +320,17 @@ function pivottable() {
         } else {
             broadcast.filterSelection.id = parentContainer.attr('id');
         }
-        var dimension = _str.id;
+        var dimension = str.getAttribute("tag");
         if (_filterDimension[dimension]) {
             var temp = _filterDimension[dimension];
-            if (temp.indexOf(str.textContent) < 0) {
-                temp.push(str.textContent);
+            if (temp.indexOf(filterText) < 0) {
+                temp.push(filterText);
             } else {
-                temp.splice(temp.indexOf(str.textContent), 1);
+                temp.splice(temp.indexOf(filterText), 1);
             }
             _filterDimension[dimension] = temp;
         } else {
-            _filterDimension[dimension] = [str.textContent]
+            _filterDimension[dimension] = [filterText]
         }
 
         _filterDimension[dimension]._meta = {
@@ -372,7 +374,7 @@ function pivottable() {
             style = JSON.stringify(style);
             style = style.replace(/","/g, ';').replace(/["{}]/g, '');
 
-            content += "<td class='filter' id=\"" + upd + "\" style=\"" + style + "\">" + datum[upd] + "</td>";
+            content += "<td class='filter'  filterValue=\"" + datum[upd] + "\" tag=\"" + upd + "\"  id=\"" + upd + "\" style=\"" + style + "\">" + UTIL.getDimensionFormatedValue(datum[upd], _dimensionType[_dimension.indexOf(upd)]) + "</td>";
         });
 
         _measure.forEach(function (m, i) {
@@ -679,7 +681,7 @@ function pivottable() {
                         'activePageNo': activePage
                     }
                     broadcast.activePage = pageInfo;
-                    broadcast.$broadcast('FlairBi:update-table',activePage);
+                    broadcast.$broadcast('FlairBi:update-table', activePage);
                 }
             });
 
@@ -691,7 +693,7 @@ function pivottable() {
                     'activePageNo': activePage
                 }
                 broadcast.activePage = pageInfo;
-                broadcast.$broadcast('FlairBi:update-table',activePage);
+                broadcast.$broadcast('FlairBi:update-table', activePage);
             });
 
             svg.select('.filterData')

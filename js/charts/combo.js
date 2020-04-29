@@ -200,7 +200,7 @@ function combo() {
             measurevalue = datum._measure != undefined ? datum._measure : datum.data[datum.tag];
         output += "<table><tr>"
             + "<th>" + _dimension[0] + ": </th>"
-            + "<td>" + dimension + "</td>"
+            + "<td>" + UTIL.getDimensionFormatedValue(dimension, _dimensionType[0]) + "</td>"
             + "</tr><tr>"
             + "<th>" + measure + ": </th>"
             // + "<td>" + measurevalue + "</td>"
@@ -898,7 +898,7 @@ function combo() {
                 if (isRotate == false) {
                     isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength, _dimensionType[0]);
             })
             .tickPadding(10);
 
@@ -1905,7 +1905,7 @@ function combo() {
                         };
 
                         UTIL.saveFilterParameters(broadcast, filterParameters, parentContainer, _filterDimension, dimension);
-                     
+
                     }
                 }
             })
@@ -1920,7 +1920,7 @@ function combo() {
                 if (isRotate == false) {
                     isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength, _dimensionType[0]);
             })
 
         xAxisGroup = plot.select('.x_axis')
