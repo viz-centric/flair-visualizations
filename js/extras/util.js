@@ -299,7 +299,7 @@ function util() {
             if (typeof (value) === 'undefined') {
                 return "";
             }
-
+            value = value.toString();
             if (value === null) {
                 value = "null";
                 return value;
@@ -323,12 +323,12 @@ function util() {
                 label = "null";
             }
 
+            label = label.toString();
+
             if (COMMON.COMPARABLE_DATA_TYPES.indexOf(type) !== 1 && label.endsWith("00:00:00.000000")) {
                 label = label.replace("00:00:00.000000", "")
             }
-
-            label = label.toString();
-
+            
             var truncLabel = label,
                 arr = label.split('');
 
