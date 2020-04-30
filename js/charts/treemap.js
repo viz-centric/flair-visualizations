@@ -142,16 +142,16 @@ function treemap() {
         if (_dimension.length == 2) {
             if (obj.children) {
                 if (showLabelForDimension[0]) {
-                    result = result.concat({ node: obj, data: obj.data.key });
+                    result = result.concat({ node: obj, data: UTIL.getDimensionFormatedValue(obj.data.key, _dimensionType[0]) });
                 }
             } else {
                 if (showLabelForDimension[1]) {
-                    result = result.concat({ node: obj, data: obj.data.key });
+                    result = result.concat({ node: obj, data: UTIL.getDimensionFormatedValue(obj.data.key, _dimensionType[1]) });
                 }
             }
         } else {
             if (showLabelForDimension[0]) {
-                result = result.concat({ node: obj, data: obj.data.key });
+                result = result.concat({ node: obj, data: UTIL.getDimensionFormatedValue(obj.data.key, _dimensionType[0]) });
             }
         }
 
@@ -323,13 +323,13 @@ function treemap() {
             if (datum.children != undefined) {
                 output += "<table><tr>" +
                     "<tr> <th>" + _dimension[0] + ": </th>"
-                    + "<td>" + datum.data.key + "</td>"
+                    + "<td>" + UTIL.getDimensionFormatedValue(datum.data.key, _dimensionType[0]) + "</td>"
                     + "</tr>";
             }
             else {
                 if (datum.parent.depth == 0) {
                     output += "<table><tr>" +
-                        "<tr><th>" + _dimension[0] + "</th><th>" + datum.data.key + "</th></tr>" +
+                        "<tr><th>" + _dimension[0] + "</th><th>" + UTIL.getDimensionFormatedValue(datum.data.key, _dimensionType[0]) + "</th></tr>" +
                         "<tr> <th>" + _measure[0] + ": </th>"
                         + "<td>" + Math.round(datum.data.value * 100) / 100 + "</td>"
                         + "</tr>";

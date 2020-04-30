@@ -56,7 +56,7 @@ function piegrid() {
 
         output += "<table><tr>"
             + "<th>" + _dimension + ": </th>"
-            + "<td>" + _Local_data[data][_dimension] + "</td>"
+            + "<td>" + UTIL.getDimensionFormatedValue( _Local_data[data][_dimension],_dimensionType[0]) + "</td>"
             + "</tr><tr>"
             + "<th>" + _measure + ": </th>"
             + "<td>" + value + " </td>"
@@ -174,7 +174,7 @@ function piegrid() {
                 if (!_print) {
                     return UTIL.getTruncatedLabel(
                         this,
-                        data[i][_dimension],
+                        UTIL.getDimensionFormatedValue( data[i][_dimension],_dimensionType[0]),
                         (r + m))
                 }
                 else {

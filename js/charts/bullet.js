@@ -97,7 +97,7 @@ function bullet() {
 
         output += "<table><tr>"
             + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + datum.title + "</td>"
+            + "<td>" + UTIL.getDimensionFormatedValue(datum.title, _dimensionType[0]) + "</td>"
             + "</tr><tr>"
             + "<th>" + 'Value' + ": </th>"
             + "<td>" + Math.round(measure * 100) / 100 + "</td>"
@@ -508,7 +508,7 @@ function bullet() {
                     return 'rotate(90)';
                 }
             })
-            .text(function (d) { return d.title; })
+            .text(function (d) { return UTIL.getDimensionFormatedValue(d.title, _dimensionType[0]); })
             .text(function (d) {
                 if (orientation == 'Horizontal') {
                     if (d.title === null) {
@@ -519,7 +519,7 @@ function bullet() {
                     }
                     return d.title;
                 } else if (orientation == 'Vertical') {
-                    return UTIL.getTruncatedLabel(this, d.title, Math.floor(gWidth / 2), offset);
+                    return UTIL.getTruncatedLabel(this, UTIL.getDimensionFormatedValue(d.title, _dimensionType[0]), Math.floor(gWidth / 2), offset);
                 }
             });
         formatUsingCss(_local_svg);
@@ -783,7 +783,7 @@ function bullet() {
                     return 'rotate(90)';
                 }
             })
-            .text(function (d) { return d.title; })
+            .text(function (d) { return UTIL.getDimensionFormatedValue(d.title, _dimensionType[0]); })
             .text(function (d) {
                 if (orientation == 'Horizontal') {
                     if (d.title === null) {
@@ -794,7 +794,7 @@ function bullet() {
                     }
                     return d.title;
                 } else if (orientation == 'Vertical') {
-                    return UTIL.getTruncatedLabel(this, d.title, Math.floor(gWidth / 2), offset);
+                    return UTIL.getTruncatedLabel(this, UTIL.getDimensionFormatedValue(d.title, _dimensionType[0]), Math.floor(gWidth / 2), offset);
                 }
             });
 

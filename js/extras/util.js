@@ -299,8 +299,18 @@ function util() {
             if (typeof (value) === 'undefined') {
                 return "";
             }
+
+            if (value === null) {
+                value = "null";
+                return value;
+            }
+
             if (COMMON.COMPARABLE_DATA_TYPES.indexOf(type) !== 1 && value.endsWith("00:00:00.000000")) {
                 value = value.replace("00:00:00.000000", "")
+            }
+
+            if (COMMON.COMPARABLE_DATA_TYPES.indexOf(type) !== 1 && value.endsWith(".000000")) {
+                value = value.replace(".000000", "")
             }
             return value;
         },
