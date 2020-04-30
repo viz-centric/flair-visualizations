@@ -67,7 +67,7 @@ function chorddiagram() {
         for (let index = 0; index < _filter.data().length; index++) {
             if (_filter.data()[index].value > 0) {
                 output += "<tr>";
-                output += "<td>" + _filter.data()[index].source + "</td><td>" + _filter.data()[index].target + "</td><td>" + _filter.data()[index].value + "</td>";
+                output += "<td>" + UTIL.getDimensionFormatedValue(_filter.data()[index].source, _dimensionType[0]) + "</td><td>" + UTIL.getDimensionFormatedValue(_filter.data()[index].target, _dimensionType[0]) + "</td><td>" + _filter.data()[index].value + "</td>";
                 output += "</tr>";
             }
         }
@@ -388,7 +388,6 @@ function chorddiagram() {
             .text(function (d) {
                 if (!_print) {
                     var h = _pythagorousTheorem(r * Math.cos(angle(d)), r * Math.sin(angle(d)));
-
                     var a = angle(d);
                     var textAnchor = a < π2 || a > τ - π2 ? "start" : "end";
                     if (textAnchor == "start") {
@@ -397,7 +396,7 @@ function chorddiagram() {
                     else {
                         size = width / 2 - Math.abs(outerRadius * (r * Math.cos(angle(d)) / h) * 1.05);
                     }
-                    return UTIL.getTruncatedLabel(this, d.source, size);
+                    return UTIL.getTruncatedLabel(this, UTIL.getDimensionFormatedValue(d.source, _dimensionType[0]), size);
                 }
                 else {
                     return this.textContent;
@@ -670,7 +669,7 @@ function chorddiagram() {
                 else {
                     size = width / 2 - Math.abs(outerRadius * (r * Math.cos(angle(d)) / h) * 1.05);
                 }
-                return UTIL.getTruncatedLabel(this, d.source, size);
+                return UTIL.getTruncatedLabel(this, UTIL.getDimensionFormatedValue(d.source, _dimensionType[0]), size);
             })
             .text(function (d) {
                 var diff = d.endAngle - d.startAngle;

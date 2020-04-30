@@ -83,9 +83,9 @@ function sankey() {
         if (element == "link") {
             output += "<table><tr>"
                 + "<th>" + datum.source.nodeType + ": </th>"
-                + "<td>" + datum.source.name + "</td>"
+                + "<td>" + UTIL.getDimensionFormatedValue(datum.source.name, _dimensionType[0]) + "</td>"
                 + "</tr><tr>"
-                + "<th>" + datum.target.nodeType + ": </th>"
+                + "<th>" + UTIL.getDimensionFormatedValue(datum.target.nodeType, _dimensionType[0]) + ": </th>"
                 + "<td>" + datum.target.name + "</td>"
                 + "</tr><tr>"
                 + "<th>" + measure[0] + ": </th>"
@@ -438,7 +438,7 @@ function sankey() {
             .style('pointer-events', 'none')
             .text(function (d) {
                 if (d.dy > 4) {
-                    return d.name;
+                    return UTIL.getDimensionFormatedValue(d.name, dimension.indexOf(d.nodeType));
                 }
                 return "";
             })
@@ -446,9 +446,9 @@ function sankey() {
                 if (!_print) {
                     if (d.dy > 4) {
                         if (dimension.indexOf(d.nodeType) >= dimension.length - 2) {
-                            return UTIL.getTruncatedLabel(this, d.name, nodeDistance / 2, 3);
+                            return UTIL.getTruncatedLabel(this, UTIL.getDimensionFormatedValue(d.name, dimension.indexOf(d.nodeType)), nodeDistance / 2, 3);
                         }
-                        return UTIL.getTruncatedLabel(this, d.name, nodeDistance, 3);
+                        return UTIL.getTruncatedLabel(this, UTIL.getDimensionFormatedValue(d.name, dimension.indexOf(d.nodeType)), nodeDistance, 3);
                     }
                     return "";
                 }
@@ -777,16 +777,16 @@ function sankey() {
             .attr('text-anchor', 'end')
             .text(function (d) {
                 if (d.dy > 4) {
-                    return d.name;
+                    return UTIL.getDimensionFormatedValue(d.name, dimension.indexOf(d.nodeType));
                 }
                 return "";
             })
             .text(function (d) {
                 if (d.dy > 4) {
                     if (dimension.indexOf(d.nodeType) >= dimension.length - 2) {
-                        return UTIL.getTruncatedLabel(this, d.name, nodeDistance / 2, 3);
+                        return UTIL.getTruncatedLabel(this, UTIL.getDimensionFormatedValue(d.name, dimension.indexOf(d.nodeType)), nodeDistance / 2, 3);
                     }
-                    return UTIL.getTruncatedLabel(this, d.name, nodeDistance, 3);
+                    return UTIL.getTruncatedLabel(this, UTIL.getDimensionFormatedValue(d.name, dimension.indexOf(d.nodeType)), nodeDistance, 3);
                 }
                 return "";
             })
@@ -843,9 +843,9 @@ function sankey() {
             .text(function (d) {
                 if (d.dy > 4) {
                     if (dimension.indexOf(d.nodeType) >= dimension.length - 2) {
-                        return UTIL.getTruncatedLabel(this, d.name, nodeDistance / 2, 3);
+                        return UTIL.getTruncatedLabel(this, UTIL.getDimensionFormatedValue(d.name, dimension.indexOf(d.nodeType)), nodeDistance / 2, 3);
                     }
-                    return UTIL.getTruncatedLabel(this, d.name, nodeDistance, 3);
+                    return UTIL.getTruncatedLabel(this, UTIL.getDimensionFormatedValue(d.name, dimension.indexOf(d.nodeType)), nodeDistance, 3);
                 }
                 return "";
             })

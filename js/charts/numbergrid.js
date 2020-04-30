@@ -171,7 +171,7 @@ function numbergrid() {
 
         svg.append('text')
             .text(function (d) {
-                return d[_dimension];
+                return UTIL.getDimensionFormatedValue(d[_dimension], _dimensionType[0]);
             })
             .attr('y', (r + m) - 10)
             .attr('x', 10)
@@ -183,7 +183,7 @@ function numbergrid() {
                 if (!_print) {
                     return UTIL.getTruncatedLabel(
                         this,
-                        d[_dimension],
+                        UTIL.getDimensionFormatedValue(d[_dimension], _dimensionType[0]),
                         parseFloat((w + m) * 2) - 20)
                 }
                 else {

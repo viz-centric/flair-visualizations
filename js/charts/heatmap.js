@@ -104,7 +104,7 @@ function heatmap() {
 
         output += "<table><tr>"
             + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + datum.y + "</td>"
+            + "<td>" + UTIL.getDimensionFormatedValue(datum.y, _dimensionType[0]) + "</td>"
             + "</tr><tr>"
             + "<th>" + datum.x + ": </th>"
             + "<td>" + Math.round(datum.val * 100) / 100 + "</td>"
