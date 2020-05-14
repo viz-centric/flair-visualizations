@@ -146,6 +146,7 @@ function rangefilter() {
 
                 broadcast.$broadcast('flairbiApp:filter');
                 broadcast.$broadcast('flairbiApp:filter-add');
+                broadcast.$broadcast('flairbiApp:filter-set-date-ranges', { dimensionName: dimension, startDate: dates[0], endDate: dates[1] });
             }
         }
     }
@@ -245,7 +246,7 @@ function rangefilter() {
                 if (isRotate == false) {
                     isRotate = UTIL.getTickRotate(d, (parentWidth) / (_localXLabels.length - 1), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (parentWidth) / (_localXLabels.length - 1), tickLength,_dimensionType[0]);
+                return UTIL.getTruncatedTick(d, (parentWidth) / (_localXLabels.length - 1), tickLength, _dimensionType[0]);
             })
             .tickPadding(10);
 
