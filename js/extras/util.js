@@ -327,7 +327,7 @@ function util() {
             if (COMMON.COMPARABLE_DATA_TYPES.indexOf(type) !== 1 && label.endsWith("00:00:00.000000")) {
                 label = label.replace("00:00:00.000000", "")
             }
-            
+
             var truncLabel = label,
                 arr = label.split('');
 
@@ -998,6 +998,36 @@ function util() {
                 .text(function () {
                     return "\uf0c9";
                 })
+        },
+
+        toggleAlternateDimensionIcon: function (axisGroup, plotWidth, _showXaxisLabel, _xAxisColor, isUpdate, print, alternateDimension) {
+            if (!print) {
+                var label = axisGroup.select('.alternateDimension').node().getComputedTextLength() / 2 + (plotWidth / 2) + 5;
+                var visibility = 'hidden';
+                if (_showXaxisLabel && alternateDimension !== null)
+                    visibility = alternateDimension.length > 0 ? 'visible' : 'hidden';
+                if (!isUpdate) {
+                    axisGroup.append('g')
+                        .attr('transform', function () {
+                            return 'translate(' + label + ', ' + parseFloat((COMMON.AXIS_THICKNESS / 1.5) + COMMON.PADDING) + ')';
+                        })
+                        .attr('class', 'icon')
+                        .append('text')
+                        .style('font-family', 'FontAwesome')
+                        .style('fill', _xAxisColor)
+                        .attr('visibility', visibility)
+                        .text(function () {
+                            return "\uf0d7";
+                        });
+                }
+                else {
+                    axisGroup.select('.icon')
+                        .attr('transform', function () {
+                            return 'translate(' + label + ', ' + parseFloat((COMMON.AXIS_THICKNESS / 1.5) + COMMON.PADDING) + ')';
+                        })
+                }
+
+            }
         },
 
         toggleAlternateDimension: function (broadcast, plot, _local_svg, alternateDimension, id, isFilter, chartType, displayName) {
