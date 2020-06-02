@@ -165,6 +165,11 @@ function table() {
             if (broadcast) {
                 broadcast.updateWidget = {};
                 broadcast.filterSelection.id = null;
+                var pageInfo = {
+                    'visualizationID': _local_svg.attr('id').replace("table-content-", ""),
+                    'activePageNo': activePage
+                }
+                broadcast.activePage = pageInfo;
                 broadcast.$broadcast('flairbiApp:filter-input-refresh');
                 broadcast.$broadcast('flairbiApp:filter');
                 broadcast.$broadcast('flairbiApp:filter-add');
