@@ -1000,16 +1000,24 @@ function util() {
                 })
         },
 
-        toggleAlternateDimensionIcon: function (axisGroup, plotWidth, _showXaxisLabel, _xAxisColor, isUpdate, print, alternateDimension) {
+        toggleAlternateDimensionIcon: function (axisGroup, plotWidth, _showXaxisLabel, _xAxisColor, isUpdate, print, alternateDimension, chartType) {
             if (!print) {
-                var label = axisGroup.select('.alternateDimension').node().getComputedTextLength() / 2 + (plotWidth / 2) + 5;
+                var x = axisGroup.select('.alternateDimension').node().getComputedTextLength() / 2 + (plotWidth / 2) + 5;
+                var y = parseFloat((COMMON.AXIS_THICKNESS / 1.5) + COMMON.PADDING);
+                var text = "\uf0d7";
+                if (chartType === "horizontal") {
+                    x = -45;
+                    text = "\uf0da";
+                    y = (plotWidth / 2) - axisGroup.select('.alternateDimension').node().getComputedTextLength() / 2;
+                }
+
                 var visibility = 'hidden';
                 if (_showXaxisLabel && alternateDimension !== null)
                     visibility = alternateDimension.length > 0 ? 'visible' : 'hidden';
                 if (!isUpdate) {
                     axisGroup.append('g')
                         .attr('transform', function () {
-                            return 'translate(' + label + ', ' + parseFloat((COMMON.AXIS_THICKNESS / 1.5) + COMMON.PADDING) + ')';
+                            return 'translate(' + x + ', ' + y + ')';
                         })
                         .attr('class', 'icon')
                         .append('text')
@@ -1017,13 +1025,13 @@ function util() {
                         .style('fill', _xAxisColor)
                         .attr('visibility', visibility)
                         .text(function () {
-                            return "\uf0d7";
+                            return text;
                         });
                 }
                 else {
                     axisGroup.select('.icon')
                         .attr('transform', function () {
-                            return 'translate(' + label + ', ' + parseFloat((COMMON.AXIS_THICKNESS / 1.5) + COMMON.PADDING) + ')';
+                            return 'translate(' + x + ', ' + y + ')';
                         })
                 }
 

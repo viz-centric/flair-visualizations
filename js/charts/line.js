@@ -184,7 +184,7 @@ function line() {
         output += "<table><tr>"
 
             + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + UTIL.getDimensionFormatedValue(datum[chart.dimension()],_dimensionType[0]) + "</td>"
+            + "<td>" + UTIL.getDimensionFormatedValue(datum[chart.dimension()], _dimensionType[0]) + "</td>"
             + "</tr>";
         _measure.forEach(element => {
             output += "<tr> <th><i class='fa fa-square dataset' style='color:" + _displayColor[_measure.indexOf(element)] + ";'></i>" + element + " : </th>"
@@ -1020,7 +1020,7 @@ function line() {
                 if (isRotate == false) {
                     isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength,_dimensionType[0]);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength, _dimensionType[0]);
             })
             .tickPadding(10);
 
@@ -1045,6 +1045,8 @@ function line() {
             .on('click', function () {
                 UTIL.toggleAlternateDimension(broadcast, plotWidth, _local_svg, _alternateDimension, parentContainer.attr('vizID'), _isFilterGrid, "vertical", _displayName);
             })
+
+        UTIL.toggleAlternateDimensionIcon(xAxisGroup, plotWidth, _showXaxisLabel, _xAxisColor, false, _print, _alternateDimension);
 
         if (isRotate) {
             _local_svg.selectAll('.x_axis .tick text')
@@ -2033,7 +2035,7 @@ function line() {
                 if (isRotate == false) {
                     isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength,_dimensionType[0]);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength, _dimensionType[0]);
             })
 
         xAxisGroup = plot.select('.x_axis')
@@ -2042,7 +2044,9 @@ function line() {
             .call(_localXAxis);
 
         xAxisGroup.select('.alternateDimension')
-            .text(_displayName)
+            .text(_displayName);
+
+        UTIL.toggleAlternateDimensionIcon(xAxisGroup, plotWidth, _showXaxisLabel, _xAxisColor, true, _print, _alternateDimension);
 
         if (isRotate) {
             _local_svg.selectAll('.x_axis .tick text')

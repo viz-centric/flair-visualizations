@@ -781,7 +781,7 @@ function stackedverticalbar() {
                 if (isRotate == false) {
                     isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength,_dimensionType[0]);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength, _dimensionType[0]);
             })
             .tickPadding(10);
 
@@ -806,6 +806,8 @@ function stackedverticalbar() {
             .on('click', function () {
                 UTIL.toggleAlternateDimension(broadcast, plotWidth, _local_svg, _alternateDimension, parentContainer.attr('vizID'), _isFilterGrid, "vertical", _displayName);
             })
+
+        UTIL.toggleAlternateDimensionIcon(xAxisGroup, plotWidth, _showXaxisLabel, _xAxisColor, false, _print, _alternateDimension);
 
         if (isRotate) {
             _local_svg.selectAll('.x_axis .tick text')
@@ -1400,7 +1402,7 @@ function stackedverticalbar() {
                 if (isRotate == false) {
                     isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength,_dimensionType[0]);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength, _dimensionType[0]);
             })
 
         xAxisGroup = plot.select('.x_axis')
@@ -1410,6 +1412,8 @@ function stackedverticalbar() {
 
         xAxisGroup.select('.alternateDimension')
             .text(_displayName)
+
+        UTIL.toggleAlternateDimensionIcon(xAxisGroup, plotWidth, _showXaxisLabel, _xAxisColor, true, _print, _alternateDimension);
 
         if (isRotate) {
             _local_svg.selectAll('.x_axis .tick text')
