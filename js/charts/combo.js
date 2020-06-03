@@ -924,6 +924,9 @@ function combo() {
                 UTIL.toggleAlternateDimension(broadcast, plotWidth, _local_svg, _alternateDimension, parentContainer.attr('vizID'), _isFilterGrid, "vertical", _displayName);
             })
 
+        UTIL.toggleAlternateDimensionIcon(xAxisGroup, plotWidth, _showXaxisLabel, _xAxisColor, false, _print, _alternateDimension);
+
+
         if (isRotate) {
             _local_svg.selectAll('.x_axis .tick text')
                 .attr("transform", "rotate(-15)");
@@ -1930,7 +1933,9 @@ function combo() {
 
 
         xAxisGroup.select('.alternateDimension')
-            .text(_displayName)
+            .text(_displayName);
+
+            UTIL.toggleAlternateDimensionIcon(xAxisGroup, plotWidth, _showXaxisLabel, _xAxisColor, true, _print, _alternateDimension);
 
         if (isRotate) {
             _local_svg.selectAll('.x_axis .tick text')

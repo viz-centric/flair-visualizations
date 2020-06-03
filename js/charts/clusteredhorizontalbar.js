@@ -131,7 +131,7 @@ function clusteredhorizontalbar() {
 
         output += "<table><tr>"
             + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + UTIL.getDimensionFormatedValue(datum[chart.dimension()],_dimensionType[0]) + "</td>"
+            + "<td>" + UTIL.getDimensionFormatedValue(datum[chart.dimension()], _dimensionType[0]) + "</td>"
             + "</tr><tr>"
             + "<th>" + datum["measure"] + ": </th>"
             + "<td>" + UTIL.getFormattedValue(datum[datum["measure"]], UTIL.getValueNumberFormat(_measure.indexOf(datum["measure"]), _numberFormat, datum[datum["measure"]])) + " </td>"
@@ -557,7 +557,7 @@ function clusteredhorizontalbar() {
                     return UTIL.shortScale(2)(d);
                 }
                 else {
-                    return UTIL.getTruncatedTick(d, (plotWidth) / (y.ticks().length) - 5, tickLength,_dimensionType[0]);
+                    return UTIL.getTruncatedTick(d, (plotWidth) / (y.ticks().length) - 5, tickLength, _dimensionType[0]);
                 }
             })
         // .tickSize(0)
@@ -629,6 +629,8 @@ function clusteredhorizontalbar() {
             .on('click', function () {
                 UTIL.toggleAlternateDimension(broadcast, plotHeight, _local_svg, _alternateDimension, parentContainer.attr('vizID'), _isFilterGrid, "horizontal", _displayName);
             })
+
+        UTIL.toggleAlternateDimensionIcon(yAxisGroup, plotHeight, _showYaxisLabel, _yAxisColor, false, _print, _alternateDimension, "horizontal");
 
         UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
 
@@ -1409,6 +1411,7 @@ function clusteredhorizontalbar() {
         yAxisGroup.select('.alternateDimension')
             .text(_displayName)
 
+        UTIL.toggleAlternateDimensionIcon(yAxisGroup, plotHeight, _showYaxisLabel, _yAxisColor, true, _print, _alternateDimension, "horizontal");
         UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
 
         UTIL.displayThreshold(threshold, data, keys);

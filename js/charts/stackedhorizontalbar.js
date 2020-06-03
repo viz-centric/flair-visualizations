@@ -747,7 +747,7 @@ function stackedhorizontalbar() {
                     return UTIL.shortScale(2)(d);
                 }
                 else {
-                    return UTIL.getTruncatedTick(d, (plotWidth) / (y.ticks().length) - 5, tickLength),_dimensionType[0];
+                    return UTIL.getTruncatedTick(d, (plotWidth) / (y.ticks().length) - 5, tickLength), _dimensionType[0];
                 }
             })
 
@@ -817,6 +817,8 @@ function stackedhorizontalbar() {
             .on('click', function () {
                 UTIL.toggleAlternateDimension(broadcast, plotHeight, _local_svg, _alternateDimension, parentContainer.attr('vizID'), _isFilterGrid, "horizontal", _displayName);
             })
+
+        UTIL.toggleAlternateDimensionIcon(yAxisGroup, plotHeight, _showYaxisLabel, _yAxisColor, false, _print, _alternateDimension, "horizontal");
 
         UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
 
@@ -1377,6 +1379,8 @@ function stackedhorizontalbar() {
 
         yAxisGroup.select('.alternateDimension')
             .text(_displayName);
+
+        UTIL.toggleAlternateDimensionIcon(yAxisGroup, plotHeight, _showYaxisLabel, _yAxisColor, true, _print, _alternateDimension, "horizontal");
 
         UTIL.setAxisColor(_xAxisColor, _showXaxis, _yAxisColor, _showYaxis, _local_svg);
 
