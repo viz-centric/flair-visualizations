@@ -1005,6 +1005,7 @@ function util() {
                 var x = axisGroup.select('.alternateDimension').node().getComputedTextLength() / 2 + (plotWidth / 2) + 5;
                 var y = parseFloat((COMMON.AXIS_THICKNESS / 1.5) + COMMON.PADDING);
                 var text = "\uf0d7";
+                var alternateDimensionList = alternateDimension === null ? 0 : JSON.parse(alternateDimension).length;
                 if (chartType === "horizontal") {
                     x = -45;
                     text = "\uf0da";
@@ -1013,7 +1014,7 @@ function util() {
 
                 var visibility = 'hidden';
                 if (_showXaxisLabel && alternateDimension !== null)
-                    visibility = alternateDimension.length > 0 ? 'visible' : 'hidden';
+                    visibility = alternateDimensionList > 0 ? 'visible' : 'hidden';
                 if (!isUpdate) {
                     axisGroup.append('g')
                         .attr('transform', function () {
@@ -1033,6 +1034,7 @@ function util() {
                         .attr('transform', function () {
                             return 'translate(' + x + ', ' + y + ')';
                         })
+                        .attr('visibility', visibility);
                 }
 
             }
