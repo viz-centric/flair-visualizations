@@ -286,6 +286,11 @@ function pivottable() {
             if (broadcast) {
                 broadcast.updateWidget = {};
                 broadcast.filterSelection.id = null;
+                var pageInfo = {
+                    'visualizationID': parentContainer.attr('id'),
+                    'activePageNo': 0
+                }
+                broadcast.activePage = pageInfo;
                 broadcast.$broadcast('flairbiApp:filter-input-refresh');
                 broadcast.$broadcast('flairbiApp:filter');
                 broadcast.$broadcast('flairbiApp:filter-add');
