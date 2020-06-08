@@ -167,7 +167,7 @@ function table() {
                 broadcast.filterSelection.id = null;
                 var pageInfo = {
                     'visualizationID': _local_svg.attr('id').replace("table-content-", ""),
-                    'activePageNo': activePage
+                    'activePageNo': 0
                 }
                 broadcast.activePage = pageInfo;
                 broadcast.$broadcast('flairbiApp:filter-input-refresh');
