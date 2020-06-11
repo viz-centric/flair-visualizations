@@ -531,7 +531,9 @@ function heatmap() {
             .style('font-weight', fontWeightForDimension)
             .style('font-size', fontSizeForDimension)
             .style('text-anchor', 'end')
-            .attr('transform', 'translate(' + -offset + ',' + cellHeight / 1.75 + ')');
+            .attr('transform', 'translate(' + -offset + ',' + cellHeight / 1.75 + ')')
+            .append("svg:title")
+            .text(function (d) { return d; });
 
         var mesLabel = plot.selectAll('.mesLabel')
             .data(xElement.values().map(function (mes) {
@@ -797,7 +799,10 @@ function heatmap() {
             .style('font-weight', fontWeightForDimension)
             .style('font-size', fontSizeForDimension)
             .style('text-anchor', 'end')
-            .attr('transform', 'translate(' + -offset + ',' + cellHeight / 1.75 + ')');
+            .attr('transform', 'translate(' + -offset + ',' + cellHeight / 1.75 + ')')
+            .append("svg:title")
+            .text(function (d) { return d; });
+            
 
         yScale
             .domain(yElement)
