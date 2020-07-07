@@ -418,6 +418,8 @@ function table() {
                 }
             });
 
+            dataTable.columns.adjust().draw();
+
             $('#' + id + ' .dataTables_scrollHeadInner thead tr:eq(1)').css('display', 'none')
 
             $('#' + id).find('#previous').on('click', function (e, i) {
