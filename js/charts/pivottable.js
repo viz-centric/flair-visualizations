@@ -648,6 +648,9 @@ function pivottable() {
             if (activePage == 0) {
                 $('#' + id).find('#previous').parent().addClass('hidden');
             }
+            if (activePage != 0 && data.length == 0) {
+                $('#' + id).find('#next').parent().addClass('hidden');
+            }
 
             var tableHeight = height;
             if (_showNavigation) {

@@ -51,7 +51,7 @@ function heatmap() {
         top: 30,
         right: 15,
         bottom: 15,
-        left: 70
+        left: 150
     };
 
     var yScale = d3.scaleBand(),
@@ -517,14 +517,6 @@ function heatmap() {
             .data(yElement)
             .enter().append('text')
             .attr('class', 'dimLabel')
-            .text(function (d) { return d; })
-            .text(function (d) {
-                if (d.length > 4) {
-                    return d.substring(0, 4) + '...';
-                }
-                return d;
-            })
-            .attr('x', 0)
             .attr('y', function (d, i) { return i * cellHeight; })
             .style('fill', dimLabelColor)
             .style('font-style', fontStyleForDimension)
@@ -532,6 +524,33 @@ function heatmap() {
             .style('font-size', fontSizeForDimension)
             .style('text-anchor', 'end')
             .attr('transform', 'translate(' + -offset + ',' + cellHeight / 1.75 + ')')
+            .append("tspan")
+            .text(function (d) { return d; })
+            .text(function (d) {
+                if (d.length > 15) {
+                    return d.substring(0, 15);
+                }
+                if (cellHeight < (fontSizeForDimension * 2)) {
+                    return d.substring(0, 15) + "...";
+                }
+                return d;
+            })
+            .attr('x', 0)
+            .attr('y', function (d, i) { return i * cellHeight; })
+            .append("tspan")
+            .text(function (d) { return d; })
+            .text(function (d) {
+                if (cellHeight < (fontSizeForDimension * 2)) {
+                    return "";
+                }
+                if (d.length > 15) {
+                    return d.substring(15, 30) + '...';
+                }
+                return "";
+            })
+            .attr('x', 0)
+            .attr('y', function (d, i) { return i * cellHeight + fontSizeForDimension; })
+
             .append("svg:title")
             .text(function (d) { return d; });
 
@@ -781,28 +800,48 @@ function heatmap() {
 
         plot.selectAll('.dimLabel').remove()
 
+        var offset = 6;
         var dimLabel = plot.selectAll('.dimLabel')
             .data(yElement)
             .enter().append('text')
             .attr('class', 'dimLabel')
-            .text(function (d) { return d; })
-            .text(function (d) {
-                if (d.length > 4) {
-                    return d.substring(0, 4) + '...';
-                }
-                return d;
-            })
-            .attr('x', 0)
             .attr('y', function (d, i) { return i * cellHeight; })
-            .attr('fill', dimLabelColor)
+            .style('fill', dimLabelColor)
             .style('font-style', fontStyleForDimension)
             .style('font-weight', fontWeightForDimension)
             .style('font-size', fontSizeForDimension)
             .style('text-anchor', 'end')
             .attr('transform', 'translate(' + -offset + ',' + cellHeight / 1.75 + ')')
+            .append("tspan")
+            .text(function (d) { return d; })
+            .text(function (d) {
+                if (d.length > 15) {
+                    return d.substring(0, 15);
+                }
+                if (cellHeight < (fontSizeForDimension * 2)) {
+                    return d.substring(0, 15) + "...";
+                }
+                return d;
+            })
+            .attr('x', 0)
+            .attr('y', function (d, i) { return i * cellHeight; })
+            .append("tspan")
+            .text(function (d) { return d; })
+            .text(function (d) {
+                if (cellHeight < (fontSizeForDimension * 2)) {
+                    return "";
+                }
+                if (d.length > 15) {
+                    return d.substring(15, 30) + '...';
+                }
+                return "";
+            })
+            .attr('x', 0)
+            .attr('y', function (d, i) { return i * cellHeight + fontSizeForDimension; })
+
             .append("svg:title")
             .text(function (d) { return d; });
-            
+
 
         yScale
             .domain(yElement)

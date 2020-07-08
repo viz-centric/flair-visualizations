@@ -685,6 +685,61 @@ function chorddiagram() {
             .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
             .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
             .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
+            .on('click', function (d, i) {
+                if (isLiveEnabled) {
+                    broadcast.$broadcast('FlairBi:livemode-dialog');
+                    return;
+                }
+                var confirm = parentContainer.select('.confirm')
+                    .style('visibility', 'visible');
+                filter = false;
+
+                var point = d3.select(this).select('path');
+                if (point.classed('selected')) {
+                    point.classed('selected', false);
+                } else {
+                    point.classed('selected', true);
+                }
+                var _filterDimension = {};
+                if (broadcast.filterSelection.id) {
+                    _filterDimension = broadcast.filterSelection.filter;
+                } else {
+                    broadcast.filterSelection.id = parentContainer.attr('id');
+                }
+                var dimension = _dimension[0];
+                if (_filterDimension[dimension]) {
+                    var temp = _filterDimension[dimension];
+                    if (temp.indexOf(d.source) < 0) {
+                        temp.push(d.source);
+                    } else {
+                        temp.splice(temp.indexOf(d.source), 1);
+                    }
+                    _filterDimension[dimension] = temp;
+                } else {
+                    _filterDimension[dimension] = [d.source];
+                }
+
+                _filterDimension[dimension]._meta = {
+                    dataType: _dimensionType[0],
+                    valueType: 'castValueType'
+                };
+                UTIL.saveFilterParameters(broadcast, filterParameters, parentContainer, _filterDimension, dimension);
+            });
+
+        _local_svg.select('g.lasso').remove()
+
+        var lasso = d3Lasso.lasso()
+            .hoverSelect(true)
+            .closePathSelect(true)
+            .closePathDistance(100)
+            .items(groups)
+            .targetArea(_local_svg);
+
+        lasso.on('start', onLassoStart(lasso, _local_svg))
+            .on('draw', onLassoDraw(lasso, _local_svg))
+            .on('end', onLassoEnd(lasso, _local_svg));
+
+        _local_svg.call(lasso);
 
     }
 
