@@ -629,7 +629,6 @@ function pivottable() {
             .html(tbody);
 
         if (!_print) {
-
             var _filter = UTIL.createFilterElement()
             $('#' + id).append(_filter)
 

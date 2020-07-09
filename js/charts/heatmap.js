@@ -58,7 +58,7 @@ function heatmap() {
         xScale = d3.scaleBand(),
         gradientColor = d3.scaleLinear();
 
-    var filter = false, filterData = [];
+    var filter = false, filterData = [], defaultText = 15;
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
@@ -527,11 +527,11 @@ function heatmap() {
             .append("tspan")
             .text(function (d) { return d; })
             .text(function (d) {
-                if (d.length > 15) {
-                    return d.substring(0, 15);
+                if (d.length > defaultText) {
+                    return d.substring(0, defaultText);
                 }
                 if (cellHeight < (fontSizeForDimension * 2)) {
-                    return d.substring(0, 15) + "...";
+                    return d.substring(0, defaultText) + "...";
                 }
                 return d;
             })
@@ -543,8 +543,11 @@ function heatmap() {
                 if (cellHeight < (fontSizeForDimension * 2)) {
                     return "";
                 }
-                if (d.length > 15) {
-                    return d.substring(15, 30) + '...';
+                if (d.length > defaultText * 2) {
+                    return d.substring(defaultText, defaultText * 2) + '...';
+                }
+                if (d.length > defaultText) {
+                    return d.substring(defaultText, defaultText * 2);
                 }
                 return "";
             })
@@ -815,11 +818,11 @@ function heatmap() {
             .append("tspan")
             .text(function (d) { return d; })
             .text(function (d) {
-                if (d.length > 15) {
-                    return d.substring(0, 15);
+                if (d.length > defaultText) {
+                    return d.substring(0, defaultText);
                 }
                 if (cellHeight < (fontSizeForDimension * 2)) {
-                    return d.substring(0, 15) + "...";
+                    return d.substring(0, defaultText) + "...";
                 }
                 return d;
             })
@@ -831,8 +834,8 @@ function heatmap() {
                 if (cellHeight < (fontSizeForDimension * 2)) {
                     return "";
                 }
-                if (d.length > 15) {
-                    return d.substring(15, 30) + '...';
+                if (d.length > defaultText) {
+                    return d.substring(defaultText, defaultText * 2) + '...';
                 }
                 return "";
             })
