@@ -1,6 +1,7 @@
 var d3 = require('d3');
 var COMMON = require('../extras/common.js')();
 var currentEvent = require('d3-selection');
+var moment = require('moment');
 
 function util() {
 
@@ -313,7 +314,32 @@ function util() {
             }
             return value;
         },
-        getTruncatedTick: function (label, containerLength, scale, type) {
+
+        getDateFormateString: function (format) {
+            var value;
+            switch (format) {
+                case 'None':
+                    value = "YYYY-MM-DD HH:mm:ss.SSSSSS"
+                    break;
+                case 'DD:MON':
+                    value = "DD-MMM"
+                    break;
+                case 'HH24:MI':
+                    value = "HH:mm"
+                    break;
+                case 'HH24:MI.SSSS':
+                    value = "HH:mm.SSSS"
+                    break;
+                case 'DD-MON HH24:MI':
+                    value = "DD-MMM HH:mm"
+                    break;
+                default:
+                    value = "YYYY-MM-DD HH:mm:ss.SSSSSS"
+                    break;
+            }
+            return value;
+        },
+        getTruncatedTick: function (label, containerLength, scale, type, format) {
             if (typeof (label) === 'undefined') {
                 return "";
             }
@@ -323,6 +349,13 @@ function util() {
             }
 
             label = label.toString();
+            if (format) {
+                format = this.getDateFormateString(format);
+                var _dateFormat = "YYYY-MM-DD HH:mm:ss.SSSSSS";
+                if (COMMON.COMPARABLE_DATA_TYPES.indexOf(type) !== 1) {
+                    label = moment(label, _dateFormat).format(format)
+                }
+            }
 
             if (COMMON.COMPARABLE_DATA_TYPES.indexOf(type) !== 1 && label.endsWith("00:00:00.000000")) {
                 label = label.replace("00:00:00.000000", "")
