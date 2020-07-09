@@ -254,6 +254,7 @@ function line() {
             }
             else {
                 filterData = [];
+                return
             }
             if (_filter.length > 0) {
                 filterData = _filter;
@@ -848,12 +849,12 @@ function line() {
                         + ',' + y(d['data'][d['tag']]) + ')';
                 }
             })
-            .style('visibility', function (d, i) {
+            .style('opacity', function (d, i) {
                 if (_pointType[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)] == "None") {
-                    return 'hidden';
+                    return 0;
                 }
             })
-            .style('opacity', 0)
+        //   .style('opacity', 0)
 
         var text = clusterLine.selectAll('text')
             .data(function (d, i) {
@@ -1123,7 +1124,14 @@ function line() {
 
             point.transition()
                 .duration(COMMON.DURATION * 2)
-                .style('opacity', 1);
+                .style('opacity', function (d, i) {
+                    if (_pointType[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)] == "None") {
+                        return 0;
+                    }
+                    else {
+                        return 1;
+                    }
+                })
 
             area.transition()
                 .duration(0)
@@ -1206,7 +1214,14 @@ function line() {
                 .style('opacity', 1);
 
             point
-                .style('opacity', 1);
+                .style('opacity', function (d, i) {
+                    if (_pointType[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)] == "None") {
+                        return 0;
+                    }
+                    else {
+                        return 1;
+                    }
+                })
         }
 
     }
@@ -1514,7 +1529,12 @@ function line() {
         }
 
         if (_localLabelStack.length > 0) {
-            data = UTIL.getFilterDataForLegend(_localLabelStack, _Local_data)
+            if (filterGrid) {
+                data = UTIL.getFilterDataForLegend(_localLabelStack, data);
+            }
+            else {
+                data = UTIL.getFilterDataForLegend(_localLabelStack, _Local_data);
+            }
         }
         if (_isFilterGrid) {
             if (!(Object.keys(broadcast.filterSelection.filter).length === 0 && broadcast.filterSelection.filter.constructor === Object)) {
@@ -1785,9 +1805,9 @@ function line() {
                         + ',' + y(d['data'][d['tag']]) + ')';
                 }
             })
-            .style('visibility', function (d, i) {
+            .style('opacity', function (d, i) {
                 if (_pointType[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)] == "None") {
-                    return 'hidden';
+                    return 0;
                 }
             })
             // .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))

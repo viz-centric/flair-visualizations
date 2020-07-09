@@ -354,6 +354,9 @@ function table() {
             if (activePage == 0) {
                 $('#' + id).find('#previous').parent().addClass('hidden');
             }
+            if (activePage != 0 && data.length == 0) {
+                $('#' + id).find('#next').parent().addClass('hidden');
+            }
 
             var _filter = UTIL.createFilterElement()
             $('#' + id).append(_filter)
@@ -417,6 +420,8 @@ function table() {
                     resizeTable: true
                 }
             });
+
+            dataTable.columns.adjust().draw();
 
             $('#' + id + ' .dataTables_scrollHeadInner thead tr:eq(1)').css('display', 'none')
 
