@@ -208,7 +208,8 @@ function stackedhorizontalbar() {
                 });
             }
             else {
-                filterData = []
+                filterData = [];
+                return;
             }
             if (_filter.length > 0) {
                 filterData = _filter;
@@ -1115,7 +1116,12 @@ function stackedhorizontalbar() {
         }
 
         if (_localLabelStack.length > 0) {
-            data = UTIL.getFilterDataForLegend(_localLabelStack, _Local_data)
+            if (filterGrid) {
+                data = UTIL.getFilterDataForLegend(_localLabelStack, data);
+            }
+            else {
+                data = UTIL.getFilterDataForLegend(_localLabelStack, _Local_data);
+            }
         }
         if (_isFilterGrid) {
             if (!(Object.keys(broadcast.filterSelection.filter).length === 0 && broadcast.filterSelection.filter.constructor === Object)) {

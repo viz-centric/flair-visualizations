@@ -629,7 +629,6 @@ function pivottable() {
             .html(tbody);
 
         if (!_print) {
-
             var _filter = UTIL.createFilterElement()
             $('#' + id).append(_filter)
 
@@ -647,6 +646,9 @@ function pivottable() {
 
             if (activePage == 0) {
                 $('#' + id).find('#previous').parent().addClass('hidden');
+            }
+            if (activePage != 0 && data.length == 0) {
+                $('#' + id).find('#next').parent().addClass('hidden');
             }
 
             var tableHeight = height;
