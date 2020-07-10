@@ -19,7 +19,6 @@ function clusteredhorizontalbar() {
         _measure,
         _showLegend,
         _legendPosition,
-        _dateFormate,
         _sort,
         _tooltip,
         _showXaxis,
@@ -88,7 +87,6 @@ function clusteredhorizontalbar() {
         this.measure(config.measure);
         this.showLegend(config.showLegend);
         this.legendPosition(config.legendPosition);
-        this.dateFormate(config.dateFormate);
         this.showXaxis(config.showXaxis);
         this.showYaxis(config.showYaxis);
         this.showXaxisLabel(config.showXaxisLabel);
@@ -560,7 +558,7 @@ function clusteredhorizontalbar() {
                     return UTIL.shortScale(2)(d);
                 }
                 else {
-                    return UTIL.getTruncatedTick(d, (plotWidth) / (y.ticks().length) - 5, tickLength, _dimensionType[0],_dateFormate);
+                    return UTIL.getTruncatedTick(d, (plotWidth) / (y.ticks().length) - 5, tickLength, _dimensionType[0]);
                 }
             })
         // .tickSize(0)
@@ -1497,14 +1495,6 @@ function clusteredhorizontalbar() {
             return _legendPosition;
         }
         _legendPosition = value;
-        return chart;
-    }
-
-    chart.dateFormate = function (value) {
-        if (!arguments.length) {
-            return _dateFormate;
-        }
-        _dateFormate = value;
         return chart;
     }
 
