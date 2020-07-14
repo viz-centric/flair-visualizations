@@ -317,7 +317,7 @@ function table() {
             .classed('display', true)
             .classed('nowrap', true)
             // .classed('table', true)
-            // .classed('display', true)
+            .classed('table-striped', true)
             .classed('table-condensed', true)
             .classed('table-hover', true);
 
@@ -374,7 +374,9 @@ function table() {
             $('#' + id + " #viz_table thead tr").clone(true).appendTo('#' + id + " #viz_table thead");
             $('#' + id + ' #viz_table thead tr:eq(1) th').each(function (i) {
                 var title = $(this).text();
-                $(this).html('<input type="text" placeholder="Search ' + title + '" />');
+                var thWidth = parseInt($(this).css('width')) - 10 + "px"
+
+                $(this).html('<input style="width:' + thWidth + ';" type="text" placeholder="Search ' + title + '" />');
 
                 $('input', this).on('keyup change', function () {
                     if (dataTable.column(i).search() !== this.value) {
@@ -422,6 +424,11 @@ function table() {
             });
 
             dataTable.columns.adjust().draw();
+
+            $('#' + id + ' #viz_table thead tr:eq(1) th').each(function (i) {
+                var thWidth = parseInt($(this).css('width')) - 10 + "px";
+                $(this).find('input').css('width', thWidth);
+            });
 
             $('#' + id + ' .dataTables_scrollHeadInner thead tr:eq(1)').css('display', 'none')
 
@@ -480,7 +487,7 @@ function table() {
 
                 var style = {
                     'text-align': _textAlignmentForDimension[index],
-                    'background-color': _cellColorForDimension[index],
+                   // 'background-color': _cellColorForDimension[index],
                     'font-style': _fontStyleForDimension[index],
                     'font-weight': _fontWeightForDimension[index],
                     'font-size': _fontSizeForDimension[index] + "px",
@@ -496,7 +503,7 @@ function table() {
             _measure.forEach(function (item, index) {
                 var style = {
                     'text-align': _textAlignmentForMeasure[index],
-                    'background-color': _cellColorForMeasure[index],
+                    //'background-color': _cellColorForMeasure[index],
                     'font-style': _fontStyleForMeasure[index],
                     'font-weight': _fontWeightForMeasure[index],
                     'font-size': _fontSizeForMeasure[index] + "px",
@@ -507,7 +514,7 @@ function table() {
                     style['color'] = UTIL.expressionEvaluator(_textColorExpressionForMeasure[index], d[_measure[index]], 'color');
                 }
                 if (_cellColorExpressionForMeasure[index].length > 0) {
-                    style['background-color'] = UTIL.expressionEvaluator(_cellColorExpressionForMeasure[index], d[_measure[index]], 'color');
+                   // style['background-color'] = UTIL.expressionEvaluator(_cellColorExpressionForMeasure[index], d[_measure[index]], 'color');
                 }
 
                 style = JSON.stringify(style);

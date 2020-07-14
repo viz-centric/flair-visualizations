@@ -20,6 +20,7 @@ function stackedverticalbar() {
         _measure,
         _showLegend,
         _legendPosition,
+        _dateFormate,
         _sort,
         _tooltip,
         _showXaxis,
@@ -89,7 +90,7 @@ function stackedverticalbar() {
         this.measure(config.measure);
         this.showLegend(config.showLegend);
         this.legendPosition(config.legendPosition);
-
+        this.dateFormate(config.dateFormate);
         this.showXaxis(config.showXaxis);
         this.showYaxis(config.showYaxis);
         this.showXaxisLabel(config.showXaxisLabel);
@@ -782,7 +783,7 @@ function stackedverticalbar() {
                 if (isRotate == false) {
                     isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength, _dimensionType[0]);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength, _dimensionType[0],_dateFormate);
             })
             .tickPadding(10);
 
@@ -1408,7 +1409,7 @@ function stackedverticalbar() {
                 if (isRotate == false) {
                     isRotate = UTIL.getTickRotate(d, (plotWidth) / (_localXLabels.length), tickLength);
                 }
-                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength, _dimensionType[0]);
+                return UTIL.getTruncatedTick(d, (plotWidth) / (_localXLabels.length), tickLength, _dimensionType[0],_dateFormate);
             })
 
         xAxisGroup = plot.select('.x_axis')
@@ -1540,6 +1541,14 @@ function stackedverticalbar() {
             return _legendPosition;
         }
         _legendPosition = value;
+        return chart;
+    }
+
+    chart.dateFormate = function (value) {
+        if (!arguments.length) {
+            return _dateFormate;
+        }
+        _dateFormate = value;
         return chart;
     }
 

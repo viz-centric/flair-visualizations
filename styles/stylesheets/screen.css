@@ -441,7 +441,7 @@ div.dataTables_wrapper {
 
 /* line 124, ../sass/partials/_table.scss */
 #viz_table_wrapper table.dataTable.display tbody td {
-  border: 1px solid #dddddd;
+  border: 0px solid #dddddd;
 }
 
 /* line 128, ../sass/partials/_table.scss */
@@ -478,4 +478,9 @@ div.dataTables_wrapper {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* line 165, ../sass/partials/_table.scss */
+table.dataTable.stripe tbody tr.odd, table.dataTable.display tbody tr.odd {
+  background-color: #f1f1f1;
 }

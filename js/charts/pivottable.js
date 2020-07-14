@@ -369,7 +369,7 @@ function pivottable() {
         unpivotedDimension.forEach(function (upd) {
             var style = {
                 'text-align': getTextAlignment(upd, true),
-                'background-color': getCellColor(upd, true),
+                //'background-color': getCellColor(upd, true),
                 'font-style': getFontStyle(upd, true),
                 'font-weight': getFontWeight(upd, true),
                 'font-size': getFontSize(upd, true) + 'px',
@@ -399,7 +399,7 @@ function pivottable() {
         } else {
             var style = {
                 'text-align': getTextAlignment(parent[0]),
-                'background-color': getCellColor(parent[0]),
+                //'background-color': getCellColor(parent[0]),
                 'font-style': getFontStyle(parent[0]),
                 'font-weight': getFontWeight(parent[0]),
                 'font-size': getFontSize(parent[0]) + 'px',
@@ -435,7 +435,7 @@ function pivottable() {
         iterator.forEach(function (item) {
             var style = {
                 'text-align': getTextAlignment(key, true),
-                'background-color': '#f7f7f7',
+                //'background-color': '#f7f7f7',
                 'font-style': getFontStyle(key, true),
                 'font-weight': getFontWeight(key, true),
                 'font-size': getFontSize(key, true) + 'px'
