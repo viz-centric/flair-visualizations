@@ -514,7 +514,7 @@ function table() {
                     style['color'] = UTIL.expressionEvaluator(_textColorExpressionForMeasure[index], d[_measure[index]], 'color');
                 }
                 if (_cellColorExpressionForMeasure[index].length > 0) {
-                    style['background-color'] = UTIL.expressionEvaluator(_cellColorExpressionForMeasure[index], d[_measure[index]], 'color');
+                   // style['background-color'] = UTIL.expressionEvaluator(_cellColorExpressionForMeasure[index], d[_measure[index]], 'color');
                 }
 
                 style = JSON.stringify(style);
