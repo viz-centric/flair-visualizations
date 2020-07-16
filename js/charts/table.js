@@ -336,9 +336,6 @@ function table() {
         }
 
         if (!_print) {
-
-            $("#" + id).prepend('<div class="searchIcon"><i class="fa fa-caret-down searchOpen"></i><i class="fa fa-caret-up searchClose"></i></div>')
-
             if (data < _limit && activePage == 0) {
                 _showNavigation = false;
             }
@@ -371,42 +368,6 @@ function table() {
                 tableHeight = tableHeight - 30;
             }
 
-            $('#' + id + " #viz_table thead tr").clone(true).appendTo('#' + id + " #viz_table thead");
-            $('#' + id + ' #viz_table thead tr:eq(1) th').each(function (i) {
-                var title = $(this).text();
-                var thWidth = parseInt($(this).css('width')) - 10 + "px"
-
-                $(this).html('<input style="width:' + thWidth + ';" type="text" placeholder="Search ' + title + '" />');
-
-                $('input', this).on('keyup change', function () {
-                    if (dataTable.column(i).search() !== this.value) {
-                        dataTable
-                            .column(i)
-                            .search(this.value)
-                            .draw();
-                    }
-                });
-            });
-
-            $('#' + id + ' .searchOpen').click(function () {
-                $('#' + id + ' .dataTables_scrollHeadInner thead tr:eq(1)').css('display', 'table-row')
-                $('#' + id + ' .searchClose').css('display', 'block')
-                $('#' + id + ' .searchOpen').css('display', 'none')
-
-                tableHeight = tableHeight - 30;
-                $('#' + id + ' .dataTables_scrollBody').css('max-height', tableHeight + 'px')
-            })
-            $('#' + id + ' .searchClose').click(function () {
-                $('#' + id + ' table:eq(0) thead tr:eq(1)').css('display', 'none')
-                $('#' + id + ' .searchClose').css('display', 'none')
-                $('#' + id + ' .searchOpen').css('display', 'block')
-
-
-                tableHeight = tableHeight + 30;
-
-                $('#' + id + ' .dataTables_scrollBody').css('max-height', tableHeight + 'px')
-            })
-
             dataTable = $('#' + parentContainer.attr('id')).find('#viz_table').DataTable({
                 "orderCellsTop": true,
                 "paging": false,
@@ -424,13 +385,6 @@ function table() {
             });
 
             dataTable.columns.adjust().draw();
-
-            $('#' + id + ' #viz_table thead tr:eq(1) th').each(function (i) {
-                var thWidth = parseInt($(this).css('width')) - 10 + "px";
-                $(this).find('input').css('width', thWidth);
-            });
-
-            $('#' + id + ' .dataTables_scrollHeadInner thead tr:eq(1)').css('display', 'none')
 
             $('#' + id).find('#previous').on('click', function (e, i) {
                 if (activePage == 0) {
@@ -487,7 +441,7 @@ function table() {
 
                 var style = {
                     'text-align': _textAlignmentForDimension[index],
-                   // 'background-color': _cellColorForDimension[index],
+                    // 'background-color': _cellColorForDimension[index],
                     'font-style': _fontStyleForDimension[index],
                     'font-weight': _fontWeightForDimension[index],
                     'font-size': _fontSizeForDimension[index] + "px",
@@ -514,7 +468,7 @@ function table() {
                     style['color'] = UTIL.expressionEvaluator(_textColorExpressionForMeasure[index], d[_measure[index]], 'color');
                 }
                 if (_cellColorExpressionForMeasure[index].length > 0) {
-                   // style['background-color'] = UTIL.expressionEvaluator(_cellColorExpressionForMeasure[index], d[_measure[index]], 'color');
+                    // style['background-color'] = UTIL.expressionEvaluator(_cellColorExpressionForMeasure[index], d[_measure[index]], 'color');
                 }
 
                 style = JSON.stringify(style);
