@@ -44,7 +44,11 @@ div.dataTables_wrapper {
 }
 
 #viz_table_filter {
-  margin-right: 95px !important;
+  input{
+    height: 20px;
+    border: 1px solid #e4e4e4;
+    border-radius: 8px;
+  }
 }
 
 .searchOpen {
