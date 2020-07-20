@@ -350,28 +350,33 @@ div.dataTables_wrapper {
   border: 1px solid #e4e4e4;
   border-radius: 8px;
 }
+/* line 52, ../sass/partials/_table.scss */
+#viz_table_filter label {
+  color: #404345;
+  font-weight: normal;
+}
 
-/* line 54, ../sass/partials/_table.scss */
+/* line 58, ../sass/partials/_table.scss */
 .searchOpen {
   display: block;
 }
 
-/* line 57, ../sass/partials/_table.scss */
+/* line 61, ../sass/partials/_table.scss */
 .searchClose {
   display: none;
 }
 
-/* line 60, ../sass/partials/_table.scss */
+/* line 64, ../sass/partials/_table.scss */
 .dataTables_scroll {
   overflow: auto;
 }
-/* line 63, ../sass/partials/_table.scss */
+/* line 67, ../sass/partials/_table.scss */
 .dataTables_scroll table {
   clear: both;
   border-collapse: collapse;
 }
 
-/* line 70, ../sass/partials/_table.scss */
+/* line 74, ../sass/partials/_table.scss */
 ._pagination {
   float: right !important;
   margin-right: 20px !important;
@@ -381,7 +386,7 @@ div.dataTables_wrapper {
   margin: 2px 0px 0 0;
 }
 
-/* line 78, ../sass/partials/_table.scss */
+/* line 82, ../sass/partials/_table.scss */
 ._pagination li > a,
 ._pagination li > span {
   display: inline-block !important;
@@ -394,12 +399,12 @@ div.dataTables_wrapper {
   cursor: pointer;
 }
 
-/* line 89, ../sass/partials/_table.scss */
+/* line 93, ../sass/partials/_table.scss */
 .dataTables_wrapper.no-footer .dataTables_scrollBody {
   border-bottom: none !important;
 }
 
-/* line 92, ../sass/partials/_table.scss */
+/* line 96, ../sass/partials/_table.scss */
 #viz_table_wrapper td.selected {
   background-color: #676a6c !important;
   opacity: 0.5 !important;
@@ -407,7 +412,7 @@ div.dataTables_wrapper {
 }
 
 /* width */
-/* line 99, ../sass/partials/_table.scss */
+/* line 103, ../sass/partials/_table.scss */
 .dataTables_scroll::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -415,24 +420,24 @@ div.dataTables_wrapper {
 }
 
 /* Track */
-/* line 106, ../sass/partials/_table.scss */
+/* line 110, ../sass/partials/_table.scss */
 .dataTables_scroll::-webkit-scrollbar-track {
   background: #f1f1f1;
 }
 
 /* Handle */
-/* line 111, ../sass/partials/_table.scss */
+/* line 115, ../sass/partials/_table.scss */
 .dataTables_scroll::-webkit-scrollbar-thumb {
   background: rgba(136, 139, 142, 0.5);
 }
 
 /* Handle on hover */
-/* line 116, ../sass/partials/_table.scss */
+/* line 120, ../sass/partials/_table.scss */
 .dataTables_scroll::-webkit-scrollbar-thumb:hover {
   background: #888b8e;
 }
 
-/* line 120, ../sass/partials/_table.scss */
+/* line 124, ../sass/partials/_table.scss */
 #viz_table_wrapper table.dataTable thead th.ui-state-default,
 #viz_table_wrapper table.dataTable tfoot th.ui-state-default {
   border-left-width: 1px;
@@ -441,48 +446,48 @@ div.dataTables_wrapper {
   padding: 4px 5px;
 }
 
-/* line 128, ../sass/partials/_table.scss */
+/* line 132, ../sass/partials/_table.scss */
 #viz_table_wrapper table.dataTable.display tbody td {
   border: 0px solid #dddddd;
 }
 
-/* line 132, ../sass/partials/_table.scss */
+/* line 136, ../sass/partials/_table.scss */
 #viz_table_wrapper table.dataTable tfoot tr:first-child th,
 #viz_table_wrapper table.dataTable thead tr:first-child th {
   border-top: 1px solid #dddddd;
   border-right: none;
 }
 
-/* line 138, ../sass/partials/_table.scss */
+/* line 142, ../sass/partials/_table.scss */
 #viz_table_wrapper table.dataTable tbody th {
   border-right: none;
 }
 
-/* line 142, ../sass/partials/_table.scss */
+/* line 146, ../sass/partials/_table.scss */
 #viz_table_wrapper table.dataTable tbody th,
 #viz_table_wrapper table.dataTable tbody td {
   padding: 4px 5px;
 }
 
-/* line 148, ../sass/partials/_table.scss */
+/* line 152, ../sass/partials/_table.scss */
 #viz_pivot-table_wrapper .no-footer tr th {
   border-top: 1px solid #dddddd;
   padding: 4px 5px;
   font-size: 13px !important;
 }
-/* line 153, ../sass/partials/_table.scss */
+/* line 157, ../sass/partials/_table.scss */
 #viz_pivot-table_wrapper tbody tr td {
   padding: 4px 5px;
 }
 
-/* line 160, ../sass/partials/_table.scss */
+/* line 164, ../sass/partials/_table.scss */
 #viz_table_wrapper table.dataTable tbody td {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* line 169, ../sass/partials/_table.scss */
+/* line 173, ../sass/partials/_table.scss */
 table.dataTable.stripe tbody tr.odd, table.dataTable.display tbody tr.odd {
   background-color: #f1f1f1;
 }
