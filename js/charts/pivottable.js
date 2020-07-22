@@ -549,6 +549,7 @@ function pivottable() {
             return result;
         });
 
+
         nestedData = nester.entries(data),
             pivotedData = [];
 
@@ -622,11 +623,14 @@ function pivottable() {
 
         tbody += "</tbody></table>";
 
-        table.append('thead')
-            .html(thead);
 
-        table.append('tbody')
-            .html(tbody);
+        if (data.length > 0) {
+            table.append('thead')
+                .html(thead);
+
+            table.append('tbody')
+                .html(tbody);
+        }
 
         if (!_print) {
             var _filter = UTIL.createFilterElement()
