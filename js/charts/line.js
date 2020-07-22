@@ -90,7 +90,8 @@ function line() {
         this.measure(config.measure);
         this.showLegend(config.showLegend);
         this.legendPosition(config.legendPosition);
-        this.dateFormate(config.dateFormate); this.stacked(config.stacked);
+        this.dateFormate(config.dateFormate);
+        this.stacked(config.stacked);
         this.showXaxis(config.showXaxis);
         this.showYaxis(config.showYaxis);
         this.showXaxisLabel(config.showXaxisLabel);
@@ -197,6 +198,8 @@ function line() {
     }
     var onLassoStart = function (lasso, scope) {
         return function () {
+            _local_svg.selectAll('path.point')
+                .style('opacity', 1)
             if (filter) {
                 lasso.items()
                     .classed('not_possible', true)
