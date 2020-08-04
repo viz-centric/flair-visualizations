@@ -1201,7 +1201,7 @@ function line() {
             var lasso = d3Lasso.lasso()
                 .hoverSelect(true)
                 .closePathSelect(true)
-                .closePathDistance(100)
+                .closePathDistance(500)
                 .items(point)
                 .targetArea(_local_svg);
 

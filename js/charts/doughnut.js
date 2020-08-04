@@ -938,6 +938,9 @@ function doughnut() {
                 this._current = d;
             });
 
+        doughnutMask = svg.selectAll('g.arc-mask')
+            .data(_doughnut(data), _localKey)
+
         doughnutMask.select('path')
             .transition().duration(0)
             .attrTween('d', function (d) {
@@ -948,6 +951,9 @@ function doughnut() {
                     return _arcMask(_this._current);
                 };
             });
+
+        doughnutMask = svg.selectAll('g.arc-mask')
+            .data(_doughnut(data), _localKey);
 
         doughnutMask.exit()
             .transition()
@@ -978,6 +984,10 @@ function doughnut() {
                 this._current = d;
             })
 
+
+        doughnutArcGroup = svg.selectAll('g.arc')
+            .data(_doughnut(data), _localKey);
+
         doughnutArcGroup.select('path')
             .transition().duration(0)
             .attrTween('d', function (d) {
@@ -988,6 +998,9 @@ function doughnut() {
                     return _arc(_this._current);
                 };
             });
+
+        doughnutArcGroup = svg.selectAll('g.arc')
+            .data(_doughnut(data), _localKey);
 
         doughnutArcGroup.exit()
             .transition()
