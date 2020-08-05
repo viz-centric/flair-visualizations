@@ -357,7 +357,7 @@ function util() {
                 }
             }
 
-            if (COMMON.COMPARABLE_DATA_TYPES.indexOf(type) !== 1 && label.endsWith("00:00:00.000000")) {
+            if (COMMON.COMPARABLE_DATA_TYPES.indexOf(type) !== -1 && label.endsWith("00:00:00.000000")) {
                 label = label.replace("00:00:00.000000", "")
             }
 
