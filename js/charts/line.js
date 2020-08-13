@@ -119,7 +119,7 @@ function line() {
         setDefaultColorForChart()
         this.legendData(_displayColor, config.measure, config.displayNameForMeasure);
     }
-    var getPointType = function (index) {
+    var getPointType = function (index, data) {
         var symbol = null;
 
         switch (_pointType[index].toLowerCase()) {
@@ -839,7 +839,7 @@ function line() {
             })
             .attr('d', function (d, i) {
                 return d3.symbol()
-                    .type(getPointType(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)))
+                    .type(getPointType(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)), data)
                     .size(40)();
             })
             .attr('transform', function (d, i) {
@@ -854,7 +854,7 @@ function line() {
                 }
             })
             .style('opacity', function (d, i) {
-                if (_pointType[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)] == "None") {
+                if (_pointType[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)] == "None" && data.length > 1) {
                     return 0;
                 }
             })
@@ -1129,7 +1129,7 @@ function line() {
             point.transition()
                 .duration(COMMON.DURATION * 2)
                 .style('opacity', function (d, i) {
-                    if (_pointType[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)] == "None") {
+                    if (_pointType[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)] == "None" && data.length > 1) {
                         return 0;
                     }
                     else {
@@ -1219,7 +1219,7 @@ function line() {
 
             point
                 .style('opacity', function (d, i) {
-                    if (_pointType[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)] == "None") {
+                    if (_pointType[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)] == "None" && data.length > 1) {
                         return 0;
                     }
                     else {
@@ -1795,7 +1795,7 @@ function line() {
             })
             .attr('d', function (d, i) {
                 return d3.symbol()
-                    .type(getPointType(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)))
+                    .type(getPointType(_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)), data)
                     .size(40)();
             })
             .attr('transform', function (d, i) {
@@ -1810,7 +1810,7 @@ function line() {
                 }
             })
             .style('opacity', function (d, i) {
-                if (_pointType[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)] == "None") {
+                if (_pointType[_measure.indexOf(d.tag.key == undefined ? d.tag : d.tag.key)] == "None"&& data.length > 1) {
                     return 0;
                 }
             })
