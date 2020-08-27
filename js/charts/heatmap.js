@@ -513,6 +513,27 @@ function heatmap() {
         cellHeight = parseInt((height - margin.top - margin.bottom) / _data.length);
 
         var offset = 6;
+
+        var mesLabel = plot.selectAll('.mesLabel')
+            .data(xElement.values().map(function (mes) {
+                return displayNameForMeasure[_measure.indexOf(mes)];
+            }))
+            .enter().append('text')
+            .attr('class', 'mesLabel')
+            .text(function (d) { return d; })
+            .text(function (d) {
+                if (!_print) {
+                    return UTIL.title(UTIL.getTruncatedLabel(this, d, cellWidth));
+                }
+                else {
+                    return d.substring(0, 15);
+                }
+            })
+            .attr('transform', 'translate(' + cellWidth / 2 + ', -6)')
+            .attr('x', function (d, i) { return i * cellWidth; })
+            .attr('y', 0)
+            .style('text-anchor', 'middle')
+
         var dimLabel = plot.selectAll('.dimLabel')
             .data(yElement)
             .enter().append('text')
@@ -557,25 +578,7 @@ function heatmap() {
             .append("svg:title")
             .text(function (d) { return d; });
 
-        var mesLabel = plot.selectAll('.mesLabel')
-            .data(xElement.values().map(function (mes) {
-                return displayNameForMeasure[_measure.indexOf(mes)];
-            }))
-            .enter().append('text')
-            .attr('class', 'mesLabel')
-            .text(function (d) { return d; })
-            .text(function (d) {
-                if (!_print) {
-                    return UTIL.title(UTIL.getTruncatedLabel(this, d, cellWidth));
-                }
-                else {
-                    return d.substring(0, 15)
-                }
-            })
-            .attr('x', function (d, i) { return i * cellWidth; })
-            .attr('y', 0)
-            .style('text-anchor', 'middle')
-            .attr('transform', 'translate(' + cellWidth / 2 + ', -6)');
+
 
         yScale
             .domain(yElement)
