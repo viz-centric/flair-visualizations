@@ -211,7 +211,7 @@ function piegrid() {
         _Local_data = _originalData = data;
 
         var me = this;
-        UTIL.sorter(_Local_data, _measure, -1);
+        // UTIL.sorter(_Local_data, _measure, -1);
 
         var _localTotal = d3.sum(data.map(function (d) { return d[_measure]; }));
 
@@ -361,7 +361,7 @@ function piegrid() {
         r = (r - 25) / 2;
         r = setRadius(width, height, data);
 
-        UTIL.sorter(data, _measure, -1);
+        // UTIL.sorter(data, _measure, -1);
 
         var _localTotal = d3.sum(data.map(function (d) { return d[_measure]; }));
 
