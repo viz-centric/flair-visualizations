@@ -95,8 +95,7 @@ function util() {
             // to do  
             if (tipLeft < left) {
                 tooltip.style.left = left + "px";
-            }
-            else {
+            } else {
                 tooltip.style.left = (left + width - tipWidth - 20) - (width - x) + 'px';
             }
 
@@ -105,15 +104,13 @@ function util() {
                 if ((left + width - tipWidth - 20) - (width - x) <= 0) {
                     tooltip.style.left = '10px';
                 }
-            }
-            else {
+            } else {
                 if (parseInt(container.node().getAttribute('width')) - x <= (tipWidth + 20)) {
                     tooltip.style.left = (left + width - tipWidth - 20) - (width - x) + 'px';
                     if (((left + width - tipWidth - 20) - (width - x)) <= 0) {
                         tooltip.style.left = '10px';
                     }
-                }
-                else {
+                } else {
                     tooltip.style.left = x + 'px';
                 }
             }
@@ -189,9 +186,9 @@ function util() {
                     return 0;
                 }
 
-                return +x[keys[index]] > +y[keys[index]] ? -1
-                    : +x[keys[index]] < +y[keys[index]] ? 1
-                        : _sorter(x, y, index + 1);
+                return +x[keys[index]] > +y[keys[index]] ? -1 :
+                    +x[keys[index]] < +y[keys[index]] ? 1 :
+                    _sorter(x, y, index + 1);
             }
 
             /* sort ascending */
@@ -254,8 +251,7 @@ function util() {
 
             if (sortType == "alternatedimension" && chartType == "horizontal") {
                 this.alternateDimensionHorizontalPosition(arrowDom, sortType, chartType, sortSelectDom, plot);
-            }
-            else {
+            } else {
                 arrowDom.style.left = (left + width - offsetLeft) + 'px';
                 arrowDom.style.top = (top + height - offsetTop) + 'px';
             }
@@ -441,21 +437,20 @@ function util() {
             };
 
             switch (si) {
-                case "Actual":
-                    {
-                        if (value % 1 == 0)
-                            result = d3.format('');
-                        else
-                            result = d3.format('.2f');
-                        break;
-                    }
+                case "Actual": {
+                    if (value % 1 == 0)
+                        result = d3.format('');
+                    else
+                        result = d3.format('.2f');
                     break;
-                case "Percent":
-                    result = d3.format('.0%');
-                    break;
-                default:
-                    result = d3.formatPrefix('.2s', siMapper[si]);
-                    break;
+                }
+                break;
+            case "Percent":
+                result = d3.format('.0%');
+                break;
+            default:
+                result = d3.formatPrefix('.2s', siMapper[si]);
+                break;
             }
 
             return result;
@@ -521,7 +516,9 @@ function util() {
         },
 
         shortScale: function (precision) {
-            if (precision === void 0) { precision = 3; }
+            if (precision === void 0) {
+                precision = 3;
+            }
             privateMethods(precision);
             var suffixes = "KMBTQ";
             var fixedFormatter = d3.format("." + precision + "f");
@@ -542,8 +539,7 @@ function util() {
                 if (idx === -1) {
                     output = fixedFormatter(num);
                     output = parseFloat(output).toString();
-                }
-                else {
+                } else {
                     output = fixedFormatter(num / Math.pow(1000, idx + 1));
                     output = parseFloat(output) + suffixes[idx];
                 }
@@ -553,8 +549,7 @@ function util() {
                         idx++;
                         output = fixedFormatter(num / Math.pow(1000, idx + 1));
                         output = parseFloat(output) + suffixes[idx];
-                    }
-                    else {
+                    } else {
                         output = exponentFormatter(num);
                     }
                 }
@@ -758,11 +753,11 @@ function util() {
 
             for (var i = 0; i < _measure.length; i++) {
                 var _divRadio = $('<div></div>').addClass('radio');
-                options = '<label><input type="radio" '
-                    + (selected == _measure[i] ? 'checked' : '')
-                    + ' name="optradio">'
-                    + _measure[i]
-                    + '</label>';
+                options = '<label><input type="radio" ' +
+                    (selected == _measure[i] ? 'checked' : '') +
+                    ' name="optradio">' +
+                    _measure[i] +
+                    '</label>';
 
                 _divRadio.append(options);
                 $(sortWindow.node()).append(_divRadio);
@@ -787,14 +782,13 @@ function util() {
                 };
             var result;
             switch (si) {
-                case "Actual":
-                    {
-                        if (value % 1 == 0)
-                            result = d3.format('');
-                        else
-                            result = d3.format('.2f');
-                        break;
-                    }
+                case "Actual": {
+                    if (value % 1 == 0)
+                        result = d3.format('');
+                    else
+                        result = d3.format('.2f');
+                    break;
+                }
 
                 case "Percent":
                     result = d3.format('.0%');
@@ -871,7 +865,9 @@ function util() {
 
                 expression.forEach(function (item) {
                     obj = {};
-                    temp = item.split(',').map(function (c) { return c.trim(); });
+                    temp = item.split(',').map(function (c) {
+                        return c.trim();
+                    });
                     obj[temp[0].toLowerCase()] = parseFloat(temp[1]) || null;
                     args.forEach(function (arg, i) {
                         obj[arg] = temp[i + 2];
@@ -916,14 +912,12 @@ function util() {
                         result = property[key];
                         break;
                     }
-                }
-                else if (property.hasOwnProperty('below')) {
+                } else if (property.hasOwnProperty('below')) {
                     if (value < property.below) {
                         result = property[key];
                         break;
                     }
-                }
-                else if (property.hasOwnProperty('default')) {
+                } else if (property.hasOwnProperty('default')) {
                     result = property[key];
                     break;
                 }
@@ -1061,8 +1055,7 @@ function util() {
                         .text(function () {
                             return text;
                         });
-                }
-                else {
+                } else {
                     axisGroup.select('.icon')
                         .attr('transform', function () {
                             return 'translate(' + x + ', ' + y + ')';
@@ -1107,11 +1100,11 @@ function util() {
 
                 for (var i = 0; i < selectedFeature.length; i++) {
                     var _divRadio = $('<div></div>').addClass('radio');
-                    options = '<label><input type="radio" '
-                        + (displayName == selectedFeature[i].featureName ? 'checked' : '')
-                        + ' name="optradio">'
-                        + selectedFeature[i].featureName
-                        + '</label>';
+                    options = '<label><input type="radio" ' +
+                        (displayName == selectedFeature[i].featureName ? 'checked' : '') +
+                        ' name="optradio">' +
+                        selectedFeature[i].featureName +
+                        '</label>';
 
                     _divRadio.append(options);
                     $(sortWindow.node()).append(_divRadio);
@@ -1128,13 +1121,13 @@ function util() {
 
         },
         /**
-       * Base accessor function
-       *
-       * @param {string|array(string)|null} value "this" value for the measure(s)
-       * @param {string|null} measure Measure for which the value is to be set or retrieved
-       * @param {array(string)} measures All the available measures
-       * @return {string|array(string)|function}
-       */
+         * Base accessor function
+         *
+         * @param {string|array(string)|null} value "this" value for the measure(s)
+         * @param {string|null} measure Measure for which the value is to be set or retrieved
+         * @param {array(string)} measures All the available measures
+         * @return {string|array(string)|function}
+         */
         baseAccessor: function (value, measure, measures, chart) {
             var me = this;
 
@@ -1154,7 +1147,9 @@ function util() {
                 if (value instanceof Array) {
                     me.splice(0, me.length);
                 } else {
-                    value = measures.map(function (i) { return value; });
+                    value = measures.map(function (i) {
+                        return value;
+                    });
                 }
 
                 me.push.apply(me, value);
@@ -1273,8 +1268,7 @@ function util() {
                     .style('stroke-width', '2px')
                     .style('stroke-opacity', '1')
                     .style('visibility', 'visible');
-            }
-            else {
+            } else {
                 _local_svg.selectAll('g.base_line').classed('base_line', false);
                 d3.select(tickLine.parentNode)
                     .style('visibility', function () {
@@ -1312,7 +1306,8 @@ function util() {
                 "#F3937B",
                 "#F3D047",
                 "#DA3579",
-                "#8EA4BF"];
+                "#8EA4BF"
+            ];
         },
         sortDateRange: function (list) {
             var sorttedList = list.sort(function (a, b) {
@@ -1358,6 +1353,13 @@ function util() {
             var _filterParameters = filterParameters.get();
             _filterParameters[dimension] = _filterDimension[dimension];
             filterParameters.save(_filterParameters);
+        },
+        rgbToHex: function (rgb) {
+            rgb = rgb.match(/^rgb?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?/i);
+            return (rgb && rgb.length === 4) ? "#" +
+                ("0" + parseInt(rgb[1], 10).toString(16)).slice(-2) +
+                ("0" + parseInt(rgb[2], 10).toString(16)).slice(-2) +
+                ("0" + parseInt(rgb[3], 10).toString(16)).slice(-2) : '';
         }
     }
 

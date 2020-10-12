@@ -6,6 +6,7 @@ var clusteredhorizontalbar = require('./charts/clusteredhorizontalbar.js');
 var combo = require('./charts/combo.js');
 var chorddiagram = require('./charts/chorddiagram.js');
 var doughnut = require('./charts/doughnut.js');
+var funnel = require('./charts/funnel.js');
 var gauge = require('./charts/gauge.js');
 var heatmap = require('./charts/heatmap.js');
 var infographics = require('./charts/infographics.js');
@@ -38,6 +39,7 @@ module.exports = {
 	combo: combo,
 	chorddiagram: chorddiagram,
 	doughnut: doughnut,
+	funnel: funnel,
 	gauge: gauge,
 	heatmap: heatmap,
 	infographics: infographics,
@@ -46,7 +48,8 @@ module.exports = {
 	map: map,
 	numbergrid: numbergrid,
 	pie: pie,
-	piegrid, piegrid,
+	piegrid,
+	piegrid,
 	pivot: pivot,
 	rangefilter: rangefilter,
 	scatter: scatter,
