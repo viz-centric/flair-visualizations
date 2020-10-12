@@ -223,7 +223,6 @@ function numbergrid() {
         data = UTIL.sortingData(_data, _dimension[0])
         _Local_data = _originalData = data;
 
-        //UTIL.sorter(_Local_data, _measure, -1);
         var me = this;
 
         if (_print && !_notification) {
@@ -242,7 +241,6 @@ function numbergrid() {
         r = (r - 25) / 2;
 
         r = setRadius(width, height);
-        // var h = r - (r / 2);
         w = r + (r / 3);
         h = w / 2;
         var svg = parentContainer.selectAll("svg")
@@ -361,8 +359,6 @@ function numbergrid() {
         // var h = r - (r / 2);
         w = r + (r / 3);
         h = w / 2;
-
-        //UTIL.sorter(data, _measure, -1);
 
         parentContainer.selectAll("svg").remove();
 
