@@ -6,7 +6,7 @@ var LEGEND = require('../extras/legend_barcharts.js')();
 try {
     var d3Lasso = require("d3-lasso");
 
-} catch (ex) { }
+} catch (ex) {}
 
 function stackedhorizontalbar() {
 
@@ -32,6 +32,7 @@ function stackedhorizontalbar() {
         _showGrid,
         _stacked,
         _displayName,
+        _showMoreDimension,
         _legendData,
         _showValues = [],
         _displayNameForMeasure = [],
@@ -53,9 +54,15 @@ function stackedhorizontalbar() {
         _isFilterGrid = false,
         _showSorting = true;
 
-    var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
+    var _local_svg, _Local_data, _originalData, _localLabelStack = [],
+        legendBreakCount = 1,
+        displayChar = 3;
 
-    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, parentContainer;
+    var legendSpace = 20,
+        axisLabelSpace = 20,
+        offsetX = 16,
+        offsetY = 3,
+        parentContainer;
 
     var parentWidth, parentHeight, plotWidth, plotHeight, container;
 
@@ -64,10 +71,14 @@ function stackedhorizontalbar() {
         _localXGrid,
         _localYGrid;
 
-    var x = d3.scaleBand(), y = d3.scaleLinear();
-    var _x = d3.scaleBand(), _y = d3.scaleLinear(), brush = d3.brushY();
+    var x = d3.scaleBand(),
+        y = d3.scaleLinear();
+    var _x = d3.scaleBand(),
+        _y = d3.scaleLinear(),
+        brush = d3.brushY();
 
-    var FilterControlHeight = 100, FilterControlWidth = 100;
+    var FilterControlHeight = 100,
+        FilterControlWidth = 100;
 
     var tickLength = d3.scaleLinear()
         .domain([22, 34])
@@ -80,7 +91,8 @@ function stackedhorizontalbar() {
         left: 45
     };
 
-    var filter = false, filterData = [];
+    var filter = false,
+        filterData = [];
     var threshold = [];
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
@@ -100,6 +112,7 @@ function stackedhorizontalbar() {
         this.yAxisColor(config.yAxisColor);
         this.showGrid(config.showGrid);
         this.displayName(config.displayName);
+        this.showMoreDimension(config.showMoreDimension);
         this.showYaxis(config.showYaxis);
         this.showXaxisLabel(config.showXaxisLabel);
 
@@ -134,13 +147,13 @@ function stackedhorizontalbar() {
     var _buildTooltipData = function (datum, chart) {
         var output = "";
 
-        output += "<table><tr>"
-            + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + UTIL.getDimensionFormatedValue(datum.data[_dimension[0]], _dimensionType[0]) + "</td>"
-            + "</tr><tr>"
-            + "<th>" + datum.key + ": </th>"
-            + "<td>" + UTIL.getFormattedValue(datum.data[datum.key], UTIL.getValueNumberFormat(_measure.indexOf(datum.key), _numberFormat, datum.data[datum.key])) + " </td>"
-            + "</tr></table>";
+        output += "<table><tr>" +
+            "<th>" + chart.dimension() + ": </th>" +
+            "<td>" + UTIL.getDimensionFormatedValue(datum.data[_dimension[0]], _dimensionType[0]) + "</td>" +
+            "</tr><tr>" +
+            "<th>" + datum.key + ": </th>" +
+            "<td>" + UTIL.getFormattedValue(datum.data[datum.key], UTIL.getValueNumberFormat(_measure.indexOf(datum.key), _numberFormat, datum.data[datum.key])) + " </td>" +
+            "</tr></table>";
 
         return output;
     }
@@ -206,8 +219,7 @@ function stackedhorizontalbar() {
                         _filter.push(obj)
                     }
                 });
-            }
-            else {
+            } else {
                 filterData = [];
                 return;
             }
@@ -219,7 +231,8 @@ function stackedhorizontalbar() {
                 broadcast.updateWidget = {};
                 broadcast.updateWidget[scope.node().parentNode.id] = idWidget;
 
-                var _filterList = {}, list = []
+                var _filterList = {},
+                    list = []
 
                 filterData.map(function (val) {
                     list.push(val[_dimension[0]])
@@ -308,20 +321,17 @@ function stackedhorizontalbar() {
                     if (_displayColorExpression[_measure.indexOf(d.key)].length) {
                         if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color').length > 0) {
                             return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color')
-                        }
-                        else {
+                        } else {
                             return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
                         }
-                    }
-                    else {
+                    } else {
                         return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
                     }
                 })
                 .style('stroke', function (d, i) {
                     if (d.data[d.key] < 0) {
                         return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
-                    }
-                    else {
+                    } else {
                         return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
                     }
                 })
@@ -379,14 +389,12 @@ function stackedhorizontalbar() {
                     if (_legendPosition.toUpperCase() == 'LEFT') {
                         return 'translate(0, ' + i * 20 + ')';
 
-                    }
-                    else if (_legendPosition.toUpperCase() == 'RIGHT') {
+                    } else if (_legendPosition.toUpperCase() == 'RIGHT') {
                         return 'translate(' + (parentWidth - legendSpace + axisLabelSpace + 10) + ', ' + i * 20 + ')';
                     }
                 });
             }
-        }
-        else {
+        } else {
             legendSpace = 0;
             parentHeight = parentHeight - (_notification == true ? 0 : axisLabelSpace);
             plotWidth = parentWidth;
@@ -423,8 +431,7 @@ function stackedhorizontalbar() {
 
         if (_print && !_notification) {
             parentContainer = selection;
-        }
-        else {
+        } else {
             parentContainer = d3.select('#' + selection.id)
         }
 
@@ -482,20 +489,17 @@ function stackedhorizontalbar() {
                 if (_displayColorExpression[_measure.indexOf(d.key)].length) {
                     if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color').length > 0) {
                         return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color')
-                    }
-                    else {
+                    } else {
                         return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
                     }
-                }
-                else {
+                } else {
                     return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
                 }
             })
             .style('stroke', function (d, i) {
                 if (d.data[d.key] < 0) {
                     return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
-                }
-                else {
+                } else {
                     return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
                 }
             })
@@ -520,8 +524,7 @@ function stackedhorizontalbar() {
 
                         if (broadcast && broadcast.isThresholdAlert) {
                             UTIL.openSchedulerDialog(parentContainer.attr('vizID'), d.key, d.data[d.key], _dimension[0], d.data[_dimension[0]], broadcast);
-                        }
-                        else {
+                        } else {
                             if (isLiveEnabled) {
                                 broadcast.$broadcast('FlairBi:livemode-dialog');
                                 return;
@@ -626,12 +629,10 @@ function stackedhorizontalbar() {
                 if (_textColorExpression[_measure.indexOf(d.key)].length) {
                     if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color').length > 0) {
                         return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color')
-                    }
-                    else {
+                    } else {
                         return _textColor[_measure.indexOf(d.key)];
                     }
-                }
-                else {
+                } else {
                     return _textColor[_measure.indexOf(d.key)];
                 }
             });
@@ -654,7 +655,9 @@ function stackedhorizontalbar() {
 
         x.rangeRound([0, plotHeight])
             .padding([0.5])
-            .domain(data.map(function (d) { return d[_dimension[0]]; }));
+            .domain(data.map(function (d) {
+                return d[_dimension[0]];
+            }));
 
         var range = UTIL.getMinMax(data, keys);
 
@@ -681,8 +684,12 @@ function stackedhorizontalbar() {
         });
 
         y.domain([
-            d3.min(data, function (d) { return d.negTotal; }),
-            d3.max(data, function (d) { return d.posTotal; })
+            d3.min(data, function (d) {
+                return d.negTotal;
+            }),
+            d3.max(data, function (d) {
+                return d.posTotal;
+            })
         ]).nice();
 
         data.map(function (val) {
@@ -747,9 +754,8 @@ function stackedhorizontalbar() {
             .tickFormat(function (d) {
                 if (_axisScaleLabel == "Formated") {
                     return UTIL.shortScale(2)(d);
-                }
-                else {
-                    return UTIL.getTruncatedTick(d, (plotWidth) / (y.ticks().length) - 5, tickLength, _dimensionType[0],_dateFormate);
+                } else {
+                    return UTIL.getTruncatedTick(d, (plotWidth) / (y.ticks().length) - 5, tickLength, _dimensionType[0], _dateFormate);
                 }
             })
 
@@ -770,19 +776,26 @@ function stackedhorizontalbar() {
             .style('fill', _xAxisColor)
             .attr('visibility', UTIL.getVisibility(_showXaxisLabel))
             .text(function () {
-                return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+                return _displayNameForMeasure.map(function (p) {
+                    return p;
+                }).join(', ');
             })
             .text(function () {
-                var text = _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+                var text = _displayNameForMeasure.map(function (p) {
+                    return p;
+                }).join(', ');
                 if (!_print) {
                     return UTIL.getTruncatedLabel(this, text, plotWidth - 150)
-                }
-                else {
+                } else {
                     return text;
                 }
             })
             .append("svg:title")
-            .text(function (d, i) { return _displayNameForMeasure.map(function (p) { return p; }).join(', '); });
+            .text(function (d, i) {
+                return _displayNameForMeasure.map(function (p) {
+                    return p;
+                }).join(', ');
+            });
 
 
         _localYAxis = d3.axisLeft(x)
@@ -791,8 +804,8 @@ function stackedhorizontalbar() {
                 if (d === null) {
                     return COMMON.NULLVALUE;
                 }
-                if (d.length > 3) {
-                    return d.substring(0, 3) + '...';
+                if (d.length > displayChar) {
+                    return d.substring(0, displayChar) + '...';
                 }
                 return d;
             })
@@ -916,7 +929,9 @@ function stackedhorizontalbar() {
 
             _x.rangeRound([0, parseInt(_local_svg.attr('height') - 2 * COMMON.PADDING)])
                 .padding([0.5])
-                .domain(data.map(function (d) { return d[_dimension[0]]; }));
+                .domain(data.map(function (d) {
+                    return d[_dimension[0]];
+                }));
 
             var range = UTIL.getMinMax(data, keys);
 
@@ -943,8 +958,12 @@ function stackedhorizontalbar() {
             });
 
             _y.domain([
-                d3.min(data, function (d) { return d.negTotal; }),
-                d3.max(data, function (d) { return d.posTotal; })
+                d3.min(data, function (d) {
+                    return d.negTotal;
+                }),
+                d3.max(data, function (d) {
+                    return d.posTotal;
+                })
             ]).nice();
 
             data.map(function (val) {
@@ -952,7 +971,10 @@ function stackedhorizontalbar() {
                 delete val['posTotal'];
             })
 
-            brush.extent([[0, 0], [FilterControlWidth, parentContainer.attr('height')]])
+            brush.extent([
+                    [0, 0],
+                    [FilterControlWidth, parentContainer.attr('height')]
+                ])
                 .on("brush", brushed);
 
             // var separationLine = svgFilter.append("line")
@@ -1016,20 +1038,17 @@ function stackedhorizontalbar() {
                     if (_displayColorExpression[_measure.indexOf(d.key)].length) {
                         if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color').length > 0) {
                             return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color')
-                        }
-                        else {
+                        } else {
                             return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
                         }
-                    }
-                    else {
+                    } else {
                         return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
                     }
                 })
                 .style('stroke', function (d, i) {
                     if (d.data[d.key] < 0) {
                         return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
-                    }
-                    else {
+                    } else {
                         return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
                     }
                 })
@@ -1093,12 +1112,10 @@ function stackedhorizontalbar() {
                 if (_displayColorExpression[_measure.indexOf(d.key)].length) {
                     if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color').length > 0) {
                         return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color')
-                    }
-                    else {
+                    } else {
                         return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
                     }
-                }
-                else {
+                } else {
                     return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
                 }
             })
@@ -1118,8 +1135,7 @@ function stackedhorizontalbar() {
         if (_localLabelStack.length > 0) {
             if (filterGrid) {
                 data = UTIL.getFilterDataForLegend(_localLabelStack, data);
-            }
-            else {
+            } else {
                 data = UTIL.getFilterDataForLegend(_localLabelStack, _Local_data);
             }
         }
@@ -1165,8 +1181,7 @@ function stackedhorizontalbar() {
                 data = UTIL.sortData(_data, filterConfig.key, filterConfig.sortType)
                 drawPlotForFilter.call(this, _data);
             }
-        }
-        else {
+        } else {
             if (!filterGrid) {
                 drawPlotForFilter.call(this, _data);
             }
@@ -1187,7 +1202,9 @@ function stackedhorizontalbar() {
 
         x.rangeRound([0, plotHeight])
             .padding([0.5])
-            .domain(data.map(function (d) { return d[_dimension[0]]; }));
+            .domain(data.map(function (d) {
+                return d[_dimension[0]];
+            }));
 
         var range = UTIL.getMinMax(data, keys);
 
@@ -1214,8 +1231,12 @@ function stackedhorizontalbar() {
         });
 
         y.domain([
-            d3.min(data, function (d) { return d.negTotal; }),
-            d3.max(data, function (d) { return d.posTotal; })
+            d3.min(data, function (d) {
+                return d.negTotal;
+            }),
+            d3.max(data, function (d) {
+                return d.posTotal;
+            })
         ]).nice();
 
         data.map(function (val) {
@@ -1253,20 +1274,17 @@ function stackedhorizontalbar() {
                 if (_displayColorExpression[_measure.indexOf(d.key)].length) {
                     if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color').length > 0) {
                         return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color')
-                    }
-                    else {
+                    } else {
                         return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
                     }
-                }
-                else {
+                } else {
                     return UTIL.getDisplayColor(_measure.indexOf(d.key), _displayColor);
                 }
             })
             .style('stroke', function (d, i) {
                 if (d.data[d.key] < 0) {
                     return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
-                }
-                else {
+                } else {
                     return UTIL.getBorderColor(_measure.indexOf(d.key), _borderColor);
                 }
             })
@@ -1334,12 +1352,10 @@ function stackedhorizontalbar() {
                 if (_textColorExpression[_measure.indexOf(d.key)].length) {
                     if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color').length > 0) {
                         return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.key)], d.data[d.key], 'color')
-                    }
-                    else {
+                    } else {
                         return _textColor[_measure.indexOf(d.key)];
                     }
-                }
-                else {
+                } else {
                     return _textColor[_measure.indexOf(d.key)];
                 }
             });
@@ -1729,6 +1745,17 @@ function stackedhorizontalbar() {
             return _showSorting;
         }
         _showSorting = value;
+        return chart;
+    }
+    chart.showMoreDimension = function (value) {
+        if (!arguments.length) {
+            return _showMoreDimension;
+        }
+        _showMoreDimension = value;
+        if (_showMoreDimension) {
+            margin.left = 150;
+            displayChar = 20;
+        }
         return chart;
     }
     return chart;
