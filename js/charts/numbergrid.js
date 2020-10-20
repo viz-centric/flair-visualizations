@@ -29,7 +29,9 @@ function numbergrid() {
 
     var _local_svg, _Local_data, tooltip, parentContainer;
 
-    var m = 10, r = 50, h, w;
+    var m = 10,
+        r = 50,
+        h, w;
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
@@ -149,8 +151,7 @@ function numbergrid() {
                 setText(textElement, textElement.innerHTML);
             }
             return textElement.innerHTML + "...";
-        }
-        else {
+        } else {
             return textElement.innerHTML + "...";
         }
     }
@@ -185,13 +186,11 @@ function numbergrid() {
                         this,
                         UTIL.getDimensionFormatedValue(d[_dimension], _dimensionType[0]),
                         parseFloat((w + m) * 2) - 20)
-                }
-                else {
+                } else {
                     var element = this.getBBox();
                     if (element.width > w) {
                         return setText(this, d);
-                    }
-                    else {
+                    } else {
                         return d[_dimension];
                     }
                 }
@@ -220,15 +219,14 @@ function numbergrid() {
 
     function chart(selection) {
 
-        data = UTIL.sortingData(_data, _dimension[0])
-        _Local_data = _originalData = data;
+        data = _data;
+        _Local_data = _originalData = _data;
 
         var me = this;
 
         if (_print && !_notification) {
             parentContainer = selection;
-        }
-        else {
+        } else {
             parentContainer = d3.select('#' + selection.id)
         }
 

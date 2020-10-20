@@ -207,7 +207,7 @@ function piegrid() {
 
     function chart(selection) {
 
-        data = UTIL.sortingData(_data, _dimension[0])
+        data = _data;
         _Local_data = _originalData = data;
 
         var me = this;
