@@ -170,6 +170,60 @@ div.dataTables_wrapper {
   }
 }
 
+#viz_multilevelgrouping {
+  margin: 0 auto;
+  width: 100% !important;
+  clear: both;
+  border-collapse: collapse;
+  table-layout: fixed;
+  word-wrap: break-word;
+}
+
+#viz_multilevelgrouping {
+  tr.odd td:first-child,
+  tr.even td:first-child {
+    padding-left: 4em;
+  }
+}
+
+#viz_multilevelgrouping_wrapper table.dataTable tbody th,
+#viz_multilevelgrouping_wrapper table.dataTable tbody td {
+  padding: 4px 5px;
+}
+
+#viz_multilevelgrouping_wrapper table.dataTable thead th.ui-state-default,
+#viz_multilevelgrouping_wrapper table.dataTable tfoot th.ui-state-default {
+  border-left-width: 1px;
+  border: 1px solid #dddddd;
+  border-top: none;
+  padding: 4px 5px;
+}
+
 table.dataTable.stripe tbody tr.odd, table.dataTable.display tbody tr.odd{
   background-color: #f1f1f1;
+}
+
+
+table.dataTable tr.dtrg-group td {
+  background-color: #e0e0e0;
+}
+
+table.dataTable tr.dtrg-group.dtrg-level-0 td {
+  font-weight: bold;
+  font-size: 15px;
+}
+
+table.dataTable tr.dtrg-group.dtrg-level-1 td,
+table.dataTable tr.dtrg-group.dtrg-level-2 td {
+  background-color: #f0f0f0;
+  padding-top: 0.25em;
+  padding-bottom: 0.25em;
+  padding-left: 2em;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+table.dataTable tr.dtrg-group.dtrg-level-2 td {
+  background-color: #f3f3f3;
+  padding-left: 3em;
 }
