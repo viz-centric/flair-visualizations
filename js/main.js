@@ -12,6 +12,7 @@ var infographics = require('./charts/infographics.js');
 var kpi = require('./charts/kpi.js');
 var line = require('./charts/line.js');
 var map = require('./charts/map.js');
+var multilevelgrouping = require('./charts/multilevelgrouping');
 var numbergrid = require('./charts/numbergrid.js');
 var pie = require('./charts/pie.js');
 var piegrid = require('./charts/piegrid.js');
@@ -44,6 +45,7 @@ module.exports = {
 	kpi: kpi,
 	line: line,
 	map: map,
+	multilevelgrouping: multilevelgrouping,
 	numbergrid: numbergrid,
 	pie: pie,
 	piegrid, piegrid,
