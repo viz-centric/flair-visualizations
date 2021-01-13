@@ -58,7 +58,7 @@ const VisualizationUtils = {
             });
         return {
             measures: measures,
-            dimensions: dimensions
+            dimensions: dimensions 
         };
     },
 
