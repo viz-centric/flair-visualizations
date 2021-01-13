@@ -6,7 +6,7 @@ var LEGEND = require('../extras/legend_barcharts.js')();
 try {
     var d3Lasso = require("d3-lasso");
 
-} catch (ex) { }
+} catch (ex) {}
 
 function clusteredhorizontalbar() {
 
@@ -32,6 +32,7 @@ function clusteredhorizontalbar() {
         _showGrid,
         _stacked,
         _displayName,
+        _showMoreDimension,
         _legendData,
         _showValues = [],
         _displayNameForMeasure = [],
@@ -53,7 +54,9 @@ function clusteredhorizontalbar() {
         _isFilterGrid = false,
         _showSorting = true;
 
-    var _local_svg, _Local_data, _originalData, _localLabelStack = [], legendBreakCount = 1;
+    var _local_svg, _Local_data, _originalData, _localLabelStack = [],
+        legendBreakCount = 1,
+        displayChar = 3;
 
     var parentWidth, parentHeight, plotWidth, plotHeight, container;
     var _localXAxis,
@@ -61,11 +64,17 @@ function clusteredhorizontalbar() {
         _localXGrid,
         _localYGrid;
 
-    var x0 = d3.scaleBand(), x1 = d3.scaleBand(), y = d3.scaleLinear();
+    var x0 = d3.scaleBand(),
+        x1 = d3.scaleBand(),
+        y = d3.scaleLinear();
 
-    var _x0 = d3.scaleBand(), _x1 = d3.scaleBand(), _y = d3.scaleLinear(), brush = d3.brushY();
+    var _x0 = d3.scaleBand(),
+        _x1 = d3.scaleBand(),
+        _y = d3.scaleLinear(),
+        brush = d3.brushY();
 
-    var FilterControlHeight = 100, FilterControlWidth = 100;
+    var FilterControlHeight = 100,
+        FilterControlWidth = 100;
     var margin = {
         top: 0,
         right: 0,
@@ -77,9 +86,14 @@ function clusteredhorizontalbar() {
         .domain([22, 34])
         .range([2, 4]);
 
-    var legendSpace = 20, axisLabelSpace = 20, offsetX = 16, offsetY = 3, parentContainer;
+    var legendSpace = 20,
+        axisLabelSpace = 20,
+        offsetX = 16,
+        offsetY = 3,
+        parentContainer;
     var threshold = [];
-    var filter = false, filterData = [];
+    var filter = false,
+        filterData = [];
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
@@ -98,6 +112,7 @@ function clusteredhorizontalbar() {
         this.yAxisColor(config.yAxisColor);
         this.showGrid(config.showGrid);
         this.displayName(config.displayName);
+        this.showMoreDimension(config.showMoreDimension);
         this.showYaxis(config.showYaxis);
         this.showXaxisLabel(config.showXaxisLabel);
         this.showValues(config.showValues);
@@ -131,13 +146,13 @@ function clusteredhorizontalbar() {
     var _buildTooltipData = function (datum, chart) {
         var output = "";
 
-        output += "<table><tr>"
-            + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + UTIL.getDimensionFormatedValue(datum[chart.dimension()], _dimensionType[0]) + "</td>"
-            + "</tr><tr>"
-            + "<th>" + datum["measure"] + ": </th>"
-            + "<td>" + UTIL.getFormattedValue(datum[datum["measure"]], UTIL.getValueNumberFormat(_measure.indexOf(datum["measure"]), _numberFormat, datum[datum["measure"]])) + " </td>"
-            + "</tr></table>";
+        output += "<table><tr>" +
+            "<th>" + chart.dimension() + ": </th>" +
+            "<td>" + UTIL.getDimensionFormatedValue(datum[chart.dimension()], _dimensionType[0]) + "</td>" +
+            "</tr><tr>" +
+            "<th>" + datum["measure"] + ": </th>" +
+            "<td>" + UTIL.getFormattedValue(datum[datum["measure"]], UTIL.getValueNumberFormat(_measure.indexOf(datum["measure"]), _numberFormat, datum[datum["measure"]])) + " </td>" +
+            "</tr></table>";
 
         return output;
     }
@@ -199,8 +214,7 @@ function clusteredhorizontalbar() {
                     }
                     _filter.push(obj)
                 });
-            }
-            else {
+            } else {
                 filterData = [];
                 return;
             }
@@ -212,7 +226,8 @@ function clusteredhorizontalbar() {
                 broadcast.updateWidget = {};
                 broadcast.updateWidget[scope.node().parentNode.id] = idWidget;
 
-                var _filterList = {}, list = []
+                var _filterList = {},
+                    list = []
 
                 filterData.map(function (val) {
                     list.push(val[_dimension[0]])
@@ -303,20 +318,17 @@ function clusteredhorizontalbar() {
                     if (_displayColorExpression[_measure.indexOf(d.measure)].length) {
                         if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color').length > 0) {
                             return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color')
-                        }
-                        else {
+                        } else {
                             return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
                         }
-                    }
-                    else {
+                    } else {
                         return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
                     }
                 })
                 .style('stroke', function (d, i) {
                     if (d[d.measure] < 0) {
                         return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
-                    }
-                    else {
+                    } else {
                         return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
                     }
                 })
@@ -374,14 +386,12 @@ function clusteredhorizontalbar() {
                     if (_legendPosition.toUpperCase() == 'LEFT') {
                         return 'translate(0, ' + i * 20 + ')';
 
-                    }
-                    else if (_legendPosition.toUpperCase() == 'RIGHT') {
+                    } else if (_legendPosition.toUpperCase() == 'RIGHT') {
                         return 'translate(' + (parentWidth - legendSpace + axisLabelSpace + 10) + ', ' + i * 20 + ')';
                     }
                 });
             }
-        }
-        else {
+        } else {
             legendSpace = 0;
             parentHeight = parentHeight - (_notification == true ? 0 : axisLabelSpace);
             plotWidth = parentWidth;
@@ -418,8 +428,7 @@ function clusteredhorizontalbar() {
 
         if (_print && !_notification) {
             parentContainer = selection;
-        }
-        else {
+        } else {
             parentContainer = d3.select('#' + selection.id)
         }
 
@@ -485,7 +494,9 @@ function clusteredhorizontalbar() {
         x0.rangeRound([0, plotHeight])
             .paddingInner(0.1)
             .padding([0.1])
-            .domain(data.map(function (d) { return d[_dimension[0]]; }));
+            .domain(data.map(function (d) {
+                return d[_dimension[0]];
+            }));
 
         x1.padding(0.2)
             .domain(keys).rangeRound([0, x0.bandwidth()]);
@@ -558,9 +569,8 @@ function clusteredhorizontalbar() {
             .tickFormat(function (d) {
                 if (_axisScaleLabel == "Formated") {
                     return UTIL.shortScale(2)(d);
-                }
-                else {
-                    return UTIL.getTruncatedTick(d, (plotWidth) / (y.ticks().length) - 5, tickLength, _dimensionType[0],_dateFormate);
+                } else {
+                    return UTIL.getTruncatedTick(d, (plotWidth) / (y.ticks().length) - 5, tickLength, _dimensionType[0], _dateFormate);
                 }
             })
         // .tickSize(0)
@@ -583,19 +593,26 @@ function clusteredhorizontalbar() {
             .style('fill', _xAxisColor)
             .attr('visibility', UTIL.getVisibility(_showXaxisLabel))
             .text(function () {
-                return _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+                return _displayNameForMeasure.map(function (p) {
+                    return p;
+                }).join(', ');
             })
             .text(function () {
-                var text = _displayNameForMeasure.map(function (p) { return p; }).join(', ');
+                var text = _displayNameForMeasure.map(function (p) {
+                    return p;
+                }).join(', ');
                 if (!_print) {
                     return UTIL.getTruncatedLabel(this, text, plotWidth - 150)
-                }
-                else {
+                } else {
                     return text;
                 }
             })
             .append("svg:title")
-            .text(function (d, i) { return _displayNameForMeasure.map(function (p) { return p; }).join(', '); });
+            .text(function (d, i) {
+                return _displayNameForMeasure.map(function (p) {
+                    return p;
+                }).join(', ');
+            });
 
 
         _localYAxis = d3.axisLeft(x0)
@@ -604,8 +621,8 @@ function clusteredhorizontalbar() {
                 if (d === null) {
                     return COMMON.NULLVALUE;
                 }
-                if (d.length > 3) {
-                    return d.substring(0, 3) + '...';
+                if (d.length > displayChar) {
+                    return d.substring(0, displayChar) + '...';
                 }
                 return d;
             })
@@ -694,8 +711,7 @@ function clusteredhorizontalbar() {
                             break;
                         }
                     }
-                }
-                );
+                });
 
             parentContainer.select('.filterData')
                 .on('click', applyFilter());
@@ -735,7 +751,9 @@ function clusteredhorizontalbar() {
             _x0.rangeRound([0, parseInt(_local_svg.attr('height') - 2 * COMMON.PADDING)])
                 .paddingInner(0.1)
                 .padding([0.1])
-                .domain(data.map(function (d) { return d[_dimension[0]]; }));
+                .domain(data.map(function (d) {
+                    return d[_dimension[0]];
+                }));
 
             _x1.padding(0.2)
                 .domain(keys).rangeRound([0, _x0.bandwidth()]);
@@ -744,7 +762,10 @@ function clusteredhorizontalbar() {
                 .domain([range[0], range[1]])
                 .nice();
 
-            brush.extent([[0, 0], [FilterControlWidth, parentContainer.attr('height')]])
+            brush.extent([
+                    [0, 0],
+                    [FilterControlWidth, parentContainer.attr('height')]
+                ])
                 .on("brush", brushed);
 
             // var separationLine = svgFilter.append("line")
@@ -828,20 +849,17 @@ function clusteredhorizontalbar() {
                     if (_displayColorExpression[_measure.indexOf(d.measure)].length) {
                         if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color').length > 0) {
                             return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color')
-                        }
-                        else {
+                        } else {
                             return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
                         }
-                    }
-                    else {
+                    } else {
                         return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
                     }
                 })
                 .style('stroke', function (d, i) {
                     if (d[d.measure] < 0) {
                         return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
-                    }
-                    else {
+                    } else {
                         return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
                     }
                 })
@@ -877,20 +895,17 @@ function clusteredhorizontalbar() {
                 if (_displayColorExpression[_measure.indexOf(d.measure)].length) {
                     if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color').length > 0) {
                         return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color')
-                    }
-                    else {
+                    } else {
                         return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
                     }
-                }
-                else {
+                } else {
                     return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
                 }
             })
             .style('stroke', function (d, i) {
                 if (d[d.measure] < 0) {
                     return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
-                }
-                else {
+                } else {
                     return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
                 }
             })
@@ -904,8 +919,7 @@ function clusteredhorizontalbar() {
                     if (!_print) {
                         if (broadcast && broadcast.isThresholdAlert) {
                             UTIL.openSchedulerDialog(parentContainer.attr('vizID'), d.measure, d[d.measure], d.dimension, d[d.dimension], broadcast);
-                        }
-                        else {
+                        } else {
                             if (isLiveEnabled) {
                                 broadcast.$broadcast('FlairBi:livemode-dialog');
                                 return;
@@ -979,12 +993,10 @@ function clusteredhorizontalbar() {
                 if (_textColorExpression[_measure.indexOf(d.measure)].length) {
                     if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color').length > 0) {
                         return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color')
-                    }
-                    else {
+                    } else {
                         return _textColor[_measure.indexOf(d.measure)];
                     }
-                }
-                else {
+                } else {
                     return _textColor[_measure.indexOf(d.measure)];
                 }
             })
@@ -1019,8 +1031,7 @@ function clusteredhorizontalbar() {
                     if ((this.getComputedTextLength() + 10) >= rectWidth) {
                         return 'hidden';
                     }
-                }
-                else {
+                } else {
                     var textInfo = d3.select(this).node().getBBox();
                     if (textInfo.width >= rectWidth) {
                         return 'hidden';
@@ -1115,12 +1126,10 @@ function clusteredhorizontalbar() {
                 if (_displayColorExpression[_measure.indexOf(d.measure)].length) {
                     if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color').length > 0) {
                         return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color')
-                    }
-                    else {
+                    } else {
                         return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
                     }
-                }
-                else {
+                } else {
                     return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
                 }
             })
@@ -1138,8 +1147,7 @@ function clusteredhorizontalbar() {
         if (_localLabelStack.length > 0) {
             if (filterGrid) {
                 data = UTIL.getFilterDataForLegend(_localLabelStack, data);
-            }
-            else {
+            } else {
                 data = UTIL.getFilterDataForLegend(_localLabelStack, _Local_data);
             }
         }
@@ -1185,8 +1193,7 @@ function clusteredhorizontalbar() {
                 data = UTIL.sortData(_data, filterConfig.key, filterConfig.sortType)
                 drawPlotForFilter.call(this, _data);
             }
-        }
-        else {
+        } else {
             if (!filterGrid) {
                 drawPlotForFilter.call(this, _data);
             }
@@ -1208,7 +1215,9 @@ function clusteredhorizontalbar() {
         x0.rangeRound([0, plotHeight])
             .paddingInner(0.1)
             .padding([0.1])
-            .domain(data.map(function (d) { return d[_dimension[0]]; }));
+            .domain(data.map(function (d) {
+                return d[_dimension[0]];
+            }));
 
         x1.padding(0.2)
             .domain(keys).rangeRound([0, x0.bandwidth()]);
@@ -1270,20 +1279,17 @@ function clusteredhorizontalbar() {
                 if (_displayColorExpression[_measure.indexOf(d.measure)].length) {
                     if (UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color').length > 0) {
                         return UTIL.expressionEvaluator(_displayColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color')
-                    }
-                    else {
+                    } else {
                         return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
                     }
-                }
-                else {
+                } else {
                     return UTIL.getDisplayColor(_measure.indexOf(d.measure), _displayColor);
                 }
             })
             .style('stroke', function (d, i) {
                 if (d[d.measure] < 0) {
                     return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
-                }
-                else {
+                } else {
                     return UTIL.getBorderColor(_measure.indexOf(d.measure), _borderColor);
                 }
             })
@@ -1312,12 +1318,10 @@ function clusteredhorizontalbar() {
                 if (_textColorExpression[_measure.indexOf(d.measure)].length) {
                     if (UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color').length > 0) {
                         return UTIL.expressionEvaluator(_textColorExpression[_measure.indexOf(d.measure)], d[d.measure], 'color')
-                    }
-                    else {
+                    } else {
                         return _textColor[_measure.indexOf(d.measure)];
                     }
-                }
-                else {
+                } else {
                     return _textColor[_measure.indexOf(d.measure)];
                 }
             })
@@ -1754,6 +1758,17 @@ function clusteredhorizontalbar() {
             return _showSorting;
         }
         _showSorting = value;
+        return chart;
+    }
+    chart.showMoreDimension = function (value) {
+        if (!arguments.length) {
+            return _showMoreDimension;
+        }
+        _showMoreDimension = value;
+        if (_showMoreDimension) {
+            margin.left = 150;
+            displayChar = 20;
+        }
         return chart;
     }
     return chart;
