@@ -1,4 +1,6 @@
 var d3 = require('d3');
+var $ = require("jquery");
+
 var COMMON = require('../extras/common.js')(),
     UTIL = require('../extras/util.js')();
 
