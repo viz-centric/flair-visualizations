@@ -14,13 +14,17 @@ npm install git+https://00b635f3054807339ad40a820da7dd4120691229:x-oauth-basic@g
 
 
 # Webpack
-
+```
 wepack
-
+```
 # Compile Scss
-
+```
 cd styles
+```
+
+```
 compass compile
+```
 
 
 
