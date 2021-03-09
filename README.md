@@ -9,3 +9,18 @@ With support for more than 20 different basic and advanced visualizations, the u
 Flair-Visualizations can be installed via npm.
 ``` 
 npm install git+https://00b635f3054807339ad40a820da7dd4120691229:x-oauth-basic@github.com/DX26-io/flair-visualizations.git
+
+
+
+
+# Webpack
+
+wepack
+
+# Compile Scss
+
+cd styles
+compass compile
+
+
+
