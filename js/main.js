@@ -12,6 +12,7 @@ var infographics = require('./charts/infographics.js');
 var kpi = require('./charts/kpi.js');
 var line = require('./charts/line.js');
 var map = require('./charts/map.js');
+var multilevelgrouping = require('./charts/multilevelgrouping');
 var numbergrid = require('./charts/numbergrid.js');
 var pie = require('./charts/pie.js');
 var piegrid = require('./charts/piegrid.js');
@@ -25,7 +26,6 @@ var table = require('./charts/table.js');
 var textobject = require('./charts/textobject.js');
 var treemap = require('./charts/treemap.js');
 var wordcloud = require('./charts/wordcloud.js');
-
 
 // Load the required CSS files
 //require('../styles/stylesheets/screen.css');
@@ -44,6 +44,7 @@ module.exports = {
 	kpi: kpi,
 	line: line,
 	map: map,
+	multilevelgrouping: multilevelgrouping,
 	numbergrid: numbergrid,
 	pie: pie,
 	piegrid, piegrid,
