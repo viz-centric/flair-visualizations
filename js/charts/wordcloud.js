@@ -2,7 +2,7 @@ var d3 = require('d3');
 var COMMON = require('../extras/common.js')();
 var d3layoutcloud = require("../../d3-libs/d3.layout.cloud.js");
 var Seedrandom = require("../../d3-libs/seedrandom.min.js");
-var $ = require("jquery");
+
 var UTIL = require('../extras/util.js')();
 
 function wordcloud() {

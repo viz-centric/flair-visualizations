@@ -2,7 +2,6 @@ var d3 = require('d3');
 var COMMON = require('../extras/common.js')();
 var UTIL = require('../extras/util.js')();
 var viz = require('../../d3-libs/viz.js');
-var $ = require("jquery");
 
 function piegrid() {
     var _NAME = 'piegrid';

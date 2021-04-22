@@ -1,6 +1,5 @@
 var d3 = require('d3');
 var UTIL = require('../extras/util.js')();
-var $ = require("jquery");
 
 function numbergrid() {
     var _NAME = 'numbergrid';
