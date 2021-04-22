@@ -2,9 +2,9 @@ var d3 = require('d3');
 var COMMON = require('../extras/common.js')();
 var d3sankey = require('../../d3-libs/d3.sankey.js');
 var UTIL = require('../extras/util.js')();
+var $ = require("jquery");
 try {
-    var d3Lasso = require("d3-lasso");
-
+    var d3Lasso = require('../../d3-libs/d3-lasso.min.js');
 } catch (ex) { }
 
 function sankey() {

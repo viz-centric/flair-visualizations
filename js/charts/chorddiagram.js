@@ -3,9 +3,9 @@ var COMMON = require('../extras/common.js')();
 var UTIL = require('../extras/util.js')();
 var LEGEND = require('../extras/legend_barcharts.js')();
 var viz = require('../../d3-libs/viz.js');
+var $ = require("jquery");
 try {
-    var d3Lasso = require("d3-lasso");
-} catch (ex) { }
+    var d3Lasso = require('../../d3-libs/d3-lasso.min.js');} catch (ex) { }
 
 function chorddiagram() {
     var _NAME = 'chorddiagram';

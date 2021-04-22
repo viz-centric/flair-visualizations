@@ -1,7 +1,8 @@
 var d3 = require('d3');
 var COMMON = require('../extras/common.js')();
 var UTIL = require('../extras/util.js')();
-
+var $ = require("jquery");
+require('datatables.net-dt')
 function pivottable() {
 
     var _NAME = 'pivottable';
