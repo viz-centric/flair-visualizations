@@ -29,7 +29,10 @@ const VisualizationUtils = {
     },
 
     getFieldPropertyValue: function (field, propertyName, orElse) {
-        return this.getPropertyValue(field.properties, propertyName, orElse);
+        if(field){
+            return this.getPropertyValue(field.properties, propertyName, orElse);
+        }
+        return '';
     },
 
     getDimensionsAndMeasures: function (fields) {
