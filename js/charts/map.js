@@ -3,10 +3,10 @@ var COMMON = require('../extras/common.js')();
 var UTIL = require('../extras/util.js')();
 var Topojson = require('topojson')
 var Worldtopo = require('../../script/world-topo-min.json')
-var $ = require("jquery");
 
 try {
-    var d3Lasso = require('../../d3-libs/d3-lasso.min.js');} catch (ex) { }
+    var d3Lasso = require("d3-lasso");
+} catch (ex) { }
 function map() {
 
     var _NAME = 'map';

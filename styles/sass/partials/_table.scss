@@ -17,7 +17,6 @@
 div.dataTables_wrapper {
   width: 100% !important;
   margin: 0 auto;
-  padding: 5px;
 }
 
 .dataTables_length {
@@ -45,12 +44,12 @@ div.dataTables_wrapper {
 }
 
 #viz_table_filter {
-  input {
+  input{
     height: 20px;
     border: 1px solid #e4e4e4;
     border-radius: 8px;
   }
-  label {
+  label{
     color: rgb(64, 67, 69);
     font-weight: normal;
   }
@@ -79,14 +78,6 @@ div.dataTables_wrapper {
   right: 0;
   bottom: 1px;
   margin: 2px 0px 0 0;
-  text-align: center;
-  list-style: none;
-  li {
-    display: inline;
-  }
-  .hidden {
-    display: none !important;
-  }
 }
 ._pagination li > a,
 ._pagination li > span {
@@ -179,7 +170,6 @@ div.dataTables_wrapper {
   }
 }
 
-table.dataTable.stripe tbody tr.odd,
-table.dataTable.display tbody tr.odd {
+table.dataTable.stripe tbody tr.odd, table.dataTable.display tbody tr.odd{
   background-color: #f1f1f1;
 }

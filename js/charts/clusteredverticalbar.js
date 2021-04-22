@@ -3,9 +3,8 @@ var COMMON = require('../extras/common.js')();
 var UTIL = require('../extras/util.js')();
 var LEGEND = require('../extras/legend_barcharts.js')();
 var $ = require("jquery");
-try {    
-    var d3Lasso = require('../../d3-libs/d3-lasso.min.js');
-
+try {
+    var d3Lasso = require("d3-lasso");
 } catch (ex) { }
 
 function clusteredverticalbar() {
