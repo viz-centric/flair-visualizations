@@ -1,4 +1,5 @@
 
+
 ## How to bundle the files
 
 create js files
@@ -45,13 +46,13 @@ compass compile command update or create the screen.css file
 > npm install 
 > git+https://00b635f3054807339ad40a820da7dd4120691229:x-oauth-basic@github.com/DX26-io/flair-visualizations.git
 
-###### import file 
+**Import file**
 
 import flairVisualizations from 'flair-visualizations/js/main';
 
-###### How to call visualizations function
+ **How to call visualizations function**
 
-Example :
+**Example :**
 
     const clusteredverticalBarChartObj = flairVisualizations
             .clusteredverticalbar()
