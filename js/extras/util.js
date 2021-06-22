@@ -2,6 +2,7 @@ var d3 = require('d3');
 var COMMON = require('../extras/common.js')();
 var currentEvent = require('d3-selection');
 var moment = require('moment');
+var $ = require("jquery");
 
 function util() {
 
