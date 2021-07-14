@@ -212,37 +212,20 @@ function clusteredverticalbar() {
             }
 
             if (broadcast) {
-                var idWidget = broadcast.updateWidget[scope.node().parentNode.id];
-                broadcast.updateWidget = {};
-                broadcast.updateWidget[scope.node().parentNode.id] = idWidget;
-
-                var _filterList = {}, list = []
-
-                filterData.map(function (val) {
-                    list.push(val[_dimension[0]])
-                })
-
                 var _filterDimension = {};
-                if (broadcast.filterSelection.id) {
-                    _filterDimension = broadcast.filterSelection.filter;
-                } else {
-                    broadcast.filterSelection.id = parentContainer.attr('id');
-                }
-                var dimension = _dimension[0];
 
-                _filterDimension[dimension] = filterData.map(function (d) {
+                _filterDimension[_dimension[0]] = filterData.map(function (d) {
                     return d[_dimension[0]];
                 });
 
-                _filterDimension[dimension]._meta = {
+                _filterDimension[_dimension[0]]._meta = {
                     dataType: _dimensionType[0],
                     valueType: 'castValueType'
                 };
+                var _filterParameters = roadcast.selectedFilters;
+                _filterParameters[_dimension[0]] = _filterDimension[_dimension[0]];
+                broadcast.saveSelectedFilter(_filterParameters);
 
-                broadcast.filterSelection.filter = _filterDimension;
-                var _filterParameters = filterParameters.get();
-                _filterParameters[dimension] = _filterDimension[dimension];
-                filterParameters.save(_filterParameters);
             }
         }
 
@@ -251,14 +234,8 @@ function clusteredverticalbar() {
     var applyFilter = function () {
         return function () {
             if (filterData.length > 0) {
-                //Viz renders twice issue
-                // chart.update(filterData);
                 if (broadcast) {
-                    broadcast.updateWidget = {};
-                    broadcast.filterSelection.id = null;
-                    broadcast.$broadcast('flairbiApp:filter-input-refresh');
-                    broadcast.$broadcast('flairbiApp:filter');
-                    broadcast.$broadcast('flairbiApp:filter-add');
+                    broadcast.applyFilter(roadcast.selectedFilters, broadcast.visualmetadata, broadcast.view);
                     d3.select(this.parentNode)
                         .style('visibility', 'hidden');
                 }
@@ -917,26 +894,20 @@ function clusteredverticalbar() {
                                 }
                             }
 
-                            var _filterDimension = {};
-                            if (broadcast.filterSelection.id) {
-                                _filterDimension = broadcast.filterSelection.filter;
-                            } else {
-                                broadcast.filterSelection.id = parentContainer.attr('id');
-                            }
-                            var dimension = _dimension[0];
-                            if (_filterDimension[dimension]) {
-                                _filterDimension[dimension] = filterData.map(function (d) {
-                                    return d[_dimension[0]];
-                                });
-                            } else {
-                                _filterDimension[dimension] = [d[dimension]];
-                            }
-                            _filterDimension[dimension]._meta = {
+                            var _filterDimension = {};            
+                            _filterDimension[_dimension[0]] = filterData.map(function (d) {
+                                return d[_dimension[0]];
+                            });
+            
+                            _filterDimension[_dimension[0]]._meta = {
                                 dataType: _dimensionType[0],
                                 valueType: 'castValueType'
                             };
-
-                            UTIL.saveFilterParameters(broadcast, filterParameters, parentContainer, _filterDimension, dimension);
+            
+                            var _filterParameters = roadcast.selectedFilters[_dimension[0]] || {};
+                            _filterParameters[_dimension[0]] = _filterDimension[_dimension[0]];
+                            broadcast.saveSelectedFilter(_filterParameters);
+            
                         }
                     }
                 })
