@@ -274,10 +274,10 @@ function wordcloud() {
                 .attr(
                     "transform",
                     "translate(" +
-                        ~~(parentWidth / 2) +
-                        "," +
-                        ~~(parentHeight / 2) +
-                        ")"
+                    ~~(parentWidth / 2) +
+                    "," +
+                    ~~(parentHeight / 2) +
+                    ")"
                 )
                 .selectAll("text")
                 .data(words)
@@ -333,13 +333,8 @@ function wordcloud() {
                             point.classed("selected", true);
                         }
 
-                        var _filterDimension = {};
-                        if (broadcast.filterSelection.id) {
-                            _filterDimension = broadcast.filterSelection.filter;
-                        } else {
-                            broadcast.filterSelection.id =
-                                parentContainer.attr("id");
-                        }
+                        var _filterDimension = broadcast.selectedFilters || {};
+
 
                         var dimension = _dimension;
                         if (_filterDimension[dimension]) {
@@ -357,14 +352,7 @@ function wordcloud() {
                             dataType: _dimensionType[0],
                             valueType: "castValueType",
                         };
-
-                        UTIL.saveFilterParameters(
-                            broadcast,
-                            filterParameters,
-                            parentContainer,
-                            _filterDimension,
-                            dimension
-                        );
+                        broadcast.saveSelectedFilter(_filterDimension);
                     });
 
                 parentContainer

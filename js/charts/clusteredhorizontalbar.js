@@ -5,7 +5,7 @@ var LEGEND = require("../extras/legend_barcharts.js")();
 var $ = require("jquery");
 try {
     var d3Lasso = require("../../d3-libs/d3-lasso.min.js");
-} catch (ex) {}
+} catch (ex) { }
 
 function clusteredhorizontalbar() {
     var _NAME = "clusteredhorizontalbar";
@@ -255,7 +255,7 @@ function clusteredhorizontalbar() {
                 filterData = _filter;
             }
             if (broadcast) {
-                var _filterDimension = {};
+                var _filterDimension = broadcast.selectedFilters || {};
 
                 _filterDimension[_dimension[0]] = filterData.map(function (d) {
                     return d[_dimension[0]];
@@ -265,10 +265,7 @@ function clusteredhorizontalbar() {
                     dataType: _dimensionType[0],
                     valueType: "castValueType",
                 };
-                var _filterParameters = broadcast.selectedFilters;
-                _filterParameters[_dimension[0]] =
-                    _filterDimension[_dimension[0]];
-                broadcast.saveSelectedFilter(_filterParameters);
+               broadcast.saveSelectedFilter(_filterDimension);
             }
         };
     };
@@ -352,7 +349,7 @@ function clusteredhorizontalbar() {
                         if (
                             UTIL.expressionEvaluator(
                                 _displayColorExpression[
-                                    _measure.indexOf(d.measure)
+                                _measure.indexOf(d.measure)
                                 ],
                                 d[d.measure],
                                 "color"
@@ -360,7 +357,7 @@ function clusteredhorizontalbar() {
                         ) {
                             return UTIL.expressionEvaluator(
                                 _displayColorExpression[
-                                    _measure.indexOf(d.measure)
+                                _measure.indexOf(d.measure)
                                 ],
                                 d[d.measure],
                                 "color"
@@ -507,7 +504,7 @@ function clusteredhorizontalbar() {
             if (
                 !(
                     Object.keys(broadcast.filterSelection.filter).length ===
-                        0 &&
+                    0 &&
                     broadcast.filterSelection.filter.constructor === Object
                 )
             ) {
@@ -1056,7 +1053,7 @@ function clusteredhorizontalbar() {
                         if (
                             UTIL.expressionEvaluator(
                                 _displayColorExpression[
-                                    _measure.indexOf(d.measure)
+                                _measure.indexOf(d.measure)
                                 ],
                                 d[d.measure],
                                 "color"
@@ -1064,7 +1061,7 @@ function clusteredhorizontalbar() {
                         ) {
                             return UTIL.expressionEvaluator(
                                 _displayColorExpression[
-                                    _measure.indexOf(d.measure)
+                                _measure.indexOf(d.measure)
                                 ],
                                 d[d.measure],
                                 "color"
@@ -1130,7 +1127,7 @@ function clusteredhorizontalbar() {
                     if (
                         UTIL.expressionEvaluator(
                             _displayColorExpression[
-                                _measure.indexOf(d.measure)
+                            _measure.indexOf(d.measure)
                             ],
                             d[d.measure],
                             "color"
@@ -1138,7 +1135,7 @@ function clusteredhorizontalbar() {
                     ) {
                         return UTIL.expressionEvaluator(
                             _displayColorExpression[
-                                _measure.indexOf(d.measure)
+                            _measure.indexOf(d.measure)
                             ],
                             d[d.measure],
                             "color"
@@ -1230,7 +1227,7 @@ function clusteredhorizontalbar() {
                                     filterData.push(_filter[0]);
                                 }
                             }
-                            var _filterDimension = {};
+                            var _filterDimension = broadcast.selectedFilters || {};
                             _filterDimension[_dimension[0]] = filterData.map(
                                 function (d) {
                                     return d[_dimension[0]];
@@ -1242,11 +1239,7 @@ function clusteredhorizontalbar() {
                                 valueType: "castValueType",
                             };
 
-                            var _filterParameters =
-                                broadcast.selectedFilters[_dimension[0]] || {};
-                            _filterParameters[_dimension[0]] =
-                                _filterDimension[_dimension[0]];
-                            broadcast.saveSelectedFilter(_filterParameters);
+                            broadcast.saveSelectedFilter(_filterDimension);
                         }
                     }
                 });
@@ -1414,7 +1407,7 @@ function clusteredhorizontalbar() {
             .style("fill", COMMON.HIGHLIGHTER);
     };
 
-    var _legendMouseMove = function (data, plot) {};
+    var _legendMouseMove = function (data, plot) { };
 
     var _legendMouseOut = function (data, plot) {
         plot.selectAll("g.clusteredhorizontalbar")
@@ -1429,7 +1422,7 @@ function clusteredhorizontalbar() {
                     if (
                         UTIL.expressionEvaluator(
                             _displayColorExpression[
-                                _measure.indexOf(d.measure)
+                            _measure.indexOf(d.measure)
                             ],
                             d[d.measure],
                             "color"
@@ -1437,7 +1430,7 @@ function clusteredhorizontalbar() {
                     ) {
                         return UTIL.expressionEvaluator(
                             _displayColorExpression[
-                                _measure.indexOf(d.measure)
+                            _measure.indexOf(d.measure)
                             ],
                             d[d.measure],
                             "color"
@@ -1480,7 +1473,7 @@ function clusteredhorizontalbar() {
             if (
                 !(
                     Object.keys(broadcast.filterSelection.filter).length ===
-                        0 &&
+                    0 &&
                     broadcast.filterSelection.filter.constructor === Object
                 )
             ) {
@@ -1633,7 +1626,7 @@ function clusteredhorizontalbar() {
                     if (
                         UTIL.expressionEvaluator(
                             _displayColorExpression[
-                                _measure.indexOf(d.measure)
+                            _measure.indexOf(d.measure)
                             ],
                             d[d.measure],
                             "color"
@@ -1641,7 +1634,7 @@ function clusteredhorizontalbar() {
                     ) {
                         return UTIL.expressionEvaluator(
                             _displayColorExpression[
-                                _measure.indexOf(d.measure)
+                            _measure.indexOf(d.measure)
                             ],
                             d[d.measure],
                             "color"

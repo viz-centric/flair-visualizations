@@ -6,7 +6,7 @@ var viz = require("../../d3-libs/viz.js");
 var $ = require("jquery");
 try {
     var d3Lasso = require("../../d3-libs/d3-lasso.min.js");
-} catch (ex) {}
+} catch (ex) { }
 
 function chorddiagram() {
     var _NAME = "chorddiagram";
@@ -163,7 +163,7 @@ function chorddiagram() {
             }
 
             if (broadcast) {
-                var _filterDimension = {};
+                var _filterDimension = broadcast.selectedFilters || {};
 
                 _filterDimension[_dimension[0]] = _filter;
 
@@ -171,10 +171,7 @@ function chorddiagram() {
                     dataType: _dimensionType[0],
                     valueType: "castValueType",
                 };
-                var _filterParameters = broadcast.selectedFilters;
-                _filterParameters[_dimension[0]] =
-                    _filterDimension[_dimension[0]];
-                broadcast.saveSelectedFilter(_filterParameters);
+               broadcast.saveSelectedFilter(_filterDimension);
             }
         };
     };
@@ -299,9 +296,9 @@ function chorddiagram() {
                 } else {
                     point.classed("selected", true);
                 }
-                var _filterDimension = {};
+                var _filterDimension = broadcast.selectedFilters || {};
                 if (broadcast.filterSelection.id) {
-                    _filterDimension = broadcast.filterSelection.filter;
+                    _filterDimension = broadcast.selectedFilters[_dimension[0]] || {};
                 } else {
                     broadcast.filterSelection.id = parentContainer.attr("id");
                 }
@@ -322,13 +319,9 @@ function chorddiagram() {
                     dataType: _dimensionType[0],
                     valueType: "castValueType",
                 };
-                UTIL.saveFilterParameters(
-                    broadcast,
-                    filterParameters,
-                    parentContainer,
-                    _filterDimension,
-                    dimension
-                );
+                var _filterParameters = broadcast.selectedFilters[_dimension[0]] || {};
+                _filterParameters[_dimension[0]] = _filterDimension[_dimension[0]];
+                broadcast.saveSelectedFilter(_filterParameters);
             });
     };
 
@@ -488,8 +481,8 @@ function chorddiagram() {
                             width / 2 -
                             Math.abs(
                                 outerRadius *
-                                    ((r * Math.cos(angle(d))) / h) *
-                                    1.05
+                                ((r * Math.cos(angle(d))) / h) *
+                                1.05
                             );
                     }
                     return UTIL.getTruncatedLabel(
@@ -574,7 +567,7 @@ function chorddiagram() {
             .style("fill", COMMON.HIGHLIGHTER);
     };
 
-    var _legendMouseMove = function (data, plot) {};
+    var _legendMouseMove = function (data, plot) { };
 
     var _legendMouseOut = function (data, plot) {
         plot.selectAll("g.clusteredverticalbar")

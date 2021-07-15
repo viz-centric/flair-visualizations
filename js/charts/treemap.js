@@ -5,7 +5,7 @@ var $ = require("jquery");
 
 try {
     var d3Lasso = require("../../d3-libs/d3-lasso.min.js");
-} catch (ex) {}
+} catch (ex) { }
 
 function treemap() {
     /* These are the constant global variable for the function clusteredverticalbar.
@@ -603,10 +603,7 @@ function treemap() {
 
                 if (broadcast) {
                     var _filterDimension = _filter;
-                    var _filterParameters = broadcast.selectedFilters;
-                    _filterParameters[_dimension[0]] =
-                        _filterDimension[_dimension[0]];
-                    broadcast.saveSelectedFilter(_filterParameters);
+                    broadcast.saveSelectedFilter(_filterDimension);
                 }
             } else {
                 filterData = [];
@@ -745,15 +742,8 @@ function treemap() {
                             valueType: "castValueType",
                         };
                     }
-
-                    var idWidget =
-                        broadcast.updateWidget[parentContainer.attr("id")];
-                    broadcast.updateWidget = {};
-                    broadcast.updateWidget[parentContainer.attr("id")] =
-                        idWidget;
-                    broadcast.filterSelection.filter = filterList;
-                    var _filterParameters = filterParameters.get();
-                    filterParameters.save(filterList);
+                    var _filterDimension = _filter;
+                    broadcast.saveSelectedFilter(_filterDimension);
                 });
         }
 

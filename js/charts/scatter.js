@@ -5,7 +5,7 @@ var LEGEND = require("../extras/scatter_legend.js")();
 var $ = require("jquery");
 try {
     var d3Lasso = require("../../d3-libs/d3-lasso.min.js");
-} catch (ex) {}
+} catch (ex) { }
 
 function scatter() {
     var _NAME = "scatterChart";
@@ -195,7 +195,7 @@ function scatter() {
             }
 
             if (broadcast) {
-                var _filterDimension = {};
+                var _filterDimension = broadcast.selectedFilters || {};
 
                 _filterDimension[_dimension[0]] = filterData.map(function (d) {
                     return d[_dimension[0]];
@@ -205,10 +205,7 @@ function scatter() {
                     dataType: _dimensionType[0],
                     valueType: "castValueType",
                 };
-                var _filterParameters = broadcast.selectedFilters;
-                _filterParameters[_dimension[0]] =
-                    _filterDimension[_dimension[0]];
-                broadcast.saveSelectedFilter(_filterParameters);
+               broadcast.saveSelectedFilter(_filterDimension);
             }
         };
     };
@@ -688,8 +685,8 @@ function scatter() {
                         ).val("");
                         $(
                             "#Modal_" +
-                                parentContainer.attr("id") +
-                                " .threshold"
+                            parentContainer.attr("id") +
+                            " .threshold"
                         ).val("");
                         $(
                             "#Modal_" + parentContainer.attr("id") + " .measure"
@@ -789,13 +786,8 @@ function scatter() {
 
                         filterData = _filter;
 
-                        var _filterDimension = {};
-                        if (broadcast.filterSelection.id) {
-                            _filterDimension = broadcast.filterSelection.filter;
-                        } else {
-                            broadcast.filterSelection.id =
-                                parentContainer.attr("id");
-                        }
+                        var _filterDimension = broadcast.selectedFilters || {};
+                        s
                         var dimension = _dimension[0];
                         if (_filterDimension[dimension]) {
                             var temp = _filterDimension[dimension];
@@ -812,13 +804,7 @@ function scatter() {
                             dataType: _dimensionType[0],
                             valueType: "castValueType",
                         };
-                        UTIL.saveFilterParameters(
-                            broadcast,
-                            filterParameters,
-                            parentContainer,
-                            _filterDimension,
-                            dimension
-                        );
+                        broadcast.saveSelectedFilter(_filterDimension);
                     }
                 });
         }
@@ -852,7 +838,7 @@ function scatter() {
             .style("fill", COMMON.HIGHLIGHTER);
     };
 
-    var _legendMouseMove = function (data, plot) {};
+    var _legendMouseMove = function (data, plot) { };
 
     var _legendMouseOut = function (data, plot) {
         var circle = plot.selectAll("circle").filter(function (d) {
@@ -1027,9 +1013,9 @@ function scatter() {
 
                 filterData = _filter;
 
-                var _filterDimension = {};
+                var _filterDimension = broadcast.selectedFilters || {};
                 if (broadcast.filterSelection.id) {
-                    _filterDimension = broadcast.filterSelection.filter;
+                    _filterDimension = broadcast.selectedFilters[_dimension[0]] || {};
                 } else {
                     broadcast.filterSelection.id = parentContainer.attr("id");
                 }
@@ -1049,13 +1035,7 @@ function scatter() {
                     dataType: _dimensionType[0],
                     valueType: "castValueType",
                 };
-                UTIL.saveFilterParameters(
-                    broadcast,
-                    filterParameters,
-                    parentContainer,
-                    _filterDimension,
-                    dimension
-                );
+                broadcast.saveSelectedFilter(_filterDimension);
             });
 
         var _localXLabels = data.map(function (d) {

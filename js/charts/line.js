@@ -304,7 +304,7 @@ function line() {
                 filterData = _filter;
             }
             if (broadcast) {
-                var _filterDimension = {};
+               var _filterDimension = broadcast.selectedFilters || {};
 
                 _filterDimension[_dimension[0]] = filterData.map(function (d) {
                     return d[_dimension[0]];
@@ -314,10 +314,7 @@ function line() {
                     dataType: _dimensionType[0],
                     valueType: "castValueType",
                 };
-                var _filterParameters = broadcast.selectedFilters;
-                _filterParameters[_dimension[0]] =
-                    _filterDimension[_dimension[0]];
-                broadcast.saveSelectedFilter(_filterParameters);
+               broadcast.saveSelectedFilter(_filterDimension);
             }
         };
     };
@@ -1293,13 +1290,8 @@ function line() {
                             }
                         }
 
-                        var _filterDimension = {};
-                        if (broadcast.filterSelection.id) {
-                            _filterDimension = broadcast.filterSelection.filter;
-                        } else {
-                            broadcast.filterSelection.id =
-                                parentContainer.attr("id");
-                        }
+                       var _filterDimension = broadcast.selectedFilters || {};
+
                         var dimension = _dimension[0];
                         if (_filterDimension[dimension]) {
                             _filterDimension[dimension] = filterData.map(
@@ -1316,13 +1308,7 @@ function line() {
                             dataType: _dimensionType[0],
                             valueType: "castValueType",
                         };
-                        UTIL.saveFilterParameters(
-                            broadcast,
-                            filterParameters,
-                            parentContainer,
-                            _filterDimension,
-                            dimension
-                        );
+                        broadcast.saveSelectedFilter(_filterDimension);
                     }
                 }
             });
@@ -2478,13 +2464,8 @@ function line() {
                             }
                         }
 
-                        var _filterDimension = {};
-                        if (broadcast.filterSelection.id) {
-                            _filterDimension = broadcast.filterSelection.filter;
-                        } else {
-                            broadcast.filterSelection.id =
-                                parentContainer.attr("id");
-                        }
+                       var _filterDimension = broadcast.selectedFilters || {};
+    
                         var dimension = _dimension[0];
                         if (_filterDimension[dimension]) {
                             _filterDimension[dimension] = filterData.map(
@@ -2501,13 +2482,7 @@ function line() {
                             dataType: _dimensionType[0],
                             valueType: "castValueType",
                         };
-                        UTIL.saveFilterParameters(
-                            broadcast,
-                            filterParameters,
-                            parentContainer,
-                            _filterDimension,
-                            dimension
-                        );
+                        broadcast.saveSelectedFilter(_filterDimension);
                     }
                 }
             });

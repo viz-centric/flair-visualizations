@@ -5,7 +5,7 @@ var LEGEND = require("../extras/legend.js")();
 var $ = require("jquery");
 try {
     var d3Lasso = require("../../d3-libs/d3-lasso.min.js");
-} catch (ex) {}
+} catch (ex) { }
 function pie() {
     /* These are the constant global variable for the function pie.
      */
@@ -288,7 +288,7 @@ function pie() {
                 filterData = _filter;
             }
             if (broadcast) {
-                var _filterDimension = {};
+                var _filterDimension = broadcast.selectedFilters || {};
 
                 _filterDimension[_dimension[0]] = filterData.map(function (d) {
                     return d[_dimension[0]];
@@ -298,10 +298,7 @@ function pie() {
                     dataType: _dimensionType[0],
                     valueType: "castValueType",
                 };
-                var _filterParameters = broadcast.selectedFilters;
-                _filterParameters[_dimension[0]] =
-                    _filterDimension[_dimension[0]];
-                broadcast.saveSelectedFilter(_filterParameters);
+               broadcast.saveSelectedFilter(_filterDimension);
             }
         };
     };
@@ -418,7 +415,7 @@ function pie() {
             .style("visibility", "visible");
     };
 
-    var _legendMouseMove = function (data, plot) {};
+    var _legendMouseMove = function (data, plot) { };
 
     var _legendMouseOut = function (data, plot) {
         plot.selectAll("g.arc")
@@ -589,7 +586,7 @@ function pie() {
                         translate = [
                             plotWidth / 2,
                             20 * parseFloat(legendBreakCount + 1) +
-                                plotHeight / 2,
+                            plotHeight / 2,
                         ];
                         break;
                     case "BOTTOM":
@@ -706,8 +703,8 @@ function pie() {
                     return (d.endAngle + d.startAngle) / 2 > Math.PI
                         ? "end"
                         : (d.endAngle + d.startAngle) / 2 < Math.PI
-                        ? "start"
-                        : "middle";
+                            ? "start"
+                            : "middle";
                 }
             })
             .text(_labelFn())
@@ -773,13 +770,8 @@ function pie() {
                     obj[chart.measure()] = d.data[_measure[0]];
                     filterData.push(obj);
 
-                    var _filterDimension = {};
-                    if (broadcast.filterSelection.id) {
-                        _filterDimension = broadcast.filterSelection.filter;
-                    } else {
-                        broadcast.filterSelection.id =
-                            parentContainer.attr("id");
-                    }
+                    var _filterDimension = broadcast.selectedFilters || {};
+
                     var dimension = _dimension[0];
                     if (_filterDimension[dimension]) {
                         var temp = _filterDimension[dimension];
@@ -798,13 +790,7 @@ function pie() {
                         valueType: "castValueType",
                     };
 
-                    UTIL.saveFilterParameters(
-                        broadcast,
-                        filterParameters,
-                        parentContainer,
-                        _filterDimension,
-                        dimension
-                    );
+                  broadcast.saveSelectedFilter(_filterParameters);
                 });
 
             _local_svg.select("g.lasso").remove();
@@ -1062,9 +1048,9 @@ function pie() {
                 obj[chart.measure()] = d.data[_measure[0]];
                 filterData.push(obj);
 
-                var _filterDimension = {};
+                var _filterDimension = broadcast.selectedFilters || {};
                 if (broadcast.filterSelection.id) {
-                    _filterDimension = broadcast.filterSelection.filter;
+                    _filterDimension = broadcast.selectedFilters[_dimension[0]] || {};
                 } else {
                     broadcast.filterSelection.id = parentContainer.attr("id");
                 }
@@ -1085,13 +1071,7 @@ function pie() {
                     dataType: _dimensionType[0],
                     valueType: "castValueType",
                 };
-                UTIL.saveFilterParameters(
-                    broadcast,
-                    filterParameters,
-                    parentContainer,
-                    _filterDimension,
-                    dimension
-                );
+                broadcast.saveSelectedFilter(_filterDimension);
             });
 
         var plot = _local_svg.select(".plot");
@@ -1142,8 +1122,8 @@ function pie() {
                     return (d.endAngle + d.startAngle) / 2 > Math.PI
                         ? "end"
                         : (d.endAngle + d.startAngle) / 2 < Math.PI
-                        ? "start"
-                        : "middle";
+                            ? "start"
+                            : "middle";
                 }
             })
             .text(_labelFn())

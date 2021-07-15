@@ -262,7 +262,7 @@ function stackedhorizontalbar() {
                 filterData = _filter;
             }
             if (broadcast) {
-                var _filterDimension = {};
+               var _filterDimension = broadcast.selectedFilters || {};
 
                 _filterDimension[_dimension[0]] = filterData.map(function (d) {
                     return d[_dimension[0]];
@@ -272,10 +272,7 @@ function stackedhorizontalbar() {
                     dataType: _dimensionType[0],
                     valueType: "castValueType",
                 };
-                var _filterParameters = broadcast.selectedFilters;
-                _filterParameters[_dimension[0]] =
-                    _filterDimension[_dimension[0]];
-                broadcast.saveSelectedFilter(_filterParameters);
+               broadcast.saveSelectedFilter(_filterDimension);
             }
         };
     };
@@ -693,7 +690,7 @@ function stackedhorizontalbar() {
                                     filterData.push(_filter[0]);
                                 }
                             }
-                            var _filterDimension = {};
+                           var _filterDimension = broadcast.selectedFilters || {};
                             _filterDimension[_dimension[0]] = filterData.map(
                                 function (d) {
                                     return d[_dimension[0]];
@@ -705,11 +702,7 @@ function stackedhorizontalbar() {
                                 valueType: "castValueType",
                             };
 
-                            var _filterParameters =
-                                broadcast.selectedFilters[_dimension[0]] || {};
-                            _filterParameters[_dimension[0]] =
-                                _filterDimension[_dimension[0]];
-                            broadcast.saveSelectedFilter(_filterParameters);
+                            broadcast.saveSelectedFilter(_filterDimension);
                         }
                     }
                 });

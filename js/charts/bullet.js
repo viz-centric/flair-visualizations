@@ -5,7 +5,7 @@ var UTIL = require("../extras/util.js")();
 var $ = require("jquery");
 try {
     var d3Lasso = require("../../d3-libs/d3-lasso.min.js");
-} catch (ex) {}
+} catch (ex) { }
 function bullet() {
     var _NAME = "bullet";
 
@@ -208,7 +208,7 @@ function bullet() {
             }
 
             if (broadcast) {
-                var _filterDimension = {};
+                var _filterDimension = broadcast.selectedFilters || {};
 
                 _filterDimension[_dimension[0]] = ffilterData.map(function (
                     val
@@ -220,10 +220,7 @@ function bullet() {
                     dataType: _dimensionType[0],
                     valueType: "castValueType",
                 };
-                var _filterParameters = broadcast.selectedFilters;
-                _filterParameters[_dimension[0]] =
-                    _filterDimension[_dimension[0]];
-                broadcast.saveSelectedFilter(_filterParameters);
+               broadcast.saveSelectedFilter(_filterDimension);
             }
         };
     };
@@ -443,10 +440,10 @@ function bullet() {
             d.ranges = getSegmentValues(
                 Math.floor(
                     1.2 *
-                        Math.max.apply(Math, [
-                            item[measures[0]],
-                            item[measures[1]],
-                        ])
+                    Math.max.apply(Math, [
+                        item[measures[0]],
+                        item[measures[1]],
+                    ])
                 )
             );
             d.measures = [item[measures[0]]];
@@ -629,13 +626,8 @@ function bullet() {
                         filterData.push(obj);
                     }
 
-                    var _filterDimension = {};
-                    if (broadcast.filterSelection.id) {
-                        _filterDimension = broadcast.filterSelection.filter;
-                    } else {
-                        broadcast.filterSelection.id =
-                            parentContainer.attr("id");
-                    }
+                    var _filterDimension = broadcast.selectedFilters || {};
+
                     var _dimension = dimension[0];
                     if (_filterDimension[_dimension]) {
                         var temp = _filterDimension[_dimension];
@@ -653,13 +645,7 @@ function bullet() {
                         dataType: _dimensionType[0],
                         valueType: "castValueType",
                     };
-                    UTIL.saveFilterParameters(
-                        broadcast,
-                        filterParameters,
-                        parentContainer,
-                        _filterDimension,
-                        _dimension
-                    );
+                    broadcast.saveSelectedFilter(_filterParameters);
                 });
 
             var _filter = UTIL.createFilterElement();
@@ -711,10 +697,10 @@ function bullet() {
             d.ranges = getSegmentValues(
                 Math.floor(
                     1.2 *
-                        Math.max.apply(Math, [
-                            item[measures[0]],
-                            item[measures[1]],
-                        ])
+                    Math.max.apply(Math, [
+                        item[measures[0]],
+                        item[measures[1]],
+                    ])
                 )
             );
             d.measures = [item[measures[0]]];
@@ -839,9 +825,9 @@ function bullet() {
                     filterData.push(obj);
                 }
 
-                var _filterDimension = {};
+                var _filterDimension = broadcast.selectedFilters || {};
                 if (broadcast.filterSelection.id) {
-                    _filterDimension = broadcast.filterSelection.filter;
+                    _filterDimension = broadcast.selectedFilters[_dimension[0]] || {};
                 } else {
                     broadcast.filterSelection.id = parentContainer.attr("id");
                 }

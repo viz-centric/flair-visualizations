@@ -5,7 +5,7 @@ var UTIL = require("../extras/util.js")();
 var $ = require("jquery");
 try {
     var d3Lasso = require("../../d3-libs/d3-lasso.min.js");
-} catch (ex) {}
+} catch (ex) { }
 
 function sankey() {
     var _NAME = "sankey";
@@ -234,10 +234,7 @@ function sankey() {
 
             if (broadcast) {
                 var _filterDimension = _filterList;
-                var _filterParameters = broadcast.selectedFilters;
-                _filterParameters[_dimension[0]] =
-                    _filterDimension[_dimension[0]];
-                broadcast.saveSelectedFilter(_filterParameters);
+               broadcast.saveSelectedFilter(_filterDimension);
             }
         };
     };
@@ -390,13 +387,13 @@ function sankey() {
             d3.select(this).attr(
                 "transform",
                 "translate(" +
-                    d.x +
-                    ", " +
-                    (d.y = Math.max(
-                        0,
-                        Math.min(parentHeight - d.dy, d3.event.y)
-                    )) +
-                    ")"
+                d.x +
+                ", " +
+                (d.y = Math.max(
+                    0,
+                    Math.min(parentHeight - d.dy, d3.event.y)
+                )) +
+                ")"
             );
             sankey.relayout();
             link.attr("d", path);
@@ -697,13 +694,8 @@ function sankey() {
                         }
                     }
 
-                    var _filterDimension = {};
-                    if (broadcast.filterSelection.id) {
-                        _filterDimension = broadcast.filterSelection.filter;
-                    } else {
-                        broadcast.filterSelection.id =
-                            parentContainer.attr("id");
-                    }
+                    var _filterDimension = broadcast.selectedFilters || {};
+
                     var dimension = _dimension[0];
                     if (_filterDimension[dimension]) {
                         var temp = _filterDimension[dimension];
@@ -722,13 +714,7 @@ function sankey() {
                         valueType: "castValueType",
                     };
 
-                    UTIL.saveFilterParameters(
-                        broadcast,
-                        filterParameters,
-                        parentContainer,
-                        _filterDimension,
-                        dimension
-                    );
+                    broadcast.saveSelectedFilter(_filterDimension);
                 });
 
             node.select("rect")
@@ -760,13 +746,8 @@ function sankey() {
                         rect.classed("selected", true);
                     }
 
-                    var _filterDimension = {};
-                    if (broadcast.filterSelection.id) {
-                        _filterDimension = broadcast.filterSelection.filter;
-                    } else {
-                        broadcast.filterSelection.id =
-                            parentContainer.attr("id");
-                    }
+                    var _filterDimension = broadcast.selectedFilters || {};
+
                     var _dimension = d.nodeType;
                     if (_filterDimension[_dimension]) {
                         var temp = _filterDimension[_dimension];
@@ -784,13 +765,7 @@ function sankey() {
                         dataType: _dimensionType[dimension.indexOf(d.nodeType)],
                         valueType: "castValueType",
                     };
-                    UTIL.saveFilterParameters(
-                        broadcast,
-                        filterParameters,
-                        parentContainer,
-                        _filterDimension,
-                        dimension
-                    );
+                    broadcast.saveSelectedFilter(_filterDimension);
                 });
 
             parentContainer.select(".filterData").on("click", applyFilter());

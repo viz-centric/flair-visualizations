@@ -5,7 +5,7 @@ var $ = require("jquery");
 
 try {
     var d3Lasso = require("../../d3-libs/d3-lasso.min.js");
-} catch (ex) {}
+} catch (ex) { }
 function heatmap() {
     var _NAME = "heatmap";
 
@@ -460,7 +460,7 @@ function heatmap() {
             }
 
             if (broadcast) {
-                var _filterDimension = {};
+                var _filterDimension = broadcast.selectedFilters || {};
 
                 _filterDimension[_dimension[0]] = filterData.map(function (d) {
                     return d[_dimension[0]];
@@ -470,10 +470,7 @@ function heatmap() {
                     dataType: _dimensionType[0],
                     valueType: "castValueType",
                 };
-                var _filterParameters = broadcast.selectedFilters;
-                _filterParameters[_dimension[0]] =
-                    _filterDimension[_dimension[0]];
-                broadcast.saveSelectedFilter(_filterParameters);
+               broadcast.saveSelectedFilter(_filterDimension);
             }
         };
     };
@@ -769,13 +766,9 @@ function heatmap() {
                         rect.classed("selected", true);
                     }
 
-                    var _filterDimension = {};
-                    if (broadcast.filterSelection.id) {
-                        _filterDimension = broadcast.filterSelection.filter;
-                    } else {
-                        broadcast.filterSelection.id =
-                            parentContainer.attr("id");
-                    }
+                    var _filterDimension = broadcast.selectedFilters || {};
+                    var _filterDimension = broadcast.selectedFilters || {};
+
                     var dimension = _dimension[0];
                     if (_filterDimension[dimension]) {
                         var temp = _filterDimension[dimension];
@@ -794,13 +787,7 @@ function heatmap() {
                         valueType: "castValueType",
                     };
 
-                    UTIL.saveFilterParameters(
-                        broadcast,
-                        filterParameters,
-                        parentContainer,
-                        _filterDimension,
-                        dimension
-                    );
+                  broadcast.saveSelectedFilter(_filterParameters);
                 });
         } else {
             element
@@ -1134,9 +1121,9 @@ function heatmap() {
                     rect.classed("selected", true);
                 }
 
-                var _filterDimension = {};
+                var _filterDimension = broadcast.selectedFilters || {};
                 if (broadcast.filterSelection.id) {
-                    _filterDimension = broadcast.filterSelection.filter;
+                    _filterDimension = broadcast.selectedFilters[_dimension[0]] || {};
                 } else {
                     broadcast.filterSelection.id = parentContainer.attr("id");
                 }
@@ -1157,14 +1144,7 @@ function heatmap() {
                     dataType: _dimensionType[0],
                     valueType: "castValueType",
                 };
-
-                UTIL.saveFilterParameters(
-                    broadcast,
-                    filterParameters,
-                    parentContainer,
-                    _filterDimension,
-                    dimension
-                );
+                broadcast.saveSelectedFilter(_filterDimension);
             });
 
         newCell

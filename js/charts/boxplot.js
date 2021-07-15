@@ -4,7 +4,7 @@ var UTIL = require("../extras/util.js")();
 var $ = require("jquery");
 try {
     var d3Lasso = require("../../d3-libs/d3-lasso.min.js");
-} catch (ex) {}
+} catch (ex) { }
 function boxplot() {
     var _NAME = "boxplot";
 
@@ -185,7 +185,7 @@ function boxplot() {
             }
 
             if (broadcast) {
-                var _filterDimension = {};
+               var _filterDimension = broadcast.selectedFilters || {};
 
                 _filterDimension[_dimension[0]] = filterData.map(function (
                     val
@@ -197,10 +197,7 @@ function boxplot() {
                     dataType: _dimensionType[0],
                     valueType: "castValueType",
                 };
-                var _filterParameters = broadcast.selectedFilters;
-                _filterParameters[_dimension[0]] =
-                    _filterDimension[_dimension[0]];
-                broadcast.saveSelectedFilter(_filterParameters);
+               broadcast.saveSelectedFilter(_filterDimension);
             }
         };
     };
@@ -566,14 +563,8 @@ function boxplot() {
                         point.classed("selected", true);
                     }
 
-                    var _filterDimension = {};
-                    if (broadcast.filterSelection.id) {
-                        _filterDimension = broadcast.filterSelection.filter;
-                    } else {
-                        broadcast.filterSelection.id =
-                            parentContainer.attr("id");
-                    }
-                    var dimension = _dimension[0];
+                   var _filterDimension = broadcast.selectedFilters || {};
+
                     if (_filterDimension[dimension]) {
                         var temp = _filterDimension[dimension];
                         if (temp.indexOf(d[_dimension[0]]) < 0) {
@@ -581,10 +572,17 @@ function boxplot() {
                         } else {
                             temp.splice(temp.indexOf(d[_dimension[0]]), 1);
                         }
-                        _filterDimension[dimension] = temp;
+                        _filterDimension[_dimension[0]] = temp;
                     } else {
-                        _filterDimension[dimension] = [d[_dimension[0]]];
+                        _filterDimension[_dimension[0]] = [d[_dimension[0]]];
                     }
+
+                    _filterDimension[_dimension[0]]._meta = {
+                        dataType: _dimensionType[0],
+                        valueType: "castValueType",
+                    };
+
+                    broadcast.saveSelectedFilter(_filterDimension);
                 });
 
             parentContainer.select(".filterData").on("click", applyFilter());

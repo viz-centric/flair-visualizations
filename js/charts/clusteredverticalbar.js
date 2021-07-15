@@ -5,7 +5,7 @@ var LEGEND = require("../extras/legend_barcharts.js")();
 var $ = require("jquery");
 try {
     var d3Lasso = require("../../d3-libs/d3-lasso.min.js");
-} catch (ex) {}
+} catch (ex) { }
 
 function clusteredverticalbar() {
     var _NAME = "clusteredverticalbar";
@@ -258,7 +258,7 @@ function clusteredverticalbar() {
             }
 
             if (broadcast) {
-                var _filterDimension = {};
+                var _filterDimension = broadcast.selectedFilters || {};
 
                 _filterDimension[_dimension[0]] = filterData.map(function (d) {
                     return d[_dimension[0]];
@@ -268,10 +268,7 @@ function clusteredverticalbar() {
                     dataType: _dimensionType[0],
                     valueType: "castValueType",
                 };
-                var _filterParameters = broadcast.selectedFilters;
-                _filterParameters[_dimension[0]] =
-                    _filterDimension[_dimension[0]];
-                broadcast.saveSelectedFilter(_filterParameters);
+               broadcast.saveSelectedFilter(_filterDimension);
             }
         };
     };
@@ -351,7 +348,7 @@ function clusteredverticalbar() {
                         if (
                             UTIL.expressionEvaluator(
                                 _displayColorExpression[
-                                    _measure.indexOf(d.measure)
+                                _measure.indexOf(d.measure)
                                 ],
                                 d1[d1.measure],
                                 "color"
@@ -359,7 +356,7 @@ function clusteredverticalbar() {
                         ) {
                             return UTIL.expressionEvaluator(
                                 _displayColorExpression[
-                                    _measure.indexOf(d.measure)
+                                _measure.indexOf(d.measure)
                                 ],
                                 d[d.measure],
                                 "color"
@@ -427,7 +424,7 @@ function clusteredverticalbar() {
             if (
                 !(
                     Object.keys(broadcast.filterSelection.filter).length ===
-                        0 &&
+                    0 &&
                     broadcast.filterSelection.filter.constructor === Object
                 )
             ) {
@@ -986,8 +983,8 @@ function clusteredverticalbar() {
                 .attr(
                     "transform",
                     "translate(0," +
-                        parseInt(FilterControlHeight - COMMON.PADDING) +
-                        ")"
+                    parseInt(FilterControlHeight - COMMON.PADDING) +
+                    ")"
                 )
                 .call(_localXAxisForFilter);
 
@@ -1040,7 +1037,7 @@ function clusteredverticalbar() {
                         if (
                             UTIL.expressionEvaluator(
                                 _displayColorExpression[
-                                    _measure.indexOf(d.measure)
+                                _measure.indexOf(d.measure)
                                 ],
                                 d[d.measure],
                                 "color"
@@ -1048,7 +1045,7 @@ function clusteredverticalbar() {
                         ) {
                             return UTIL.expressionEvaluator(
                                 _displayColorExpression[
-                                    _measure.indexOf(d.measure)
+                                _measure.indexOf(d.measure)
                                 ],
                                 d[d.measure],
                                 "color"
@@ -1113,7 +1110,7 @@ function clusteredverticalbar() {
                     if (
                         UTIL.expressionEvaluator(
                             _displayColorExpression[
-                                _measure.indexOf(d.measure)
+                            _measure.indexOf(d.measure)
                             ],
                             d[d.measure],
                             "color"
@@ -1121,7 +1118,7 @@ function clusteredverticalbar() {
                     ) {
                         return UTIL.expressionEvaluator(
                             _displayColorExpression[
-                                _measure.indexOf(d.measure)
+                            _measure.indexOf(d.measure)
                             ],
                             d[d.measure],
                             "color"
@@ -1231,7 +1228,7 @@ function clusteredverticalbar() {
                                 }
                             }
 
-                            var _filterDimension = {};
+                            var _filterDimension = broadcast.selectedFilters || {};
                             _filterDimension[_dimension[0]] = filterData.map(
                                 function (d) {
                                     return d[_dimension[0]];
@@ -1242,12 +1239,7 @@ function clusteredverticalbar() {
                                 dataType: _dimensionType[0],
                                 valueType: "castValueType",
                             };
-
-                            var _filterParameters =
-                                broadcast.selectedFilters[_dimension[0]] || {};
-                            _filterParameters[_dimension[0]] =
-                                _filterDimension[_dimension[0]];
-                            broadcast.saveSelectedFilter(_filterParameters);
+                            broadcast.saveSelectedFilter(_filterDimension);
                         }
                     }
                 });
@@ -1323,12 +1315,12 @@ function clusteredverticalbar() {
                     if (
                         rectHeight <=
                         offsetX / 2 +
-                            parseFloat(
-                                d3
-                                    .select(this)
-                                    .style("font-size")
-                                    .replace("px", "")
-                            )
+                        parseFloat(
+                            d3
+                                .select(this)
+                                .style("font-size")
+                                .replace("px", "")
+                        )
                     ) {
                         return "hidden";
                     }
@@ -1354,9 +1346,9 @@ function clusteredverticalbar() {
                 if (
                     rectHeight <=
                     offsetX / 2 +
-                        parseFloat(
-                            d3.select(this).style("font-size").replace("px", "")
-                        )
+                    parseFloat(
+                        d3.select(this).style("font-size").replace("px", "")
+                    )
                 ) {
                     return "hidden";
                 }
@@ -1394,7 +1386,7 @@ function clusteredverticalbar() {
             .style("fill", COMMON.HIGHLIGHTER);
     };
 
-    var _legendMouseMove = function (data, plot) {};
+    var _legendMouseMove = function (data, plot) { };
 
     var _legendMouseOut = function (data, plot) {
         plot.selectAll("g.clusteredverticalbar")
@@ -1409,7 +1401,7 @@ function clusteredverticalbar() {
                     if (
                         UTIL.expressionEvaluator(
                             _displayColorExpression[
-                                _measure.indexOf(d.measure)
+                            _measure.indexOf(d.measure)
                             ],
                             d[d.measure],
                             "color"
@@ -1417,7 +1409,7 @@ function clusteredverticalbar() {
                     ) {
                         return UTIL.expressionEvaluator(
                             _displayColorExpression[
-                                _measure.indexOf(d.measure)
+                            _measure.indexOf(d.measure)
                             ],
                             d[d.measure],
                             "color"
@@ -1628,7 +1620,7 @@ function clusteredverticalbar() {
                     if (
                         UTIL.expressionEvaluator(
                             _displayColorExpression[
-                                _measure.indexOf(d.measure)
+                            _measure.indexOf(d.measure)
                             ],
                             d[d.measure],
                             "color"
@@ -1636,7 +1628,7 @@ function clusteredverticalbar() {
                     ) {
                         return UTIL.expressionEvaluator(
                             _displayColorExpression[
-                                _measure.indexOf(d.measure)
+                            _measure.indexOf(d.measure)
                             ],
                             d[d.measure],
                             "color"
@@ -1747,12 +1739,12 @@ function clusteredverticalbar() {
                     if (
                         rectHeight <=
                         offsetX / 2 +
-                            parseFloat(
-                                d3
-                                    .select(this)
-                                    .style("font-size")
-                                    .replace("px", "")
-                            )
+                        parseFloat(
+                            d3
+                                .select(this)
+                                .style("font-size")
+                                .replace("px", "")
+                        )
                     ) {
                         return "hidden";
                     }
@@ -1863,9 +1855,9 @@ function clusteredverticalbar() {
                 "translate(0, " +
                 parseInt(
                     parentHeight -
-                        2 * COMMON.PADDING +
-                        20 +
-                        legendBreakCount * 20
+                    2 * COMMON.PADDING +
+                    20 +
+                    legendBreakCount * 20
                 ) +
                 ")"
             );

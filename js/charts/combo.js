@@ -5,7 +5,7 @@ var LEGEND = require("../extras/legend_barcharts.js")();
 var $ = require("jquery");
 try {
     var d3Lasso = require("../../d3-libs/d3-lasso.min.js");
-} catch (ex) {}
+} catch (ex) { }
 
 function combo() {
     var _NAME = "combo";
@@ -220,9 +220,9 @@ function combo() {
     var _buildTooltipData = function (datum, chart) {
         var output = "";
         var dimension =
-                datum.dimension != undefined
-                    ? datum.dimension
-                    : datum.data[_dimension[0]],
+            datum.dimension != undefined
+                ? datum.dimension
+                : datum.data[_dimension[0]],
             measure = datum.id != undefined ? datum.id : datum.tag,
             measurevalue =
                 datum._measure != undefined
@@ -340,7 +340,7 @@ function combo() {
             }
 
             if (broadcast) {
-                var _filterDimension = {};
+                var _filterDimension = broadcast.selectedFilters || {};
 
                 _filterDimension[_dimension[0]] = filterData.map(function (
                     val
@@ -352,10 +352,7 @@ function combo() {
                     dataType: _dimensionType[0],
                     valueType: "castValueType",
                 };
-                var _filterParameters = broadcast.selectedFilters;
-                _filterParameters[_dimension[0]] =
-                    _filterDimension[_dimension[0]];
-                broadcast.saveSelectedFilter(_filterParameters);
+               broadcast.saveSelectedFilter(_filterDimension);
             }
         };
     };
@@ -439,7 +436,7 @@ function combo() {
                         if (
                             UTIL.expressionEvaluator(
                                 _displayColorExpression[
-                                    _measure.indexOf(d["tag"])
+                                _measure.indexOf(d["tag"])
                                 ],
                                 d["data"][measuresBar[i]],
                                 "color"
@@ -447,7 +444,7 @@ function combo() {
                         ) {
                             return UTIL.expressionEvaluator(
                                 _displayColorExpression[
-                                    _measure.indexOf(d["tag"])
+                                _measure.indexOf(d["tag"])
                                 ],
                                 d["data"][measuresBar[i]],
                                 "color"
@@ -587,7 +584,7 @@ function combo() {
             if (
                 !(
                     Object.keys(broadcast.filterSelection.filter).length ===
-                        0 &&
+                    0 &&
                     broadcast.filterSelection.filter.constructor === Object
                 )
             ) {
@@ -1061,7 +1058,7 @@ function combo() {
                                 rect.classed("selected", true);
                             }
 
-                            var _filterDimension = {};
+                            var _filterDimension = broadcast.selectedFilters || {};
                             if (broadcast.filterSelection.id) {
                                 _filterDimension =
                                     broadcast.filterSelection.filter;
@@ -1091,13 +1088,7 @@ function combo() {
                                 dataType: _dimensionType[0],
                                 valueType: "castValueType",
                             };
-                            UTIL.saveFilterParameters(
-                                broadcast,
-                                filterParameters,
-                                parentContainer,
-                                _filterDimension,
-                                dimension
-                            );
+                            broadcast.saveSelectedFilter(_filterDimension);
                         }
                     }
                 });
@@ -1308,8 +1299,8 @@ function combo() {
                         ).val("");
                         $(
                             "#Modal_" +
-                                parentContainer.attr("id") +
-                                " .threshold"
+                            parentContainer.attr("id") +
+                            " .threshold"
                         ).val("");
                         $(
                             "#Modal_" + parentContainer.attr("id") + " .measure"
@@ -1482,8 +1473,8 @@ function combo() {
                 .attr(
                     "transform",
                     "translate(0," +
-                        parseInt(FilterControlHeight - COMMON.PADDING) +
-                        ")"
+                    parseInt(FilterControlHeight - COMMON.PADDING) +
+                    ")"
                 )
                 .call(_localXAxisForFilter);
 
@@ -1556,7 +1547,7 @@ function combo() {
                         if (
                             UTIL.expressionEvaluator(
                                 _displayColorExpression[
-                                    _measure.indexOf(d["tag"])
+                                _measure.indexOf(d["tag"])
                                 ],
                                 d["data"][measuresBar[i]],
                                 "color"
@@ -1564,7 +1555,7 @@ function combo() {
                         ) {
                             return UTIL.expressionEvaluator(
                                 _displayColorExpression[
-                                    _measure.indexOf(d["tag"])
+                                _measure.indexOf(d["tag"])
                                 ],
                                 d["data"][measuresBar[i]],
                                 "color"
@@ -1806,7 +1797,7 @@ function combo() {
                                 }
                             }
 
-                            var _filterDimension = {};
+                            var _filterDimension = broadcast.selectedFilters || {};
                             if (broadcast.filterSelection.id) {
                                 _filterDimension =
                                     broadcast.filterSelection.filter;
@@ -1832,17 +1823,7 @@ function combo() {
                                 ];
                             }
 
-                            _filterDimension[dimension]._meta = {
-                                dataType: _dimensionType[0],
-                                valueType: "castValueType",
-                            };
-                            UTIL.saveFilterParameters(
-                                broadcast,
-                                filterParameters,
-                                parentContainer,
-                                _filterDimension,
-                                dimension
-                            );
+                            broadcast.saveSelectedFilter(_filterDimension);
                         }
                     }
                 });
@@ -1957,7 +1938,7 @@ function combo() {
         line.style("stroke-width", "2.5px").style("stroke", COMMON.HIGHLIGHTER);
     };
 
-    var _legendMouseMove = function (data, plot) {};
+    var _legendMouseMove = function (data, plot) { };
 
     var _legendMouseOut = function (data, plot) {
         var clustered = plot.selectAll("g.bar").filter(function (d) {
@@ -2028,7 +2009,7 @@ function combo() {
             if (
                 !(
                     Object.keys(broadcast.filterSelection.filter).length ===
-                        0 &&
+                    0 &&
                     broadcast.filterSelection.filter.constructor === Object
                 )
             ) {
@@ -2551,13 +2532,8 @@ function combo() {
                             rect.classed("selected", true);
                         }
 
-                        var _filterDimension = {};
-                        if (broadcast.filterSelection.id) {
-                            _filterDimension = broadcast.filterSelection.filter;
-                        } else {
-                            broadcast.filterSelection.id =
-                                parentContainer.attr("id");
-                        }
+                        var _filterDimension = broadcast.selectedFilters || {};
+
                         var dimension = _dimension[0];
                         if (_filterDimension[dimension]) {
                             var temp = _filterDimension[dimension];
@@ -2581,13 +2557,9 @@ function combo() {
                             valueType: "castValueType",
                         };
 
-                        UTIL.saveFilterParameters(
-                            broadcast,
-                            filterParameters,
-                            parentContainer,
-                            _filterDimension,
-                            dimension
-                        );
+                        var _filterParameters = broadcast.selectedFilters[_dimension[0]] || {};
+                        _filterParameters[_dimension[0]] = _filterDimension[_dimension[0]];
+                        broadcast.saveSelectedFilter(_filterParameters);
                     }
                 }
             });

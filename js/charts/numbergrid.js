@@ -343,13 +343,8 @@ function numbergrid() {
                         point.style("fill-opacity", 0.5);
                     }
 
-                    var _filterDimension = {};
-                    if (broadcast.filterSelection.id) {
-                        _filterDimension = broadcast.filterSelection.filter;
-                    } else {
-                        broadcast.filterSelection.id =
-                            parentContainer.attr("id");
-                    }
+                    var _filterDimension = broadcast.selectedFilters || {};
+
                     var dimension = _dimension;
                     if (_filterDimension[dimension]) {
                         var temp = _filterDimension[dimension];
@@ -372,13 +367,7 @@ function numbergrid() {
                         dataType: _dimensionType[0],
                         valueType: "castValueType",
                     };
-                    UTIL.saveFilterParameters(
-                        broadcast,
-                        filterParameters,
-                        parentContainer,
-                        _filterDimension,
-                        dimension
-                    );
+                    broadcast.saveSelectedFilter(_filterParameters);
                 });
 
             parentContainer.select(".filterData").on("click", applyFilter());
@@ -490,13 +479,8 @@ function numbergrid() {
                         point.style("fill-opacity", 0.5);
                     }
 
-                    var _filterDimension = {};
-                    if (broadcast.filterSelection.id) {
-                        _filterDimension = broadcast.filterSelection.filter;
-                    } else {
-                        broadcast.filterSelection.id =
-                            parentContainer.attr("id");
-                    }
+                    var _filterDimension = broadcast.selectedFilters || {};
+
                     var dimension = _dimension;
                     if (_filterDimension[dimension]) {
                         var temp = _filterDimension[dimension];
@@ -519,13 +503,7 @@ function numbergrid() {
                         dataType: _dimensionType[0],
                         valueType: "castValueType",
                     };
-                    UTIL.saveFilterParameters(
-                        broadcast,
-                        filterParameters,
-                        parentContainer,
-                        _filterDimension,
-                        dimension
-                    );
+                    broadcast.saveSelectedFilter(_filterParameters);
                 });
         }
     };
