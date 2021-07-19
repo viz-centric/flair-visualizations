@@ -9,7 +9,7 @@ try {
 } catch (ex) {}
 
 function line() {
-    var _NAME = "Line";
+    var _NAME = COMMON.LineChart;
 
     var _config,
         _dimension,

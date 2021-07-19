@@ -8,7 +8,7 @@ try {
 } catch (ex) {}
 
 function stackedverticalbar() {
-    var _NAME = "stackedverticalbar";
+    var _NAME = COMMON.StackedVerticalBarChart;
 
     var _config,
         _dimension,

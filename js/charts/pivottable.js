@@ -5,8 +5,7 @@ var $ = require("jquery");
 require('datatables.net-dt')
 function pivottable() {
 
-    var _NAME = 'pivottable';
-
+    var _NAME = COMMON.PivotTable;
     var _isPivoted = [],
         _limit,
         _config = [],

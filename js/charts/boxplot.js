@@ -6,7 +6,7 @@ try {
     var d3Lasso = require("../../d3-libs/d3-lasso.min.js");
 } catch (ex) { }
 function boxplot() {
-    var _NAME = "boxplot";
+    var _NAME = COMMON.BoxPlot;
 
     var _config,
         _dimension,

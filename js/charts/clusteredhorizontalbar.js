@@ -8,7 +8,7 @@ try {
 } catch (ex) { }
 
 function clusteredhorizontalbar() {
-    var _NAME = "clusteredhorizontalbar";
+    var _NAME = COMMON.ClusteredHorizontalBarChart;
 
     var _config,
         _dimension,

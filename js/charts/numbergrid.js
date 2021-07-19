@@ -1,9 +1,11 @@
 var d3 = require("d3");
 var UTIL = require("../extras/util.js")();
 var $ = require("jquery");
+var COMMON = require('../extras/common.js')();
+
 
 function numbergrid() {
-    var _NAME = "numbergrid";
+    var _NAME = COMMON.NumberGrid;
 
     var _config,
         _dimension,

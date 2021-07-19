@@ -8,7 +8,7 @@ try {
 } catch (ex) { }
 
 function sankey() {
-    var _NAME = "sankey";
+    var _NAME = COMMON.Sankey;
 
     var _config,
         dimension = [],

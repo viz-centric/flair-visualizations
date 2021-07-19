@@ -8,7 +8,7 @@ var COMMON = require('../extras/common.js')(),
 
         /* These are the constant global variable for the function kpi.
          */
-        var _NAME = 'kpi';
+        var _NAME = COMMON.KPI;
     
         /* These are the private variables that is initialized by the arguments sent
          * by the users and can be updated using public methods.

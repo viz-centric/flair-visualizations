@@ -5,8 +5,7 @@ var viz = require("../../d3-libs/viz.js");
 var $ = require("jquery");
 
 function piegrid() {
-    var _NAME = "piegrid";
-
+    var _NAME = COMMON.PieGrid;
     var _config,
         _dimension,
         _dimensionType,

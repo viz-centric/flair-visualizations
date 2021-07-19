@@ -7,7 +7,7 @@ require('datatables.net-dt');
 
 function table() {
 
-    var _NAME = 'table';
+    var _NAME = COMMON.Table;
 
     var _config = [],
         _dimension = [],

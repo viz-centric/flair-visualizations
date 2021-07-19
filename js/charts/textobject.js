@@ -4,7 +4,7 @@ var UTIL = require('../extras/util.js')();
 var $ = require("jquery");
 
 function textobject() {
-    var _NAME = 'textobject';
+    var _NAME = COMMON.TextObject;
 
     var _config,
         descriptive,

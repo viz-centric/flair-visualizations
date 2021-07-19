@@ -10,7 +10,7 @@ try {
 function treemap() {
     /* These are the constant global variable for the function clusteredverticalbar.
      */
-    var _NAME = "treemap";
+    var _NAME = COMMON.TreeMap;
 
     /* These are the private variables that is initialized by the arguments sent
      * by the users and can be updated using public methods.

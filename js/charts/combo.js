@@ -8,7 +8,7 @@ try {
 } catch (ex) { }
 
 function combo() {
-    var _NAME = "combo";
+    var _NAME = COMMON.ComboChart;
 
     var _config,
         _dimension,

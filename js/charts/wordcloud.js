@@ -6,7 +6,7 @@ var $ = require("jquery");
 var UTIL = require("../extras/util.js")();
 
 function wordcloud() {
-    var _NAME = "wordcloud";
+    var _NAME = COMMON.WordCloud;
 
     var _config,
         _dimension,

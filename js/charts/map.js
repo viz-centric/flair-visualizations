@@ -9,7 +9,7 @@ try {
     var d3Lasso = require("../../d3-libs/d3-lasso.min.js");
 } catch (ex) { }
 function map() {
-    var _NAME = "map";
+    var _NAME = COMMON.Maps;
 
     var _config,
         _dimension,

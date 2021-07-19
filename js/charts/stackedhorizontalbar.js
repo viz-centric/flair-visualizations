@@ -8,8 +8,7 @@ try {
 } catch (ex) {}
 
 function stackedhorizontalbar() {
-    var _NAME = "stackedhorizontalbar";
-
+    var _NAME = COMMON.StackedHorizontalBarChart;
     var _config,
         _dimension,
         _dimensionType,

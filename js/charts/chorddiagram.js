@@ -9,7 +9,7 @@ try {
 } catch (ex) { }
 
 function chorddiagram() {
-    var _NAME = "chorddiagram";
+    var _NAME = COMMON.ChordDiagram;
 
     var _config,
         _dimension,

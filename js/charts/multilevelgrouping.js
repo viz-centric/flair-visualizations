@@ -6,7 +6,7 @@ var $ = require("jquery");
 
 function multilevelgrouping() {
 
-    var _NAME = 'multilevelgrouping';
+    var _NAME = COMMON.multilevelgrouping;
 
     var _config = [],
         _dimension = [],

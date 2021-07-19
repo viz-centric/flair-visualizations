@@ -7,7 +7,7 @@ try {
     var d3Lasso = require("../../d3-libs/d3-lasso.min.js");
 } catch (ex) { }
 function bullet() {
-    var _NAME = "bullet";
+    var _NAME = COMMON.BulletChart;
 
     var _config,
         dimension,

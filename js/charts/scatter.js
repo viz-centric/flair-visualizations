@@ -8,7 +8,7 @@ try {
 } catch (ex) { }
 
 function scatter() {
-    var _NAME = "scatterChart";
+    var _NAME = COMMON.Scatterplot;
 
     var _config,
         _dimension,
