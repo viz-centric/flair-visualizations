@@ -8,7 +8,7 @@ try {
 } catch (ex) { }
 
 function combo() {
-    var _NAME = COMMON.ComboChart;
+var _NAME = COMMON.ComboChart;
 
     var _config,
         _dimension,
@@ -1188,7 +1188,7 @@ function combo() {
                     _alternateDimension,
                     parentContainer.attr("vizID"),
                     _isFilterGrid,
-                    "vertical",
+                    COMMON.VERTICAL,
                     _displayName
                 );
             });

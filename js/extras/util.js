@@ -222,13 +222,13 @@ function util() {
                 top = 0;
 
             if (chartType == null || chartType == undefined) {
-                chartType = "vertical";
+                chartType = COMMON.VERTICAL;
             }
 
             var offsetLeft,
                 offsetTop = 40;
 
-            if (isFilter && chartType == "vertical") {
+            if (isFilter && chartType == COMMON.VERTICAL) {
                 offsetTop = offsetTop + COMMON.PADDING + parseInt(d3.select(container).select('.filterElement').attr('height'));
             }
             switch (sortType.toLowerCase()) {
@@ -245,15 +245,15 @@ function util() {
                     break;
             }
 
-            if (isFilter && chartType == "horizontal" && sortType.toLowerCase() == "ascending") {
+            if (isFilter && chartType == COMMON.HORIZONTAL && sortType.toLowerCase() == "ascending") {
                 offsetLeft = 78 + parseInt(d3.select(container).select('.filterElement').attr('width'));
             }
 
-            if (isFilter && chartType == "horizontal" && sortType.toLowerCase() == "descending") {
+            if (isFilter && chartType == COMMON.HORIZONTAL && sortType.toLowerCase() == "descending") {
                 offsetLeft = 54 + parseInt(d3.select(container).select('.filterElement').attr('width'));
             }
 
-            if (sortType == "alternatedimension" && chartType == "horizontal") {
+            if (sortType == "alternatedimension" && chartType == COMMON.HORIZONTAL) {
                 this.alternateDimensionHorizontalPosition(arrowDom, sortType, chartType, sortSelectDom, plot);
             }
             else {
@@ -269,7 +269,7 @@ function util() {
                 top = 0;
 
             if (chartType == null || chartType == undefined) {
-                chartType = "vertical";
+                chartType = COMMON.VERTICAL;
             }
             var tipWidth = sortSelectDom.offsetWidth,
                 tipHeight = sortSelectDom.offsetHeight;
@@ -277,22 +277,22 @@ function util() {
             var offsetLeft = 11,
                 offsetTop = 40;
 
-            if (sortType == "alternatedimension" && chartType == "vertical") {
+            if (sortType == "alternatedimension" && chartType == COMMON.VERTICAL) {
                 offsetLeft = plot / 2;
                 tipWidth = tipWidth / 2;
             }
 
-            if (isFilter && chartType == "vertical" || isFilter && chartType == "alternatedimension") {
+            if (isFilter && chartType == COMMON.VERTICAL || isFilter && chartType == "alternatedimension") {
                 offsetTop = offsetTop + COMMON.PADDING + parseInt(d3.select(container).select('.filterElement').attr('height'));
             }
-            if (isFilter && chartType == "horizontal") {
+            if (isFilter && chartType == COMMON.HORIZONTAL) {
                 offsetLeft = offsetLeft + COMMON.PADDING + parseInt(d3.select(container).select('.filterElement').attr('width'));
             }
 
             sortSelectDom.style.left = (left + width - tipWidth - offsetLeft) + 'px';
             sortSelectDom.style.top = (top + height - tipHeight - offsetTop) + 'px';
 
-            if (sortType == "alternatedimension" && chartType == "horizontal") {
+            if (sortType == "alternatedimension" && chartType == COMMON.HORIZONTAL) {
                 sortSelectDom.style.top = plot / 2 + "px";
                 sortSelectDom.style.left = "30px";
             }
@@ -1040,7 +1040,7 @@ function util() {
                 var y = parseFloat((COMMON.AXIS_THICKNESS / 1.5) + COMMON.PADDING);
                 var text = "\uf0d7";
                 var alternateDimensionList = alternateDimension === null ? 0 : JSON.parse(alternateDimension).length;
-                if (chartType === "horizontal") {
+                if (chartType === COMMON.HORIZONTAL) {
                     x = -45;
                     text = "\uf0da";
                     y = (plotWidth / 2) - axisGroup.select('.alternateDimension').node().getComputedTextLength() / 2;
@@ -1098,7 +1098,7 @@ function util() {
                 var downArrow = d3.select(div).select('.arrow-down')
                     .style('visibility', 'visible');
 
-                if (chartType == "horizontal") {
+                if (chartType == COMMON.HORIZONTAL) {
                     downArrow = d3.select(div).select('.arrow-left')
                         .style('visibility', 'visible');
                 }

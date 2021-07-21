@@ -25,6 +25,8 @@ function common() {
             AREA: "AREA",
             LINE: "LINE"
         },
+        HORIZONTAL: "Horizontal",
+        VERTICAL: "Vertical",
         COMPARABLE_DATA_TYPES: ['timestamp', 'date', 'datetime'],
         COLORSCALE: d3.scaleOrdinal()
             .range([

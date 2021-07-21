@@ -1026,7 +1026,7 @@ function stackedhorizontalbar() {
                     _alternateDimension,
                     parentContainer.attr("vizID"),
                     _isFilterGrid,
-                    "horizontal",
+                    COMMON.HORIZONTAL,
                     _displayName
                 );
             });
@@ -1039,7 +1039,7 @@ function stackedhorizontalbar() {
             false,
             _print,
             _alternateDimension,
-            "horizontal"
+            COMMON.HORIZONTAL
         );
 
         UTIL.setAxisColor(
@@ -1127,7 +1127,7 @@ function stackedhorizontalbar() {
                                 keys,
                                 _Local_data,
                                 _isFilterGrid,
-                                "horizontal"
+                                COMMON.HORIZONTAL
                             );
                             break;
                         case "descending":
@@ -1138,7 +1138,7 @@ function stackedhorizontalbar() {
                                 keys,
                                 _Local_data,
                                 _isFilterGrid,
-                                "horizontal"
+                                COMMON.HORIZONTAL
                             );
                             break;
                         case "reset": {
@@ -1814,7 +1814,7 @@ function stackedhorizontalbar() {
             true,
             _print,
             _alternateDimension,
-            "horizontal"
+            COMMON.HORIZONTAL
         );
 
         UTIL.setAxisColor(

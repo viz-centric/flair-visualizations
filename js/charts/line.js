@@ -1374,7 +1374,7 @@ function line() {
                     _alternateDimension,
                     parentContainer.attr("vizID"),
                     _isFilterGrid,
-                    "vertical",
+                    COMMON.VERTICAL,
                     _displayName
                 );
             });

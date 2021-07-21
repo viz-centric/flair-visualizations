@@ -347,14 +347,14 @@ function bullet() {
             bottom: 15,
         };
 
-        if (orientation == "Horizontal") {
+        if (orientation == COMMON.HORIZONTAL) {
             if (showLabel) {
                 margin["left"] = 45;
             } else {
                 margin["left"] = 20;
             }
             margin["right"] = 20;
-        } else if (orientation == "Vertical") {
+        } else if (orientation == COMMON.VERTICAL) {
             margin["left"] = 15;
             margin["right"] = 15;
             margin["top"] = 30;
@@ -382,7 +382,7 @@ function bullet() {
         //set from config
         //bullet.find('.title').css('font-size', '1.1em');
 
-        if (orientation == "Vertical") {
+        if (orientation == COMMON.VERTICAL) {
             bullet.selectAll(".tick text").each(function (i, d) {
                 var text = d;
                 //  $(d).text(UTIL.getTruncatedLabel(d, UTIL.shortScale(2)(UTIL.convertToNumber(text)), 25));
@@ -464,14 +464,14 @@ function bullet() {
             (height - margin.top - margin.bottom) / data.length
         );
         offset = 6;
-        if (orientation == "Horizontal") {
+        if (orientation == COMMON.HORIZONTAL) {
             bullet.width(width - margin.left - margin.right);
             if (data.length == 1) {
                 bullet.height(Math.floor((3 * gHeight) / 4));
             } else {
                 bullet.height(Math.floor(gHeight / 2));
             }
-        } else if (orientation == "Vertical") {
+        } else if (orientation == COMMON.VERTICAL) {
             bullet.width(height - margin.top - margin.bottom);
             if (data.length == 1) {
                 bullet.height(Math.floor((3 * gWidth) / 4));
@@ -492,7 +492,7 @@ function bullet() {
             })
             .attr("class", "bullet")
             .attr("transform", function (d, i) {
-                if (orientation == "Horizontal") {
+                if (orientation == COMMON.HORIZONTAL) {
                     return (
                         "translate(" +
                         margin.left +
@@ -500,7 +500,7 @@ function bullet() {
                         (margin.top + i * gHeight) +
                         ") rotate(0)"
                     );
-                } else if (orientation == "Vertical") {
+                } else if (orientation == COMMON.VERTICAL) {
                     return (
                         "translate(" +
                         (margin.left + i * gWidth) +
@@ -515,15 +515,15 @@ function bullet() {
         var title = g
             .append("g")
             .style("text-anchor", function (d) {
-                if (orientation == "Horizontal") {
+                if (orientation == COMMON.HORIZONTAL) {
                     return "end";
-                } else if (orientation == "Vertical") {
+                } else if (orientation == COMMON.VERTICAL) {
                     return "middle";
                 }
             })
             .attr("display", showLabel ? "inherit" : "none")
             .attr("transform", function (d) {
-                if (orientation == "Horizontal") {
+                if (orientation == COMMON.HORIZONTAL) {
                     return (
                         "translate(" +
                         -offset +
@@ -531,7 +531,7 @@ function bullet() {
                         Math.floor(gHeight / 3.25) +
                         ")"
                     );
-                } else if (orientation == "Vertical") {
+                } else if (orientation == COMMON.VERTICAL) {
                     return (
                         "translate(" +
                         -offset * 2 +
@@ -549,9 +549,9 @@ function bullet() {
             .style("font-weight", fontWeight)
             .style("font-size", fontSize + "px")
             .attr("transform", function (d) {
-                if (orientation == "Horizontal") {
+                if (orientation == COMMON.HORIZONTAL) {
                     return "rotate(0)";
-                } else if (orientation == "Vertical") {
+                } else if (orientation == COMMON.VERTICAL) {
                     return "rotate(90)";
                 }
             })
@@ -562,7 +562,7 @@ function bullet() {
                 );
             })
             .text(function (d) {
-                if (orientation == "Horizontal") {
+                if (orientation == COMMON.HORIZONTAL) {
                     if (d.title === null) {
                         return COMMON.NULLVALUE;
                     }
@@ -570,7 +570,7 @@ function bullet() {
                         return d.title.substring(0, 3) + "...";
                     }
                     return d.title;
-                } else if (orientation == "Vertical") {
+                } else if (orientation == COMMON.VERTICAL) {
                     return UTIL.getTruncatedLabel(
                         this,
                         UTIL.getDimensionFormatedValue(
@@ -719,14 +719,14 @@ function bullet() {
             (height - margin.top - margin.bottom) / data.length
         );
 
-        if (orientation == "Horizontal") {
+        if (orientation == COMMON.HORIZONTAL) {
             bullet.width(width - margin.left - margin.right);
             if (data.length == 1) {
                 bullet.height(Math.floor((3 * gHeight) / 4));
             } else {
                 bullet.height(Math.floor(gHeight / 2));
             }
-        } else if (orientation == "Vertical") {
+        } else if (orientation == COMMON.VERTICAL) {
             bullet.width(height - margin.top - margin.bottom);
             if (data.length == 1) {
                 bullet.height(Math.floor((3 * gWidth) / 4));
@@ -744,7 +744,7 @@ function bullet() {
         _bullet
             .classed("selected", false)
             .attr("transform", function (d, i) {
-                if (orientation == "Horizontal") {
+                if (orientation == COMMON.HORIZONTAL) {
                     return (
                         "translate(" +
                         margin.left +
@@ -752,7 +752,7 @@ function bullet() {
                         (margin.top + i * gHeight) +
                         ") rotate(0)"
                     );
-                } else if (orientation == "Vertical") {
+                } else if (orientation == COMMON.VERTICAL) {
                     return (
                         "translate(" +
                         (margin.left + i * gWidth) +
@@ -770,7 +770,7 @@ function bullet() {
             })
             .attr("class", "bullet")
             .attr("transform", function (d, i) {
-                if (orientation == "Horizontal") {
+                if (orientation == COMMON.HORIZONTAL) {
                     return (
                         "translate(" +
                         margin.left +
@@ -778,7 +778,7 @@ function bullet() {
                         (margin.top + i * gHeight) +
                         ") rotate(0)"
                     );
-                } else if (orientation == "Vertical") {
+                } else if (orientation == COMMON.VERTICAL) {
                     return (
                         "translate(" +
                         (margin.left + i * gWidth) +
@@ -862,15 +862,15 @@ function bullet() {
         var title = _bullet
             .append("g")
             .style("text-anchor", function (d) {
-                if (orientation == "Horizontal") {
+                if (orientation == COMMON.HORIZONTAL) {
                     return "end";
-                } else if (orientation == "Vertical") {
+                } else if (orientation == COMMON.VERTICAL) {
                     return "middle";
                 }
             })
             .attr("display", showLabel ? "inherit" : "none")
             .attr("transform", function (d) {
-                if (orientation == "Horizontal") {
+                if (orientation == COMMON.HORIZONTAL) {
                     return (
                         "translate(" +
                         -offset +
@@ -878,7 +878,7 @@ function bullet() {
                         Math.floor(gHeight / 3.25) +
                         ")"
                     );
-                } else if (orientation == "Vertical") {
+                } else if (orientation == COMMON.VERTICAL) {
                     return (
                         "translate(" +
                         -offset * 2 +
@@ -896,9 +896,9 @@ function bullet() {
             .style("font-weight", fontWeight)
             .style("font-size", fontSize + "px")
             .attr("transform", function (d) {
-                if (orientation == "Horizontal") {
+                if (orientation == COMMON.HORIZONTAL) {
                     return "rotate(0)";
-                } else if (orientation == "Vertical") {
+                } else if (orientation == COMMON.VERTICAL) {
                     return "rotate(90)";
                 }
             })
@@ -909,7 +909,7 @@ function bullet() {
                 );
             })
             .text(function (d) {
-                if (orientation == "Horizontal") {
+                if (orientation == COMMON.HORIZONTAL) {
                     if (d.title === null) {
                         return COMMON.NULLVALUE;
                     }
@@ -917,7 +917,7 @@ function bullet() {
                         return d.title.substring(0, 3) + "...";
                     }
                     return d.title;
-                } else if (orientation == "Vertical") {
+                } else if (orientation == COMMON.VERTICAL) {
                     return UTIL.getTruncatedLabel(
                         this,
                         UTIL.getDimensionFormatedValue(

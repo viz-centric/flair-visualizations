@@ -133,16 +133,10 @@ function clusteredverticalbar() {
 
     var setDefaultColorForChart = function () {
         for (let index = 0; index < _measure.length; index++) {
-            if (
-                _displayColor[index] == null ||
-                _displayColor[index] == undefined
-            ) {
+            if (_displayColor[index]) {
                 _displayColor[index] = COMMON.COLORSCALE(index);
             }
-            if (
-                _borderColor[index] == null ||
-                _borderColor[index] == undefined
-            ) {
+            if (_borderColor[index]) {
                 _borderColor[index] = COMMON.COLORSCALE(index);
             }
         }
@@ -268,7 +262,7 @@ function clusteredverticalbar() {
                     dataType: _dimensionType[0],
                     valueType: "castValueType",
                 };
-               broadcast.saveSelectedFilter(_filterDimension);
+                broadcast.saveSelectedFilter(_filterDimension);
             }
         };
     };
@@ -734,7 +728,7 @@ function clusteredverticalbar() {
                     _alternateDimension,
                     parentContainer.attr("vizID"),
                     _isFilterGrid,
-                    "vertical",
+                    COMMON.VERTICAL,
                     _displayName
                 );
             });

@@ -1021,7 +1021,7 @@ function stackedverticalbar() {
                     _alternateDimension,
                     parentContainer.attr("vizID"),
                     _isFilterGrid,
-                    "vertical",
+                    COMMON.VERTICAL,
                     _displayName
                 );
             });
