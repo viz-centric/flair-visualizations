@@ -1,14 +1,13 @@
-var d3 = require('d3');
-var COMMON = require('../extras/common.js')();
-var d3bullet = require('../../d3-libs/d3.bullet.js');
-var UTIL = require('../extras/util.js')();
+var d3 = require("d3");
+var COMMON = require("../extras/common.js")();
+var d3bullet = require("../../d3-libs/d3.bullet.js");
+var UTIL = require("../extras/util.js")();
 var $ = require("jquery");
 try {
-    var d3Lasso = require('../../d3-libs/d3-lasso.min.js');
+    var d3Lasso = require("../../d3-libs/d3-lasso.min.js");
 } catch (ex) { }
 function bullet() {
-
-    var _NAME = 'bullet';
+    var _NAME = COMMON.BulletChart;
 
     var _config,
         dimension,
@@ -42,12 +41,16 @@ function bullet() {
         top: 15,
         right: 0,
         bottom: 15,
-        left: 0
+        left: 0,
     };
 
-    var offset = 6, parentContainer;
+    var offset = 6,
+        parentContainer;
 
-    var filter = false, filterData = [], measuresSum, targetSum;
+    var filter = false,
+        filterData = [],
+        measuresSum,
+        targetSum;
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
@@ -64,8 +67,7 @@ function bullet() {
         this.segmentInfo(config.segmentInfo);
         this.measureNumberFormat(config.measureNumberFormat);
         this.targetNumberFormat(config.targetNumberFormat);
-
-    }
+    };
 
     var _buildTooltipData = function (datum, chart) {
         var output = "";
@@ -81,7 +83,7 @@ function bullet() {
             measure = measureNf(datum.measures.toString());
         }
 
-        if (measure.indexOf('G') != -1) {
+        if (measure.indexOf("G") != -1) {
             measure = measure.slice(0, -1) + "B";
         }
 
@@ -91,58 +93,76 @@ function bullet() {
             target = targetNf(datum.markers.toString());
         }
 
-        if (target.indexOf('G') != -1) {
+        if (target.indexOf("G") != -1) {
             target = target.slice(0, -1) + "B";
         }
 
-        output += "<table><tr>"
-            + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + UTIL.getDimensionFormatedValue(datum.title, _dimensionType[0]) + "</td>"
-            + "</tr><tr>"
-            + "<th>" + 'Value' + ": </th>"
-            + "<td>" + Math.round(measure * 100) / 100 + "</td>"
-            + "</tr><tr>"
-            + "<th>" + "Target" + ": </th>"
-            + "<td>" + Math.round(target * 100) / 100 + "</td>"
-            + "</tr>"
-            + "</table>";
+        output +=
+            "<table><tr>" +
+            "<th>" +
+            chart.dimension() +
+            ": </th>" +
+            "<td>" +
+            UTIL.getDimensionFormatedValue(datum.title, _dimensionType[0]) +
+            "</td>" +
+            "</tr><tr>" +
+            "<th>" +
+            "Value" +
+            ": </th>" +
+            "<td>" +
+            Math.round(measure * 100) / 100 +
+            "</td>" +
+            "</tr><tr>" +
+            "<th>" +
+            "Target" +
+            ": </th>" +
+            "<td>" +
+            Math.round(target * 100) / 100 +
+            "</td>" +
+            "</tr>" +
+            "</table>";
 
         return output;
-    }
+    };
 
     var setMeasuresSum = function (val) {
         measuresSum = val;
-    }
+    };
 
     var setTargetSum = function (val) {
         targetSum = val;
-    }
+    };
 
     var onLassoStart = function (lasso, scope) {
         return function () {
             if (filter) {
-                lasso.items().selectAll('rect.measure')
-                    .classed('not_possible', true)
-                    .classed('selected', false);
+                lasso
+                    .items()
+                    .selectAll("rect.measure")
+                    .classed("not_possible", true)
+                    .classed("selected", false);
             }
-        }
-    }
+        };
+    };
 
     var onLassoDraw = function (lasso, scope) {
         return function () {
             filter = true;
-            lasso.items().selectAll('rect.measure')
-                .classed('selected', false);
+            lasso.items().selectAll("rect.measure").classed("selected", false);
 
-            lasso.possibleItems().selectAll('rect.measure')
-                .classed('not_possible', false)
-                .classed('possible', true);
+            lasso
+                .possibleItems()
+                .selectAll("rect.measure")
+                .classed("not_possible", false)
+                .classed("possible", true);
 
-            lasso.notPossibleItems().selectAll('rect.measure')
-                .classed('not_possible', true)
-                .classed('possible', false);
-        }
-    }
+            lasso
+                .notPossibleItems()
+                .selectAll("rect.measure")
+                .classed("not_possible", true)
+                .classed("possible", false);
+        };
+    };
 
     var onLassoEnd = function (lasso, scope) {
         return function () {
@@ -151,18 +171,24 @@ function bullet() {
                 return;
             }
             if (data.length > 0) {
-                lasso.items().selectAll('rect.measure')
-                    .classed('not_possible', false)
-                    .classed('possible', false);
+                lasso
+                    .items()
+                    .selectAll("rect.measure")
+                    .classed("not_possible", false)
+                    .classed("possible", false);
             }
 
-            lasso.selectedItems().selectAll('rect.measure')
-                .classed('selected', true)
+            lasso
+                .selectedItems()
+                .selectAll("rect.measure")
+                .classed("selected", true);
 
-            lasso.notSelectedItems().selectAll('rect.measure');
+            lasso.notSelectedItems().selectAll("rect.measure");
 
-            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
-                .style('visibility', 'visible')
+            var confirm = d3
+                .select(scope.node().parentNode)
+                .select("div.confirm")
+                .style("visibility", "visible");
 
             var _filter = [];
             if (data.length > 0) {
@@ -172,116 +198,108 @@ function bullet() {
                     obj[measures[0]] = d.measures.toString();
                     obj[measures[1]] = d.markers.toString();
 
-                    _filter.push(obj)
+                    _filter.push(obj);
                 });
-            }
-            else {
+            } else {
                 filterData = [];
             }
             if (_filter.length > 0) {
                 filterData = _filter;
             }
+
             if (broadcast) {
-                var idWidget = broadcast.updateWidget[scope.node().parentNode.id];
-                broadcast.updateWidget = {};
-                broadcast.updateWidget[scope.node().parentNode.id] = idWidget;
+                var _filterDimension = broadcast.selectedFilters || {};
 
-                var _filterList = {}, list = []
-
-                filterData.map(function (val) {
-                    list.push(val[dimension[0]])
-                })
-                var _filterDimension = {};
-                if (broadcast.filterSelection.id) {
-                    _filterDimension = broadcast.filterSelection.filter;
-                } else {
-                    broadcast.filterSelection.id = parentContainer.attr('id');
-                }
-                _filterDimension[dimension] = filterData.map(function (d) {
-                    return d[dimension[0]];
+                _filterDimension[_dimension[0]] = ffilterData.map(function (
+                    val
+                ) {
+                    return val[dimension[0]];
                 });
-                _filterDimension[dimension]._meta = {
-                    dataType: _dimensionType[0],
-                    valueType: 'castValueType'
-                };
 
-                broadcast.filterSelection.filter = _filterDimension;
-                var _filterParameters = filterParameters.get();
-                _filterParameters[dimension] = _filterDimension[dimension];
-                filterParameters.save(_filterParameters);
+                _filterDimension[_dimension[0]]._meta = {
+                    dataType: _dimensionType[0],
+                    valueType: "castValueType",
+                };
+               broadcast.saveSelectedFilter(_filterDimension);
             }
-        }
-    }
+        };
+    };
 
     var applyFilter = function () {
         return function () {
-            if (filterData.length > 0) {
-                //Viz renders twice issue
-                // chart.update(filterData);
-                if (broadcast) {
-                    broadcast.updateWidget = {};
-                    broadcast.filterSelection.id = null;
-                    broadcast.$broadcast('flairbiApp:filter-input-refresh');
-                    broadcast.$broadcast('flairbiApp:filter');
-                    broadcast.$broadcast('flairbiApp:filter-add');
-                    d3.select(this.parentNode)
-                        .style('visibility', 'hidden');
-                }
+            if (broadcast) {
+                broadcast.applyFilter(
+                    broadcast.selectedFilters,
+                    broadcast.visualmetadata,
+                    broadcast.view
+                );
+                d3.select(this.parentNode).style("visibility", "hidden");
             }
-        }
-    }
+        };
+    };
 
     var clearFilter = function (div) {
         return function () {
             chart.update(_originalData);
-            d3.select(div).select('.confirm')
-                .style('visibility', 'hidden');
-        }
-    }
+            d3.select(div).select(".confirm").style("visibility", "hidden");
+        };
+    };
 
     var _handleMouseOverFn = function (tooltip, container) {
         var me = this;
         return function (d, i) {
+            d3.select(this).style("cursor", "pointer");
 
-            d3.select(this).style('cursor', 'pointer')
-
-            d3.select(this).select('.measure')
-                .style('fill', targetColor)
-                .style('stroke', valueColor)
+            d3.select(this)
+                .select(".measure")
+                .style("fill", targetColor)
+                .style("stroke", valueColor);
 
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, valueColor, _notification);
+                UTIL.updateTooltip.call(
+                    tooltip,
+                    _buildTooltipData(d, me),
+                    container,
+                    valueColor,
+                    _notification
+                );
             }
-        }
-    }
+        };
+    };
 
     var _handleMouseMoveFn = function (tooltip, container) {
         var me = this;
 
         return function (d, i) {
             if (tooltip) {
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, valueColor, _notification);
+                UTIL.updateTooltip.call(
+                    tooltip,
+                    _buildTooltipData(d, me),
+                    container,
+                    valueColor,
+                    _notification
+                );
             }
-        }
-    }
+        };
+    };
 
     var _handleMouseOutFn = function (tooltip, container) {
         var me = this;
 
         return function (d, i) {
+            d3.select(this).style("cursor", "default");
 
-            d3.select(this).style('cursor', 'default')
-
-            d3.select(this).select('.measure')
-                .style('fill', valueColor)
-                .style('stroke', targetColor)
+            d3.select(this)
+                .select(".measure")
+                .style("fill", valueColor)
+                .style("stroke", targetColor);
 
             if (tooltip) {
                 UTIL.hideTooltip(tooltip);
             }
-        }
-    }
+        };
+    };
     var getSegmentValues = function (endValue) {
         var me = this,
             _segments = [],
@@ -289,7 +307,7 @@ function bullet() {
 
         d3.range(segments).forEach(function (i) {
             try {
-                if (d = segmentInfo[i]['upto']) {
+                if ((d = segmentInfo[i]["upto"])) {
                     _segments.push(d);
                 }
             } catch (e) {
@@ -304,127 +322,129 @@ function bullet() {
         }
 
         return _segments;
-    }
+    };
 
     var getSegmentColors = function (scope) {
-
         var _segments = {},
             j = segments - 1;
 
         d3.range(segments).forEach(function (i) {
             try {
-                _segments['.s' + j] = segmentInfo[i]['color'];
+                _segments[".s" + j] = segmentInfo[i]["color"];
             } catch (e) {
-                _segments['.s' + j] = "#efefef";
+                _segments[".s" + j] = "#efefef";
             } finally {
                 j--;
             }
         });
 
         return _segments;
-    }
+    };
 
     var getMargin = function (containerWidth) {
         var margin = {
             top: 15,
-            bottom: 15
+            bottom: 15,
         };
 
-        if (orientation == 'Horizontal') {
+        if (orientation == COMMON.HORIZONTAL) {
             if (showLabel) {
-                margin['left'] = 45;
+                margin["left"] = 45;
             } else {
-                margin['left'] = 20;
+                margin["left"] = 20;
             }
-            margin['right'] = 20;
-        } else if (orientation == 'Vertical') {
-            margin['left'] = 15;
-            margin['right'] = 15;
-            margin['top'] = 30;
+            margin["right"] = 20;
+        } else if (orientation == COMMON.VERTICAL) {
+            margin["left"] = 15;
+            margin["right"] = 15;
+            margin["top"] = 30;
         }
 
         return margin;
-    }
+    };
     var formatUsingCss = function (scope) {
-        var bullet = scope.selectAll('.bullet'),
-            range = scope.selectAll('.range');
+        var bullet = scope.selectAll(".bullet"),
+            range = scope.selectAll(".range");
 
-        bullet.style('font', '9px sans-serif');
-        bullet.selectAll('.marker')
-            .style('stroke', targetColor)
-            .style('stroke-width', '2px');
+        bullet.style("font", "9px sans-serif");
+        bullet
+            .selectAll(".marker")
+            .style("stroke", targetColor)
+            .style("stroke-width", "2px");
 
-        bullet.selectAll('.tick line')
-            .style('stroke', '#666')
-            .style('stroke-width', '0.5px');
+        bullet
+            .selectAll(".tick line")
+            .style("stroke", "#666")
+            .style("stroke-width", "0.5px");
 
-        bullet.selectAll('.measure').style('fill', valueColor);
-        bullet.selectAll('.measure').classed('selected', false);
+        bullet.selectAll(".measure").style("fill", valueColor);
+        bullet.selectAll(".measure").classed("selected", false);
         //set from config
         //bullet.find('.title').css('font-size', '1.1em');
 
-        if (orientation == 'Vertical') {
-            bullet.selectAll('.tick text').each(function (i, d) {
+        if (orientation == COMMON.VERTICAL) {
+            bullet.selectAll(".tick text").each(function (i, d) {
                 var text = d;
                 //  $(d).text(UTIL.getTruncatedLabel(d, UTIL.shortScale(2)(UTIL.convertToNumber(text)), 25));
             });
         } else {
-            bullet.selectAll('.tick text').each(function (i, d) {
+            bullet.selectAll(".tick text").each(function (i, d) {
                 var text = d;
                 //  $(d).text(UTIL.getTruncatedLabel(d, UTIL.shortScale(2)(UTIL.convertToNumber(text)), 25));
             });
         }
 
         var obj;
-        for (var property in obj = getSegmentColors(this)) {
+        for (var property in (obj = getSegmentColors(this))) {
             if (obj.hasOwnProperty(property)) {
-                range.filter(property).style('fill', obj[property]);
+                range.filter(property).style("fill", obj[property]);
             }
         }
-    }
+    };
     function chart(selection) {
-
         _Local_data = _originalData = _data;
 
         if (_print && !_notification) {
             parentContainer = selection;
+        } else {
+            parentContainer = d3.select("#" + selection.id);
         }
-        else {
-            parentContainer = d3.select('#' + selection.id)
-        }
 
-        var svg = parentContainer.append('svg')
-            .attr('width', parentContainer.attr('width'))
-            .attr('height', parentContainer.attr('height'))
+        var svg = parentContainer
+            .append("svg")
+            .attr("width", parentContainer.attr("width"))
+            .attr("height", parentContainer.attr("height"));
 
-        width = +svg.attr('width'),
-            height = +svg.attr('height');
+        (width = +svg.attr("width")), (height = +svg.attr("height"));
 
-        parentContainer.append('div')
-            .attr('class', 'custom_tooltip');
+        parentContainer.append("div").attr("class", "custom_tooltip");
 
         _local_svg = svg;
 
         setMeasuresSum(UTIL.getSum(_data, measures[0]));
         setTargetSum(UTIL.getSum(_data, measures[1]));
 
-        svg.selectAll('g').remove();
+        svg.selectAll("g").remove();
 
-        svg.attr('width', width)
-            .attr('height', height);
+        svg.attr("width", width).attr("height", height);
 
-        container = svg.append('g')
-            .attr('class', 'plot')
+        container = svg.append("g").attr("class", "plot");
 
         if (_tooltip) {
-            tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select(".custom_tooltip");
         }
 
         data = _data.map(function (item) {
             var d = {};
             d.title = item[dimension[0]];
             d.ranges = getSegmentValues(
-                Math.floor(1.2 * Math.max.apply(Math, [item[measures[0]], item[measures[1]]]))
+                Math.floor(
+                    1.2 *
+                    Math.max.apply(Math, [
+                        item[measures[0]],
+                        item[measures[1]],
+                    ])
+                )
             );
             d.measures = [item[measures[0]]];
             d.markers = [item[measures[1]]];
@@ -433,28 +453,28 @@ function bullet() {
         });
 
         if (!_print) {
-            bullet = d3bullet(_print)
-                .duration(COMMON.DURATION);
-        }
-        else {
-            bullet = d3bullet(_print)
+            bullet = d3bullet(_print).duration(COMMON.DURATION);
+        } else {
+            bullet = d3bullet(_print);
         }
 
         var margin = getMargin(width);
         gWidth = Math.floor((width - margin.left - margin.right) / data.length);
-        gHeight = Math.floor((height - margin.top - margin.bottom) / data.length);
+        gHeight = Math.floor(
+            (height - margin.top - margin.bottom) / data.length
+        );
         offset = 6;
-        if (orientation == 'Horizontal') {
+        if (orientation == COMMON.HORIZONTAL) {
             bullet.width(width - margin.left - margin.right);
             if (data.length == 1) {
-                bullet.height(Math.floor(3 * gHeight / 4));
+                bullet.height(Math.floor((3 * gHeight) / 4));
             } else {
                 bullet.height(Math.floor(gHeight / 2));
             }
-        } else if (orientation == 'Vertical') {
+        } else if (orientation == COMMON.VERTICAL) {
             bullet.width(height - margin.top - margin.bottom);
             if (data.length == 1) {
-                bullet.height(Math.floor(3 * gWidth / 4));
+                bullet.height(Math.floor((3 * gWidth) / 4));
             } else {
                 bullet.height(Math.floor(gWidth / 2));
             }
@@ -462,108 +482,152 @@ function bullet() {
             throw "Invalid orientation";
         }
 
-        var g = container.selectAll('g')
+        var g = container
+            .selectAll("g")
             .data(data)
-            .enter().append('g')
-            .attr('id', function (d, i) {
-                return 'group_' + parentContainer.id + '_' + i;
+            .enter()
+            .append("g")
+            .attr("id", function (d, i) {
+                return "group_" + parentContainer.id + "_" + i;
             })
-            .attr('class', 'bullet')
-            .attr('transform', function (d, i) {
-                if (orientation == 'Horizontal') {
-                    return 'translate(' + margin.left + ',' + (margin.top + i * gHeight) + ') rotate(0)';
-                } else if (orientation == 'Vertical') {
-                    return 'translate(' + (margin.left + i * gWidth) + ',' + (height - margin.top + offset) + ') rotate(-90)';
+            .attr("class", "bullet")
+            .attr("transform", function (d, i) {
+                if (orientation == COMMON.HORIZONTAL) {
+                    return (
+                        "translate(" +
+                        margin.left +
+                        "," +
+                        (margin.top + i * gHeight) +
+                        ") rotate(0)"
+                    );
+                } else if (orientation == COMMON.VERTICAL) {
+                    return (
+                        "translate(" +
+                        (margin.left + i * gWidth) +
+                        "," +
+                        (height - margin.top + offset) +
+                        ") rotate(-90)"
+                    );
                 }
-
             })
             .call(bullet);
 
-        var title = g.append('g')
-            .style('text-anchor', function (d) {
-                if (orientation == 'Horizontal') {
-                    return 'end';
-                } else if (orientation == 'Vertical') {
-                    return 'middle';
+        var title = g
+            .append("g")
+            .style("text-anchor", function (d) {
+                if (orientation == COMMON.HORIZONTAL) {
+                    return "end";
+                } else if (orientation == COMMON.VERTICAL) {
+                    return "middle";
                 }
             })
-            .attr('display', showLabel ? "inherit" : "none")
-            .attr('transform', function (d) {
-                if (orientation == 'Horizontal') {
-                    return 'translate(' + -offset + ',' + Math.floor(gHeight / 3.25) + ')';
-                } else if (orientation == 'Vertical') {
-                    return 'translate(' + -offset * 2 + ',' + Math.floor(gWidth / 3.25) + ')';
+            .attr("display", showLabel ? "inherit" : "none")
+            .attr("transform", function (d) {
+                if (orientation == COMMON.HORIZONTAL) {
+                    return (
+                        "translate(" +
+                        -offset +
+                        "," +
+                        Math.floor(gHeight / 3.25) +
+                        ")"
+                    );
+                } else if (orientation == COMMON.VERTICAL) {
+                    return (
+                        "translate(" +
+                        -offset * 2 +
+                        "," +
+                        Math.floor(gWidth / 3.25) +
+                        ")"
+                    );
                 }
-            })
+            });
 
-        title.append('text')
-            .attr('class', 'title')
-            .style('font-style', fontStyle)
-            .style('font-weight', fontWeight)
-            .style('font-size', fontSize + 'px')
-            .attr('transform', function (d) {
-                if (orientation == 'Horizontal') {
-                    return 'rotate(0)';
-                } else if (orientation == 'Vertical') {
-                    return 'rotate(90)';
+        title
+            .append("text")
+            .attr("class", "title")
+            .style("font-style", fontStyle)
+            .style("font-weight", fontWeight)
+            .style("font-size", fontSize + "px")
+            .attr("transform", function (d) {
+                if (orientation == COMMON.HORIZONTAL) {
+                    return "rotate(0)";
+                } else if (orientation == COMMON.VERTICAL) {
+                    return "rotate(90)";
                 }
             })
-            .text(function (d) { return UTIL.getDimensionFormatedValue(d.title, _dimensionType[0]); })
             .text(function (d) {
-                if (orientation == 'Horizontal') {
+                return UTIL.getDimensionFormatedValue(
+                    d.title,
+                    _dimensionType[0]
+                );
+            })
+            .text(function (d) {
+                if (orientation == COMMON.HORIZONTAL) {
                     if (d.title === null) {
                         return COMMON.NULLVALUE;
                     }
                     if (d.title.length > 3) {
-                        return d.title.substring(0, 3) + '...';
+                        return d.title.substring(0, 3) + "...";
                     }
                     return d.title;
-                } else if (orientation == 'Vertical') {
-                    return UTIL.getTruncatedLabel(this, UTIL.getDimensionFormatedValue(d.title, _dimensionType[0]), Math.floor(gWidth / 2), offset);
+                } else if (orientation == COMMON.VERTICAL) {
+                    return UTIL.getTruncatedLabel(
+                        this,
+                        UTIL.getDimensionFormatedValue(
+                            d.title,
+                            _dimensionType[0]
+                        ),
+                        Math.floor(gWidth / 2),
+                        offset
+                    );
                 }
             });
         formatUsingCss(_local_svg);
 
         if (!_print) {
-
-            d3.selectAll('g.bullet')
-                .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
-                .on('click', function (d) {
-
+            d3.selectAll("g.bullet")
+                .on(
+                    "mouseover",
+                    _handleMouseOverFn.call(chart, tooltip, _local_svg)
+                )
+                .on(
+                    "mousemove",
+                    _handleMouseMoveFn.call(chart, tooltip, _local_svg)
+                )
+                .on(
+                    "mouseout",
+                    _handleMouseOutFn.call(chart, tooltip, _local_svg)
+                )
+                .on("click", function (d) {
                     if (isLiveEnabled) {
-                        broadcast.$broadcast('FlairBi:livemode-dialog');
+                        broadcast.$broadcast("FlairBi:livemode-dialog");
                         return;
                     }
-                    var confirm = parentContainer.select('.confirm')
-                        .style('visibility', 'visible');
+                    var confirm = parentContainer
+                        .select(".confirm")
+                        .style("visibility", "visible");
 
-                    var rect = d3.select(this).select('rect.measure');
+                    var rect = d3.select(this).select("rect.measure");
 
-                    if (rect.classed('selected')) {
-                        rect.classed('selected', false);
+                    if (rect.classed("selected")) {
+                        rect.classed("selected", false);
                         filterData = filterData.filter(function (val) {
                             if (val[dimension[0]] != d.title) {
                                 return val;
                             }
-                        })
+                        });
                     } else {
-                        rect.classed('selected', true);
+                        rect.classed("selected", true);
                         var obj = new Object();
                         obj[dimension] = d.title;
                         obj[measures[0]] = d.measures.toString();
                         obj[measures[1]] = d.markers.toString();
 
-                        filterData.push(obj)
+                        filterData.push(obj);
                     }
 
-                    var _filterDimension = {};
-                    if (broadcast.filterSelection.id) {
-                        _filterDimension = broadcast.filterSelection.filter;
-                    } else {
-                        broadcast.filterSelection.id = parentContainer.attr('id');
-                    }
+                    var _filterDimension = broadcast.selectedFilters || {};
+
                     var _dimension = dimension[0];
                     if (_filterDimension[_dimension]) {
                         var temp = _filterDimension[_dimension];
@@ -579,48 +643,49 @@ function bullet() {
 
                     _filterDimension[_dimension]._meta = {
                         dataType: _dimensionType[0],
-                        valueType: 'castValueType'
+                        valueType: "castValueType",
                     };
-                    UTIL.saveFilterParameters(broadcast, filterParameters, parentContainer, _filterDimension, _dimension);
-                })
+                    broadcast.saveSelectedFilter(_filterParameters);
+                });
 
-            var _filter = UTIL.createFilterElement()
-            $('#' + parentContainer.attr('id')).append(_filter);
+            var _filter = UTIL.createFilterElement();
+            $("#" + parentContainer.attr("id")).append(_filter);
 
-            parentContainer.select('.filterData')
-                .on('click', applyFilter());
+            parentContainer.select(".filterData").on("click", applyFilter());
 
-            parentContainer.select('.removeFilter')
-                .on('click', clearFilter(parentContainer));
+            parentContainer
+                .select(".removeFilter")
+                .on("click", clearFilter(parentContainer));
 
-            _local_svg.select('g.lasso').remove()
+            _local_svg.select("g.lasso").remove();
 
-            var lasso = d3Lasso.lasso()
+            var lasso = d3Lasso
+                .lasso()
                 .hoverSelect(true)
                 .closePathSelect(true)
                 .closePathDistance(100)
                 .items(g)
                 .targetArea(_local_svg);
 
-            lasso.on('start', onLassoStart(lasso, _local_svg))
-                .on('draw', onLassoDraw(lasso, _local_svg))
-                .on('end', onLassoEnd(lasso, _local_svg));
+            lasso
+                .on("start", onLassoStart(lasso, _local_svg))
+                .on("draw", onLassoDraw(lasso, _local_svg))
+                .on("end", onLassoEnd(lasso, _local_svg));
 
             _local_svg.call(lasso);
         }
     }
     chart._getName = function () {
         return _NAME;
-    }
+    };
 
     chart._getHTML = function () {
         return _local_svg.node().outerHTML;
-    }
+    };
 
     chart.update = function (data) {
-
         if (_tooltip) {
-            tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select(".custom_tooltip");
         }
         _Local_data = data;
         filterData = [];
@@ -630,35 +695,41 @@ function bullet() {
             var d = {};
             d.title = item[dimension[0]];
             d.ranges = getSegmentValues(
-                Math.floor(1.2 * Math.max.apply(Math, [item[measures[0]], item[measures[1]]]))
+                Math.floor(
+                    1.2 *
+                    Math.max.apply(Math, [
+                        item[measures[0]],
+                        item[measures[1]],
+                    ])
+                )
             );
             d.measures = [item[measures[0]]];
             d.markers = [item[measures[1]]];
 
             return d;
         });
-        var plot = svg.select('.plot')
-        var _bullet = plot.selectAll('.bullet')
-            .data(data);
+        var plot = svg.select(".plot");
+        var _bullet = plot.selectAll(".bullet").data(data);
 
-        newBullet = _bullet.enter().append('g')
-            .attr('class', 'bullet');
+        newBullet = _bullet.enter().append("g").attr("class", "bullet");
 
         var margin = getMargin(width);
         gWidth = Math.floor((width - margin.left - margin.right) / data.length);
-        gHeight = Math.floor((height - margin.top - margin.bottom) / data.length);
+        gHeight = Math.floor(
+            (height - margin.top - margin.bottom) / data.length
+        );
 
-        if (orientation == 'Horizontal') {
+        if (orientation == COMMON.HORIZONTAL) {
             bullet.width(width - margin.left - margin.right);
             if (data.length == 1) {
-                bullet.height(Math.floor(3 * gHeight / 4));
+                bullet.height(Math.floor((3 * gHeight) / 4));
             } else {
                 bullet.height(Math.floor(gHeight / 2));
             }
-        } else if (orientation == 'Vertical') {
+        } else if (orientation == COMMON.VERTICAL) {
             bullet.width(height - margin.top - margin.bottom);
             if (data.length == 1) {
-                bullet.height(Math.floor(3 * gWidth / 4));
+                bullet.height(Math.floor((3 * gWidth) / 4));
             } else {
                 bullet.height(Math.floor(gWidth / 2));
             }
@@ -668,69 +739,97 @@ function bullet() {
 
         _bullet.exit().remove();
 
-        _bullet = plot.selectAll('g.bullet');
+        _bullet = plot.selectAll("g.bullet");
 
         _bullet
-            .classed('selected', false)
-            .attr('transform', function (d, i) {
-                if (orientation == 'Horizontal') {
-                    return 'translate(' + margin.left + ',' + (margin.top + i * gHeight) + ') rotate(0)';
-                } else if (orientation == 'Vertical') {
-                    return 'translate(' + (margin.left + i * gWidth) + ',' + (height - margin.top + offset) + ') rotate(-90)';
+            .classed("selected", false)
+            .attr("transform", function (d, i) {
+                if (orientation == COMMON.HORIZONTAL) {
+                    return (
+                        "translate(" +
+                        margin.left +
+                        "," +
+                        (margin.top + i * gHeight) +
+                        ") rotate(0)"
+                    );
+                } else if (orientation == COMMON.VERTICAL) {
+                    return (
+                        "translate(" +
+                        (margin.left + i * gWidth) +
+                        "," +
+                        (height - margin.top + offset) +
+                        ") rotate(-90)"
+                    );
                 }
-
             })
             .call(bullet);
 
         newBullet
-            .attr('id', function (d, i) {
-                return 'group_' + parentContainer.id + '_' + i;
+            .attr("id", function (d, i) {
+                return "group_" + parentContainer.id + "_" + i;
             })
-            .attr('class', 'bullet')
-            .attr('transform', function (d, i) {
-                if (orientation == 'Horizontal') {
-                    return 'translate(' + margin.left + ',' + (margin.top + i * gHeight) + ') rotate(0)';
-                } else if (orientation == 'Vertical') {
-                    return 'translate(' + (margin.left + i * gWidth) + ',' + (height - margin.top + offset) + ') rotate(-90)';
+            .attr("class", "bullet")
+            .attr("transform", function (d, i) {
+                if (orientation == COMMON.HORIZONTAL) {
+                    return (
+                        "translate(" +
+                        margin.left +
+                        "," +
+                        (margin.top + i * gHeight) +
+                        ") rotate(0)"
+                    );
+                } else if (orientation == COMMON.VERTICAL) {
+                    return (
+                        "translate(" +
+                        (margin.left + i * gWidth) +
+                        "," +
+                        (height - margin.top + offset) +
+                        ") rotate(-90)"
+                    );
                 }
-
             })
-            .on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
-            .on('click', function (d) {
-
+            .on(
+                "mouseover",
+                _handleMouseOverFn.call(chart, tooltip, _local_svg)
+            )
+            .on(
+                "mousemove",
+                _handleMouseMoveFn.call(chart, tooltip, _local_svg)
+            )
+            .on("mouseout", _handleMouseOutFn.call(chart, tooltip, _local_svg))
+            .on("click", function (d) {
                 if (isLiveEnabled) {
-                    broadcast.$broadcast('FlairBi:livemode-dialog');
+                    broadcast.$broadcast("FlairBi:livemode-dialog");
                     return;
                 }
-                var confirm = parentContainer.select('.confirm')
-                    .style('visibility', 'visible');
+                var confirm = parentContainer
+                    .select(".confirm")
+                    .style("visibility", "visible");
 
-                var rect = d3.select(this).select('rect.measure');
+                var rect = d3.select(this).select("rect.measure");
 
-                if (rect.classed('selected')) {
-                    rect.classed('selected', false);
+                if (rect.classed("selected")) {
+                    rect.classed("selected", false);
                     filterData = filterData.filter(function (val) {
                         if (val[dimension[0]] != d.title) {
                             return val;
                         }
-                    })
+                    });
                 } else {
-                    rect.classed('selected', true);
+                    rect.classed("selected", true);
                     var obj = new Object();
                     obj[dimension] = d.title;
                     obj[measures[0]] = d.measures.toString();
                     obj[measures[1]] = d.markers.toString();
 
-                    filterData.push(obj)
+                    filterData.push(obj);
                 }
 
-                var _filterDimension = {};
+                var _filterDimension = broadcast.selectedFilters || {};
                 if (broadcast.filterSelection.id) {
-                    _filterDimension = broadcast.filterSelection.filter;
+                    _filterDimension = broadcast.selectedFilters[_dimension[0]] || {};
                 } else {
-                    broadcast.filterSelection.id = parentContainer.attr('id');
+                    broadcast.filterSelection.id = parentContainer.attr("id");
                 }
                 var _dimension = dimension[0];
                 if (_filterDimension[_dimension]) {
@@ -747,74 +846,109 @@ function bullet() {
 
                 _filterDimension[_dimension]._meta = {
                     dataType: _dimensionType[0],
-                    valueType: 'castValueType'
+                    valueType: "castValueType",
                 };
-                UTIL.saveFilterParameters(broadcast, filterParameters, parentContainer, _filterDimension, _dimension);
+                UTIL.saveFilterParameters(
+                    broadcast,
+                    filterParameters,
+                    parentContainer,
+                    _filterDimension,
+                    _dimension
+                );
             })
             .call(bullet);
 
-        plot.selectAll('.title').remove()
-        var title = _bullet.append('g')
-            .style('text-anchor', function (d) {
-                if (orientation == 'Horizontal') {
-                    return 'end';
-                } else if (orientation == 'Vertical') {
-                    return 'middle';
+        plot.selectAll(".title").remove();
+        var title = _bullet
+            .append("g")
+            .style("text-anchor", function (d) {
+                if (orientation == COMMON.HORIZONTAL) {
+                    return "end";
+                } else if (orientation == COMMON.VERTICAL) {
+                    return "middle";
                 }
             })
-            .attr('display', showLabel ? "inherit" : "none")
-            .attr('transform', function (d) {
-                if (orientation == 'Horizontal') {
-                    return 'translate(' + -offset + ',' + Math.floor(gHeight / 3.25) + ')';
-                } else if (orientation == 'Vertical') {
-                    return 'translate(' + -offset * 2 + ',' + Math.floor(gWidth / 3.25) + ')';
+            .attr("display", showLabel ? "inherit" : "none")
+            .attr("transform", function (d) {
+                if (orientation == COMMON.HORIZONTAL) {
+                    return (
+                        "translate(" +
+                        -offset +
+                        "," +
+                        Math.floor(gHeight / 3.25) +
+                        ")"
+                    );
+                } else if (orientation == COMMON.VERTICAL) {
+                    return (
+                        "translate(" +
+                        -offset * 2 +
+                        "," +
+                        Math.floor(gWidth / 3.25) +
+                        ")"
+                    );
                 }
-            })
+            });
 
-        title.append('text')
-            .attr('class', 'title')
-            .style('font-style', fontStyle)
-            .style('font-weight', fontWeight)
-            .style('font-size', fontSize + 'px')
-            .attr('transform', function (d) {
-                if (orientation == 'Horizontal') {
-                    return 'rotate(0)';
-                } else if (orientation == 'Vertical') {
-                    return 'rotate(90)';
+        title
+            .append("text")
+            .attr("class", "title")
+            .style("font-style", fontStyle)
+            .style("font-weight", fontWeight)
+            .style("font-size", fontSize + "px")
+            .attr("transform", function (d) {
+                if (orientation == COMMON.HORIZONTAL) {
+                    return "rotate(0)";
+                } else if (orientation == COMMON.VERTICAL) {
+                    return "rotate(90)";
                 }
             })
-            .text(function (d) { return UTIL.getDimensionFormatedValue(d.title, _dimensionType[0]); })
             .text(function (d) {
-                if (orientation == 'Horizontal') {
+                return UTIL.getDimensionFormatedValue(
+                    d.title,
+                    _dimensionType[0]
+                );
+            })
+            .text(function (d) {
+                if (orientation == COMMON.HORIZONTAL) {
                     if (d.title === null) {
                         return COMMON.NULLVALUE;
                     }
                     if (d.title.length > 3) {
-                        return d.title.substring(0, 3) + '...';
+                        return d.title.substring(0, 3) + "...";
                     }
                     return d.title;
-                } else if (orientation == 'Vertical') {
-                    return UTIL.getTruncatedLabel(this, UTIL.getDimensionFormatedValue(d.title, _dimensionType[0]), Math.floor(gWidth / 2), offset);
+                } else if (orientation == COMMON.VERTICAL) {
+                    return UTIL.getTruncatedLabel(
+                        this,
+                        UTIL.getDimensionFormatedValue(
+                            d.title,
+                            _dimensionType[0]
+                        ),
+                        Math.floor(gWidth / 2),
+                        offset
+                    );
                 }
             });
 
         formatUsingCss(_local_svg);
 
-        _local_svg.select('g.lasso').remove()
+        _local_svg.select("g.lasso").remove();
 
-        var lasso = d3Lasso.lasso()
+        var lasso = d3Lasso
+            .lasso()
             .hoverSelect(true)
             .closePathSelect(true)
             .closePathDistance(100)
             .items(_bullet)
             .targetArea(_local_svg);
 
-        lasso.on('start', onLassoStart(lasso, _local_svg))
-            .on('draw', onLassoDraw(lasso, _local_svg))
-            .on('end', onLassoEnd(lasso, _local_svg));
+        lasso
+            .on("start", onLassoStart(lasso, _local_svg))
+            .on("draw", onLassoDraw(lasso, _local_svg))
+            .on("end", onLassoEnd(lasso, _local_svg));
 
         _local_svg.call(lasso);
-    }
+    };
 
     chart.config = function (value) {
         if (!arguments.length) {
@@ -823,14 +957,14 @@ function bullet() {
         _config = value;
         _setConfigParams.call(chart, _config);
         return chart;
-    }
+    };
     chart.sort = function (value) {
         if (!arguments.length) {
             return _sort;
         }
         _sort = value;
         return chart;
-    }
+    };
 
     chart.tooltip = function (value) {
         if (!arguments.length) {
@@ -838,14 +972,14 @@ function bullet() {
         }
         _tooltip = value;
         return chart;
-    }
+    };
     chart.dimension = function (value) {
         if (!arguments.length) {
             return dimension;
         }
         dimension = value;
         return chart;
-    }
+    };
 
     chart.dimensionType = function (value) {
         if (!arguments.length) {
@@ -853,7 +987,7 @@ function bullet() {
         }
         _dimensionType = value;
         return chart;
-    }
+    };
 
     chart.measures = function (value) {
         if (!arguments.length) {
@@ -861,7 +995,7 @@ function bullet() {
         }
         measures = value;
         return chart;
-    }
+    };
 
     chart.fontStyle = function (value) {
         if (!arguments.length) {
@@ -869,77 +1003,77 @@ function bullet() {
         }
         fontStyle = value;
         return chart;
-    }
+    };
     chart.fontWeight = function (value) {
         if (!arguments.length) {
             return fontWeight;
         }
         fontWeight = value;
         return chart;
-    }
+    };
     chart.fontSize = function (value) {
         if (!arguments.length) {
             return fontSize;
         }
         fontSize = value;
         return chart;
-    }
+    };
     chart.showLabel = function (value) {
         if (!arguments.length) {
             return showLabel;
         }
         showLabel = value;
         return chart;
-    }
+    };
     chart.valueColor = function (value) {
         if (!arguments.length) {
             return valueColor;
         }
         valueColor = value;
         return chart;
-    }
+    };
     chart.targetColor = function (value) {
         if (!arguments.length) {
             return targetColor;
         }
         targetColor = value;
         return chart;
-    }
+    };
     chart.orientation = function (value) {
         if (!arguments.length) {
             return orientation;
         }
         orientation = value;
         return chart;
-    }
+    };
     chart.segments = function (value) {
         if (!arguments.length) {
             return segments;
         }
         segments = value;
         return chart;
-    }
+    };
     chart.segmentInfo = function (value) {
         if (!arguments.length) {
             return segmentInfo;
         }
-        segmentInfo = UTIL.getExpressionConfig(value, ['color']);;
+        segmentInfo = UTIL.getExpressionConfig(value, ["color"]);
         return chart;
-    }
+    };
     chart.measureNumberFormat = function (value) {
         if (!arguments.length) {
             return measureNumberFormat;
         }
         measureNumberFormat = value;
         return chart;
-    }
+    };
     chart.targetNumberFormat = function (value) {
         if (!arguments.length) {
             return targetNumberFormat;
         }
         targetNumberFormat = value;
         return chart;
-    }
+    };
 
     chart.print = function (value) {
         if (!arguments.length) {
@@ -947,7 +1081,7 @@ function bullet() {
         }
         _print = value;
         return chart;
-    }
+    };
 
     chart.broadcast = function (value) {
         if (!arguments.length) {
@@ -955,7 +1089,7 @@ function bullet() {
         }
         broadcast = value;
         return chart;
-    }
+    };
 
     chart.filterParameters = function (value) {
         if (!arguments.length) {
@@ -963,28 +1097,28 @@ function bullet() {
         }
         filterParameters = value;
         return chart;
-    }
+    };
     chart.notification = function (value) {
         if (!arguments.length) {
             return _notification;
         }
         _notification = value;
         return chart;
-    }
+    };
     chart.data = function (value) {
         if (!arguments.length) {
             return _data;
         }
         _data = value;
         return chart;
-    }
+    };
     chart.isLiveEnabled = function (value) {
         if (!arguments.length) {
             return isLiveEnabled;
         }
         isLiveEnabled = value;
         return chart;
-    }
+    };
     return chart;
 }
 

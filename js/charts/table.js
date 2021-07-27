@@ -7,7 +7,7 @@ require('datatables.net-dt');
 
 function table() {
 
-    var _NAME = 'table';
+    var _NAME = COMMON.Table;
 
     var _config = [],
         _dimension = [],
@@ -205,9 +205,9 @@ function table() {
             }
         })
 
-        var _filterDimension = {};
+       var _filterDimension = broadcast.selectedFilters || {};
         if (broadcast.filterSelection.id) {
-            _filterDimension = broadcast.filterSelection.filter;
+           _filterDimension = broadcast.selectedFilters[_dimension[0]] || {};
         } else {
             broadcast.filterSelection.id = d3.select(parentContainer.node()).attr('id');
         }

@@ -5,7 +5,7 @@ var $ = require("jquery");
 
 function gauge() {
 
-    var _NAME = 'gauge';
+    var _NAME = COMMON.Gaugeplot;
     var _config,
         measures,
         gaugeType,

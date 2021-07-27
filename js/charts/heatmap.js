@@ -1,14 +1,13 @@
-var d3 = require('d3');
-var COMMON = require('../extras/common.js')();
-var UTIL = require('../extras/util.js')();
+var d3 = require("d3");
+var COMMON = require("../extras/common.js")();
+var UTIL = require("../extras/util.js")();
 var $ = require("jquery");
 
 try {
-    var d3Lasso = require('../../d3-libs/d3-lasso.min.js');
+    var d3Lasso = require("../../d3-libs/d3-lasso.min.js");
 } catch (ex) { }
 function heatmap() {
-
-    var _NAME = 'heatmap';
+    var _NAME = COMMON.HeatMap;
 
     var _config,
         _dimension,
@@ -46,20 +45,25 @@ function heatmap() {
         isLiveEnabled = false,
         _data;
 
-    var _local_svg, _Local_data, _originalData, _localLabelStack = [];
+    var _local_svg,
+        _Local_data,
+        _originalData,
+        _localLabelStack = [];
     var width, height, cellWidth, cellHeight, parentContainer;
     var margin = {
         top: 30,
         right: 15,
         bottom: 15,
-        left: 150
+        left: 150,
     };
 
     var yScale = d3.scaleBand(),
         xScale = d3.scaleBand(),
         gradientColor = d3.scaleLinear();
 
-    var filter = false, filterData = [], defaultText = 15;
+    var filter = false,
+        filterData = [],
+        defaultText = 15;
 
     var _setConfigParams = function (config) {
         this.dimension(config.dimension);
@@ -80,7 +84,7 @@ function heatmap() {
         this.iconFontWeight(config.iconFontWeight);
         this.iconColor(config.iconColor);
         this.iconPosition(config.iconPosition);
-        this.showIcon(config.showIcon)
+        this.showIcon(config.showIcon);
         this.colourCoding(config.colourCoding);
         this.valueTextColour(config.valueTextColour);
         this.fontStyleForMeasure(config.fontStyleForMeasure);
@@ -90,43 +94,62 @@ function heatmap() {
         this.displayColorMeasure(config.displayColorMeasure);
         this.iconExpression(config.iconExpression);
         setDefaultColorForChart();
-    }
+    };
 
     var setDefaultColorForChart = function () {
         for (let index = 0; index < _measure.length; index++) {
-            if (displayColorMeasure[index] == null || displayColorMeasure[index] == undefined) {
+            if (
+                displayColorMeasure[index] == null ||
+                displayColorMeasure[index] == undefined
+            ) {
                 displayColorMeasure[index] = COMMON.COLORSCALE(index);
             }
         }
-    }
+    };
 
     var _buildTooltipData = function (datum, chart) {
         var output = "";
 
-        output += "<table><tr>"
-            + "<th>" + chart.dimension() + ": </th>"
-            + "<td>" + UTIL.getDimensionFormatedValue(datum.y, _dimensionType[0]) + "</td>"
-            + "</tr><tr>"
-            + "<th>" + datum.x + ": </th>"
-            + "<td>" + Math.round(datum.val * 100) / 100 + "</td>"
-            + "</tr></table>";
+        output +=
+            "<table><tr>" +
+            "<th>" +
+            chart.dimension() +
+            ": </th>" +
+            "<td>" +
+            UTIL.getDimensionFormatedValue(datum.y, _dimensionType[0]) +
+            "</td>" +
+            "</tr><tr>" +
+            "<th>" +
+            datum.x +
+            ": </th>" +
+            "<td>" +
+            Math.round(datum.val * 100) / 100 +
+            "</td>" +
+            "</tr></table>";
 
         return output;
-    }
+    };
 
     var _handleMouseOverFn = function (tooltip, container) {
         var me = this;
         return function (d, i) {
-            d3.select(this).select('rect').style('cursor', 'pointer')
-                .style('cursor', 'pointer')
-                .style('fill-opacity', .5);
-            var border = d3.select(this).attr('fill');
+            d3.select(this)
+                .select("rect")
+                .style("cursor", "pointer")
+                .style("cursor", "pointer")
+                .style("fill-opacity", 0.5);
+            var border = d3.select(this).attr("fill");
             if (tooltip) {
                 UTIL.showTooltip(tooltip);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
+                UTIL.updateTooltip.call(
+                    tooltip,
+                    _buildTooltipData(d, me),
+                    container,
+                    border
+                );
             }
-        }
-    }
+        };
+    };
 
     var _handleMouseMoveFn = function (tooltip, container) {
         var me = this;
@@ -134,84 +157,106 @@ function heatmap() {
         return function (d, i) {
             if (tooltip) {
                 var border = getFillColor(d);
-                UTIL.updateTooltip.call(tooltip, _buildTooltipData(d, me), container, border);
+                UTIL.updateTooltip.call(
+                    tooltip,
+                    _buildTooltipData(d, me),
+                    container,
+                    border
+                );
             }
-        }
-    }
+        };
+    };
 
     var _handleMouseOutFn = function (tooltip, container) {
         var me = this;
 
         return function (d, i) {
-            d3.select(this).select('rect').style('cursor', 'default')
-                .style('fill', function (d1, i) {
+            d3.select(this)
+                .select("rect")
+                .style("cursor", "default")
+                .style("fill", function (d1, i) {
                     return getFillColor(d);
                 })
-                .style('fill-opacity', 1);
+                .style("fill-opacity", 1);
 
             if (tooltip) {
                 UTIL.hideTooltip(tooltip);
             }
-        }
-    }
+        };
+    };
 
     var getIconName = function (index) {
         return iconName[index];
-    }
+    };
 
     var getIcon = function (index, endValue, d, height) {
         var iconOutput = "";
 
         switch (iconPosition[index].toUpperCase()) {
-            case 'CENTER':
-                float = 'unset';
-                paddingLeft = '0px'
-                paddingRight = '0px'
-                marginTop = height / 2 - 5
+            case "CENTER":
+                float = "unset";
+                paddingLeft = "0px";
+                paddingRight = "0px";
+                marginTop = height / 2 - 5;
                 break;
-            case 'RIGHT':
-                float = 'right';
-                paddingLeft = '0px'
-                paddingRight = '15px'
-                marginTop = height / 2 - 5
+            case "RIGHT":
+                float = "right";
+                paddingLeft = "0px";
+                paddingRight = "15px";
+                marginTop = height / 2 - 5;
                 break;
-            case 'LEFT':
-                float = 'left';
-                paddingLeft = '10px'
-                paddingRight = '0px'
-                marginTop = height / 2 - 5
+            case "LEFT":
+                float = "left";
+                paddingLeft = "10px";
+                paddingRight = "0px";
+                marginTop = height / 2 - 5;
                 break;
         }
 
         var iconStyle = {
-            'font-weight': iconFontWeight[index] || COMMON.DEFAULT_FONTWEIGHT,
-            'color': valueTextColour[index] || COMMON.DEFAULT_COLOR,
-            'font-size': fontSizeForMeasure[index] + 'px' || COMMON.DEFAULT_FONTSIZE + 'px',
-            'float': float,
-            'padding-left': paddingLeft,
-            'padding-right': paddingRight,
-            'margin-top': marginTop + 'px'
+            "font-weight": iconFontWeight[index] || COMMON.DEFAULT_FONTWEIGHT,
+            color: valueTextColour[index] || COMMON.DEFAULT_COLOR,
+            "font-size":
+                fontSizeForMeasure[index] + "px" ||
+                COMMON.DEFAULT_FONTSIZE + "px",
+            float: float,
+            "padding-left": paddingLeft,
+            "padding-right": paddingRight,
+            "margin-top": marginTop + "px",
         };
 
         if (iconExpression[index].length) {
-            iconName[index] = UTIL.expressionEvaluator(iconExpression[index], endValue, 'icon');
-            iconStyle['color'] = UTIL.expressionEvaluator(iconExpression[index], endValue, 'color');
+            iconName[index] = UTIL.expressionEvaluator(
+                iconExpression[index],
+                endValue,
+                "icon"
+            );
+            iconStyle["color"] = UTIL.expressionEvaluator(
+                iconExpression[index],
+                endValue,
+                "color"
+            );
         }
 
         if (fontSizeForMeasure[index] >= height) {
-            iconStyle['font-size'] = fontSizeForMeasure[index] - 5 + 'px';
+            iconStyle["font-size"] = fontSizeForMeasure[index] - 5 + "px";
         }
 
         iconStyle = JSON.stringify(iconStyle);
-        iconStyle = iconStyle.replace(/["{}]/g, '').replace(/,/g, ';');
+        iconStyle = iconStyle.replace(/["{}]/g, "").replace(/,/g, ";");
 
-        iconOutput += "<i  class=\"fa " + iconName[index] + "\" style=\"" + iconStyle + "\" aria-hidden=\"true\"></i>";
+        iconOutput +=
+            '<i  class="fa ' +
+            iconName[index] +
+            '" style="' +
+            iconStyle +
+            '" aria-hidden="true"></i>';
 
         if (getIconName(index) !== "") {
             return iconOutput;
         }
         return "";
-    }
+    };
 
     var transformData = function (data) {
         var me = this;
@@ -227,84 +272,77 @@ function heatmap() {
                     x: x,
                     y: y,
                     column: j,
-                    val: val
+                    val: val,
                 });
-            })
+            });
         });
 
         return result;
-    }
-
+    };
 
     var getFillColor = function (data) {
         var colorProp = colourCoding[_measure.indexOf(data.x)],
             val = data.val,
             result;
         colorProp.some(function (c) {
-            if (c.hasOwnProperty('upto')) {
+            if (c.hasOwnProperty("upto")) {
                 if (val <= c.upto) {
                     result = c.color;
                     return true;
                 }
-            }
-            else if (c.hasOwnProperty('above')) {
+            } else if (c.hasOwnProperty("above")) {
                 if (val > c.above) {
                     result = c.color;
                     return true;
                 }
-            }
-            else if (c.hasOwnProperty('below')) {
+            } else if (c.hasOwnProperty("below")) {
                 if (val < c.below) {
                     result = c.color;
                     return true;
                 }
-            }
-            else if (property.hasOwnProperty('default')) {
+            } else if (property.hasOwnProperty("default")) {
                 result = c.color;
                 return true;
-            }
-            else {
+            } else {
                 result = c.color;
                 return true;
             }
         });
 
         if (isNaN(val)) {
-            return colorProp.filter(function (c) { return c.hasOwnProperty('default'); })[0]['color'];
+            return colorProp.filter(function (c) {
+                return c.hasOwnProperty("default");
+            })[0]["color"];
         }
 
         if (colorPattern == "unique_color") {
             return result || displayColorMeasure[_measure.indexOf(data.x)];
-        }
-        else if (colorPattern == "single_color") {
+        } else if (colorPattern == "single_color") {
             return result || displayColor;
-        }
-        else {
+        } else {
             return result || gradientColor(data.val);
         }
-
-
-    }
+    };
     var getIconPosition = function (data, width) {
-        var iconProp = iconPosition[_measure.indexOf(data.x)]
+        var iconProp = iconPosition[_measure.indexOf(data.x)];
         var padding = 4;
 
         var offset;
 
         switch (iconProp.toUpperCase()) {
-            case 'CENTER':
-                offset = 'unset';
+            case "CENTER":
+                offset = "unset";
                 break;
-            case 'RIGHT':
-                offset = 'right';
+            case "RIGHT":
+                offset = "right";
                 break;
-            case 'LEFT':
-                offset = 'left';
+            case "LEFT":
+                offset = "left";
                 break;
         }
 
         return offset;
-    }
+    };
     var getValuePosition = function (data, width) {
         var valPosition = valuePosition[_measure.indexOf(data.x)];
         var padding = 4;
@@ -312,64 +350,69 @@ function heatmap() {
         var offset;
 
         switch (valPosition.toUpperCase()) {
-            case 'LEFT':
+            case "LEFT":
                 offset = 0 + padding;
                 break;
-            case 'CENTER':
+            case "CENTER":
                 offset = width / 2;
                 break;
-            case 'RIGHT':
+            case "RIGHT":
                 offset = width - 5 * padding;
                 break;
         }
 
         return offset;
-    }
+    };
     var getValueTextAnchor = function (data) {
         var valPosition = valuePosition[_measure.indexOf(data.x)];
 
         var anchor;
 
         switch (valPosition.toUpperCase()) {
-            case 'LEFT':
-                anchor = 'start';
+            case "LEFT":
+                anchor = "start";
                 break;
-            case 'CENTER':
-                anchor = 'middle';
+            case "CENTER":
+                anchor = "middle";
                 break;
-            case 'RIGHT':
-                anchor = 'end';
+            case "RIGHT":
+                anchor = "end";
                 break;
         }
 
         return anchor;
-    }
+    };
 
     var onLassoStart = function (lasso, scope) {
         return function () {
             if (filter) {
-                lasso.items().selectAll('rect')
-                    .classed('not_possible', true)
-                    .classed('selected', false);
+                lasso
+                    .items()
+                    .selectAll("rect")
+                    .classed("not_possible", true)
+                    .classed("selected", false);
             }
-        }
-    }
+        };
+    };
 
     var onLassoDraw = function (lasso, scope) {
         return function () {
             filter = true;
-            lasso.items().selectAll('rect')
-                .classed('selected', false);
+            lasso.items().selectAll("rect").classed("selected", false);
 
-            lasso.possibleItems().selectAll('rect')
-                .classed('not_possible', false)
-                .classed('possible', true);
+            lasso
+                .possibleItems()
+                .selectAll("rect")
+                .classed("not_possible", false)
+                .classed("possible", true);
 
-            lasso.notPossibleItems().selectAll('rect')
-                .classed('not_possible', true)
-                .classed('possible', false);
-        }
-    }
+            lasso
+                .notPossibleItems()
+                .selectAll("rect")
+                .classed("not_possible", true)
+                .classed("possible", false);
+        };
+    };
 
     var onLassoEnd = function (lasso, scope) {
         return function () {
@@ -379,264 +422,293 @@ function heatmap() {
                 return;
             }
             if (data.length > 0) {
-                lasso.items().selectAll('rect')
-                    .classed('not_possible', false)
-                    .classed('possible', false);
+                lasso
+                    .items()
+                    .selectAll("rect")
+                    .classed("not_possible", false)
+                    .classed("possible", false);
             }
 
-            lasso.selectedItems().selectAll('rect')
-                .classed('selected', true)
+            lasso.selectedItems().selectAll("rect").classed("selected", true);
 
-            lasso.notSelectedItems().selectAll('rect');
+            lasso.notSelectedItems().selectAll("rect");
 
-            var confirm = d3.select(scope.node().parentNode).select('div.confirm')
-                .style('visibility', 'visible')
+            var confirm = d3
+                .select(scope.node().parentNode)
+                .select("div.confirm")
+                .style("visibility", "visible");
 
             var _filter = [];
             if (data.length > 0) {
                 data.forEach(function (d) {
                     var temp = d.y;
-                    var searchObj = _filter.find(o => o[_dimension[0]] === temp);
+                    var searchObj = _filter.find(
+                        (o) => o[_dimension[0]] === temp
+                    );
                     if (searchObj == undefined) {
                         var tempData = _Local_data.filter(function (val) {
-                            return val[_dimension[0]] === d.y
-                        })
-                        _filter.push(tempData[0])
+                            return val[_dimension[0]] === d.y;
+                        });
+                        _filter.push(tempData[0]);
                     }
-                })
+                });
                 if (_filter.length > 0) {
                     filterData = _filter;
                 }
-            }
-            else {
+            } else {
                 filterData = [];
             }
+
             if (broadcast) {
-                var idWidget = broadcast.updateWidget[scope.node().parentNode.id];
-                broadcast.updateWidget = {};
-                broadcast.updateWidget[scope.node().parentNode.id] = idWidget;
+                var _filterDimension = broadcast.selectedFilters || {};
 
-                var _filterList = {}, list = []
-
-                filterData.map(function (val) {
-                    list.push(val[_dimension[0]])
-                })
-
-                var _filterDimension = {};
-                if (broadcast.filterSelection.id) {
-                    _filterDimension = broadcast.filterSelection.filter;
-                } else {
-                    broadcast.filterSelection.id = parentContainer.attr('id');
-                }
-                var dimension = _dimension[0];
-
-                _filterDimension[dimension] = filterData.map(function (d) {
+                _filterDimension[_dimension[0]] = filterData.map(function (d) {
                     return d[_dimension[0]];
                 });
 
-                _filterDimension[dimension]._meta = {
+                _filterDimension[_dimension[0]]._meta = {
                     dataType: _dimensionType[0],
-                    valueType: 'castValueType'
+                    valueType: "castValueType",
                 };
-
-                broadcast.filterSelection.filter = _filterDimension;
-                var _filterParameters = filterParameters.get();
-                _filterParameters[dimension] = _filterDimension[dimension];
-                filterParameters.save(_filterParameters);
+               broadcast.saveSelectedFilter(_filterDimension);
             }
-        }
-    }
+        };
+    };
 
     var applyFilter = function () {
         return function () {
-            //Viz renders twice issue
-            // chart.update(filterData);
             if (broadcast) {
-                broadcast.updateWidget = {};
-                broadcast.filterSelection.id = null;
-                broadcast.$broadcast('flairbiApp:filter-input-refresh');
-                broadcast.$broadcast('flairbiApp:filter');
-                broadcast.$broadcast('flairbiApp:filter-add');
-                d3.select(this.parentNode)
-                    .style('visibility', 'hidden');
-
+                broadcast.applyFilter(
+                    broadcast.selectedFilters,
+                    broadcast.visualmetadata,
+                    broadcast.view
+                );
+                d3.select(this.parentNode).style("visibility", "hidden");
             }
-        }
-    }
+        };
+    };
 
     var clearFilter = function (div) {
         return function () {
             chart.update(_originalData);
-            d3.select(div).select('.confirm')
-                .style('visibility', 'hidden');
-        }
-    }
+            d3.select(div).select(".confirm").style("visibility", "hidden");
+        };
+    };
 
     function chart(selection) {
         _Local_data = _originalData = _data;
 
         if (_print && !_notification) {
             parentContainer = selection;
+        } else {
+            parentContainer = d3.select("#" + selection.id);
         }
-        else {
-            parentContainer = d3.select('#' + selection.id)
-        }
 
-        var svg = parentContainer.append('svg')
-            .attr('width', parentContainer.attr('width'))
-            .attr('height', parentContainer.attr('height'))
+        var svg = parentContainer
+            .append("svg")
+            .attr("width", parentContainer.attr("width"))
+            .attr("height", parentContainer.attr("height"));
 
-        width = +svg.attr('width');
-        height = +svg.attr('height');
+        width = +svg.attr("width");
+        height = +svg.attr("height");
 
-        parentContainer.append('div')
-            .attr('class', 'custom_tooltip');
+        parentContainer.append("div").attr("class", "custom_tooltip");
 
         _local_svg = svg;
 
-        svg.selectAll('g').remove();
+        svg.selectAll("g").remove();
         var me = this;
 
-        var plot = svg.attr('width', width)
-            .attr('height', height)
-            .append('g')
-            .attr('class', 'plot')
-            .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
+        var plot = svg
+            .attr("width", width)
+            .attr("height", height)
+            .append("g")
+            .attr("class", "plot")
+            .attr(
+                "transform",
+                "translate(" + margin.left + ", " + margin.top + ")"
+            );
 
-        var yElement = d3.set(_data.map(function (item) { return item[_dimension[0]]; })).values();
+        var yElement = d3
+            .set(
+                _data.map(function (item) {
+                    return item[_dimension[0]];
+                })
+            )
+            .values();
         var xElement = d3.map();
 
         for (var i = 0; i < _measure.length; i++) {
             xElement.set(i, _measure[i]);
         }
 
-        cellWidth = parseInt((width - margin.left - margin.right) / _measure.length);
-        cellHeight = parseInt((height - margin.top - margin.bottom) / _data.length);
+        cellWidth = parseInt(
+            (width - margin.left - margin.right) / _measure.length
+        );
+        cellHeight = parseInt(
+            (height - margin.top - margin.bottom) / _data.length
+        );
 
         var offset = 6;
 
-        var mesLabel = plot.selectAll('.mesLabel')
-            .data(xElement.values().map(function (mes) {
-                return displayNameForMeasure[_measure.indexOf(mes)];
-            }))
-            .enter().append('text')
-            .attr('class', 'mesLabel')
-            .text(function (d) { return d; })
+        var mesLabel = plot
+            .selectAll(".mesLabel")
+            .data(
+                xElement.values().map(function (mes) {
+                    return displayNameForMeasure[_measure.indexOf(mes)];
+                })
+            )
+            .enter()
+            .append("text")
+            .attr("class", "mesLabel")
+            .text(function (d) {
+                return d;
+            })
             .text(function (d) {
                 if (!_print) {
-                    return UTIL.title(UTIL.getTruncatedLabel(this, d, cellWidth));
-                }
-                else {
+                    return UTIL.title(
+                        UTIL.getTruncatedLabel(this, d, cellWidth)
+                    );
+                } else {
                     return d.substring(0, 15);
                 }
             })
-            .attr('transform', 'translate(' + cellWidth / 2 + ', -6)')
-            .attr('x', function (d, i) { return i * cellWidth; })
-            .attr('y', 0)
-            .style('text-anchor', 'middle')
+            .attr("transform", "translate(" + cellWidth / 2 + ", -6)")
+            .attr("x", function (d, i) {
+                return i * cellWidth;
+            })
+            .attr("y", 0)
+            .style("text-anchor", "middle");
 
-        var dimLabel = plot.selectAll('.dimLabel')
+        var dimLabel = plot
+            .selectAll(".dimLabel")
             .data(yElement)
-            .enter().append('text')
-            .attr('class', 'dimLabel')
-            .attr('y', function (d, i) { return i * cellHeight; })
-            .style('fill', dimLabelColor)
-            .style('font-style', fontStyleForDimension)
-            .style('font-weight', fontWeightForDimension)
-            .style('font-size', fontSizeForDimension)
-            .style('text-anchor', 'end')
-            .attr('transform', 'translate(' + -offset + ',' + cellHeight / 1.75 + ')')
+            .enter()
+            .append("text")
+            .attr("class", "dimLabel")
+            .attr("y", function (d, i) {
+                return i * cellHeight;
+            })
+            .style("fill", dimLabelColor)
+            .style("font-style", fontStyleForDimension)
+            .style("font-weight", fontWeightForDimension)
+            .style("font-size", fontSizeForDimension)
+            .style("text-anchor", "end")
+            .attr(
+                "transform",
+                "translate(" + -offset + "," + cellHeight / 1.75 + ")"
+            )
             .append("tspan")
-            .text(function (d) { return d; })
+            .text(function (d) {
+                return d;
+            })
             .text(function (d) {
                 if (d.length > defaultText) {
                     return d.substring(0, defaultText);
                 }
-                if (cellHeight < (fontSizeForDimension * 2)) {
+                if (cellHeight < fontSizeForDimension * 2) {
                     return d.substring(0, defaultText) + "...";
                 }
                 return d;
             })
-            .attr('x', 0)
-            .attr('y', function (d, i) { return i * cellHeight; })
+            .attr("x", 0)
+            .attr("y", function (d, i) {
+                return i * cellHeight;
+            })
             .append("tspan")
-            .text(function (d) { return d; })
             .text(function (d) {
-                if (cellHeight < (fontSizeForDimension * 2)) {
+                return d;
+            })
+            .text(function (d) {
+                if (cellHeight < fontSizeForDimension * 2) {
                     return "";
                 }
                 if (d.length > defaultText * 2) {
-                    return d.substring(defaultText, defaultText * 2) + '...';
+                    return d.substring(defaultText, defaultText * 2) + "...";
                 }
                 if (d.length > defaultText) {
                     return d.substring(defaultText, defaultText * 2);
                 }
                 return "";
             })
-            .attr('x', 0)
-            .attr('y', function (d, i) { return i * cellHeight + fontSizeForDimension; })
+            .attr("x", 0)
+            .attr("y", function (d, i) {
+                return i * cellHeight + fontSizeForDimension;
+            })
 
             .append("svg:title")
-            .text(function (d) { return d; });
+            .text(function (d) {
+                return d;
+            });
 
-
-
-        yScale
-            .domain(yElement)
-            .range([0, yElement.length * cellHeight]);
+        yScale.domain(yElement).range([0, yElement.length * cellHeight]);
 
         xScale
-            .domain(xElement.entries().map(function (element) {
-                return element.key + '_' + element.value;
-            }))
+            .domain(
+                xElement.entries().map(function (element) {
+                    return element.key + "_" + element.value;
+                })
+            )
             .range([0, xElement.size() * cellWidth]);
 
         data = transformData(_data);
 
         gradientColor.range([
             d3.rgb(displayColor).brighter(),
-            d3.rgb(displayColor).darker()
-        ])
+            d3.rgb(displayColor).darker(),
+        ]);
 
-        gradientColor.domain(d3.extent(data, function (d) {
-            return d.val;
-        }));
+        gradientColor.domain(
+            d3.extent(data, function (d) {
+                return d.val;
+            })
+        );
 
         if (_tooltip) {
-            tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select(".custom_tooltip");
         }
 
-        var cell = plot.selectAll(".node")
+        var cell = plot
+            .selectAll(".node")
             .data(data)
-            .enter().append('g')
-            .attr('transform', function (d) {
-                return 'translate(' + xScale(d.column + '_' + d.x) + ',' + yScale(d.y) + ')';
+            .enter()
+            .append("g")
+            .attr("transform", function (d) {
+                return (
+                    "translate(" +
+                    xScale(d.column + "_" + d.x) +
+                    "," +
+                    yScale(d.y) +
+                    ")"
+                );
             })
-            .attr('class', 'node')
+            .attr("class", "node");
 
         drawViz(cell);
         if (!_print) {
-            var _filter = UTIL.createFilterElement()
-            $('#' + parentContainer.attr('id')).append(_filter);
+            var _filter = UTIL.createFilterElement();
+            $("#" + parentContainer.attr("id")).append(_filter);
 
-            parentContainer.select('.filterData')
-                .on('click', applyFilter());
+            parentContainer.select(".filterData").on("click", applyFilter());
 
-            parentContainer.select('.removeFilter')
-                .on('click', clearFilter(parentContainer));
+            parentContainer
+                .select(".removeFilter")
+                .on("click", clearFilter(parentContainer));
 
-            _local_svg.select('g.lasso').remove()
+            _local_svg.select("g.lasso").remove();
 
-            var lasso = d3Lasso.lasso()
+            var lasso = d3Lasso
+                .lasso()
                 .hoverSelect(true)
                 .closePathSelect(true)
                 .closePathDistance(100)
                 .items(cell)
                 .targetArea(_local_svg);
 
-            lasso.on('start', onLassoStart(lasso, _local_svg))
-                .on('draw', onLassoDraw(lasso, _local_svg))
-                .on('end', onLassoEnd(lasso, _local_svg));
+            lasso
+                .on("start", onLassoStart(lasso, _local_svg))
+                .on("draw", onLassoDraw(lasso, _local_svg))
+                .on("end", onLassoEnd(lasso, _local_svg));
 
             _local_svg.call(lasso);
         }
@@ -644,50 +716,59 @@ function heatmap() {
 
     var drawViz = function (element) {
         if (!_print) {
-            element.append('rect')
-                .attr('rx', '3px')
-                .attr('ry', '3px')
-                .attr('class', 'bordered')
-                .style('stroke', '#ffffff')
-                .style('stroke-width', '2px')
-                .attr('width', cellWidth - 1)
-                .attr('height', cellHeight - 1)
+            element
+                .append("rect")
+                .attr("rx", "3px")
+                .attr("ry", "3px")
+                .attr("class", "bordered")
+                .style("stroke", "#ffffff")
+                .style("stroke-width", "2px")
+                .attr("width", cellWidth - 1)
+                .attr("height", cellHeight - 1)
                 .transition()
                 .ease(d3.easeQuadIn)
                 .duration(COMMON.DURATION)
-                .styleTween('fill', function (d) {
-                    return d3.interpolateRgb('transparent', getFillColor(d));
+                .styleTween("fill", function (d) {
+                    return d3.interpolateRgb("transparent", getFillColor(d));
                 });
 
-            element.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-                .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-                .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
-                .on('click', function (d) {
+            element
+                .on(
+                    "mouseover",
+                    _handleMouseOverFn.call(chart, tooltip, _local_svg)
+                )
+                .on(
+                    "mousemove",
+                    _handleMouseMoveFn.call(chart, tooltip, _local_svg)
+                )
+                .on(
+                    "mouseout",
+                    _handleMouseOutFn.call(chart, tooltip, _local_svg)
+                )
+                .on("click", function (d) {
                     filter = false;
                     if (isLiveEnabled) {
-                        broadcast.$broadcast('FlairBi:livemode-dialog');
+                        broadcast.$broadcast("FlairBi:livemode-dialog");
                         return;
                     }
-                    var confirm = parentContainer.select('.confirm')
-                        .style('visibility', 'visible');
+                    var confirm = parentContainer
+                        .select(".confirm")
+                        .style("visibility", "visible");
                     var _filter = _Local_data.filter(function (d1) {
-                        return d.y === d1[_dimension[0]]
-                    })
+                        return d.y === d1[_dimension[0]];
+                    });
 
-                    var rect = d3.select(this).select('rect');
+                    var rect = d3.select(this).select("rect");
 
-                    if (rect.classed('selected')) {
-                        rect.classed('selected', false);
+                    if (rect.classed("selected")) {
+                        rect.classed("selected", false);
                     } else {
-                        rect.classed('selected', true);
+                        rect.classed("selected", true);
                     }
 
-                    var _filterDimension = {};
-                    if (broadcast.filterSelection.id) {
-                        _filterDimension = broadcast.filterSelection.filter;
-                    } else {
-                        broadcast.filterSelection.id = parentContainer.attr('id');
-                    }
+                    var _filterDimension = broadcast.selectedFilters || {};
+                    var _filterDimension = broadcast.selectedFilters || {};
+
                     var dimension = _dimension[0];
                     if (_filterDimension[dimension]) {
                         var temp = _filterDimension[dimension];
@@ -703,35 +784,36 @@ function heatmap() {
 
                     _filterDimension[dimension]._meta = {
                         dataType: _dimensionType[0],
-                        valueType: 'castValueType'
+                        valueType: "castValueType",
                     };
 
-                    UTIL.saveFilterParameters(broadcast, filterParameters, parentContainer, _filterDimension, dimension);
+                  broadcast.saveSelectedFilter(_filterParameters);
                 });
-        }
-        else {
-            element.append('rect')
-                .attr('rx', '3px')
-                .attr('ry', '3px')
-                .attr('class', 'bordered')
-                .style('stroke', '#ffffff')
-                .style('stroke-width', '2px')
-                .attr('width', cellWidth - 1)
-                .attr('height', cellHeight - 1)
-                .style('fill', function (d) {
+        } else {
+            element
+                .append("rect")
+                .attr("rx", "3px")
+                .attr("ry", "3px")
+                .attr("class", "bordered")
+                .style("stroke", "#ffffff")
+                .style("stroke-width", "2px")
+                .attr("width", cellWidth - 1)
+                .attr("height", cellHeight - 1)
+                .style("fill", function (d) {
                     return getFillColor(d);
                 });
         }
 
-        element.append('text')
-            .attr('x', function (d) {
+        element
+            .append("text")
+            .attr("x", function (d) {
                 return getValuePosition(d, cellWidth);
             })
-            .attr('y', function (d) {
+            .attr("y", function (d) {
                 return cellHeight / 2;
             })
-            .attr('dx', '0.2em')
-            .attr('dy', '0.2em')
+            .attr("dx", "0.2em")
+            .attr("dy", "0.2em")
             .text(function (d) {
                 var si = numberFormat[_measure.indexOf(d.x)],
                     nf = UTIL.getNumberFormatterFn(si, d.val),
@@ -749,161 +831,198 @@ function heatmap() {
 
                 return value;
             })
-            .style('fill', function (d) {
+            .style("fill", function (d) {
                 return valueTextColour[_measure.indexOf(d.x)];
             })
-            .attr('text-anchor', function (d) {
+            .attr("text-anchor", function (d) {
                 return getValueTextAnchor(d);
             })
-            .attr('visibility', function (d) {
+            .attr("visibility", function (d) {
                 return UTIL.getVisibility(showValues[_measure.indexOf(d.x)]);
             })
-            .style('font-style', function (d) {
+            .style("font-style", function (d) {
                 return fontStyleForMeasure[_measure.indexOf(d.x)];
             })
-            .style('font-weight', function (d) {
+            .style("font-weight", function (d) {
                 return fontWeightForMeasure[_measure.indexOf(d.x)];
             })
-            .style('font-size', function (d) {
-                if (fontSizeForMeasure[_measure.indexOf(d.x)] >= cellHeight - 1) {
+            .style("font-size", function (d) {
+                if (
+                    fontSizeForMeasure[_measure.indexOf(d.x)] >=
+                    cellHeight - 1
+                ) {
                     return fontSizeForMeasure[_measure.indexOf(d.x)] - 5;
                 }
                 return fontSizeForMeasure[_measure.indexOf(d.x)];
             });
 
-
-        element.append('foreignObject')
-            .attr('visibility', function (d) {
+        element
+            .append("foreignObject")
+            .attr("visibility", function (d) {
                 return UTIL.getVisibility(showIcon[_measure.indexOf(d.x)]);
             })
-            .attr('width', cellWidth - 1)
-            .attr('height', cellHeight - 1)
+            .attr("width", cellWidth - 1)
+            .attr("height", cellHeight - 1)
             .html(function (d) {
                 //return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + ';font-size:' + fontSizeForMeasure[_measure.indexOf(d.x)] + 'px;"></i>';
 
-                return getIcon(_measure.indexOf(d.x), d.val, d, cellHeight)
+                return getIcon(_measure.indexOf(d.x), d.val, d, cellHeight);
             });
-
-    }
+    };
 
     chart.update = function (data) {
         if (_tooltip) {
-            tooltip = parentContainer.select('.custom_tooltip');
+            tooltip = parentContainer.select(".custom_tooltip");
         }
         _Local_data = data;
         filterData = [];
         var svg = _local_svg;
-        var yElement = d3.set(data.map(function (item) { return item[_dimension[0]]; })).values();
+        var yElement = d3
+            .set(
+                data.map(function (item) {
+                    return item[_dimension[0]];
+                })
+            )
+            .values();
         var xElement = d3.map();
 
         for (var i = 0; i < _measure.length; i++) {
             xElement.set(i, _measure[i]);
         }
 
-        cellWidth = parseInt((width - margin.left - margin.right) / _measure.length),
-            cellHeight = parseInt((height - margin.top - margin.bottom) / data.length);
+        (cellWidth = parseInt(
+            (width - margin.left - margin.right) / _measure.length
+        )),
+            (cellHeight = parseInt(
+                (height - margin.top - margin.bottom) / data.length
+            ));
         var offset = 6;
-        var plot = svg.select('.plot');
+        var plot = svg.select(".plot");
 
-        plot.selectAll('.dimLabel').remove()
+        plot.selectAll(".dimLabel").remove();
 
         var offset = 6;
-        var dimLabel = plot.selectAll('.dimLabel')
+        var dimLabel = plot
+            .selectAll(".dimLabel")
             .data(yElement)
-            .enter().append('text')
-            .attr('class', 'dimLabel')
-            .attr('y', function (d, i) { return i * cellHeight; })
-            .style('fill', dimLabelColor)
-            .style('font-style', fontStyleForDimension)
-            .style('font-weight', fontWeightForDimension)
-            .style('font-size', fontSizeForDimension)
-            .style('text-anchor', 'end')
-            .attr('transform', 'translate(' + -offset + ',' + cellHeight / 1.75 + ')')
+            .enter()
+            .append("text")
+            .attr("class", "dimLabel")
+            .attr("y", function (d, i) {
+                return i * cellHeight;
+            })
+            .style("fill", dimLabelColor)
+            .style("font-style", fontStyleForDimension)
+            .style("font-weight", fontWeightForDimension)
+            .style("font-size", fontSizeForDimension)
+            .style("text-anchor", "end")
+            .attr(
+                "transform",
+                "translate(" + -offset + "," + cellHeight / 1.75 + ")"
+            )
             .append("tspan")
-            .text(function (d) { return d; })
+            .text(function (d) {
+                return d;
+            })
             .text(function (d) {
                 if (d.length > defaultText) {
                     return d.substring(0, defaultText);
                 }
-                if (cellHeight < (fontSizeForDimension * 2)) {
+                if (cellHeight < fontSizeForDimension * 2) {
                     return d.substring(0, defaultText) + "...";
                 }
                 return d;
             })
-            .attr('x', 0)
-            .attr('y', function (d, i) { return i * cellHeight; })
+            .attr("x", 0)
+            .attr("y", function (d, i) {
+                return i * cellHeight;
+            })
             .append("tspan")
-            .text(function (d) { return d; })
             .text(function (d) {
-                if (cellHeight < (fontSizeForDimension * 2)) {
+                return d;
+            })
+            .text(function (d) {
+                if (cellHeight < fontSizeForDimension * 2) {
                     return "";
                 }
                 if (d.length > defaultText) {
-                    return d.substring(defaultText, defaultText * 2) + '...';
+                    return d.substring(defaultText, defaultText * 2) + "...";
                 }
                 return "";
             })
-            .attr('x', 0)
-            .attr('y', function (d, i) { return i * cellHeight + fontSizeForDimension; })
+            .attr("x", 0)
+            .attr("y", function (d, i) {
+                return i * cellHeight + fontSizeForDimension;
+            })
 
             .append("svg:title")
-            .text(function (d) { return d; });
+            .text(function (d) {
+                return d;
+            });
 
-
-        yScale
-            .domain(yElement)
-            .range([0, yElement.length * cellHeight]);
+        yScale.domain(yElement).range([0, yElement.length * cellHeight]);
 
         xScale
-            .domain(xElement.entries().map(function (element) {
-                return element.key + '_' + element.value;
-            }))
+            .domain(
+                xElement.entries().map(function (element) {
+                    return element.key + "_" + element.value;
+                })
+            )
             .range([0, xElement.size() * cellWidth]);
 
         data = transformData(data);
 
         gradientColor.range([
             d3.rgb(displayColor).brighter(),
-            d3.rgb(displayColor).darker()
-        ])
+            d3.rgb(displayColor).darker(),
+        ]);
 
-        gradientColor.domain(d3.extent(data, function (d) {
-            return d.val;
-        }));
-        var cell = plot.selectAll(".node")
-            .data(data)
+        gradientColor.domain(
+            d3.extent(data, function (d) {
+                return d.val;
+            })
+        );
+        var cell = plot.selectAll(".node").data(data);
 
-        var newCell = cell.enter().append('g')
-            .attr('class', 'node')
-            .attr('transform', function (d) {
-                return 'translate(' + xScale(d.column + '_' + d.x) + ',' + yScale(d.y) + ')';
+        var newCell = cell
+            .enter()
+            .append("g")
+            .attr("class", "node")
+            .attr("transform", function (d) {
+                return (
+                    "translate(" +
+                    xScale(d.column + "_" + d.x) +
+                    "," +
+                    yScale(d.y) +
+                    ")"
+                );
             });
 
         cell.exit().remove();
 
-        cell = plot.selectAll('.node');
+        cell = plot.selectAll(".node");
 
-        cell.select('rect')
-            .attr('rx', '3px')
-            .attr('ry', '3px')
-            .attr('class', 'bordered')
-            .style('stroke', '#ffffff')
-            .style('stroke-width', '2px')
-            .attr('width', cellWidth - 1)
-            .attr('height', cellHeight - 1)
-            .style('fill', function (d) {
+        cell.select("rect")
+            .attr("rx", "3px")
+            .attr("ry", "3px")
+            .attr("class", "bordered")
+            .style("stroke", "#ffffff")
+            .style("stroke-width", "2px")
+            .attr("width", cellWidth - 1)
+            .attr("height", cellHeight - 1)
+            .style("fill", function (d) {
                 return getFillColor(d);
             });
 
-        cell.select('text')
-            .attr('x', function (d) {
+        cell.select("text")
+            .attr("x", function (d) {
                 return getValuePosition(d, cellWidth);
             })
-            .attr('y', function (d) {
+            .attr("y", function (d) {
                 return cellHeight / 2;
             })
-            .attr('dx', '0.2em')
-            .attr('dy', '0.2em')
+            .attr("dx", "0.2em")
+            .attr("dy", "0.2em")
             .text(function (d) {
                 var si = numberFormat[_measure.indexOf(d.x)],
                     nf = UTIL.getNumberFormatterFn(si, d.val),
@@ -921,80 +1040,92 @@ function heatmap() {
 
                 return value;
             })
-            .style('fill', function (d) {
+            .style("fill", function (d) {
                 return valueTextColour[_measure.indexOf(d.x)];
             })
-            .attr('text-anchor', function (d) {
+            .attr("text-anchor", function (d) {
                 return getValueTextAnchor(d);
             })
-            .attr('visibility', function (d) {
+            .attr("visibility", function (d) {
                 return UTIL.getVisibility(showValues[_measure.indexOf(d.x)]);
             })
-            .style('font-style', function (d) {
+            .style("font-style", function (d) {
                 return fontStyleForMeasure[_measure.indexOf(d.x)];
             })
-            .style('font-weight', function (d) {
+            .style("font-weight", function (d) {
                 return fontWeightForMeasure[_measure.indexOf(d.x)];
             })
-            .style('font-size', function (d) {
-                if (fontSizeForMeasure[_measure.indexOf(d.x)] >= cellHeight - 1) {
+            .style("font-size", function (d) {
+                if (
+                    fontSizeForMeasure[_measure.indexOf(d.x)] >=
+                    cellHeight - 1
+                ) {
                     return fontSizeForMeasure[_measure.indexOf(d.x)] - 5;
                 }
                 return fontSizeForMeasure[_measure.indexOf(d.x)];
             });
 
-        cell.select('foreignObject')
-            .attr('visibility', function (d) {
+        cell.select("foreignObject")
+            .attr("visibility", function (d) {
                 return UTIL.getVisibility(showIcon[_measure.indexOf(d.x)]);
             })
-            .attr('width', cellWidth - 1)
-            .attr('height', cellHeight - 1)
+            .attr("width", cellWidth - 1)
+            .attr("height", cellHeight - 1)
             .html(function (d) {
                 //return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + ';font-size:' + fontSizeForMeasure[_measure.indexOf(d.x)] + 'px;"></i>';
 
-                return getIcon(_measure.indexOf(d.x), d.val, d, cellHeight)
+                return getIcon(_measure.indexOf(d.x), d.val, d, cellHeight);
             });
 
-        newCell.append('rect')
-            .attr('rx', '3px')
-            .attr('ry', '3px')
-            .attr('class', 'bordered')
-            .style('stroke', '#ffffff')
-            .style('stroke-width', '2px')
-            .attr('width', cellWidth - 1)
-            .attr('height', cellHeight - 1)
-            .style('fill', function (d) {
+        newCell
+            .append("rect")
+            .attr("rx", "3px")
+            .attr("ry", "3px")
+            .attr("class", "bordered")
+            .style("stroke", "#ffffff")
+            .style("stroke-width", "2px")
+            .attr("width", cellWidth - 1)
+            .attr("height", cellHeight - 1)
+            .style("fill", function (d) {
                 return getFillColor(d);
             });
 
-        newCell.on('mouseover', _handleMouseOverFn.call(chart, tooltip, _local_svg))
-            .on('mousemove', _handleMouseMoveFn.call(chart, tooltip, _local_svg))
-            .on('mouseout', _handleMouseOutFn.call(chart, tooltip, _local_svg))
-            .on('click', function (d) {
+        newCell
+            .on(
+                "mouseover",
+                _handleMouseOverFn.call(chart, tooltip, _local_svg)
+            )
+            .on(
+                "mousemove",
+                _handleMouseMoveFn.call(chart, tooltip, _local_svg)
+            )
+            .on("mouseout", _handleMouseOutFn.call(chart, tooltip, _local_svg))
+            .on("click", function (d) {
                 if (isLiveEnabled) {
-                    broadcast.$broadcast('FlairBi:livemode-dialog');
+                    broadcast.$broadcast("FlairBi:livemode-dialog");
                     return;
                 }
                 filter = false;
-                var confirm = parentContainer.select('.confirm')
-                    .style('visibility', 'visible');
+                var confirm = parentContainer
+                    .select(".confirm")
+                    .style("visibility", "visible");
                 var _filter = _Local_data.filter(function (d1) {
-                    return d.y === d1[_dimension[0]]
-                })
+                    return d.y === d1[_dimension[0]];
+                });
 
-                var rect = d3.select(this).select('rect');
+                var rect = d3.select(this).select("rect");
 
-                if (rect.classed('selected')) {
-                    rect.classed('selected', false);
+                if (rect.classed("selected")) {
+                    rect.classed("selected", false);
                 } else {
-                    rect.classed('selected', true);
+                    rect.classed("selected", true);
                 }
 
-                var _filterDimension = {};
+                var _filterDimension = broadcast.selectedFilters || {};
                 if (broadcast.filterSelection.id) {
-                    _filterDimension = broadcast.filterSelection.filter;
+                    _filterDimension = broadcast.selectedFilters[_dimension[0]] || {};
                 } else {
-                    broadcast.filterSelection.id = parentContainer.attr('id');
+                    broadcast.filterSelection.id = parentContainer.attr("id");
                 }
                 var dimension = _dimension[0];
                 if (_filterDimension[dimension]) {
@@ -1011,21 +1142,21 @@ function heatmap() {
 
                 _filterDimension[dimension]._meta = {
                     dataType: _dimensionType[0],
-                    valueType: 'castValueType'
+                    valueType: "castValueType",
                 };
-
-                UTIL.saveFilterParameters(broadcast, filterParameters, parentContainer, _filterDimension, dimension);
+                broadcast.saveSelectedFilter(_filterDimension);
             });
 
-        newCell.append('text')
-            .attr('x', function (d) {
+        newCell
+            .append("text")
+            .attr("x", function (d) {
                 return getValuePosition(d, cellWidth);
             })
-            .attr('y', function (d) {
+            .attr("y", function (d) {
                 return cellHeight / 2;
             })
-            .attr('dx', '0.2em')
-            .attr('dy', '0.2em')
+            .attr("dx", "0.2em")
+            .attr("dy", "0.2em")
             .text(function (d) {
                 var si = numberFormat[_measure.indexOf(d.x)],
                     nf = UTIL.getNumberFormatterFn(si, d.val),
@@ -1043,70 +1174,81 @@ function heatmap() {
 
                 return value;
             })
-            .style('fill', function (d) {
+            .style("fill", function (d) {
                 return valueTextColour[_measure.indexOf(d.x)];
             })
-            .attr('text-anchor', function (d) {
+            .attr("text-anchor", function (d) {
                 return getValueTextAnchor(d);
             })
-            .attr('visibility', function (d) {
+            .attr("visibility", function (d) {
                 return UTIL.getVisibility(showValues[_measure.indexOf(d.x)]);
             })
-            .style('font-style', function (d) {
+            .style("font-style", function (d) {
                 return fontStyleForMeasure[_measure.indexOf(d.x)];
             })
-            .style('font-weight', function (d) {
+            .style("font-weight", function (d) {
                 return fontWeightForMeasure[_measure.indexOf(d.x)];
             })
-            .style('font-size', function (d) {
-                if (fontSizeForMeasure[_measure.indexOf(d.x)] >= cellHeight - 1) {
+            .style("font-size", function (d) {
+                if (
+                    fontSizeForMeasure[_measure.indexOf(d.x)] >=
+                    cellHeight - 1
+                ) {
                     return fontSizeForMeasure[_measure.indexOf(d.x)] - 5;
                 }
                 return fontSizeForMeasure[_measure.indexOf(d.x)];
             });
 
-        newCell.append('foreignObject')
-            .attr('visibility', function (d) {
+        newCell
+            .append("foreignObject")
+            .attr("visibility", function (d) {
                 return UTIL.getVisibility(showIcon[_measure.indexOf(d.x)]);
             })
-            .attr('width', cellWidth - 1)
-            .attr('height', cellHeight - 1)
+            .attr("width", cellWidth - 1)
+            .attr("height", cellHeight - 1)
             .html(function (d) {
                 //return '<i class="' + iconName[_measure.indexOf(d.x)] + '" aria-hidden="true" style="font-weight:' + iconFontWeight[_measure.indexOf(d.x)] + ';color:' + iconColor[_measure.indexOf(d.x)] + ';font-size:' + fontSizeForMeasure[_measure.indexOf(d.x)] + 'px;"></i>';
 
-                return getIcon(_measure.indexOf(d.x), d.val, d, cellHeight)
+                return getIcon(_measure.indexOf(d.x), d.val, d, cellHeight);
             });
 
         //   drawViz(newCell)
 
-        plot.selectAll('.node')
-            .attr('transform', function (d) {
-                return 'translate(' + xScale(d.column + '_' + d.x) + ',' + yScale(d.y) + ')';
-            });
+        plot.selectAll(".node").attr("transform", function (d) {
+            return (
+                "translate(" +
+                xScale(d.column + "_" + d.x) +
+                "," +
+                yScale(d.y) +
+                ")"
+            );
+        });
 
-        _local_svg.select('g.lasso').remove()
+        _local_svg.select("g.lasso").remove();
 
-        var lasso = d3Lasso.lasso()
+        var lasso = d3Lasso
+            .lasso()
             .hoverSelect(true)
             .closePathSelect(true)
             .closePathDistance(100)
             .items(cell)
             .targetArea(_local_svg);
 
-        lasso.on('start', onLassoStart(lasso, _local_svg))
-            .on('draw', onLassoDraw(lasso, _local_svg))
-            .on('end', onLassoEnd(lasso, _local_svg));
+        lasso
+            .on("start", onLassoStart(lasso, _local_svg))
+            .on("draw", onLassoDraw(lasso, _local_svg))
+            .on("end", onLassoEnd(lasso, _local_svg));
 
         _local_svg.call(lasso);
-    }
+    };
 
     chart._getName = function () {
         return _NAME;
-    }
+    };
 
     chart._getHTML = function () {
         return _local_svg.node().outerHTML;
-    }
+    };
 
     chart.config = function (value) {
         if (!arguments.length) {
@@ -1115,7 +1257,7 @@ function heatmap() {
         _config = value;
         _setConfigParams.call(chart, _config);
         return chart;
-    }
+    };
 
     chart.dimension = function (value) {
         if (!arguments.length) {
@@ -1123,7 +1265,7 @@ function heatmap() {
         }
         _dimension = value;
         return chart;
-    }
+    };
 
     chart.dimensionType = function (value) {
         if (!arguments.length) {
@@ -1131,7 +1273,7 @@ function heatmap() {
         }
         _dimensionType = value;
         return chart;
-    }
+    };
 
     chart.measure = function (value) {
         if (!arguments.length) {
@@ -1139,7 +1281,7 @@ function heatmap() {
         }
         _measure = value;
         return chart;
-    }
+    };
 
     chart.tooltip = function (value) {
         if (!arguments.length) {
@@ -1147,7 +1289,7 @@ function heatmap() {
         }
         _tooltip = value;
         return chart;
-    }
+    };
 
     chart.dimLabelColor = function (value) {
         if (!arguments.length) {
@@ -1155,7 +1297,7 @@ function heatmap() {
         }
         dimLabelColor = value;
         return chart;
-    }
+    };
 
     chart.displayName = function (value) {
         if (!arguments.length) {
@@ -1163,7 +1305,7 @@ function heatmap() {
         }
         displayName = value;
         return chart;
-    }
+    };
 
     chart.fontWeightForDimension = function (value) {
         if (!arguments.length) {
@@ -1171,7 +1313,7 @@ function heatmap() {
         }
         fontWeightForDimension = value;
         return chart;
-    }
+    };
 
     chart.fontSizeForDimension = function (value) {
         if (!arguments.length) {
@@ -1179,7 +1321,7 @@ function heatmap() {
         }
         fontSizeForDimension = value;
         return chart;
-    }
+    };
 
     chart.fontStyleForDimension = function (value) {
         if (!arguments.length) {
@@ -1187,7 +1329,7 @@ function heatmap() {
         }
         fontStyleForDimension = value;
         return chart;
-    }
+    };
 
     chart.print = function (value) {
         if (!arguments.length) {
@@ -1195,7 +1337,7 @@ function heatmap() {
         }
         _print = value;
         return chart;
-    }
+    };
 
     chart.colorPattern = function (value) {
         if (!arguments.length) {
@@ -1203,7 +1345,7 @@ function heatmap() {
         }
         colorPattern = value;
         return chart;
-    }
+    };
 
     chart.displayColor = function (value) {
         if (!arguments.length) {
@@ -1211,38 +1353,48 @@ function heatmap() {
         }
         displayColor = value;
         return chart;
-    }
+    };
 
     chart.showValues = function (value, measure) {
         return UTIL.baseAccessor.call(showValues, value, measure, _measure);
-    }
+    };
     chart.displayColorMeasure = function (value, measure) {
-        return UTIL.baseAccessor.call(displayColorMeasure, value, measure, _measure);
-    }
+        return UTIL.baseAccessor.call(
+            displayColorMeasure,
+            value,
+            measure,
+            _measure
+        );
+    };
     chart.displayNameForMeasure = function (value, measure) {
-        return UTIL.baseAccessor.call(displayNameForMeasure, value, measure, _measure);
-    }
+        return UTIL.baseAccessor.call(
+            displayNameForMeasure,
+            value,
+            measure,
+            _measure
+        );
+    };
     chart.showIcon = function (value, measure) {
         return UTIL.baseAccessor.call(showIcon, value, measure, _measure);
-    }
+    };
     chart.valuePosition = function (value, measure) {
         return UTIL.baseAccessor.call(valuePosition, value, measure, _measure);
-    }
+    };
     chart.iconName = function (value, measure) {
         return UTIL.baseAccessor.call(iconName, value, measure, _measure);
-    }
+    };
     chart.iconFontWeight = function (value, measure) {
         return UTIL.baseAccessor.call(iconFontWeight, value, measure, _measure);
-    }
+    };
     chart.iconColor = function (value, measure) {
         return UTIL.baseAccessor.call(iconColor, value, measure, _measure);
-    }
+    };
     chart.iconPosition = function (value, measure) {
         return UTIL.baseAccessor.call(iconPosition, value, measure, _measure);
-    }
+    };
     chart.showIcon = function (value, measure) {
         return UTIL.baseAccessor.call(showIcon, value, measure, _measure);
-    }
+    };
 
     chart.colourCoding = function (value, measure) {
         if (!arguments.length) {
@@ -1251,7 +1403,7 @@ function heatmap() {
 
         if (value instanceof Array && measure == void 0) {
             colourCoding = value.map(function (v) {
-                return UTIL.getExpressionConfig(v, ['color']);
+                return UTIL.getExpressionConfig(v, ["color"]);
             });
             return chart;
         }
@@ -1259,30 +1411,50 @@ function heatmap() {
         var index = _measure.indexOf(measure);
 
         if (index === -1) {
-            throw new Error('Invalid measure provided');
+            throw new Error("Invalid measure provided");
         }
 
         if (value == void 0) {
             return colourCoding[index];
         } else {
-            colourCoding[index] = UTIL.getExpressionConfig(value, ['color']);
+            colourCoding[index] = UTIL.getExpressionConfig(value, ["color"]);
         }
-    }
+    };
     chart.valueTextColour = function (value, measure) {
-        return UTIL.baseAccessor.call(valueTextColour, value, measure, _measure);
-    }
+        return UTIL.baseAccessor.call(
+            valueTextColour,
+            value,
+            measure,
+            _measure
+        );
+    };
     chart.fontStyleForMeasure = function (value, measure) {
-        return UTIL.baseAccessor.call(fontStyleForMeasure, value, measure, _measure);
-    }
+        return UTIL.baseAccessor.call(
+            fontStyleForMeasure,
+            value,
+            measure,
+            _measure
+        );
+    };
     chart.fontWeightForMeasure = function (value, measure) {
-        return UTIL.baseAccessor.call(fontWeightForMeasure, value, measure, _measure);
-    }
+        return UTIL.baseAccessor.call(
+            fontWeightForMeasure,
+            value,
+            measure,
+            _measure
+        );
+    };
     chart.numberFormat = function (value, measure) {
         return UTIL.baseAccessor.call(numberFormat, value, measure, _measure);
-    }
+    };
     chart.fontSizeForMeasure = function (value, measure) {
-        return UTIL.baseAccessor.call(fontSizeForMeasure, value, measure, _measure);
-    }
+        return UTIL.baseAccessor.call(
+            fontSizeForMeasure,
+            value,
+            measure,
+            _measure
+        );
+    };
 
     chart.iconExpression = function (value, measure) {
         if (!arguments.length) {
@@ -1299,7 +1471,7 @@ function heatmap() {
              * E.g. <chart>.kpiIconExpression([<item1>, <item2>]) ==> <chart_function>
              */
             iconExpression = value.map(function (v) {
-                return UTIL.getExpressionConfig(v, ['icon', 'color']);
+                return UTIL.getExpressionConfig(v, ["icon", "color"]);
             });
             return chart;
         }
@@ -1307,7 +1479,7 @@ function heatmap() {
         var index = _measure.indexOf(measure);
 
         if (index === -1) {
-            throw new Error('Invalid measure provided');
+            throw new Error("Invalid measure provided");
         }
 
         if (value == void 0) {
@@ -1321,11 +1493,14 @@ function heatmap() {
              * Setter method call with both value and measure arguments
              * E.g. <chart>.kpiIconExpression(<item>, <measure>) ==> <chart_function>
              */
-            iconExpression[index] = UTIL.getExpressionConfig(value, ['icon', 'color']);
+            iconExpression[index] = UTIL.getExpressionConfig(value, [
+                "icon",
+                "color",
+            ]);
         }
 
         return chart;
-    }
+    };
 
     chart.broadcast = function (value) {
         if (!arguments.length) {
@@ -1333,7 +1508,7 @@ function heatmap() {
         }
         broadcast = value;
         return chart;
-    }
+    };
 
     chart.filterParameters = function (value) {
         if (!arguments.length) {
@@ -1341,28 +1516,28 @@ function heatmap() {
         }
         filterParameters = value;
         return chart;
-    }
+    };
     chart.notification = function (value) {
         if (!arguments.length) {
             return _notification;
         }
         _notification = value;
         return chart;
-    }
+    };
     chart.data = function (value) {
         if (!arguments.length) {
             return _data;
         }
         _data = value;
         return chart;
-    }
+    };
     chart.isLiveEnabled = function (value) {
         if (!arguments.length) {
             return isLiveEnabled;
         }
         isLiveEnabled = value;
         return chart;
-    }
+    };
     return chart;
 }
 

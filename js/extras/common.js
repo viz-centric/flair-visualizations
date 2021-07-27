@@ -20,11 +20,13 @@ function common() {
         DURATION: 1000,
         AXIS_THICKNESS: 50,
         SHOWAXISLABEL: 'Formated',
-        NULLVALUE:'null',
+        NULLVALUE: 'null',
         LINETYPE: {
             AREA: "AREA",
             LINE: "LINE"
         },
+        HORIZONTAL: "Horizontal",
+        VERTICAL: "Vertical",
         COMPARABLE_DATA_TYPES: ['timestamp', 'date', 'datetime'],
         COLORSCALE: d3.scaleOrdinal()
             .range([
@@ -46,7 +48,37 @@ function common() {
                 "#F3D047",
                 "#DA3579",
                 "#8EA4BF",
-            ])
+            ]),
+
+
+        ClusteredVerticalBarChart: 'Clustered Vertical Bar Chart',
+        ClusteredHorizontalBarChart: 'Clustered Horizontal Bar Chart',
+        StackedVerticalBarChart: 'Stacked Vertical Bar Chart',
+        StackedHorizontalBarChart: 'Stacked Horizontal Bar Chart',
+        LineChart: 'Line Chart',
+        ComboChart: 'Combo Chart',
+        Scatterplot: 'Scatter plot,',
+        PieChart: 'Pie Chart',
+        DoughnutChart: 'Doughnut Chart',
+        Gaugeplot: 'Gauge plot',
+        Table: 'Table',
+        PivotTable: 'Pivot Table',
+        KPI: 'KPI',
+        InfoGraphic: 'Info-graphic',
+        Map: 'Map',
+        TreeMap: 'Tree Map',
+        HeatMap: 'Heat Map',
+        BoxPlot: 'Box Plot',
+        TextObject: 'Text Object',
+        BulletChart: 'Bullet Chart',
+        ChordDiagram: 'Chord Diagram',
+        WordCloud: 'Word Cloud',
+        Sankey: 'Sankey',
+        Iframe: 'Iframe',
+        DateRange: 'Date Range',
+        PieGrid: 'Pie Grid',
+        NumberGrid: 'Number Grid',
+
     }
 }
 

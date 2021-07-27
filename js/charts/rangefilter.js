@@ -124,9 +124,9 @@ function rangefilter() {
                 .text(dates[0] + " -> " + dates[1]);
 
             if (broadcast) {
-                var _filterDimension = {};
+               var _filterDimension = broadcast.selectedFilters || {};
                 if (broadcast.filterSelection.id) {
-                    _filterDimension = broadcast.filterSelection.filter;
+                   _filterDimension = broadcast.selectedFilters[_dimension[0]] || {};
                 } else {
                     broadcast.filterSelection.id = parentContainer.attr('id');
                 }

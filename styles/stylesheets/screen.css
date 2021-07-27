@@ -3,12 +3,48 @@
  * Import this file using the following HTML or equivalent:
  * <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css" /> */
 /*@import "compass/reset";*/
+@import url(./../font-awesome-4.7.0/css/font-awesome.min.css);
 /* line 1, ../sass/partials/_common.scss */
 text {
   font-size: 0.6rem;
 }
 
-/* line 5, ../sass/partials/_common.scss */
+/* line 6, ../sass/partials/_common.scss */
+.selected {
+  fill: #e1e3e3 !important;
+  background-color: #e1e3e3 !important;
+}
+
+/* line 11, ../sass/partials/_common.scss */
+.possible {
+  fill: #e1e3e3 !important;
+  /* fill-opacity: 0.3;  */
+}
+
+/* line 16, ../sass/partials/_common.scss */
+.lasso path {
+  stroke: #e1e3e3;
+  stroke-width: 1.5px;
+}
+
+/* line 21, ../sass/partials/_common.scss */
+.lasso .drawn {
+  fill-opacity: 0.1;
+}
+
+/* line 25, ../sass/partials/_common.scss */
+.lasso .loop_close {
+  fill: none;
+  stroke-dasharray: 4, 4;
+}
+
+/* line 30, ../sass/partials/_common.scss */
+.lasso .origin {
+  fill: #3399FF;
+  fill-opacity: .5;
+}
+
+/* line 35, ../sass/partials/_common.scss */
 .filterToggal {
   visibility: visible;
   position: absolute;
@@ -19,20 +55,20 @@ text {
   margin: 5px;
   /* Rounded sliders */
 }
-/* line 14, ../sass/partials/_common.scss */
+/* line 44, ../sass/partials/_common.scss */
 .filterToggal .switch {
   position: relative;
   display: inline-block;
   width: 40px;
   height: 20px;
 }
-/* line 21, ../sass/partials/_common.scss */
+/* line 51, ../sass/partials/_common.scss */
 .filterToggal .switch input {
   opacity: 0;
   width: 0;
   height: 0;
 }
-/* line 27, ../sass/partials/_common.scss */
+/* line 57, ../sass/partials/_common.scss */
 .filterToggal .slider {
   position: absolute;
   cursor: pointer;
@@ -44,7 +80,7 @@ text {
   -webkit-transition: 0.4s;
   transition: 0.4s;
 }
-/* line 39, ../sass/partials/_common.scss */
+/* line 69, ../sass/partials/_common.scss */
 .filterToggal .slider:before {
   position: absolute;
   content: "";
@@ -56,30 +92,30 @@ text {
   -webkit-transition: 0.4s;
   transition: 0.4s;
 }
-/* line 51, ../sass/partials/_common.scss */
+/* line 81, ../sass/partials/_common.scss */
 .filterToggal input:checked + .slider {
   background-color: #2196f3;
 }
-/* line 55, ../sass/partials/_common.scss */
+/* line 85, ../sass/partials/_common.scss */
 .filterToggal input:focus + .slider {
   box-shadow: 0 0 1px #2196f3;
 }
-/* line 59, ../sass/partials/_common.scss */
+/* line 89, ../sass/partials/_common.scss */
 .filterToggal input:checked + .slider:before {
   -webkit-transform: translateX(15px);
   -ms-transform: translateX(15px);
   transform: translateX(15px);
 }
-/* line 67, ../sass/partials/_common.scss */
+/* line 97, ../sass/partials/_common.scss */
 .filterToggal .slider.round {
   border-radius: 34px;
 }
-/* line 71, ../sass/partials/_common.scss */
+/* line 101, ../sass/partials/_common.scss */
 .filterToggal .slider.round:before {
   border-radius: 50%;
 }
 
-/* line 76, ../sass/partials/_common.scss */
+/* line 106, ../sass/partials/_common.scss */
 .confirm {
   visibility: hidden;
   position: absolute;
@@ -90,19 +126,19 @@ text {
   margin: 5px;
 }
 
-/* line 91, ../sass/partials/_common.scss */
+/* line 121, ../sass/partials/_common.scss */
 .base_line line {
   stroke: #787878 !important;
   stroke-opacity: 0.8 !important;
   stroke-width: 2 !important;
 }
 
-/* line 96, ../sass/partials/_common.scss */
+/* line 126, ../sass/partials/_common.scss */
 .dataset {
   padding-right: 5px;
 }
 
-/* line 100, ../sass/partials/_common.scss */
+/* line 130, ../sass/partials/_common.scss */
 .sort_selection {
   font-size: 1rem;
   line-height: 1.2rem;
@@ -118,17 +154,17 @@ text {
   text-align: left;
 }
 
-/* line 115, ../sass/partials/_common.scss */
+/* line 145, ../sass/partials/_common.scss */
 .sort_selection div {
   margin: 0px 0px 5px 0px;
 }
 
-/* line 119, ../sass/partials/_common.scss */
+/* line 149, ../sass/partials/_common.scss */
 .sort_selection input {
   margin-top: 1px;
 }
 
-/* line 123, ../sass/partials/_common.scss */
+/* line 153, ../sass/partials/_common.scss */
 .arrow-down {
   visibility: hidden;
   position: absolute;
@@ -139,7 +175,7 @@ text {
   border-top: 5px solid rgba(31, 33, 36, 0.8);
 }
 
-/* line 133, ../sass/partials/_common.scss */
+/* line 163, ../sass/partials/_common.scss */
 .arrow-left {
   visibility: hidden;
   position: absolute;
