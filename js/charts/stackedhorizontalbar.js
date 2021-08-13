@@ -857,7 +857,9 @@ function stackedhorizontalbar() {
             delete val["posTotal"];
         });
 
-        drawPlotForFilter.call(this, data);
+        if (_isFilterGrid) {
+            drawPlotForFilter.call(this, data);
+        }
 
         _localYGrid = d3
             .axisBottom()

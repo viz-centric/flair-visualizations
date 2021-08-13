@@ -600,7 +600,9 @@ function clusteredverticalbar() {
 
         y.rangeRound([plotHeight, 0]).domain([range[0], range[1]]).nice();
 
-        drawPlotForFilter.call(this, data);
+        if (_isFilterGrid) {
+            drawPlotForFilter.call(this, data);
+        }
 
         _localXLabels = data.map(function (d) {
             return d[_dimension[0]];

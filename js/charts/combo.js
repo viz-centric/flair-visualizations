@@ -8,7 +8,7 @@ try {
 } catch (ex) { }
 
 function combo() {
-var _NAME = COMMON.ComboChart;
+    var _NAME = COMMON.ComboChart;
 
     var _config,
         _dimension,
@@ -352,7 +352,7 @@ var _NAME = COMMON.ComboChart;
                     dataType: _dimensionType[0],
                     valueType: "castValueType",
                 };
-               broadcast.saveSelectedFilter(_filterDimension);
+                broadcast.saveSelectedFilter(_filterDimension);
             }
         };
     };
@@ -690,7 +690,9 @@ var _NAME = COMMON.ComboChart;
 
         y.rangeRound([plotHeight, 0]).domain([range[0], range[1]]).nice();
 
-        drawPlotForFilter.call(this, data);
+        if (_isFilterGrid) {
+            drawPlotForFilter.call(this, data);
+        }
 
         var _localXLabels = data.map(function (d) {
             return d[_dimension[0]];

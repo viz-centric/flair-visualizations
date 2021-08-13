@@ -607,7 +607,9 @@ function clusteredhorizontalbar() {
 
         y.rangeRound([0, plotWidth]).domain([range[0], range[1]]).nice();
 
-        drawPlotForFilter.call(this, data);
+        if (_isFilterGrid) {
+            drawPlotForFilter.call(this, data);
+        }
 
         _localYGrid = d3
             .axisBottom()
