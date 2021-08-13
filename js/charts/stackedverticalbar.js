@@ -895,7 +895,9 @@ function stackedverticalbar() {
             delete val["posTotal"];
         });
 
-        drawPlotForFilter.call(this, data);
+        if (_isFilterGrid) {
+            drawPlotForFilter.call(this, data);
+        }
 
         var _localXLabels = data.map(function (d) {
             return d[_dimension[0]];
