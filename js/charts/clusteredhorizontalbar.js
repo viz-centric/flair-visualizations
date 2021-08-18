@@ -905,7 +905,7 @@ function clusteredhorizontalbar() {
                 .closePathDistance(100)
                 .items(cluster)
                 .targetArea(_local_svg);
-s
+
             lasso
                 .on("start", onLassoStart(lasso, _local_svg))
                 .on("draw", onLassoDraw(lasso, _local_svg))
