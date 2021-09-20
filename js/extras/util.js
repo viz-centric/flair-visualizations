@@ -707,7 +707,7 @@ function util() {
                 sortedData = "ascending";
             }
 
-            var sortedData = jQuery.extend(true, [], data); // deep copy
+            var sortedData = $.extend(true, [], data); // deep copy
 
             var _sorter = function (x, y, index) {
                 if (typeof (keys[index]) == 'undefined') {

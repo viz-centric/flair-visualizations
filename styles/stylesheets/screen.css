@@ -186,6 +186,23 @@ text {
   border-right: 10px solid rgba(31, 33, 36, 0.8);
 }
 
+/* line 172, ../sass/partials/_common.scss */
+.btn-filters {
+  padding: 0 5px !important;
+  margin-left: 3px;
+}
+
+/* line 177, ../sass/partials/_common.scss */
+.confirm {
+  visibility: hidden;
+  position: absolute;
+  z-index: 10;
+  padding: 1px;
+  top: 20px !important;
+  right: 0px;
+  margin: 5px;
+}
+
 /* line 2, ../sass/partials/_grid.scss */
 .grid path {
   stroke: #ededed;

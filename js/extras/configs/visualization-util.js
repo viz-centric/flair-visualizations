@@ -43,7 +43,7 @@ const VisualizationUtils = {
         newItem = { ...item };
 
         newItem = JSON.parse(JSON.stringify(item));
-        newItem.feature.name = newItem.feature.name;
+        newItem.feature.name = newItem.feature.selectedName;
         return newItem;
       })
       .sort(function (a, b) {
@@ -74,7 +74,11 @@ const VisualizationUtils = {
       return a.order - b.order;
     });
     return arr.map(function (item) {
-      return item.feature.name;
+      if(item.feature.name){
+        return item.feature.name;
+      }else{
+       return item.feature.description;
+      }
     });
   },
   getTypes: function (arr) {
