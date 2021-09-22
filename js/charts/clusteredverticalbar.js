@@ -132,11 +132,17 @@ function clusteredverticalbar() {
     };
 
     var setDefaultColorForChart = function () {
-        for (let index = 0; index < _measure.length; index++) {
-            if (_displayColor[index]) {
+        for (let index = 0; index < _measures.length; index++) {
+            if (
+                _displayColor[index] == null ||
+                _displayColor[index] == undefined
+            ) {
                 _displayColor[index] = COMMON.COLORSCALE(index);
             }
-            if (_borderColor[index]) {
+            if (
+                _borderColor[index] == null ||
+                _borderColor[index] == undefined
+            ) {
                 _borderColor[index] = COMMON.COLORSCALE(index);
             }
         }
