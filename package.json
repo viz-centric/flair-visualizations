@@ -4,7 +4,8 @@
   "description": "All the available Flair-BI charting modules are listed in this package.",
   "main": "./js/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "webpack":"node --max_old_space_size=4096 node_modules/webpack/bin/webpack.js"
   },
   "repository": {
     "type": "git",

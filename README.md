@@ -63,4 +63,7 @@ import flairVisualizations from 'flair-visualizations/js/main';
             .data(metaData); // pass data for visualization
           clusteredverticalBarChartObj(div[0]);
 
+## build the project
+npm run webpack
+
 
