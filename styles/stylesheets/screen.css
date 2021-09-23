@@ -115,30 +115,19 @@ text {
   border-radius: 50%;
 }
 
-/* line 106, ../sass/partials/_common.scss */
-.confirm {
-  visibility: hidden;
-  position: absolute;
-  z-index: 10;
-  padding: 1px;
-  top: -5px !important;
-  right: 45px;
-  margin: 5px;
-}
-
-/* line 121, ../sass/partials/_common.scss */
+/* line 112, ../sass/partials/_common.scss */
 .base_line line {
   stroke: #787878 !important;
   stroke-opacity: 0.8 !important;
   stroke-width: 2 !important;
 }
 
-/* line 126, ../sass/partials/_common.scss */
+/* line 117, ../sass/partials/_common.scss */
 .dataset {
   padding-right: 5px;
 }
 
-/* line 130, ../sass/partials/_common.scss */
+/* line 121, ../sass/partials/_common.scss */
 .sort_selection {
   font-size: 1rem;
   line-height: 1.2rem;
@@ -154,17 +143,17 @@ text {
   text-align: left;
 }
 
-/* line 145, ../sass/partials/_common.scss */
+/* line 136, ../sass/partials/_common.scss */
 .sort_selection div {
   margin: 0px 0px 5px 0px;
 }
 
-/* line 149, ../sass/partials/_common.scss */
+/* line 140, ../sass/partials/_common.scss */
 .sort_selection input {
   margin-top: 1px;
 }
 
-/* line 153, ../sass/partials/_common.scss */
+/* line 144, ../sass/partials/_common.scss */
 .arrow-down {
   visibility: hidden;
   position: absolute;
@@ -175,7 +164,7 @@ text {
   border-top: 5px solid rgba(31, 33, 36, 0.8);
 }
 
-/* line 163, ../sass/partials/_common.scss */
+/* line 154, ../sass/partials/_common.scss */
 .arrow-left {
   visibility: hidden;
   position: absolute;
@@ -186,19 +175,19 @@ text {
   border-right: 10px solid rgba(31, 33, 36, 0.8);
 }
 
-/* line 172, ../sass/partials/_common.scss */
+/* line 163, ../sass/partials/_common.scss */
 .btn-filters {
   padding: 0 5px !important;
   margin-left: 3px;
 }
 
-/* line 177, ../sass/partials/_common.scss */
+/* line 168, ../sass/partials/_common.scss */
 .confirm {
   visibility: hidden;
   position: absolute;
   z-index: 10;
   padding: 1px;
-  top: 20px !important;
+  top: 25px !important;
   right: 0px;
   margin: 5px;
 }

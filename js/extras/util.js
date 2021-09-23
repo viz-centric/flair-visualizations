@@ -645,7 +645,7 @@ function util() {
 
         createFilterElement: function () {
             var _filter = '<div class="confirm" style="visibility: hidden;">' +
-                '<button class="btn btn-filters filterData btn-primary">' +
+                '<button class="btn btn-filters filterData">' +
                 '  <i class="fa fa-check"></i>' +
                 '</button>' +
                 '<button class="btn btn-filters removeFilter btn-default">' +
@@ -1080,8 +1080,12 @@ function util() {
             if (selectedFeature.length > 0) {
                 var _onRadioButtonClick = function (event) {
                     event.data.selectedFeature.id = id;
+                    event.data.selectedFeature.view =  broadcast.view;
+                    event.data.selectedFeature.filter=  broadcast.selectedFilters;
+                    event.data.selectedFeature.visualmetadata=  broadcast.visualmetadata;
                     console.log(event.data.selectedFeature.featureName);
-                    broadcast.$broadcast('flairbiApp:registerAlternateDimension', event.data.selectedFeature);
+                    //broadcast.$broadcast('flairbiApp:registerAlternateDimension', event.data.selectedFeature);
+                    broadcast.alternateDimension(event.data.selectedFeature);
                     var container = _local_svg.node().parentNode;
                     $(container).find('.sort_selection').css('visibility', 'hidden');
                     $(container).find('.arrow-down').css('visibility', 'hidden');
