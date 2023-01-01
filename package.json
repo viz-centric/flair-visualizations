@@ -28,11 +28,11 @@
   "homepage": "https://github.com/viz-centric/flair-visualizations#readme",
   "devDependencies": {
     "@fortawesome/fontawesome-free": "^5.8.1",
-    "css-loader": "^2.1.1",
-    "file-loader": "^3.0.1",
-    "style-loader": "^0.23.1",
+    "css-loader": "^6.7.3",
+    "file-loader": "^6.2.0",
+    "style-loader": "^3.3.1",
     "ttf-loader": "^1.0.2",
-    "webpack": "^4.29.6",
+    "webpack": "^5.75.0",
     "webpack-cli": "^3.3.0"
   },
   "dependencies": {
